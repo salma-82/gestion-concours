@@ -19,16 +19,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Désactiver CSRF l l-api REST
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Activer CORS globalement
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/resumes/**", "/api/concours-blancs/**", "/uploads/**")
+                        .requestMatchers("/api/auth/**", "/api/resumes/**", "/api/concours-blancs/**", "/uploads/**", "/api/admin/**", "/api/concours/**")
                         .permitAll() // Public
-                        .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "admin", "role_admin") // 👈
-                                                                                                                        // Ġttina
-                                                                                                                        // gaɛ
-                                                                                                                        // les
-                                                                                                                        // cas
-                                                                                                                        // bch
-                                                                                                                        // n-tadawow
-                                                                                                                        // 403
                         .anyRequest().authenticated());
         return http.build();
     }

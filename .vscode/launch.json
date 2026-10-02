@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-GestionConcoursApplication<gestion-concours>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.gestionconcours.GestionConcoursApplication",
+            "projectName": "gestion-concours",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

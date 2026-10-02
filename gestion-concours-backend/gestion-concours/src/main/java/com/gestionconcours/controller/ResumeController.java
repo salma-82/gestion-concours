@@ -59,7 +59,7 @@ public class ResumeController {
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
-            resume.setPdfUrl(fileName);
+            resume.setPdfUrl("http://localhost:8080/uploads/" + fileName);
 
             resumeRepository.save(resume);
             return ResponseEntity.ok("Résumé ajouté avec succès !");

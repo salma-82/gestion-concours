@@ -7,10 +7,12 @@ import com.gestionconcours.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "*")
 public class AdminController {
 
     private final InscriptionRequestRepository inscriptionRequestRepository;
@@ -33,11 +35,15 @@ public class AdminController {
         InscriptionRequest demande = inscriptionRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande introuvable"));
 
-        User newUser = new User();
-        newUser.setNom(demande.getUsername());
-        newUser.setEmail(demande.getEmail());
-        newUser.setMotDePasse(demande.getPassword()); // Déjà crypté
-        newUser.setRole("CLIENT");
+        User newUser = User.builder()
+                .nom(demande.getUsername())
+                .email(demande.getEmail())
+                .motDePasse(demande.getPassword()) // Déjà crypté
+                .role("CLIENT")
+                .active(1)
+                .createdAt(LocalDateTime.now())
+                .dateValidation(LocalDateTime.now())
+                .build();
 
         userRepository.save(newUser);
         inscriptionRequestRepository.delete(demande);
@@ -50,5 +56,11 @@ public class AdminController {
     public ResponseEntity<?> refuserDemande(@PathVariable Long id) {
         inscriptionRequestRepository.deleteById(id);
         return ResponseEntity.ok("Demande refusée.");
+    }
+
+    // 4. Récupérer tous les utilisateurs
+    @GetMapping("/users")
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }

@@ -98,6 +98,14 @@ export default function AdminConcours() {
     }
   };
 
+  const getPdfUrl = (url) => {
+    if (!url) return '#';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `http://localhost:8080/uploads/${url}`;
+  };
+
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       {/* Header w Boutton Ajouter */}
@@ -185,7 +193,7 @@ export default function AdminConcours() {
                   <td className="px-6 py-4 text-sm text-gray-600">{item.chapitre}</td>
                   <td className="px-6 py-4 text-sm text-green-600">
                     {item.pdfUrl ? (
-                      <a href={item.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
+                      <a href={getPdfUrl(item.pdfUrl)} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
                         Télécharger / Voir PDF
                       </a>
                     ) : (
