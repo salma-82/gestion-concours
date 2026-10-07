@@ -3,6 +3,9 @@ package com.gestionconcours.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "resumes")
@@ -14,8 +17,21 @@ public class Resume {
 
     private String matiere;    // MATH, PHYSIQUE, SVT
     private String chapitre;   // Ex: Calcul des limites, Suites...
-    private String titre;      // Titre dyal la fiche
-    private String pdfUrl;     // Chemin wla nom dyal fichier PDF
+    private String titre;      // Titre dyal le résumé
+    private String pdfUrl;     // Lien dyal fichier PDF (pour l'admin)
+
+    private Integer totalPages = 0;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "resume_page_images", joinColumns = @JoinColumn(name = "resume_id"))
+    @Column(name = "image_url")
+    @OrderColumn(name = "page_order")
+    private List<String> pageImages = new ArrayList<>();
+
+    @Column(columnDefinition = "TEXT")
+    private String contenu;    // Contenu texte ou description
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }
+
+

@@ -22,7 +22,7 @@ export default function Register() {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/register', formData);
+      const response = await axios.post('http://localhost:8081/api/auth/register', formData);
       setMessage(response.data); // "Demande d'inscription envoyée avec succès !"
     } catch (err) {
       setError(err.response?.data || "Erreur lors de l'inscription !");

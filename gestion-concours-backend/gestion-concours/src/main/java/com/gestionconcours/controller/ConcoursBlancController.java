@@ -16,12 +16,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/concours-blancs")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175"})
+@CrossOrigin(origins = "*")
 public class ConcoursBlancController {
 
     private final ConcoursBlancRepository concoursBlancRepository;
 
-    // 💡 Constructor Injection (Katy7yd l-warning f vscode)
     public ConcoursBlancController(ConcoursBlancRepository concoursBlancRepository) {
         this.concoursBlancRepository = concoursBlancRepository;
     }
@@ -49,8 +48,8 @@ public class ConcoursBlancController {
             }
 
             // Renommer l-fichier b UUID bach ma y- t-cheriawch b nafs l-ism
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            String fileName = UUID.randomUUID().toString() + "_" + (file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "concours_blanc.pdf");
+            Path filePath = Paths.get(UPLOAD_DIR, fileName);
             Files.write(filePath, file.getBytes());
 
             // Enregistrement f Base de Données
@@ -58,13 +57,22 @@ public class ConcoursBlancController {
             concours.setTitre(titre);
             concours.setMatiere(matiere);
             concours.setChapitre(chapitre);
-            concours.setPdfUrl("http://localhost:8080/uploads/" + fileName); // URL dyal PDF
+            concours.setPdfUrl("http://localhost:8081/uploads/" + fileName); // URL dyal PDF
 
-            concoursBlancRepository.save(concours);
-
-            return ResponseEntity.ok("Concours Blanc ajota b najaḥ!");
+            ConcoursBlanc saved = concoursBlancRepository.save(concours);
+            return ResponseEntity.ok(saved);
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("Erreur f téléchargement dyal l-fichier");
+            return ResponseEntity.status(500).body("Erreur f téléchargement dyal l-fichier: " + e.getMessage());
         }
+    }
+
+    // Supprimer un concours blanc par ID (DELETE)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteConcoursBlanc(@PathVariable Long id) {
+        if (!concoursBlancRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        concoursBlancRepository.deleteById(id);
+        return ResponseEntity.ok("Concours blanc supprimé avec succès !");
     }
 }

@@ -25,7 +25,7 @@ export default function AdminConcours() {
   // 1. Jbd les données men Backend (GET)
   const fetchConcours = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/concours-blancs', {
+      const response = await axios.get('http://localhost:8081/api/concours-blancs', {
         withCredentials: true
       });
       const data = response.data;
@@ -76,7 +76,7 @@ export default function AdminConcours() {
     formData.append('file', file);
 
     try {
-      await axios.post('http://localhost:8080/api/concours-blancs', formData, {
+      await axios.post('http://localhost:8081/api/concours-blancs', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -103,7 +103,7 @@ export default function AdminConcours() {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    return `http://localhost:8080/uploads/${url}`;
+    return `http://localhost:8081/uploads/${url}`;
   };
 
   return (

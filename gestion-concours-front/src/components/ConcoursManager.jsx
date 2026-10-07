@@ -20,7 +20,7 @@ export default function ConcoursManager() {
     // Charger les concours (b l-filtre wla bla filtre)
     const fetchConcours = async () => {
         try {
-            let url = 'http://localhost:8080/api/concours?';
+            let url = 'http://localhost:8081/api/concours?';
             if (filterEcole) url += `ecole=${filterEcole}&`;
             if (filterMatiere) url += `matiere=${filterMatiere}&`;
             if (filterAnnee) url += `annee=${filterAnnee}&`;
@@ -48,7 +48,7 @@ export default function ConcoursManager() {
         if (fileCorrection) formData.append('fileCorrection', fileCorrection);
 
         try {
-            await axios.post('http://localhost:8080/api/concours', formData, {
+            await axios.post('http://localhost:8081/api/concours', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             alert('Concours t-zda b-najah!');
@@ -66,7 +66,7 @@ export default function ConcoursManager() {
     const handleDelete = async (id) => {
         if (window.confirm("Wakha t-mshih ḥetta bessaḥ?")) {
             try {
-                await axios.delete(`http://localhost:8080/api/concours/${id}`);
+                await axios.delete(`http://localhost:8081/api/concours/${id}`);
                 fetchConcours();
             } catch (error) {
                 console.error("Erreur suppression", error);
