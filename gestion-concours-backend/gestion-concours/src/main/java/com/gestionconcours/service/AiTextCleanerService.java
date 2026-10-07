@@ -66,12 +66,15 @@ public class AiTextCleanerService {
             headers.setBearerAuth(apiKey);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            @SuppressWarnings("rawtypes")
             ResponseEntity<Map> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
                 if (choices != null && !choices.isEmpty()) {
                     Map<String, Object> firstChoice = choices.get(0);
+                    @SuppressWarnings("unchecked")
                     Map<String, String> message = (Map<String, String>) firstChoice.get("message");
                     if (message != null && message.containsKey("content")) {
                         String aiCleanedText = message.get("content");

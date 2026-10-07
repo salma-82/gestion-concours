@@ -9,14 +9,30 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 
+import com.gestionconcours.model.Resume;
+import com.gestionconcours.repository.ResumeRepository;
+
 @Configuration
 public class DataInitializer {
 
     @Bean
-    CommandLineRunner initDatabase(UserRepository userRepository) {
+    CommandLineRunner initDatabase(UserRepository userRepository, ResumeRepository resumeRepository) {
         return args -> {
             // Outil pour hacher le mot de passe (BCrypt)
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+            // Création automatique d'un résumé HTML démo si aucun n'existe
+            if (resumeRepository.count() == 0) {
+                Resume sampleResume = new Resume();
+                sampleResume.setMatiere("MATH");
+                sampleResume.setChapitre("Chapitre 2 : Limites & Continuité");
+                sampleResume.setTitre("Résumé Officiel - Formules & Théorèmes MathJax");
+                sampleResume.setHtmlUrl("http://localhost:8081/uploads/chapitre2_limites_continuite.html");
+                sampleResume.setFileType("HTML");
+                sampleResume.setTotalPages(1);
+                resumeRepository.save(sampleResume);
+                System.out.println(">>> Résumé démo HTML (MathJax) inséré avec succès !");
+            }
 
             // Vérifier si la table est vide pour éviter les doublons à chaque redémarrage
             if (userRepository.count() == 0) {

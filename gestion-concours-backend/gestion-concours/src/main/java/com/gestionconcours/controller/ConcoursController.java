@@ -20,8 +20,11 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 public class ConcoursController {
 
-    @Autowired
-    private ConcoursRepository concoursRepository;
+    private final ConcoursRepository concoursRepository;
+
+    public ConcoursController(ConcoursRepository concoursRepository) {
+        this.concoursRepository = concoursRepository;
+    }
 
     private final String UPLOAD_DIR = "uploads/";
 

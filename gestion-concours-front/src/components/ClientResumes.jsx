@@ -232,9 +232,15 @@ export default function ClientResumes({ clientId: propsClientId }) {
                       📌 {activeResume.chapitre}
                     </span>
                   )}
-                  <span style={{ background: '#ede9fe', color: '#6d28d9', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                    {getPages(activeResume).length || activeResume.totalPages || 1} Page{(getPages(activeResume).length || activeResume.totalPages || 1) > 1 ? 's' : ''}
-                  </span>
+                  {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
+                    <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                      🌐 Résumé Web (MathJax)
+                    </span>
+                  ) : (
+                    <span style={{ background: '#ede9fe', color: '#6d28d9', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                      {getPages(activeResume).length || activeResume.totalPages || 1} Page{(getPages(activeResume).length || activeResume.totalPages || 1) > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </div>
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
                   {activeResume.titre}
@@ -244,10 +250,71 @@ export default function ClientResumes({ clientId: propsClientId }) {
 
             {/* Actions rapides */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* Le client consulte uniquement les pages images sans accès au fichier PDF brut */}
+              {activeResume.htmlUrl && (
+                <a
+                  href={getFullUrl(activeResume.htmlUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  ↗ Plein écran
+                </a>
+              )}
             </div>
           </div>
 
+          {/* Zone de Contenu : HTML interactif ou Pages Images PDF */}
+          {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                padding: '12px 20px',
+                background: '#f8fafc',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '13px',
+                color: '#475569',
+                fontWeight: 600,
+                flexWrap: 'wrap',
+                gap: '8px'
+              }}>
+                <span>📐 Fiche Interactive (MathJax & styles W3Schools intégrés)</span>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  Clic droit sur n'importe quelle formule pour zoomer ou exporter en LaTeX
+                </span>
+              </div>
+              <iframe
+                src={getFullUrl(activeResume.htmlUrl)}
+                title={activeResume.titre}
+                style={{
+                  width: '100%',
+                  height: '82vh',
+                  border: 'none',
+                  display: 'block',
+                  background: '#ffffff'
+                }}
+              />
+            </div>
+          ) : (
+            <>
           {/* Barre d'outils du lecteur (Zoom, Mode de vue, Navigation) */}
           <div style={{
             background: '#0f172a',
@@ -584,6 +651,8 @@ export default function ClientResumes({ clientId: propsClientId }) {
             </div>
 
           </div>
+          </>
+          )}
 
         </div>
       ) : (

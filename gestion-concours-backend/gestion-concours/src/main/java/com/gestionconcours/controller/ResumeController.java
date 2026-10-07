@@ -87,7 +87,7 @@ public class ResumeController {
 
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Le fichier PDF est vide.");
+                return ResponseEntity.badRequest().body("Le fichier sélectionné est vide.");
             }
 
             File dir = new File(UPLOAD_DIR);
@@ -96,34 +96,54 @@ public class ResumeController {
             }
 
             String baseUuid = UUID.randomUUID().toString();
-            String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "resume.pdf";
-            String pdfFileName = baseUuid + "_" + originalFileName;
-            Path pdfFilePath = Paths.get(UPLOAD_DIR, pdfFileName);
-            Files.write(pdfFilePath, file.getBytes());
-
-            // Conversion automatique de chaque page du PDF en image PNG avec PDFBox
-            List<String> pageFileNames = pdfPageConverterService.convertPdfToPngPages(pdfFilePath.toFile(), dir, "page_" + baseUuid);
-
-            List<String> pageUrls = new ArrayList<>();
-            for (String pName : pageFileNames) {
-                pageUrls.add("http://localhost:8081/uploads/" + pName);
+            String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "document";
+            String fileExtension = "";
+            int dotIndex = originalFileName.lastIndexOf(".");
+            if (dotIndex > 0) {
+                fileExtension = originalFileName.substring(dotIndex).toLowerCase();
             }
 
             Resume resume = new Resume();
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
-            resume.setPdfUrl("http://localhost:8081/uploads/" + pdfFileName);
-            resume.setPageImages(pageUrls);
-            resume.setTotalPages(pageUrls.size());
             resume.setContenu("");
+
+            // Cas fichier HTML (MathJax, styles W3Schools...)
+            if (fileExtension.equals(".html") || fileExtension.equals(".htm")) {
+                String htmlFileName = baseUuid + "_" + originalFileName;
+                Path htmlFilePath = Paths.get(UPLOAD_DIR, htmlFileName);
+                Files.write(htmlFilePath, file.getBytes());
+
+                resume.setHtmlUrl("http://localhost:8081/uploads/" + htmlFileName);
+                resume.setFileType("HTML");
+                resume.setTotalPages(1);
+            } else {
+                // Cas fichier PDF
+                String pdfFileName = baseUuid + "_" + originalFileName;
+                Path pdfFilePath = Paths.get(UPLOAD_DIR, pdfFileName);
+                Files.write(pdfFilePath, file.getBytes());
+
+                // Conversion automatique de chaque page du PDF en image PNG avec PDFBox
+                List<String> pageFileNames = pdfPageConverterService.convertPdfToPngPages(pdfFilePath.toFile(), dir, "page_" + baseUuid);
+
+                List<String> pageUrls = new ArrayList<>();
+                for (String pName : pageFileNames) {
+                    pageUrls.add("http://localhost:8081/uploads/" + pName);
+                }
+
+                resume.setPdfUrl("http://localhost:8081/uploads/" + pdfFileName);
+                resume.setFileType("PDF");
+                resume.setPageImages(pageUrls);
+                resume.setTotalPages(pageUrls.size());
+            }
 
             Resume saved = resumeRepository.save(resume);
             return ResponseEntity.ok(saved);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Erreur lors du traitement du résumé PDF : " + e.getMessage());
+            return ResponseEntity.status(500).body("Erreur lors du traitement du résumé : " + e.getMessage());
         }
     }
 
@@ -153,7 +173,7 @@ public class ResumeController {
      */
     private boolean ensureResumePageImages(Resume resume) {
         try {
-            if (resume.getPdfUrl() == null || resume.getPdfUrl().trim().isEmpty()) {
+            if ("HTML".equalsIgnoreCase(resume.getFileType()) || resume.getPdfUrl() == null || resume.getPdfUrl().trim().isEmpty()) {
                 return false;
             }
 

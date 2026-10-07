@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Préparation aux Concours - Suites et séries numériques</title>
+    
+    <!-- Inclusion de MathJax pour afficher les formules mathématiques proprement -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            display: flex;
+        }
+        /* Style Sidebar (Menu style W3Schools) */
+        nav {
+            width: 260px;
+            background-color: #ffffff;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 10px;
+        }
+        nav h3 {
+            font-size: 16px;
+            color: #2b6cb0;
+            padding-left: 10px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav li a {
+            display: block;
+            padding: 8px 12px;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+        nav li a:hover {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+        /* Style Contenu Principal */
+        main {
+            margin-left: 280px;
+            padding: 40px;
+            max-width: 900px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0,0,0,0.02);
+            width: 100%;
+        }
+        h1 {
+            color: #1a365d;
+            font-size: 24px;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2c5282;
+            font-size: 18px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #2b6cb0;
+            font-size: 16px;
+        }
+        .note {
+            background-color: #fffaf0;
+            border-left: 4px solid #dd6b20;
+            padding: 10px 15px;
+            font-style: italic;
+            color: #7b341e;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+        }
+        th, td {
+            border: 1px solid #cbd5e0;
+            padding: 10px 12px;
+            text-align: center;
+            font-size: 14px;
+        }
+        th {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+        ul.list-formulas {
+            background: #f7fafc;
+            padding: 15px 25px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        ul.list-formulas li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Latéral style W3Schools -->
+    <nav>
+        <h3>Sommaire du Cours</h3>
+        <ul>
+            <li><a href="#suites-geo-arith">1. Suites géométriques & arithmétiques</a></li>
+            <li><a href="#theoreme-encadrement">2. Théorème d'encadrement</a></li>
+            <li><a href="#suites-vn">3. Suites type \( V_n = f(U_n) \)</a></li>
+            <li><a href="#suites-un1">4. Suites type \( U_{n+1} = f(U_n) \)</a></li>
+            <li><a href="#dalembert">5. Règle de d'Alembert</a></li>
+            <li><a href="#cesaro">6. Moyenne de Cesàro</a></li>
+            <li><a href="#sommes-usuelles">7. Sommes usuelles & Limites</a></li>
+        </ul>
+    </nav>
+
+    <!-- Zone Centrale du Contenu -->
+    <main>
+        <h1>Préparation aux Concours - Médecine ENSA ENSAM</h1>
+        <h2>Chapitre 2 : Suites et séries numériques, sommes et produits</h2>
+        <div class="note">Note : Sauf mention contraire, toutes les limites s'entendent lorsque \( n \to +\infty \).</div>
+
+        <section id="suites-geo-arith">
+            <h3>1- Suites géométriques & arithmétiques</h3>
+            <p>Soit \( (U_n) \) de premier terme \( U_0 \) et \( 0 \leq p \leq n \).</p>
+            
+            <table>
+                <tr>
+                    <th>Propriété</th>
+                    <th>S. Géométrique</th>
+                    <th>S. Arithmétique</th>
+                </tr>
+                <tr>
+                    <td><strong>Définition</strong></td>
+                    <td>\( U_{n+1} = q U_n \)</td>
+                    <td>\( U_{n+1} = U_n + r \)</td>
+                </tr>
+                <tr>
+                    <td><strong>Terme \( U_n \)</strong></td>
+                    <td>\( U_n = U_p \cdot q^{n-p} \)</td>
+                    <td>\( U_n = U_p + (n-p)r \)</td>
+                </tr>
+                <tr>
+                    <td><strong>\( S_n \) (de \( U_0 \))</strong></td>
+                    <td>\( U_0 \frac{1 - q^{n+1}}{1 - q} \)</td>
+                    <td>\( \frac{(n+1)(U_0 + U_n)}{2} \)</td>
+                </tr>
+                <tr>
+                    <td><strong>\( S_n \) (de \( U_p \))</strong></td>
+                    <td>\( U_p \frac{1 - q^{n-p+1}}{1 - q} \)</td>
+                    <td>\( \frac{(n-p+1)(U_p + U_n)}{2} \)</td>
+                </tr>
+                <tr>
+                    <td><strong>Relation</strong></td>
+                    <td>\( U_n U_{n+2} = U_{n+1}^2 \)</td>
+                    <td>\( U_n + U_{n+2} = 2U_{n+1} \)</td>
+                </tr>
+            </table>
+
+            <p><strong>Sommes classiques :</strong></p>
+            <ul class="list-formulas">
+                <li>\( 1 + q + \dots + q^n = \frac{1 - q^{n+1}}{1 - q} \)</li>
+                <li>\( q^n + q^{n+1} + \dots + q^m = \frac{q^n - q^{m+1}}{1 - q} \)</li>
+                <li>\( 1 + 2 + \dots + n = \frac{n(n+1)}{2} \)</li>
+                <li>\( n + (n+1) + \dots + m = \frac{(n-m+1)(n+m)}{2} \)</li>
+            </ul>
+        </section>
+
+        <section id="theoreme-encadrement">
+            <h3>2- Théorème d'encadrement</h3>
+            <ul class="list-formulas">
+                <li>Si \( V_n \leq U_n \leq W_n \) et \( \lim V_n = \lim W_n = l \implies \lim U_n = l \)</li>
+                <li>Si \( |U_n - l| \leq V_n \) et \( \lim V_n = 0 \implies \lim U_n = l \)</li>
+                <li>Si \( V_n \leq U_n \) :
+                    <ul>
+                        <li>\( \lim V_n = +\infty \implies \lim U_n = +\infty \)</li>
+                        <li>\( \lim U_n = -\infty \implies \lim V_n = -\infty \)</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <section id="suites-vn">
+            <h3>3- Suites type \( V_n = f(U_n) \)</h3>
+            <p>Si la fonction \( f \) est continue en \( l \) et que \( \lim U_n = l \), alors :</p>
+            <p style="text-align: center; font-size: 16px;"><strong>\( \lim V_n = f(l) \)</strong></p>
+        </section>
+
+        <section id="suites-un1">
+            <h3>4- Suites type \( U_{n+1} = f(U_n) \)</h3>
+            <p>Si \( f \) est continue sur un intervalle \( I \) et que :</p>
+            <ul class="list-formulas">
+                <li>\( U_0 \in I \)</li>
+                <li>\( f(I) \subset I \) (intervalle stable)</li>
+                <li>\( (U_n) \) converge vers une limite \( l \)</li>
+            </ul>
+            <p>Alors, \( l \) est solution de l'équation \( f(x) = x \).</p>
+        </section>
+
+        <section id="dalembert">
+            <h3>5- Règle de d'Alembert</h3>
+            <p>Pour une suite \( (U_n) \) strictement positive. On étudie la limite :</p>
+            <p style="text-align: center;">\( \displaystyle\lim \frac{U_{n+1}}{U_n} = l \geq 0 \)</p>
+            <ul class="list-formulas">
+                <li>Si \( l > 1 \) alors \( \lim U_n = +\infty \)</li>
+                <li>Si \( l < 1 \) alors \( \lim U_n = 0 \)</li>
+                <li>Si \( l = 1 \), on ne peut rien conclure.</li>
+            </ul>
+        </section>
+
+        <section id="cesaro">
+            <h3>6- Moyenne de Cesàro</h3>
+            <p>Si \( \lim U_n = l \), alors :</p>
+            <p style="text-align: center;">\( \displaystyle\lim \frac{U_1 + U_2 + \dots + U_n}{n} = l \)</p>
+        </section>
+
+        <section id="sommes-usuelles">
+            <h3>Symboles \( \sum \) et \( \prod \)</h3>
+            <p>Pour \( n \in \mathbb{N} \) et \( c \) une constante réelle :</p>
+            <ul class="list-formulas">
+                <li>\( \sum_{k=0}^{n} 1 = (n+1) \)</li>
+                <li>\( \sum_{k=0}^{n} c = c(n+1) \)</li>
+                <li>\( \prod_{k=1}^{n} c = c^n \)</li>
+            </ul>
+
+            <h3>7- Sommes usuelles</h3>
+            <h4>Polynomiales</h4>
+            <ul class="list-formulas">
+                <li>\( \sum_{k=1}^{n} k = \frac{n(n+1)}{2} \)</li>
+                <li>\( \sum_{k=1}^{n} k^2 = \frac{n(n+1)(2n+1)}{6} \)</li>
+                <li>\( \sum_{k=0}^{n} (ak+b) = \frac{(n+1)(na+2b)}{2} \)</li>
+                <li>\( \sum_{k=1}^{n} k^3 = \left[\frac{n(n+1)}{2}\right]^2 \)</li>
+            </ul>
+
+            <h4>Géométriques</h4>
+            <ul class="list-formulas">
+                <li>\( \sum_{k=0}^{n} q^k = \frac{1-q^{n+1}}{1-q} \quad (q \neq 1) \)</li>
+                <li>\( \sum_{k=n}^{m} q^k = \frac{q^n - q^{m+1}}{1-q} \)</li>
+                <li>\( \sum_{k=1}^{n} k q^k = \frac{nq^{n+2} - (n+1)q^{n+1} + q}{(1-q)^2} \)</li>
+            </ul>
+
+            <h4>Télescopiques</h4>
+            <ul class="list-formulas">
+                <li>\( \sum_{k=1}^{n} \frac{1}{k(k+1)} = 1 - \frac{1}{n+1} \)</li>
+                <li>\( \sum_{k=n}^{m} \frac{1}{k(k+1)} = \frac{1}{n} - \frac{1}{m+1} \)</li>
+                <li>\( \sum_{k=1}^{n} \frac{1}{k(k+1)(k+2)} = \frac{n(n+3)}{4(n+1)(n+2)} \)</li>
+            </ul>
+
+            <h4>Binomiales</h4>
+            <ul class="list-licenses">
+                <li>\( \sum_{k=0}^{n} C_n^k a^k b^{n-k} = (a+b)^n \)</li>
+                <li>\( \sum_{k=0}^{n} C_n^k = (a+1)^n \) (Note : \( \sum_{k=0}^{n} C_n^k = 2^n \))</li>
+                <li>\( \sum_{k=1}^{n} k C_n^k = n 2^{n-1} \)</li>
+                <li>\( \sum_{k=1}^{n} k^2 C_n^k = n(n+1)2^{n-2} \)</li>
+                <li>\( \sum_{k=0}^{n} (C_n^k)^2 = C_{2n}^n \)</li>
+            </ul>
+
+            <h4>Limites Célèbres</h4>
+            <ul class="list-formulas">
+                <li>\( \lim \sum_{k=1}^{n} \frac{1}{k} = +\infty \)</li>
+                <li>\( \lim \sum_{k=1}^{2n} \frac{(-1)^{k-1}}{k} = \ln(2) \)</li>
+                <li>\( \lim \sum_{k=1}^{n} \frac{1}{k^2} = \frac{\pi^2}{6} \)</li>
+            </ul>
+        </section>
+    </main>
+
+</body>
+</html>

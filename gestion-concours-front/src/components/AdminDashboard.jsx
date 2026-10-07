@@ -1461,14 +1461,26 @@ export default function AdminDashboard() {
                         <td style={styles.td}><span style={styles.tagEcole}>{item.matiere}</span></td>
                         <td style={styles.td}>{item.chapitre}</td>
                         <td style={styles.td}>
-                          <span style={{ background: '#ede9fe', color: '#6d28d9', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
-                            📄 {pageCount} page{pageCount > 1 ? 's' : ''}
-                          </span>
+                          {item.fileType === 'HTML' || item.htmlUrl ? (
+                            <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              🌐 HTML Web
+                            </span>
+                          ) : (
+                            <span style={{ background: '#ede9fe', color: '#6d28d9', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              📄 {pageCount} page{pageCount > 1 ? 's' : ''}
+                            </span>
+                          )}
                         </td>
                         <td style={styles.td}>
-                          <a href={getPdfUrl(item.pdfUrl || item.pdf_url)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
-                            📄 Fichier PDF
-                          </a>
+                          {item.htmlUrl ? (
+                            <a href={getPdfUrl(item.htmlUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
+                              🌐 Ouvrir HTML
+                            </a>
+                          ) : (
+                            <a href={getPdfUrl(item.pdfUrl || item.pdf_url)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
+                              📄 Fichier PDF
+                            </a>
+                          )}
                         </td>
                         <td style={styles.tdCenter}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -1485,7 +1497,7 @@ export default function AdminDashboard() {
                                 cursor: 'pointer'
                               }}
                             >
-                              👁️ Voir Pages
+                              {item.htmlUrl || item.fileType === 'HTML' ? '👁️ Aperçu HTML' : '👁️ Voir Pages'}
                             </button>
                             <button
                               onClick={() => handleDeleteResume(item.id)}
@@ -1634,9 +1646,9 @@ export default function AdminDashboard() {
           <div style={styles.modalBox}>
             <div style={styles.modalHeader}>
               <div>
-                <h3 style={styles.modalTitle}>Ajouter un Résumé PDF</h3>
+                <h3 style={styles.modalTitle}>Ajouter un Résumé de Cours</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  Le PDF sera conservé et chaque page sera automatiquement rendue en image PNG haute définition avec PDFBox.
+                  Vous pouvez uploader un fichier <strong>.html</strong> (avec MathJax et styles) ou un document <strong>.pdf</strong>.
                 </p>
               </div>
               <button onClick={() => setIsResumeModalOpen(false)} style={styles.modalClose}>&times;</button>
@@ -1655,13 +1667,22 @@ export default function AdminDashboard() {
                 <input type="text" placeholder="Ex: Suites Numériques, Dérivation" value={resChapitre} onChange={(e) => setResChapitre(e.target.value)} required style={styles.formInput} />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Fichier PDF Original</label>
-                <input type="file" accept="application/pdf" onChange={(e) => setResFile(e.target.files[0])} required style={styles.formFile} />
+                <label style={styles.formLabel}>Fichier du cours (HTML ou PDF)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,.pdf,application/pdf" 
+                  onChange={(e) => setResFile(e.target.files[0])} 
+                  required 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  💡 Les fichiers .html conservent automatiquement MathJax et les styles W3Schools.
+                </small>
               </div>
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsResumeModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingRes} style={{ ...styles.btnSubmit, opacity: loadingRes ? 0.7 : 1 }}>
-                  {loadingRes ? 'Conversion PDFBox en cours...' : 'Enregistrer & Convertir'}
+                  {loadingRes ? 'Traitement en cours...' : 'Enregistrer le Résumé'}
                 </button>
               </div>
             </form>
@@ -1669,21 +1690,48 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal: Aperçu des Pages PNG du Résumé (Admin) */}
+      {/* Modal: Aperçu du Résumé (Admin) */}
       {previewResume && (
         <div style={styles.modalOverlay}>
-          <div style={{ ...styles.modalBox, maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ ...styles.modalBox, maxWidth: previewResume.htmlUrl || previewResume.fileType === 'HTML' ? '1100px' : '850px', maxHeight: '92vh', overflowY: 'auto' }}>
             <div style={styles.modalHeader}>
               <div>
-                <h3 style={styles.modalTitle}>Aperçu des pages : {previewResume.titre}</h3>
+                <h3 style={styles.modalTitle}>Aperçu : {previewResume.titre}</h3>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>
-                  {previewResume.matiere} • {previewResume.chapitre}
+                  {previewResume.matiere} • {previewResume.chapitre} {previewResume.htmlUrl ? '• Format Web HTML' : ''}
                 </span>
               </div>
-              <button onClick={() => setPreviewResume(null)} style={styles.modalClose}>&times;</button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {previewResume.htmlUrl && (
+                  <a 
+                    href={getPdfUrl(previewResume.htmlUrl)} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, textDecoration: 'none', background: '#eff6ff', padding: '6px 12px', borderRadius: '6px' }}
+                  >
+                    Plein écran ↗
+                  </a>
+                )}
+                <button onClick={() => setPreviewResume(null)} style={styles.modalClose}>&times;</button>
+              </div>
             </div>
 
-            {previewResume.pageImages && previewResume.pageImages.length > 0 ? (
+            {/* Affichage spécial HTML */}
+            {previewResume.htmlUrl || previewResume.fileType === 'HTML' ? (
+              <div style={{ background: '#f8fafc', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                <iframe
+                  src={getPdfUrl(previewResume.htmlUrl)}
+                  title={previewResume.titre}
+                  style={{
+                    width: '100%',
+                    height: '72vh',
+                    border: 'none',
+                    display: 'block',
+                    background: '#ffffff'
+                  }}
+                />
+              </div>
+            ) : previewResume.pageImages && previewResume.pageImages.length > 0 ? (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -1723,9 +1771,11 @@ export default function AdminDashboard() {
             ) : (
               <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                 <p>Aucune image de page n'est encore générée pour ce document.</p>
-                <a href={getPdfUrl(previewResume.pdfUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
-                  Consulter le fichier PDF
-                </a>
+                {previewResume.pdfUrl && (
+                  <a href={getPdfUrl(previewResume.pdfUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
+                    Consulter le fichier PDF
+                  </a>
+                )}
               </div>
             )}
 

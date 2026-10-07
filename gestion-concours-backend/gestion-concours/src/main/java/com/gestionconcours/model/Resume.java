@@ -19,6 +19,8 @@ public class Resume {
     private String chapitre;   // Ex: Calcul des limites, Suites...
     private String titre;      // Titre dyal le résumé
     private String pdfUrl;     // Lien dyal fichier PDF (pour l'admin)
+    private String htmlUrl;    // Lien dyal fichier HTML (avec MathJax, styles)
+    private String fileType;   // "HTML" ou "PDF"
 
     private Integer totalPages = 0;
 

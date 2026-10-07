@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapitre 2 : Limites et Continuité - Résumé Officiel</title>
+
+    <!-- 1. Style CSS W3Schools -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+
+    <!-- 2. Configuration & Chargement de MathJax v3 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                enableMenu: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding: 30px 15px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: #ffffff;
+            padding: 36px 30px;
+        }
+        .content {
+            padding: 32px 30px;
+        }
+        .formula-box {
+            background: #f0f7ff;
+            border-left: 5px solid #2563eb;
+            padding: 16px 20px;
+            margin: 18px 0;
+            border-radius: 0 10px 10px 0;
+            font-size: 1.05rem;
+        }
+        .theorem-box {
+            background: #fefce8;
+            border-left: 5px solid #eab308;
+            padding: 18px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .important-box {
+            background: #fef2f2;
+            border-left: 5px solid #ef4444;
+            padding: 18px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        table.custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        table.custom-table th {
+            background: #1e40af;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        table.custom-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            text-align: center;
+            background: #ffffff;
+            font-size: 1rem;
+        }
+        table.custom-table tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-math { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="header">
+            <span class="badge badge-math" style="background: rgba(255,255,255,0.2); color: #fff;">2ème BAC Sciences Maths / PC</span>
+            <h1 style="margin: 10px 0 6px; font-weight: 800; font-size: 28px;">Chapitre 2 : Limites & Continuité</h1>
+            <p style="margin: 0; opacity: 0.9; font-size: 15px;">Fiche de synthèse complète des propriétés, limites usuelles et théorèmes fondamentaux</p>
+        </div>
+
+        <div class="content">
+
+            <!-- Section 1 -->
+            <h2 class="w3-text-blue" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-weight: 700;">
+                1. Les Quatre Formes Indéterminées (F.I)
+            </h2>
+            <p>Lors du calcul direct de $\lim_{x \to a} f(x)$, si l'on rencontre l'une des formes suivantes, il faut lever l'indétermination par factorisation, quantité conjuguée ou taux de variation :</p>
+
+            <div class="important-box">
+                <div style="font-weight: 700; color: #991b1b; margin-bottom: 6px;">⚠️ Formes Indéterminées :</div>
+                <div style="text-align: center; font-size: 1.25rem;">
+                    $$ \left[ \frac{0}{0} \right], \quad \left[ \frac{\infty}{\infty} \right], \quad \left[ 0 \times \infty \right], \quad \left[ +\infty - \infty \right] $$
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <h2 class="w3-text-blue" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-weight: 700; margin-top: 36px;">
+                2. Limites Trigonométriques Remarquables en 0
+            </h2>
+            <p>Ces limites sont fondamentales pour les concours (FMP, ENSA, ENSAM, CNC) :</p>
+
+            <table class="custom-table w3-card">
+                <thead>
+                    <tr>
+                        <th>Propriété / Formule</th>
+                        <th>Valeur de la Limite</th>
+                        <th>Généralisation ($u(x) \to 0$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>$$ \lim_{x \to 0} \frac{\sin(x)}{x} $$</td>
+                        <td><strong>1</strong></td>
+                        <td>$$ \lim_{x \to x_0} \frac{\sin(u(x))}{u(x)} = 1 $$</td>
+                    </tr>
+                    <tr>
+                        <td>$$ \lim_{x \to 0} \frac{\tan(x)}{x} $$</td>
+                        <td><strong>1</strong></td>
+                        <td>$$ \lim_{x \to x_0} \frac{\tan(u(x))}{u(x)} = 1 $$</td>
+                    </tr>
+                    <tr>
+                        <td>$$ \lim_{x \to 0} \frac{1 - \cos(x)}{x^2} $$</td>
+                        <td><strong>$$ \frac{1}{2} $$</strong></td>
+                        <td>$$ \lim_{x \to x_0} \frac{1 - \cos(u(x))}{u(x)^2} = \frac{1}{2} $$</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Section 3 -->
+            <h2 class="w3-text-blue" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-weight: 700; margin-top: 36px;">
+                3. Théorème des Valeurs Intermédiaires (T.V.I)
+            </h2>
+            
+            <div class="theorem-box">
+                <h4 style="margin: 0 0 8px; font-weight: 700; color: #854d0e;">Théorème des Valeurs Intermédiaires :</h4>
+                <p style="margin: 0;">
+                    Soit $f$ une fonction <strong>continue</strong> sur un intervalle $[a, b]$.<br>
+                    Pour tout réel $k$ compris entre $f(a)$ et $f(b)$, il existe au moins un réel $c \in [a, b]$ tel que :
+                </p>
+                <div style="text-align: center; font-size: 1.2rem; margin: 10px 0;">
+                    $$ f(c) = k $$
+                </div>
+                <hr style="border-top: 1px dashed #ca8a04; margin: 10px 0;">
+                <p style="margin: 0;">
+                    <strong>Corollaire d'existence unique :</strong> Si en plus $f$ est <strong>strictement monotone</strong> sur $[a, b]$, et si $f(a) \times f(b) < 0$, alors l'équation $f(x) = 0$ admet une <strong>solution unique</strong> $\alpha$ sur $]a, b[$.
+                </p>
+            </div>
+
+            <!-- Section 4 -->
+            <h2 class="w3-text-blue" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-weight: 700; margin-top: 36px;">
+                4. Théorème d'Encadrement (Théorème des Gendarmes)
+            </h2>
+
+            <div class="formula-box">
+                Soient $f$, $g$ et $h$ trois fonctions définies sur un intervalle $I$ contenant $a$.<br>
+                Si pour tout $x \in I \setminus \{a\}$, on a :
+                $$ g(x) \le f(x) \le h(x) $$
+                Et si :
+                $$ \lim_{x \to a} g(x) = \lim_{x \to a} h(x) = L \quad (L \in \mathbb{R}) $$
+                Alors :
+                <div style="text-align: center; font-weight: 700; font-size: 1.15rem; margin-top: 6px;">
+                    $$ \lim_{x \to a} f(x) = L $$
+                </div>
+            </div>
+
+            <!-- Footer note -->
+            <div style="margin-top: 40px; padding: 16px; background: #f1f5f9; border-radius: 8px; text-align: center; font-size: 13px; color: #64748b;">
+                Plateforme de Gestion des Concours • Fiche révisée conforme au programme national marocain
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
