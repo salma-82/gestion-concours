@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/');
+  };
+
   // --- STATE DYAL LES ONGLETS (Tabs) ---
   const [activeTab, setActiveTab] = useState('concours'); // 'demandes', 'users', 'realConcours', 'resumes', 'concours'
   const [hoveredTab, setHoveredTab] = useState(null);
@@ -972,6 +980,32 @@ export default function AdminDashboard() {
               )}
             </button>
           ))}
+
+          <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+            <button
+              onClick={handleLogout}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#DC2626'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#EF4444'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 700,
+                background: '#EF4444',
+                color: '#FFFFFF',
+                transition: 'background 0.2s ease',
+                boxShadow: '0 4px 6px rgba(239, 68, 68, 0.25)',
+              }}
+            >
+              🚪 Déconnexion
+            </button>
+          </div>
         </nav>
       </aside>
 

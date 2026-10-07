@@ -14,6 +14,7 @@ import AdminResumes from './components/AdminResumes';
 import AdminConcoursBlanc from './components/ConcoursBlancManager';
 
 // Client
+import ClientLayout from './components/ClientLayout';
 import ClientDashboard from './components/ClientDashboard';
 import ClientResumes from './components/ClientResumes';
 import ClientExamens from './components/ClientExamens';
@@ -55,20 +56,20 @@ function App() {
         {/* =========================
             CLIENT
         ========================= */}
-        <Route
-          path="/client-dashboard"
-          element={<ClientDashboard />}
-        />
-
-        <Route
-          path="/client-resumes"
-          element={<ClientResumes />}
-        />
-
-        <Route
-          path="/client-examens"
-          element={<ClientExamens />}
-        />
+        <Route element={<ClientLayout />}>
+          <Route
+            path="/client-dashboard"
+            element={<ClientDashboard />}
+          />
+          <Route
+            path="/client-resumes"
+            element={<ClientResumes />}
+          />
+          <Route
+            path="/client-examens"
+            element={<ClientExamens />}
+          />
+        </Route>
 
 
 

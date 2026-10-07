@@ -30,38 +30,6 @@ export default function ClientDashboard() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', fontFamily: 'Arial, sans-serif' }}>
       
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        color: '#ffffff',
-        padding: '25px 40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
-      }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>👤 Espace Client</h1>
-          <p style={{ margin: '5px 0 0', fontSize: '14px', color: '#94a3b8' }}>Bienvenue dans votre espace candidat</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '10px 20px',
-            background: '#ef4444',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            transition: 'background 0.2s'
-          }}
-        >
-          Déconnexion
-        </button>
-      </div>
-
       {/* Content */}
       <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto' }}>
         <h2 style={{ color: '#0f172a', marginBottom: '30px', fontSize: '22px' }}>📋 Tableau de bord</h2>
