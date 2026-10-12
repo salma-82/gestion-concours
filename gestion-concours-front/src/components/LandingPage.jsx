@@ -3,14 +3,87 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import logoImg from '../assets/logo.png';
-import heroStudentsImg from '../assets/hero_students.jpg';
+import medcineImg from '../assets/MEDCINE.jpg';
+import ensaImg from '../assets/ENSA.jpg';
+import ensaMarocImg from '../assets/ENSA Maroc.png';
+import ensamImg from '../assets/ENSAM.jpg';
+import encgImg from '../assets/ENCG.jpeg';
 import './LandingPage.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Configuration du Carrousel (ajusté : cartes encore plus compactes) ─────
+const CONFIG = {
+  cardCount: 9,              // Nombre de cartes dans le carrousel
+  cycleDurationSec: 24,       // Vitesse : durée d'un cycle complet en secondes
+  maxScale: 1.05,             // Facteur de grossissement minimal pour laisser le mot bien lisible
+  minScale: 0.65,             // Échelle des cartes les plus éloignées
+  maxRotationDeg: 8,          // Angle max d'inclinaison des cartes latérales
+  verticalArchPx: 24,         // Hauteur de courbure en arche
+};
+
+const CONCOURS_CARDS_DATA = [
+  [
+    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+  ],
+  [
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  ],
+  [
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  ],
+  [
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
+  ],
+  [
+    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+  ],
+  [
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  ],
+  [
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  ],
+  [
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  ],
+  [
+    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
+    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  ],
+];
+
 export default function LandingPage({ onNavigateToAuth }) {
   const navigate = useNavigate();
   const rootRef = useRef(null);
+  const stageRef = useRef(null);
+  const cardRefs = useRef([]);
 
   const handleNav = (mode) => {
     if (onNavigateToAuth) {
@@ -21,246 +94,155 @@ export default function LandingPage({ onNavigateToAuth }) {
   };
 
   useEffect(() => {
+    // ─── Animations d'intro & scroll GSAP ─────────────────────────────────────
     const ctx = gsap.context(() => {
-      // INITIAL STATES
       gsap.set('#nav', { opacity: 0, y: -20 });
-      gsap.set('.lp-small-team .lp-word > span', { y: '105%' });
-      gsap.set('.lp-big-results .lp-letter', { y: 80, opacity: 0 });
-      gsap.set('#subline', { opacity: 0, y: 20 });
+      gsap.set('.hero-eyebrow', { opacity: 0, y: -20 });
+      gsap.set('.hero-watermark', { opacity: 0, scale: 0.95 });
+      gsap.set('.carousel-stage', { opacity: 0, y: 30 });
+      gsap.set('.hero-actions', { opacity: 0, y: 20 });
       gsap.set('.lp-f-card', { opacity: 0 });
       gsap.set('.lp-stats-inner', { opacity: 0 });
 
-      // Apply initial rotation and offscreen setup for cards
-      const cards = document.querySelectorAll('.lp-card');
-      cards.forEach((card) => {
-        const rot = parseFloat(card.dataset.rot) || 0;
-        card.dataset.restRot = rot;
-        gsap.set(card, { y: -800, rotation: rot + 25, opacity: 0, scale: 0.7 });
-      });
-
-      // INTRO TIMELINE
       const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
       intro
         .to('#nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
-        .to(
-          '.lp-small-team .lp-word > span',
-          {
-            y: '0%',
-            duration: 0.9,
-            stagger: 0.08,
-            ease: 'power3.out'
-          },
-          0.3
-        )
-        .to(
-          '.lp-big-results .lp-letter',
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.9,
-            stagger: 0.05,
-            ease: 'back.out(1.6)'
-          },
-          0.55
-        )
-        .to(
-          '.lp-card',
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            rotation: (i, el) => parseFloat(el.dataset.restRot) || 0,
-            duration: 1.1,
-            stagger: { each: 0.08, from: 'center' },
-            ease: 'back.out(1.4)'
-          },
-          0.8
-        )
-        .to('#subline', { opacity: 1, y: 0, duration: 0.8 }, 1.6);
+        .to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8 }, 0.25)
+        .to('.hero-watermark', { opacity: 0.95, scale: 1, duration: 1 }, 0.4)
+        .to('.carousel-stage', { opacity: 1, y: 0, duration: 0.9 }, 0.5)
+        .to('.hero-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.7);
 
-      // CONTINUOUS FLOAT ON CARDS
-      cards.forEach((card, i) => {
-        const rot = parseFloat(card.dataset.restRot) || 0;
-        gsap.to(card, {
-          y: `+=${8 + (i % 3) * 5}`,
-          rotation: rot + (i % 2 === 0 ? 1.5 : -1.5),
-          duration: 3 + (i % 4) * 0.5,
-          delay: 1.8 + i * 0.1,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1
-        });
-      });
-
-      // MOUSE PARALLAX
-      const hero = document.querySelector('.lp-hero');
-      if (hero) {
-        let mx = 0, my = 0, tx = 0, ty = 0;
-        const onMouseMove = (e) => {
-          const r = hero.getBoundingClientRect();
-          mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-          my = ((e.clientY - r.top) / r.height - 0.5) * 2;
-        };
-        const onMouseLeave = () => {
-          mx = 0;
-          my = 0;
-        };
-
-        hero.addEventListener('mousemove', onMouseMove);
-        hero.addEventListener('mouseleave', onMouseLeave);
-
-        let animFrame;
-        const parallax = () => {
-          tx += (mx - tx) * 0.05;
-          ty += (my - ty) * 0.05;
-          cards.forEach((card) => {
-            const d = parseFloat(card.dataset.depth) || 8;
-            card.style.transform = `translate3d(${tx * d}px, ${ty * d * 0.5}px, 0px) rotate(${card.dataset.restRot || 0}deg)`;
-          });
-          animFrame = requestAnimationFrame(parallax);
-        };
-        parallax();
-      }
-
-      // CARD HOVER 3D LIFT
-      cards.forEach((card) => {
-        card.addEventListener('mousemove', (e) => {
-          const r = card.getBoundingClientRect();
-          const px = (e.clientX - r.left) / r.width - 0.5;
-          const py = (e.clientY - r.top) / r.height - 0.5;
-          gsap.to(card, {
-            rotateX: -py * 16,
-            rotateY: px * 16,
-            scale: 1.12,
-            zIndex: 20,
-            duration: 0.4,
-            ease: 'power2.out',
-            transformPerspective: 700,
-            overwrite: 'auto'
-          });
-        });
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, {
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            zIndex: card.style.zIndex || '',
-            duration: 0.8,
-            ease: 'elastic.out(1, 0.6)',
-            overwrite: 'auto'
-          });
-        });
-      });
-
-      // SCROLL TRIGGER: CARDS FAN OUT
-      ScrollTrigger.create({
-        trigger: '.lp-hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 0.8,
-        onUpdate: (self) => {
-          const p = self.progress;
-          gsap.set('.lp-big-results', { scale: 1 + 0.15 * p, opacity: 1 - 0.4 * p });
-          gsap.set('.lp-small-team', { y: -60 * p, opacity: 1 - p * 1.5 });
-          const moves = [
-            { x: -260, y: -40, rot: -25 },
-            { x: -200, y: 20, rot: -18 },
-            { x: -120, y: 80, rot: -10 },
-            { x: -40, y: 120, rot: -4 },
-            { x: 40, y: 120, rot: 4 },
-            { x: 120, y: 80, rot: 12 },
-            { x: 200, y: 20, rot: 22 },
-            { x: 260, y: -40, rot: 28 }
-          ];
-          cards.forEach((card, i) => {
-            const m = moves[i] || { x: 0, y: 0, rot: 0 };
-            const rest = parseFloat(card.dataset.restRot) || 0;
-            gsap.set(card, {
-              x: m.x * p,
-              y: m.y * p,
-              rotation: rest + m.rot * p
-            });
-          });
-          gsap.set('#subline', { opacity: 1 - p * 2 });
-        }
-      });
-
-      // FEATURES REVEAL
       gsap.from('.lp-eyebrow, .lp-features-head h2, .lp-features-head p', {
-        opacity: 0,
-        y: 30,
-        duration: 0.9,
-        stagger: 0.1,
-        ease: 'power3.out',
+        opacity: 0, y: 30, duration: 0.9, stagger: 0.1, ease: 'power3.out',
         scrollTrigger: { trigger: '.lp-features-head', start: 'top 80%' }
       });
-
       gsap.to('.lp-f-card', {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        stagger: 0.08,
-        ease: 'power3.out',
+        opacity: 1, y: 0, duration: 1, stagger: 0.08, ease: 'power3.out',
         scrollTrigger: { trigger: '.lp-features-grid', start: 'top 80%' }
       });
-
-      // STATS REVEAL
       gsap.to('.lp-stats-inner', {
-        opacity: 1,
-        y: 0,
-        duration: 1.2,
-        ease: 'power3.out',
+        opacity: 1, y: 0, duration: 1.2, ease: 'power3.out',
         scrollTrigger: { trigger: '.lp-stats', start: 'top 80%' }
       });
-
       ScrollTrigger.create({
-        trigger: '.lp-stats',
-        start: 'top 75%',
+        trigger: '.lp-stats', start: 'top 75%',
         onEnter: () => {
           document.querySelectorAll('.lp-stat-block .lp-num').forEach((el) => {
             const target = parseFloat(el.dataset.count);
             const span = el.querySelector('span');
             if (span && !isNaN(target)) {
-              gsap.to(
-                { v: 0 },
-                {
-                  v: target,
-                  duration: 2,
-                  ease: 'power2.out',
-                  onUpdate: function () {
-                    span.textContent = Math.floor(this.targets()[0].v).toLocaleString();
-                  }
-                }
-              );
+              gsap.to({ v: 0 }, {
+                v: target, duration: 2, ease: 'power2.out',
+                onUpdate: function () { span.textContent = Math.floor(this.targets()[0].v).toLocaleString(); }
+              });
             }
           });
         },
         once: true
       });
-
-      // BIG RESULTS LETTER RISE ON HOVER
-      const bigWrap = document.querySelector('.lp-big-results-wrap');
-      if (bigWrap) {
-        bigWrap.addEventListener('mouseenter', () => {
-          gsap.to('.lp-big-results .lp-letter', {
-            y: -8,
-            duration: 0.5,
-            stagger: 0.03,
-            ease: 'back.out(1.6)'
-          });
-        });
-        bigWrap.addEventListener('mouseleave', () => {
-          gsap.to('.lp-big-results .lp-letter', {
-            y: 0,
-            duration: 0.6,
-            stagger: 0.03,
-            ease: 'elastic.out(1, 0.6)'
-          });
-        });
-      }
     }, rootRef);
 
-    return () => ctx.revert();
+    // ─── Carrousel infini continu en arche 3D (identique à hero.html) ─────────
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    let isPaused = false;
+    let currentOffset = 0;
+    let lastTimestamp = 0;
+    let animId = null;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const getCardSpacing = () => (window.innerWidth <= 768 ? 120 : 160);
+    let cardSpacing = getCardSpacing();
+    let totalTrackWidth = CONFIG.cardCount * cardSpacing;
+
+    const updateCardPositions = () => {
+      const halfTrack = totalTrackWidth / 2;
+
+      cardRefs.current.forEach((cardEl, index) => {
+        if (!cardEl) return;
+        let rawX = (index * cardSpacing) - currentOffset;
+
+        let normalizedX = ((rawX % totalTrackWidth) + totalTrackWidth) % totalTrackWidth;
+        if (normalizedX > halfTrack) {
+          normalizedX -= totalTrackWidth;
+        }
+
+        const maxDistRange = halfTrack * 0.95;
+        const normalizedDist = Math.max(-1.5, Math.min(1.5, normalizedX / maxDistRange));
+        const absDist = Math.abs(normalizedDist);
+
+        const scaleProgress = Math.max(0, 1 - Math.pow(absDist, 1.2));
+        const scale = CONFIG.minScale + (CONFIG.maxScale - CONFIG.minScale) * scaleProgress;
+
+        const rotSign = normalizedX >= 0 ? 1 : -1;
+        const rotation = (rotSign * Math.min(absDist, 1) * CONFIG.maxRotationDeg);
+
+        const translateY = Math.pow(absDist, 1.6) * CONFIG.verticalArchPx;
+        const zIndex = Math.round((1 - absDist) * 100) + 10;
+
+        let opacity = 1;
+        if (absDist > 1.1) {
+          opacity = Math.max(0, 1 - (absDist - 1.1) * 3);
+        }
+
+        cardEl.style.transform = `translate3d(${normalizedX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0px) scale(${scale.toFixed(3)}) rotate(${rotation.toFixed(2)}deg)`;
+        cardEl.style.zIndex = zIndex;
+        cardEl.style.opacity = opacity.toFixed(3);
+      });
+    };
+
+    updateCardPositions();
+
+    if (prefersReducedMotion) {
+      return () => { ctx.revert(); };
+    }
+
+    const animate = (timestamp) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const deltaTime = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      if (!isPaused && deltaTime > 0) {
+        const speedPxPerMs = totalTrackWidth / (CONFIG.cycleDurationSec * 1000);
+        currentOffset = (currentOffset + speedPxPerMs * deltaTime) % totalTrackWidth;
+        updateCardPositions();
+      }
+
+      animId = requestAnimationFrame(animate);
+    };
+
+    animId = requestAnimationFrame(animate);
+
+    const onMouseEnter = () => { isPaused = true; };
+    const onMouseLeave = () => { isPaused = false; };
+    const onTouchStart = () => { isPaused = true; };
+    const onTouchEnd = () => {
+      setTimeout(() => { isPaused = false; }, 600);
+    };
+
+    stage.addEventListener('mouseenter', onMouseEnter);
+    stage.addEventListener('mouseleave', onMouseLeave);
+    stage.addEventListener('touchstart', onTouchStart, { passive: true });
+    stage.addEventListener('touchend', onTouchEnd);
+
+    const onResize = () => {
+      cardSpacing = getCardSpacing();
+      totalTrackWidth = CONFIG.cardCount * cardSpacing;
+      updateCardPositions();
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      ctx.revert();
+      if (animId) cancelAnimationFrame(animId);
+      window.removeEventListener('resize', onResize);
+      stage.removeEventListener('mouseenter', onMouseEnter);
+      stage.removeEventListener('mouseleave', onMouseLeave);
+      stage.removeEventListener('touchstart', onTouchStart);
+      stage.removeEventListener('touchend', onTouchEnd);
+    };
   }, []);
 
   return (
@@ -268,7 +250,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..900;1,9..40,400..900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..900;1,14..32,400..900&family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap"
         rel="stylesheet"
       />
 
@@ -287,77 +269,67 @@ export default function LandingPage({ onNavigateToAuth }) {
         </ul>
         <button className="lp-nav-cta" onClick={() => handleNav('login')}>
           Se connecter
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="7" y1="17" x2="17" y2="7" />
-            <polyline points="7 7 17 7 17 17" />
-          </svg>
         </button>
       </nav>
 
-      {/* ============ HERO SECTION ============ */}
-      <section className="lp-hero">
-        <h1 className="lp-small-team" id="smallTeam">
-          <span className="lp-word"><span>Préparez</span></span>&nbsp;
-          <span className="lp-word"><span>vos</span></span>&nbsp;
-          <span className="lp-word"><span>concours,</span></span>
+      {/* ============ HERO SECTION (Exactement comme hero.html) ============ */}
+      <section className="hero-container" id="heroContainer">
+        {/* 1. Grand titre */}
+        <h1 className="hero-eyebrow">
+          Préparez vos concours,
         </h1>
 
-        <div className="lp-big-results-wrap">
-          <div className="lp-big-results" id="bigResults">
-            <span className="lp-letter">r</span>
-            <span className="lp-letter">é</span>
-            <span className="lp-letter">u</span>
-            <span className="lp-letter">s</span>
-            <span className="lp-letter">s</span>
-            <span className="lp-letter">i</span>
-            <span className="lp-letter">s</span>
-            <span className="lp-letter">s</span>
-            <span className="lp-letter">e</span>
-            <span className="lp-letter">z</span>
-          </div>
+        {/* 2. Texte géant en filigrane */}
+        <div className="hero-watermark" aria-hidden="true">
+          réussissez
         </div>
 
-        {/* Floating Cards Row */}
-        <div className="lp-cards-row" id="cardsRow">
-          <div className="lp-card lp-card-1" data-rot="-9" data-depth="14" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '0% 0%' }} alt="Étudiant" />
-          </div>
-          <div className="lp-card lp-card-2" data-rot="-5" data-depth="10" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '100% 0%' }} alt="Concours" />
-          </div>
-          <div className="lp-card lp-card-3" data-rot="-2" data-depth="8" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '0% 100%' }} alt="Études" />
-          </div>
-          <div className="lp-card lp-card-4" data-rot="3" data-depth="12" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '100% 100%' }} alt="Réussite" />
-          </div>
-          <div className="lp-card lp-card-5" data-rot="0" data-depth="6" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '50% 50%' }} alt="Econcour" />
-          </div>
-          <div className="lp-card lp-card-6" data-rot="4" data-depth="11" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '100% 0%' }} alt="Excellence" />
-          </div>
-          <div className="lp-card lp-card-7" data-rot="7" data-depth="9" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '0% 0%' }} alt="Préparation" />
-          </div>
-          <div className="lp-card lp-card-8" data-rot="-4" data-depth="13" onClick={() => handleNav('register')}>
-            <img src={heroStudentsImg} style={{ objectPosition: '100% 100%' }} alt="Lauréat" />
-          </div>
+        {/* 3. Scène du carrousel avec les cartes collage 2x2 */}
+        <div
+          className="carousel-stage"
+          ref={stageRef}
+          aria-label="Carrousel d'étudiants préparant leurs concours"
+        >
+          {Array.from({ length: CONFIG.cardCount }).map((_, cardIndex) => {
+            const cardSlots = CONCOURS_CARDS_DATA[cardIndex % CONCOURS_CARDS_DATA.length];
+            return (
+              <div
+                key={cardIndex}
+                className="student-card"
+                ref={(el) => (cardRefs.current[cardIndex] = el)}
+                onClick={() => handleNav('register')}
+              >
+                <div className="collage-grid">
+                  {cardSlots.map((item, slotIndex) => (
+                    <div key={slotIndex} className="photo-slot">
+                      <span className="badge-letter">{item.slot}</span>
+                      <img src={item.url} alt={item.desc} loading="lazy" />
+                      <span className="label-student">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="lp-subline" id="subline">
-          <button className="lp-arrow-pill" onClick={() => handleNav('register')}>
-            Commencer maintenant
-            <span className="lp-ar">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        {/* 4. Bouton CTA et sous-ligne */}
+        <div className="hero-actions">
+          <button className="btn-pill-cta" type="button" onClick={() => handleNav('register')}>
+            <span>Commencer maintenant</span>
+            <span className="arrow-circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="7" y1="17" x2="17" y2="7" />
                 <polyline points="7 7 17 7 17 17" />
               </svg>
             </span>
           </button>
-          <div className="lp-subline-text">ENSA · ENSAM · MÉDECINE · CNC · EXAMENS NATIONAUX</div>
+          <div className="hero-subline">
+            ENSA · ENSAM · MÉDECINE · CNC · EXAMENS NATIONAUX
+          </div>
         </div>
       </section>
+
 
       {/* ============ SECTION 2: FEATURES GRID ============ */}
       <section className="lp-features-section" id="fonctionnalites">

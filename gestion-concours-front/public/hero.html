@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hero Section - Econcour</title>
+
+  <!-- Google Fonts : Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..900;1,14..32,400..900&family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ========================================================
+       1. VARIABLES GLOBALES DE STYLE
+       ======================================================== */
+    :root {
+      --bg-gradient-top: #f5f9ff;
+      --bg-gradient-bottom: #eaf2ff;
+      --blue-primary: #1d4ed8;       /* Bleu bouton foncé */
+      --blue-hover: #1e40af;
+      --blue-light: #2563eb;
+      --watermark-color: #dbe8ff;    /* Couleur du grand texte "réussissez" */
+      --card-border: rgba(255, 255, 255, 0.95);
+      --card-shadow: rgba(29, 78, 216, 0.16);
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --font-main: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      width: 100%;
+      background: linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-gradient-bottom) 100%);
+      font-family: var(--font-main);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* ========================================================
+       2. CONTENEUR PRINCIPAL HERO
+       ======================================================== */
+    .hero-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    /* ========================================================
+       3. FOND DÉCORATIF : TEXTE GÉANT "RÉUSSISSEZ"
+       ======================================================== */
+    .hero-watermark {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(120px, 22vw, 320px);
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      color: var(--watermark-color);
+      opacity: 0.75;
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+      white-space: nowrap;
+      text-transform: lowercase;
+      text-shadow: 0 10px 40px rgba(191, 219, 254, 0.4);
+    }
+
+    /* Titre discret au-dessus si désiré */
+    .hero-eyebrow {
+      position: relative;
+      z-index: 4;
+      font-size: clamp(26px, 4.5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-dark);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    /* ========================================================
+       4. CARROUSEL : SCÈNE ET CARTES EN RANGÉE
+       ======================================================== */
+    .carousel-stage {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .carousel-stage:active {
+      cursor: grabbing;
+    }
+
+    /* Carte Individuelle (Format Portrait 220px x 300px) */
+    .student-card {
+      position: absolute;
+      width: 220px;
+      height: 300px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 2px solid var(--card-border);
+      box-shadow: 0 18px 36px -8px var(--card-shadow),
+                  0 4px 12px rgba(37, 99, 235, 0.08);
+      overflow: hidden;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      transition: box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .student-card:hover {
+      box-shadow: 0 26px 50px -10px rgba(29, 78, 216, 0.3),
+                  0 8px 18px rgba(37, 99, 235, 0.15);
+    }
+
+    /* ========================================================
+       5. GRILLE COLLAGE 2x2 DANS CHAQUE CARTE
+       ======================================================== */
+    .collage-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      width: 100%;
+      height: 100%;
+      gap: 3px;
+      background: #f1f5f9;
+      padding: 3px;
+    }
+
+    .photo-slot {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #e2e8f0;
+    }
+
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .student-card:hover .photo-slot img {
+      transform: scale(1.05);
+    }
+
+    /* Badge lettre (A, B, C, D) */
+    .badge-letter {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    /* Étiquette nom & âge en bas de la photo */
+    .label-student {
+      position: absolute;
+      bottom: 4px;
+      left: 6px;
+      right: 6px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);
+      z-index: 2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    /* ========================================================
+       6. BOUTON D'ACTION "COMMENCER MAINTENANT" & SOUS-LIGNE
+       ======================================================== */
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      z-index: 10;
+      margin-top: 30px;
+    }
+
+    .btn-pill-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--blue-primary);
+      color: #ffffff;
+      padding: 14px 28px 14px 32px;
+      border-radius: 999px;
+      font-family: var(--font-main);
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      box-shadow: 0 16px 32px -8px rgba(29, 78, 216, 0.45),
+                  0 6px 14px -2px rgba(29, 78, 216, 0.25);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .btn-pill-cta:hover {
+      background: var(--blue-hover);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 22px 38px -10px rgba(29, 78, 216, 0.55),
+                  0 8px 18px -2px rgba(29, 78, 216, 0.3);
+    }
+
+    .btn-pill-cta .arrow-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--blue-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-pill-cta:hover .arrow-circle {
+      transform: rotate(45deg);
+    }
+
+    .arrow-circle svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.6;
+    }
+
+    /* Sous-titre officiel en petites capitales espacées */
+    .hero-subline {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      user-select: none;
+    }
+
+    /* ========================================================
+       7. RESPONSIVE POUR TÉLÉPHONES ET PETITS ÉCRANS
+       ======================================================== */
+    @media (max-width: 768px) {
+      .hero-watermark {
+        font-size: clamp(80px, 20vw, 150px);
+        top: 15%;
+      }
+
+      .carousel-stage {
+        height: 310px;
+      }
+
+      .student-card {
+        width: 175px;
+        height: 240px;
+        border-radius: 14px;
+      }
+
+      .badge-letter {
+        width: 15px;
+        height: 15px;
+        font-size: 8.5px;
+      }
+
+      .label-student {
+        font-size: 8px;
+      }
+
+      .btn-pill-cta {
+        padding: 12px 24px 12px 28px;
+        font-size: 14px;
+      }
+
+      .hero-subline {
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        padding: 0 16px;
+      }
+    }
+
+    /* Accessibilité : désactivation de l'animation si l'utilisateur le demande */
+    @media (prefers-reduced-motion: reduce) {
+      .student-card {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================
+       HERO WRAPPER
+       ======================================================== -->
+  <main class="hero-container" id="heroContainer">
+
+    <!-- 1. TEXTE GÉANT DÉCORATIF EN ARRIÈRE-PLAN -->
+    <div class="hero-watermark" aria-hidden="true">
+      réussissez
+    </div>
+
+    <!-- 2. SCÈNE DU CARROUSEL INFINI -->
+    <div class="carousel-stage" id="carouselStage" aria-label="Carrousel d'étudiants préparant leurs concours">
+      <!-- Les cartes sont générées et positionnées dynamiquement par le script -->
+    </div>
+
+    <!-- 3. BOUTON PILLULE & ACCRÉDITATIONS -->
+    <div class="hero-actions">
+      <button class="btn-pill-cta" id="ctaBtn" type="button">
+        <span>Commencer maintenant</span>
+        <span class="arrow-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </span>
+      </button>
+
+      <div class="hero-subline">
+        ENSA · ENSAM · MÉDECINE · CNC · EXAMENS NATIONAUX
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================
+       8. JAVASCRIPT : ANIMATION INFINIE EN BOUCLE CONTINUE
+       ======================================================== -->
+  <script>
+    /**
+     * CONFIGURATION PRINCIPALE (MODIFIABLE FACILEMENT)
+     */
+    const CONFIG = {
+      cardCount: 9,              // Nombre de cartes dans le carrousel (7 à 9)
+      cycleDurationSec: 24,       // Vitesse : durée d'un cycle complet en secondes (20-30s)
+      maxScale: 1.25,             // Facteur de grossissement de la carte centrale
+      minScale: 0.72,             // Échelle des cartes les plus éloignées
+      maxRotationDeg: 12,         // Angle max d'inclinaison des cartes latérales
+      verticalArchPx: 38,         // Hauteur de courbure en arche
+    };
+
+    /**
+     * LISTE DES 4 PHOTOS D'ÉTUDIANTS
+     * Remplacez simplement les URLs par vos fichiers locaux :
+     * "images/etudiant1.jpg", "images/etudiant2.jpg", etc.
+     */
+    const STUDENT_IMAGES = [
+      {
+        slot: 'A',
+        name: 'Amina (20)',
+        desc: 'Fille à l’ordinateur en bibliothèque',
+        url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        slot: 'B',
+        name: 'Sarah (21)',
+        desc: 'Étudiante qui écrit sur une feuille',
+        url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        slot: 'C',
+        name: 'Groupe (20)',
+        desc: 'Groupe qui révise ensemble',
+        url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80'
+      },
+      {
+        slot: 'D',
+        name: 'Youssef (22)',
+        desc: 'Étudiant diplômé avec toge bleue',
+        url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80'
+      }
+    ];
+
+    /**
+     * VARIATION DE NOMS POUR RENDRE CHAQUE CARTE UNIQUE
+     */
+    const STUDENT_NAMES_PRESETS = [
+      ['Amina (20)', 'Sarah (21)', 'Équipe (20)', 'Youssef (22)'],
+      ['Salma (19)', 'Mehdi (21)', 'Groupe (20)', 'Anas (22)'],
+      ['Hiba (20)', 'Omar (22)', 'Révision (21)', 'Hamza (23)'],
+      ['Kenza (19)', 'Zineb (20)', 'Atelier (21)', 'Taha (22)'],
+      ['Nour (20)', 'Ayoub (21)', 'Binôme (20)', 'Karim (23)'],
+      ['Lina (19)', 'Ismail (22)', 'Classe (21)', 'Reda (22)'],
+      ['Rania (20)', 'Adam (21)', 'Projet (20)', 'Walid (23)'],
+      ['Rim (19)', 'Saad (22)', 'Étude (20)', 'Amine (22)'],
+      ['Malak (20)', 'Sami (21)', 'Groupe (21)', 'Driss (23)']
+    ];
+
+    // Éléments du DOM
+    const stage = document.getElementById('carouselStage');
+    const heroContainer = document.getElementById('heroContainer');
+
+    // État de l'animation
+    let cardsElements = [];
+    let isPaused = false;
+    let currentOffset = 0;       // Décalage continu en pixels
+    let lastTimestamp = 0;
+    let cardSpacing = 240;       // Espacement horizontal entre les centres des cartes
+    let totalTrackWidth = 0;
+
+    // Détection de la préférence "réduction des mouvements"
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /**
+     * 1. CRÉATION DU HTML DU COLLAGE 2x2 POUR CHAQUE CARTE
+     */
+    function createCardElement(cardIndex) {
+      const card = document.createElement('div');
+      card.className = 'student-card';
+      card.setAttribute('data-index', cardIndex);
+
+      const names = STUDENT_NAMES_PRESETS[cardIndex % STUDENT_NAMES_PRESETS.length];
+
+      const collageGrid = document.createElement('div');
+      collageGrid.className = 'collage-grid';
+
+      STUDENT_IMAGES.forEach((item, slotIndex) => {
+        const slot = document.createElement('div');
+        slot.className = 'photo-slot';
+
+        // Badge A, B, C, D
+        const badge = document.createElement('span');
+        badge.className = 'badge-letter';
+        badge.textContent = item.slot;
+
+        // Photo
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.alt = item.desc;
+        img.loading = 'lazy';
+
+        // Nom et âge
+        const label = document.createElement('span');
+        label.className = 'label-student';
+        label.textContent = names[slotIndex] || item.name;
+
+        slot.appendChild(badge);
+        slot.appendChild(img);
+        slot.appendChild(label);
+        collageGrid.appendChild(slot);
+      });
+
+      card.appendChild(collageGrid);
+      return card;
+    }
+
+    /**
+     * 2. INITIALISATION DU CARROUSEL
+     */
+    function initCarousel() {
+      stage.innerHTML = '';
+      cardsElements = [];
+
+      // Adapter l'espacement pour mobile
+      const isMobile = window.innerWidth <= 768;
+      cardSpacing = isMobile ? 180 : 250;
+      totalTrackWidth = CONFIG.cardCount * cardSpacing;
+
+      for (let i = 0; i < CONFIG.cardCount; i++) {
+        const cardEl = createCardElement(i);
+        stage.appendChild(cardEl);
+        cardsElements.push({
+          el: cardEl,
+          baseIndex: i
+        });
+      }
+
+      updateCardPositions();
+    }
+
+    /**
+     * 3. CALCUL MATHÉMATIQUE SANS SAUT POUR LE POSITIONNEMENT ET LE STYLE
+     */
+    function updateCardPositions() {
+      const stageCenterX = stage.clientWidth / 2;
+      const halfTrack = totalTrackWidth / 2;
+
+      cardsElements.forEach((item) => {
+        // Position brute sur la piste
+        let rawX = (item.baseIndex * cardSpacing) - currentOffset;
+
+        // Formule de wrapping modulo pour une boucle infinie continue et sans coupure
+        let normalizedX = ((rawX % totalTrackWidth) + totalTrackWidth) % totalTrackWidth;
+        if (normalizedX > halfTrack) {
+          normalizedX -= totalTrackWidth;
+        }
+
+        // Distance relative au centre : d = 0 au centre, -1 à gauche, +1 à droite
+        const maxDistRange = halfTrack * 0.95;
+        const normalizedDist = Math.max(-1.5, Math.min(1.5, normalizedX / maxDistRange));
+        const absDist = Math.abs(normalizedDist);
+
+        // 1. Échelle : maximum au centre (1.25), décroissant vers les extrémités
+        const scaleProgress = Math.max(0, 1 - Math.pow(absDist, 1.2));
+        const scale = CONFIG.minScale + (CONFIG.maxScale - CONFIG.minScale) * scaleProgress;
+
+        // 2. Rotation : 0° au centre, inclinée vers l'extérieur (alternée selon le côté)
+        const rotSign = normalizedX >= 0 ? 1 : -1;
+        const rotation = (rotSign * Math.min(absDist, 1) * CONFIG.maxRotationDeg);
+
+        // 3. Décalage vertical en arche : les cartes latérales descendent légèrement
+        const translateY = Math.pow(absDist, 1.6) * CONFIG.verticalArchPx;
+
+        // 4. Z-Index : la carte centrale passe toujours devant
+        const zIndex = Math.round((1 - absDist) * 100) + 10;
+
+        // 5. Opacité progressive aux bords pour une disparition élégante
+        let opacity = 1;
+        if (absDist > 1.1) {
+          opacity = Math.max(0, 1 - (absDist - 1.1) * 3);
+        }
+
+        // Application de la transformation 3D
+        item.el.style.transform = `translate3d(${normalizedX}px, ${translateY}px, 0px) scale(${scale}) rotate(${rotation}deg)`;
+        item.el.style.zIndex = zIndex;
+        item.el.style.opacity = opacity;
+      });
+    }
+
+    /**
+     * 4. BOUCLE D'ANIMATION FLUIDE (requestAnimationFrame)
+     */
+    function animate(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const deltaTime = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      if (!isPaused && !prefersReducedMotion) {
+        // Vitesse calculée en pixels par milliseconde
+        const speedPxPerMs = totalTrackWidth / (CONFIG.cycleDurationSec * 1000);
+        currentOffset += speedPxPerMs * deltaTime;
+
+        // Garder currentOffset dans les bornes du modulo pour éviter tout dépassement
+        currentOffset = currentOffset % totalTrackWidth;
+
+        updateCardPositions();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    /**
+     * 5. GESTION DES INTERACTIONS : PAUSE AU SURVOL ET TOUCHER
+     */
+    function setupInteractions() {
+      // Pause au survol souris
+      stage.addEventListener('mouseenter', () => { isPaused = true; });
+      stage.addEventListener('mouseleave', () => { isPaused = false; });
+
+      // Pause au toucher (Mobile)
+      stage.addEventListener('touchstart', () => { isPaused = true; }, { passive: true });
+      stage.addEventListener('touchend', () => {
+        // Reprise douce après un court délai
+        setTimeout(() => { isPaused = false; }, 600);
+      });
+
+      // Redimensionnement de fenêtre avec réajustement propre
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const isMobile = window.innerWidth <= 768;
+          cardSpacing = isMobile ? 180 : 250;
+          totalTrackWidth = CONFIG.cardCount * cardSpacing;
+          updateCardPositions();
+        }, 150);
+      });
+
+      // Clic sur le bouton CTA
+      const ctaBtn = document.getElementById('ctaBtn');
+      if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => {
+          window.location.href = '/register';
+        });
+      }
+    }
+
+    // Démarrage
+    window.addEventListener('DOMContentLoaded', () => {
+      initCarousel();
+      setupInteractions();
+      requestAnimationFrame(animate);
+    });
+  </script>
+
+</body>
+</html>
