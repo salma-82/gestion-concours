@@ -38,6 +38,7 @@ public class AdminController {
         User newUser = User.builder()
                 .nom(demande.getUsername())
                 .email(demande.getEmail())
+                .telephone(demande.getTelephone())
                 .motDePasse(demande.getPassword()) // Déjà crypté
                 .role("CLIENT")
                 .active(1)

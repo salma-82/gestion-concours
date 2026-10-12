@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Styles
 import 'katex/dist/katex.min.css';
 
-// Authentication
+// Entry Point & Authentication
+import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
 
@@ -18,6 +19,7 @@ import ClientLayout from './components/ClientLayout';
 import ClientDashboard from './components/ClientDashboard';
 import ClientResumes from './components/ClientResumes';
 import ClientExamens from './components/ClientExamens';
+import ClientConcoursBlanc from './components/ClientConcoursBlanc';
 
 // PDF → HTML
 import PdfToHtml from './components/PdfToHtml';
@@ -28,9 +30,10 @@ function App() {
       <Routes>
 
         {/* =========================
-            AUTHENTIFICATION
+            ACCUEIL & AUTHENTIFICATION
         ========================= */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
 
@@ -68,6 +71,10 @@ function App() {
           <Route
             path="/client-examens"
             element={<ClientExamens />}
+          />
+          <Route
+            path="/client-concours"
+            element={<ClientConcoursBlanc />}
           />
         </Route>
 

@@ -6,6 +6,7 @@ public class InscriptionRequest {
     
     private String username;
     private String email;
+    private String telephone;
     private String password;
     private String role; // Optionnel (ila bġiti t-khlli l-client y-khtar wla y-kon default "CLIENT")
 
@@ -24,6 +25,14 @@ public class InscriptionRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public String getPassword() {

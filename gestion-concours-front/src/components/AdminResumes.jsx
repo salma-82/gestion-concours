@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import logoImg from '../assets/logo.png';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('demandes'); // 'demandes' wla 'concours'
@@ -71,7 +72,9 @@ export default function AdminDashboard() {
   return (
     <div style={{ padding: '30px', fontFamily: 'Arial', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Admin Dashboard - Gestion Concours</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src={logoImg} alt="Econcour Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+        </div>
         <button onClick={handleLogout} style={{ padding: '8px 15px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Déconnexion
         </button>

@@ -16,6 +16,7 @@ public class InscriptionRequest {
     
     private String username;
     private String email;
+    private String telephone;
     private String password; // Khas y-kon encrypted (BCrypt)
     private String role = "CLIENT";
     

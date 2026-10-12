@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import logoImg from '../assets/logo.png';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -73,15 +74,37 @@ export default function AdminDashboard() {
   const [searchConTitre, setSearchConTitre] = useState('');
   const [selectedConMatiere, setSelectedConMatiere] = useState('');
   const [selectedConChapitre, setSelectedConChapitre] = useState('');
+  const [selectedConEcole, setSelectedConEcole] = useState('');
+  const [selectedConAnnee, setSelectedConAnnee] = useState('');
   const [conMatieresList, setConMatieresList] = useState([]);
   const [conChapitresList, setConChapitresList] = useState([]);
+  const [conEcolesList, setConEcolesList] = useState([]);
+  const [conAnneesList, setConAnneesList] = useState([]);
 
   const [isConcoursModalOpen, setIsConcoursModalOpen] = useState(false);
   const [conTitre, setConTitre] = useState('');
+  const [conEcole, setConEcole] = useState('');
   const [conMatiere, setConMatiere] = useState('');
   const [conChapitre, setConChapitre] = useState('');
+  const [conAnnee, setConAnnee] = useState('');
   const [conFile, setConFile] = useState(null);
+  const [conHtmlFile, setConHtmlFile] = useState(null);
   const [loadingCon, setLoadingCon] = useState(false);
+
+  // States pour l'ajout direct de fichier HTML et Aperçu HTML Concours Blanc
+  const [uploadHtmlModalOpen, setUploadHtmlModalOpen] = useState(false);
+  const [concoursForHtml, setConcoursForHtml] = useState(null);
+  const [standaloneHtmlFile, setStandaloneHtmlFile] = useState(null);
+  const [uploadingHtml, setUploadingHtml] = useState(false);
+  const [previewConcoursHtml, setPreviewConcoursHtml] = useState(null);
+
+  // States pour la gestion QCM (Admin)
+  const [qcmModalOpen, setQcmModalOpen] = useState(false);
+  const [qcmCurrentConcours, setQcmCurrentConcours] = useState(null);
+  const [qcmQuestions, setQcmQuestions] = useState([]);
+  const [qcmLoading, setQcmLoading] = useState(false);
+  const [qcmSaving, setQcmSaving] = useState(false);
+  const [qcmStats, setQcmStats] = useState({});
 
   // ==================== STATES DYAL EXAMENS NATIONAUX ====================
   const [examensList, setExamensList] = useState([]);
@@ -159,6 +182,18 @@ export default function AdminDashboard() {
       setFilteredConcours(data);
       setConMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
       setConChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
+      setConEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
+      setConAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
+
+      // Charger les stats QCM pour chaque concours blanc
+      const statsMap = {};
+      await Promise.all(data.map(async (cb) => {
+        try {
+          const sRes = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}/stats`, { withCredentials: true });
+          statsMap[cb.id] = sRes.data;
+        } catch (sErr) {}
+      }));
+      setQcmStats(statsMap);
     } catch (err) { console.error("Erreur concours:", err); }
   };
 
@@ -297,8 +332,10 @@ export default function AdminDashboard() {
     if (searchConTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchConTitre.toLowerCase()));
     if (selectedConMatiere) result = result.filter(item => item.matiere === selectedConMatiere);
     if (selectedConChapitre) result = result.filter(item => item.chapitre === selectedConChapitre);
+    if (selectedConEcole) result = result.filter(item => item.ecole === selectedConEcole);
+    if (selectedConAnnee) result = result.filter(item => String(item.annee) === String(selectedConAnnee));
     setFilteredConcours(result);
-  }, [searchConTitre, selectedConMatiere, selectedConChapitre, concoursList]);
+  }, [searchConTitre, selectedConMatiere, selectedConChapitre, selectedConEcole, selectedConAnnee, concoursList]);
 
   // --- FILTRES EXAMENS NATIONAUX (PAR MATIERE ET ANNEE) ---
   useEffect(() => {
@@ -347,28 +384,65 @@ export default function AdminDashboard() {
   };
 
 
-  // --- SUBMIT CONCOURS BLANC ---
+  // --- SUBMIT CONCOURS BLANC (HTML UNIQUEMENT) ---
   const handleConcoursSubmit = async (e) => {
     e.preventDefault();
+    if (!conHtmlFile) {
+      alert("Veuillez sélectionner un fichier HTML.");
+      return;
+    }
     setLoadingCon(true);
     const formData = new FormData();
     formData.append('titre', conTitre);
+    if (conEcole) formData.append('ecole', conEcole);
     formData.append('matiere', conMatiere);
-    formData.append('chapitre', conChapitre);
-    formData.append('file', conFile);
+    if (conChapitre) formData.append('chapitre', conChapitre);
+    if (conAnnee) formData.append('annee', conAnnee);
+    formData.append('publie', 'true');
+    formData.append('htmlFile', conHtmlFile);
+    formData.append('file', conHtmlFile);
 
     try {
       await axios.post('http://localhost:8081/api/concours-blancs', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
-      alert('Concours Blanc ajouté avec succès !');
+      alert('Concours Blanc HTML ajouté avec succès ! 🎉');
       setIsConcoursModalOpen(false);
       fetchConcours();
-      setConTitre(''); setConMatiere(''); setConChapitre(''); setConFile(null);
+      setConTitre(''); setConEcole(''); setConMatiere(''); setConChapitre(''); setConAnnee(''); setConFile(null); setConHtmlFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du concours blanc !");
     } finally { setLoadingCon(false); }
+  };
+
+  // --- UPLOAD HTML DIRECT POUR CONCOURS BLANC EXISTANT ---
+  const handleUploadHtmlConcoursSubmit = async (e) => {
+    e.preventDefault();
+    if (!concoursForHtml || !standaloneHtmlFile) {
+      alert("Veuillez sélectionner un fichier HTML.");
+      return;
+    }
+    setUploadingHtml(true);
+    const formData = new FormData();
+    formData.append('file', standaloneHtmlFile);
+
+    try {
+      await axios.post(`http://localhost:8081/api/concours-blancs/${concoursForHtml.id}/upload-html`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      alert('Fichier HTML ajouté avec succès au concours blanc ! 🎉');
+      setUploadHtmlModalOpen(false);
+      setConcoursForHtml(null);
+      setStandaloneHtmlFile(null);
+      fetchConcours();
+    } catch (err) {
+      console.error("Erreur upload HTML concours:", err);
+      alert("Erreur lors du téléversement du fichier HTML.");
+    } finally {
+      setUploadingHtml(false);
+    }
   };
 
   const handleDeleteConcoursBlanc = async (id) => {
@@ -379,6 +453,64 @@ export default function AdminDashboard() {
       fetchConcours();
     } catch (err) {
       alert("Erreur lors de la suppression du concours blanc !");
+    }
+  };
+
+  // --- GESTION DU QCM (ADMIN) ---
+  const handleOpenQcmManager = async (cb) => {
+    setQcmCurrentConcours(cb);
+    setQcmModalOpen(true);
+    setQcmLoading(true);
+    try {
+      const res = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}`, { withCredentials: true });
+      setQcmQuestions(res.data.questions || []);
+    } catch (err) {
+      console.error("Erreur chargement questions QCM:", err);
+      alert("Erreur lors du chargement des questions QCM.");
+    } finally {
+      setQcmLoading(false);
+    }
+  };
+
+  const handleForceExtractQcm = async () => {
+    if (!qcmCurrentConcours) return;
+    if (!window.confirm("Voulez-vous relancer l'extraction automatique des questions depuis le PDF ? Cela mettra à jour la liste des questions.")) return;
+    setQcmLoading(true);
+    try {
+      const res = await axios.post(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/extract`, {}, { withCredentials: true });
+      alert(res.data.message || "Extraction terminée !");
+      const qRes = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}`, { withCredentials: true });
+      setQcmQuestions(qRes.data.questions || []);
+      fetchConcours();
+    } catch (err) {
+      console.error("Erreur extraction QCM:", err);
+      alert("Erreur lors de l'extraction : " + (err.response?.data || err.message));
+    } finally {
+      setQcmLoading(false);
+    }
+  };
+
+  const handleQuestionChange = (qId, field, value) => {
+    setQcmQuestions(prev => prev.map(q => q.id === qId ? { ...q, [field]: value } : q));
+  };
+
+  const handleSaveQcmCorrections = async () => {
+    if (!qcmCurrentConcours) return;
+    setQcmSaving(true);
+    try {
+      const payload = qcmQuestions.map(q => ({
+        questionId: String(q.id),
+        correctChoiceLabel: q.correctChoiceLabel || '',
+        explanation: q.explanation || ''
+      }));
+      await axios.put(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/corrections-batch`, payload, { withCredentials: true });
+      alert("Toutes les corrections et explications ont été enregistrées avec succès ! ✅");
+      fetchConcours();
+    } catch (err) {
+      console.error("Erreur sauvegarde corrections:", err);
+      alert("Erreur lors de la sauvegarde : " + (err.response?.data || err.message));
+    } finally {
+      setQcmSaving(false);
     }
   };
 
@@ -956,10 +1088,10 @@ export default function AdminDashboard() {
       {/* ======================== SIDEBAR ======================== */}
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
-          <h1 style={styles.sidebarTitle}>
-            Admin<span style={styles.sidebarTitleAccent}>Panel</span>
-          </h1>
-          <p style={styles.sidebarSubtitle}>Tableau de Bord</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+            <img src={logoImg} alt="Econcour Logo" style={{ height: '50px', width: 'auto', objectFit: 'contain', filter: 'brightness(1.1)' }} />
+          </div>
+          <p style={{ ...styles.sidebarSubtitle, textAlign: 'center' }}>Tableau de Bord Admin</p>
         </div>
 
         <nav style={styles.sidebarNav}>
@@ -1022,6 +1154,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>ID</th>
                   <th style={styles.th}>Nom d'utilisateur</th>
                   <th style={styles.th}>Email</th>
+                  <th style={styles.th}>Téléphone</th>
                   <th style={styles.thCenter}>Actions</th>
                 </tr>
               </thead>
@@ -1032,6 +1165,7 @@ export default function AdminDashboard() {
                       <td style={styles.tdBold}>{item.id}</td>
                       <td style={styles.tdBold}>{item.username}</td>
                       <td style={styles.td}>{item.email}</td>
+                      <td style={styles.td}>{item.telephone || '-'}</td>
                       <td style={styles.tdCenter}>
                         <button style={styles.btnGreen} onClick={() => handleAccepter(item.id)}>
                           ✓ Accepter
@@ -1043,7 +1177,7 @@ export default function AdminDashboard() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="4" style={styles.emptyRow}>Aucune demande d'inscription en attente.</td></tr>
+                  <tr><td colSpan="5" style={styles.emptyRow}>Aucune demande d'inscription en attente.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1097,6 +1231,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>ID</th>
                   <th style={styles.th}>Utilisateur</th>
                   <th style={styles.th}>Email</th>
+                  <th style={styles.th}>Téléphone</th>
                   <th style={styles.th}>Rôle</th>
                   <th style={styles.th}>Statut</th>
                   <th style={styles.th}>Création</th>
@@ -1116,6 +1251,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td style={styles.td}>{item.email}</td>
+                      <td style={styles.td}>{item.telephone || '-'}</td>
                       <td style={styles.td}>
                         <span style={styles.tagRole(item.role)}>{item.role || 'CLIENT'}</span>
                       </td>
@@ -1126,7 +1262,7 @@ export default function AdminDashboard() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun utilisateur trouvé.</td></tr>
+                  <tr><td colSpan="7" style={styles.emptyRow}>Aucun utilisateur trouvé.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1569,6 +1705,13 @@ export default function AdminDashboard() {
                 <input type="text" placeholder="Titre du concours..." value={searchConTitre} onChange={(e) => setSearchConTitre(e.target.value)} style={styles.input} />
               </div>
               <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>École</label>
+                <select value={selectedConEcole} onChange={(e) => setSelectedConEcole(e.target.value)} style={styles.select}>
+                  <option value="">Toutes les écoles</option>
+                  {conEcolesList.map((ecole, idx) => <option key={idx} value={ecole}>{ecole}</option>)}
+                </select>
+              </div>
+              <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Matière</label>
                 <select value={selectedConMatiere} onChange={(e) => setSelectedConMatiere(e.target.value)} style={styles.select}>
                   <option value="">Toutes les matières</option>
@@ -1576,14 +1719,14 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Chapitre</label>
-                <select value={selectedConChapitre} onChange={(e) => setSelectedConChapitre(e.target.value)} style={styles.select}>
-                  <option value="">Tous les chapitres</option>
-                  {conChapitresList.map((chap, idx) => <option key={idx} value={chap}>{chap}</option>)}
+                <label style={styles.filterLabel}>Année</label>
+                <select value={selectedConAnnee} onChange={(e) => setSelectedConAnnee(e.target.value)} style={styles.select}>
+                  <option value="">Toutes les années</option>
+                  {conAnneesList.map((ann, idx) => <option key={idx} value={ann}>{ann}</option>)}
                 </select>
               </div>
-              {(searchConTitre || selectedConMatiere || selectedConChapitre) && (
-                <button onClick={() => { setSearchConTitre(''); setSelectedConMatiere(''); setSelectedConChapitre(''); }} style={styles.btnReset}>
+              {(searchConTitre || selectedConMatiere || selectedConChapitre || selectedConEcole || selectedConAnnee) && (
+                <button onClick={() => { setSearchConTitre(''); setSelectedConMatiere(''); setSelectedConChapitre(''); setSelectedConEcole(''); setSelectedConAnnee(''); }} style={styles.btnReset}>
                   Réinitialiser
                 </button>
               )}
@@ -1595,32 +1738,88 @@ export default function AdminDashboard() {
                   <th style={styles.th}>Titre</th>
                   <th style={styles.th}>Matière</th>
                   <th style={styles.th}>Chapitre</th>
-                  <th style={styles.th}>PDF</th>
+                  <th style={styles.th}>Format</th>
+                  <th style={styles.th}>Fichier HTML</th>
                   <th style={styles.thCenter}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredConcours.length > 0 ? (
-                  filteredConcours.map((item) => (
-                    <tr key={item.id}>
-                      <td style={styles.tdBold}>{item.titre}</td>
-                      <td style={styles.td}><span style={styles.tagEcole}>{item.matiere}</span></td>
-                      <td style={styles.td}>{item.chapitre}</td>
-                      <td style={styles.td}>
-                        <a href={getPdfUrl(item.pdfUrl || item.pdf_url)} target="_blank" rel="noreferrer" style={styles.linkBlue}>📄 Télécharger</a>
-                      </td>
-                      <td style={styles.tdCenter}>
-                        <button
-                          onClick={() => handleDeleteConcoursBlanc(item.id)}
-                          style={styles.btnRedOutline}
-                        >
-                          Supprimer
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredConcours.map((item) => {
+                    return (
+                      <tr key={item.id}>
+                        <td style={styles.tdBold}>{item.titre}</td>
+                        <td style={styles.td}><span style={styles.tagMatiere}>{item.matiere}</span></td>
+                        <td style={styles.td}>{item.chapitre || '-'}</td>
+                        <td style={styles.td}>
+                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                            🌐 HTML Web
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          {item.htmlUrl ? (
+                            <button
+                              onClick={() => setPreviewConcoursHtml(item)}
+                              style={{ ...styles.linkBlue, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontWeight: 600, color: '#16a34a' }}
+                            >
+                              🌐 Ouvrir HTML
+                            </button>
+                          ) : (
+                            <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Aucun fichier</span>
+                          )}
+                        </td>
+                        <td style={styles.tdCenter}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {item.htmlUrl && (
+                              <button
+                                onClick={() => setPreviewConcoursHtml(item)}
+                                style={{
+                                  background: '#6366f1',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  padding: '7px 12px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                                title="Aperçu du document HTML"
+                              >
+                                👁️ Aperçu
+                              </button>
+                            )}
+                            <button
+                              onClick={() => { setConcoursForHtml(item); setUploadHtmlModalOpen(true); }}
+                              style={{
+                                background: '#10b981',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '7px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Remplacer le fichier HTML"
+                            >
+                              🌐 Modifier HTML
+                            </button>
+                            <button
+                              onClick={() => handleDeleteConcoursBlanc(item.id)}
+                              style={styles.btnRedOutline}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
-                  <tr><td colSpan="5" style={styles.emptyRow}>Aucun concours blanc trouvé.</td></tr>
+                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun concours blanc trouvé.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1830,28 +2029,411 @@ export default function AdminDashboard() {
             </div>
             <form onSubmit={handleConcoursSubmit}>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Titre</label>
-                <input type="text" placeholder="Titre" value={conTitre} onChange={(e) => setConTitre(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Titre du concours</label>
+                <input type="text" placeholder="Ex: Concours Blanc ENSA 2024" value={conTitre} onChange={(e) => setConTitre(e.target.value)} required style={styles.formInput} />
               </div>
+
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Matière</label>
-                <input type="text" placeholder="Matière" value={conMatiere} onChange={(e) => setConMatiere(e.target.value)} required style={styles.formInput} />
+                <input type="text" placeholder="Ex: Mathématiques, Physique" value={conMatiere} onChange={(e) => setConMatiere(e.target.value)} required style={styles.formInput} />
               </div>
+
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre</label>
-                <input type="text" placeholder="Chapitre" value={conChapitre} onChange={(e) => setConChapitre(e.target.value)} required style={styles.formInput} />
+                <input type="text" placeholder="Ex: Analyse, Algèbre, Probabilités" value={conChapitre} onChange={(e) => setConChapitre(e.target.value)} required style={styles.formInput} />
               </div>
+
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Fichier PDF</label>
-                <input type="file" accept="application/pdf" onChange={(e) => setConFile(e.target.files[0])} required style={styles.formFile} />
+                <label style={styles.formLabel}>Fichier HTML du Concours Blanc *</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setConHtmlFile(e.target.files[0])} 
+                  required 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  💡 Fichier HTML complet (QCM interactif, styles, timer et corrigé).
+                </small>
               </div>
+
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsConcoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingCon} style={{ ...styles.btnSubmit, opacity: loadingCon ? 0.7 : 1 }}>
-                  {loadingCon ? 'Enregistrement...' : 'Enregistrer'}
+                  {loadingCon ? 'Enregistrement en cours...' : 'Enregistrer le Concours Blanc'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Upload Fichier HTML pour Concours Blanc Existant */}
+      {uploadHtmlModalOpen && concoursForHtml && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '480px' }}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Ajouter un Fichier HTML</h3>
+              <button onClick={() => { setUploadHtmlModalOpen(false); setConcoursForHtml(null); }} style={styles.modalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleUploadHtmlConcoursSubmit}>
+              <div style={{ padding: '12px', background: '#eff6ff', borderRadius: '8px', fontSize: '12px', color: '#1e40af', marginBottom: '14px' }}>
+                <strong>Concours :</strong> {concoursForHtml.titre} ({concoursForHtml.matiere})
+                {concoursForHtml.htmlUrl && (
+                  <div style={{ marginTop: '4px', color: '#15803d', fontWeight: 600 }}>
+                    ✓ Un fichier HTML existe déjà. Téléverser un nouveau fichier le remplacera.
+                  </div>
+                )}
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Sélectionner le fichier HTML</label>
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setStandaloneHtmlFile(e.target.files[0])}
+                  required
+                  style={styles.formFile}
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  Formats acceptés : .html, .htm (avec MathJax, styles CSS, scripts...).
+                </small>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={() => { setUploadHtmlModalOpen(false); setConcoursForHtml(null); }} style={styles.btnCancel}>Annuler</button>
+                <button type="submit" disabled={uploadingHtml} style={{ ...styles.btnSubmit, background: '#10b981', opacity: uploadingHtml ? 0.7 : 1 }}>
+                  {uploadingHtml ? 'Téléversement...' : 'Téléverser le HTML'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Aperçu Fichier HTML Concours Blanc */}
+      {previewConcoursHtml && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '1100px', maxHeight: '92vh', overflowY: 'auto' }}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>🌐 {previewConcoursHtml.titre}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  {previewConcoursHtml.matiere} {previewConcoursHtml.ecole ? `• ${previewConcoursHtml.ecole}` : ''} {previewConcoursHtml.annee ? `(${previewConcoursHtml.annee})` : ''} • Version Web HTML
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a
+                  href={getPdfUrl(previewConcoursHtml.htmlUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, textDecoration: 'none', background: '#eff6ff', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  Plein écran ↗
+                </a>
+                <button onClick={() => setPreviewConcoursHtml(null)} style={styles.modalClose}>&times;</button>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+              <iframe
+                src={getPdfUrl(previewConcoursHtml.htmlUrl)}
+                title={previewConcoursHtml.titre}
+                style={{
+                  width: '100%',
+                  height: '74vh',
+                  border: 'none',
+                  display: 'block',
+                  background: '#ffffff'
+                }}
+              />
+            </div>
+
+            <div style={{ ...styles.modalFooter, marginTop: '16px' }}>
+              <button onClick={() => setPreviewConcoursHtml(null)} style={styles.btnCancel}>Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Gestion du QCM et Corrections (Admin) */}
+      {qcmModalOpen && qcmCurrentConcours && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '920px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ ...styles.modalHeader, alignItems: 'flex-start' }}>
+              <div>
+                <h3 style={styles.modalTitle}>🎯 Gestion du QCM & Corrigés</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                  <strong>{qcmCurrentConcours.titre}</strong>
+                  {qcmCurrentConcours.ecole ? ` • ${qcmCurrentConcours.ecole}` : ''}
+                  {` • ${qcmCurrentConcours.matiere}`}
+                  {qcmCurrentConcours.annee ? ` (${qcmCurrentConcours.annee})` : ''}
+                  {` — ${qcmQuestions.length} question(s) détectée(s)`}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleForceExtractQcm}
+                  disabled={qcmLoading}
+                  style={{
+                    background: '#f8fafc',
+                    color: '#2563eb',
+                    border: '1px solid #bfdbfe',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Relancer l'extraction automatique depuis le fichier PDF"
+                >
+                  🔄 Ré-extraire PDF
+                </button>
+                <button onClick={() => setQcmModalOpen(false)} style={styles.modalClose}>&times;</button>
+              </div>
+            </div>
+
+            {qcmLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
+                <p style={{ fontSize: '14px', fontWeight: 600 }}>Chargement et analyse des questions QCM...</p>
+              </div>
+            ) : qcmQuestions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f8fafc', borderRadius: '10px', margin: '16px 0', border: '1px dashed #cbd5e1' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>📄</div>
+                <h4 style={{ margin: '0 0 8px', fontSize: '16px', color: '#1e293b' }}>Aucune question QCM détectée</h4>
+                <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  Le PDF ne semble pas contenir de questions au format QCM standard reconnu automatiquement (Q1, Question 1, etc. avec choix A, B, C, D).
+                </p>
+                <button
+                  onClick={handleForceExtractQcm}
+                  style={{
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Tenter une ré-extraction automatique
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', margin: '16px 0' }}>
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '12px 16px', fontSize: '13px', color: '#1e40af' }}>
+                  💡 <strong>Instructions Admin :</strong> Définissez la <strong>bonne réponse</strong> (A, B, C, D...) pour chaque question et ajoutez une <strong>explication détaillée</strong> si le corrigé était absent. Cliquez sur <em>"Enregistrer les corrections"</em> ci-dessous pour valider.
+                </div>
+
+                {qcmQuestions.map((q, idx) => {
+                  const hasCorrection = Boolean(q.correctChoiceLabel && q.correctChoiceLabel.trim());
+                  return (
+                    <div
+                      key={q.id || idx}
+                      style={{
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        padding: '18px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      {/* En-tête de la question */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{
+                            background: '#1e293b',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            padding: '3px 10px',
+                            borderRadius: '999px'
+                          }}>
+                            Question {q.questionNumber || idx + 1}
+                          </span>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            background: hasCorrection ? '#dcfce7' : '#fee2e2',
+                            color: hasCorrection ? '#15803d' : '#b91c1c'
+                          }}>
+                            {hasCorrection ? `✅ Bonne réponse : ${q.correctChoiceLabel}` : '⚠️ Corrigé absent'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Énoncé de la question */}
+                      <p style={{
+                        margin: '0 0 14px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: '#1e293b',
+                        lineHeight: 1.5,
+                        background: '#f8fafc',
+                        padding: '10px 14px',
+                        borderRadius: '6px'
+                      }}>
+                        {q.questionText}
+                      </p>
+
+                      {/* Choix de réponses */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', marginBottom: '16px' }}>
+                        {(q.choices || []).map((choice, cIdx) => {
+                          const isCorrect = q.correctChoiceLabel === choice.choiceLabel;
+                          return (
+                            <div
+                              key={choice.id || cIdx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                background: isCorrect ? '#f0fdf4' : '#ffffff',
+                                border: `1px solid ${isCorrect ? '#86efac' : '#e2e8f0'}`,
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              <span style={{
+                                width: '26px',
+                                height: '26px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                background: isCorrect ? '#22c55e' : '#f1f5f9',
+                                color: isCorrect ? '#ffffff' : '#334155',
+                                fontWeight: 700,
+                                fontSize: '12px'
+                              }}>
+                                {choice.choiceLabel}
+                              </span>
+                              <span style={{ fontSize: '13px', color: isCorrect ? '#14532d' : '#334155', fontWeight: isCorrect ? 600 : 400 }}>
+                                {choice.choiceText}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Configuration de la correction manuelle */}
+                      <div style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        padding: '14px',
+                        display: 'grid',
+                        gridTemplateColumns: '200px 1fr',
+                        gap: '14px',
+                        alignItems: 'start'
+                      }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                            Bonne réponse :
+                          </label>
+                          <select
+                            value={q.correctChoiceLabel || ''}
+                            onChange={(e) => handleQuestionChange(q.id, 'correctChoiceLabel', e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              fontSize: '13px',
+                              background: '#ffffff',
+                              fontWeight: 700,
+                              color: q.correctChoiceLabel ? '#15803d' : '#64748b',
+                              outline: 'none'
+                            }}
+                          >
+                            <option value="">-- Non définie --</option>
+                            {(q.choices || []).map((c, cIdx) => (
+                              <option key={cIdx} value={c.choiceLabel}>
+                                Option {c.choiceLabel}
+                              </option>
+                            ))}
+                            {/* Fallback au cas où aucun choix n'est mappé */}
+                            {(!q.choices || q.choices.length === 0) && (
+                              <>
+                                <option value="A">Option A</option>
+                                <option value="B">Option B</option>
+                                <option value="C">Option C</option>
+                                <option value="D">Option D</option>
+                                <option value="E">Option E</option>
+                              </>
+                            )}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                            Explication détaillée de la correction :
+                          </label>
+                          <textarea
+                            rows={2}
+                            placeholder="Ex: En appliquant la formule d'Euler, on obtient... / Rappel de cours sur la dérivée..."
+                            value={q.explanation || ''}
+                            onChange={(e) => handleQuestionChange(q.id, 'explanation', e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              fontSize: '13px',
+                              outline: 'none',
+                              fontFamily: 'inherit',
+                              boxSizing: 'border-box',
+                              resize: 'vertical'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div style={{ ...styles.modalFooter, marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setQcmModalOpen(false)}
+                style={styles.btnCancel}
+              >
+                Fermer
+              </button>
+              {qcmQuestions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSaveQcmCorrections}
+                  disabled={qcmSaving}
+                  style={{
+                    background: '#10b981',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    opacity: qcmSaving ? 0.7 : 1
+                  }}
+                >
+                  {qcmSaving ? 'Enregistrement...' : '💾 Enregistrer toutes les corrections'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
