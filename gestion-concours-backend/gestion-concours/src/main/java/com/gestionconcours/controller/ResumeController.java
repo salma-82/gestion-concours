@@ -162,6 +162,112 @@ public class ResumeController {
         }
     }
 
+    @PutMapping("/api/resumes/{id}")
+    public ResponseEntity<?> updateResume(
+            @PathVariable Long id,
+            @RequestParam("matiere") String matiere,
+            @RequestParam("chapitre") String chapitre,
+            @RequestParam("titre") String titre,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            Optional<Resume> optionalResume = resumeRepository.findById(id);
+            if (optionalResume.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resume resume = optionalResume.get();
+            resume.setMatiere(matiere);
+            resume.setChapitre(chapitre);
+            resume.setTitre(titre);
+
+            if (file != null && !file.isEmpty()) {
+                File dir = new File(UPLOAD_DIR);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                String baseUuid = UUID.randomUUID().toString();
+                String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "document";
+                String fileExtension = "";
+                int dotIndex = originalFileName.lastIndexOf(".");
+                if (dotIndex > 0) {
+                    fileExtension = originalFileName.substring(dotIndex).toLowerCase();
+                }
+
+                if (fileExtension.equals(".html") || fileExtension.equals(".htm")) {
+                    String htmlFileName = baseUuid + "_" + originalFileName;
+                    Path htmlFilePath = Paths.get(UPLOAD_DIR, htmlFileName);
+                    Files.write(htmlFilePath, file.getBytes());
+
+                    resume.setHtmlUrl("http://localhost:8081/uploads/" + htmlFileName);
+                    resume.setFileType("HTML");
+                    resume.setTotalPages(1);
+                    resume.setPageImages(new ArrayList<>());
+                } else {
+                    String pdfFileName = baseUuid + "_" + originalFileName;
+                    Path pdfFilePath = Paths.get(UPLOAD_DIR, pdfFileName);
+                    Files.write(pdfFilePath, file.getBytes());
+
+                    List<String> pageFileNames = pdfPageConverterService.convertPdfToPngPages(pdfFilePath.toFile(), dir, "page_" + baseUuid);
+                    List<String> pageUrls = new ArrayList<>();
+                    for (String pName : pageFileNames) {
+                        pageUrls.add("http://localhost:8081/uploads/" + pName);
+                    }
+
+                    resume.setPdfUrl("http://localhost:8081/uploads/" + pdfFileName);
+                    resume.setFileType("PDF");
+                    resume.setPageImages(pageUrls);
+                    resume.setTotalPages(pageUrls.size());
+                }
+            }
+
+            Resume updated = resumeRepository.save(resume);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur lors de la modification du résumé : " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/api/resumes/{id}/upload-html")
+    public ResponseEntity<?> uploadHtmlToResume(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Le fichier HTML sélectionné est vide.");
+            }
+
+            Optional<Resume> optionalResume = resumeRepository.findById(id);
+            if (optionalResume.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            File dir = new File(UPLOAD_DIR);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String baseUuid = UUID.randomUUID().toString();
+            String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "resume.html";
+            String htmlFileName = baseUuid + "_" + originalFileName;
+            Path htmlFilePath = Paths.get(UPLOAD_DIR, htmlFileName);
+            Files.write(htmlFilePath, file.getBytes());
+
+            Resume resume = optionalResume.get();
+            resume.setHtmlUrl("http://localhost:8081/uploads/" + htmlFileName);
+            resume.setFileType("HTML");
+            resume.setTotalPages(1);
+            resume.setPageImages(new ArrayList<>());
+
+            Resume saved = resumeRepository.save(resume);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur lors de l'enregistrement du fichier HTML : " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/api/resumes/{id}")
     public ResponseEntity<?> deleteResume(@PathVariable Long id) {
         resumeRepository.deleteById(id);

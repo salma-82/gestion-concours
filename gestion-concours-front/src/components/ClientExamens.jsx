@@ -106,61 +106,6 @@ export default function ClientExamens() {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
       
-      {/* ==================== HEADER PRINCIPAL ==================== */}
-      <header style={{
-        background: 'linear-gradient(135deg, #0b1437 0%, #1e1b4b 100%)',
-        color: '#ffffff',
-        padding: '22px 36px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 40
-      }}>
-        <div style={{ maxWidth: '1350px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <button
-              onClick={() => navigate('/client-dashboard')}
-              style={{
-                background: 'rgba(255,255,255,0.12)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '13px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              ← Tableau de Bord
-            </button>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, letterSpacing: '-0.3px', color: '#ffffff' }}>
-                🎓 Examens Nationaux du Baccalauréat
-              </h1>
-              <p style={{ margin: '3px 0 0', fontSize: '13px', color: '#cbd5e1' }}>
-                Consultation haute fidélité des Sujets et Corrigés officiels (Maths, Physique, SVT)
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{
-              background: 'rgba(99, 102, 241, 0.25)',
-              border: '1px solid rgba(129, 140, 248, 0.35)',
-              color: '#c7d2fe',
-              padding: '7px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: 700
-            }}>
-              {examens.length} Examen{examens.length > 1 ? 's' : ''} National{examens.length > 1 ? 'ux' : ''} disponible{examens.length > 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-      </header>
 
       {/* ==================== VUE 1 : VISIONNEUSE DU DOCUMENT (SUJET & CORRIGÉ) ==================== */}
       {activeExam ? (

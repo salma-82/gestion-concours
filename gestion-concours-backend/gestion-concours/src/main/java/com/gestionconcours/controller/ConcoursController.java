@@ -28,22 +28,24 @@ public class ConcoursController {
 
     private final String UPLOAD_DIR = "uploads/";
 
-    // 1. GET: Filtre b École, Matière, Année
+    // 1. GET: Filtre b École, Matière, Chapitre, Année
     @GetMapping
     public List<Concours> getConcours(
             @RequestParam(required = false) String ecole,
             @RequestParam(required = false) String matiere,
+            @RequestParam(required = false) String chapitre,
             @RequestParam(required = false) Integer annee) {
         
-        return concoursRepository.filterConcours(ecole, matiere, annee);
+        return concoursRepository.filterConcours(ecole, matiere, chapitre, annee);
     }
 
-    // 2. POST: Ajout Concours m3a Sujet w Correction (Bdoon Chapitre)
+    // 2. POST: Ajout Concours m3a Sujet w Correction w Chapitre
     @PostMapping
     public ResponseEntity<?> createConcours(
             @RequestParam("titre") String titre,
             @RequestParam("ecole") String ecole,
             @RequestParam("matiere") String matiere,
+            @RequestParam(value = "chapitre", required = false) String chapitre,
             @RequestParam("annee") Integer annee,
             @RequestParam(value = "fileSujet", required = false) MultipartFile fileSujet,
             @RequestParam(value = "fileCorrection", required = false) MultipartFile fileCorrection) {
@@ -58,6 +60,7 @@ public class ConcoursController {
             concours.setTitre(titre);
             concours.setEcole(ecole);
             concours.setMatiere(matiere);
+            concours.setChapitre(chapitre);
             concours.setAnnee(annee);
 
             // Traitement PDF Sujet

@@ -5,6 +5,7 @@ import logoImg from '../assets/logo.png';
 export default function ClientLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -48,21 +49,7 @@ export default function ClientLayout() {
       )
     },
     {
-      title: 'Résumé',
-      path: '/client-resumes',
-      color: '#10b981',
-      bgColor: '#d1fae5',
-      renderIcon: () => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="9" y1="12" x2="15" y2="12" />
-          <line x1="9" y1="16" x2="13" y2="16" />
-        </svg>
-      )
-    },
-    {
-      title: 'Fiches & Résumés',
+      title: 'Résumés',
       path: '/client-resumes',
       color: '#f43f5e',
       bgColor: '#ffe4e6',
@@ -72,6 +59,20 @@ export default function ClientLayout() {
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           <line x1="9" y1="7" x2="15" y2="7" />
           <line x1="9" y1="11" x2="15" y2="11" />
+        </svg>
+      )
+    },
+    {
+      title: 'Astuces',
+      path: '/client-astuces',
+      color: '#d97706',
+      bgColor: '#fef3c7',
+      renderIcon: () => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 18h6" />
+          <path d="M10 22h4" />
+          <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
         </svg>
       )
     },
@@ -87,55 +88,41 @@ export default function ClientLayout() {
           <polygon points="12 11 13.5 14 17 14.5 14.5 17 15 20.5 12 19 9 20.5 9.5 17 7 14.5 10.5 14" fill="#f59e0b" stroke="none" />
         </svg>
       )
-    },
-    {
-      title: 'Concours',
-      path: '/client-concours',
-      color: '#0284c7',
-      bgColor: '#e0f2fe',
-      renderIcon: () => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <path d="M10.5 17.5L16.5 11.5" />
-          <path d="M14.5 9.5l2 2" />
-        </svg>
-      )
     }
   ];
 
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f8fafc', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f8fafc', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", overflow: 'hidden', position: 'relative' }}>
       
-      {/* SIDEBAR AVEC LE DESIGN EXACT DE LA CAPTURE */}
+      {/* SIDEBAR AVEC LOGO & NAV */}
       <aside style={{
         width: '280px',
+        minWidth: '280px',
         backgroundColor: '#ffffff',
-        borderRight: '1px solid #f1f5f9',
+        borderRight: isSidebarOpen ? '1px solid #f1f5f9' : 'none',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: '24px 16px 20px 16px',
         boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
         overflowY: 'auto',
-        position: 'relative'
+        position: 'relative',
+        marginLeft: isSidebarOpen ? '0' : '-280px',
+        opacity: isSidebarOpen ? 1 : 0,
+        transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
+        flexShrink: 0,
+        zIndex: 50
       }}>
         {/* TOP: LOGO & NAV */}
         <div>
-          {/* Logo Brand matching the screenshot (Header image) */}
+          {/* Logo replacé dans la sidebar */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: '28px', paddingTop: '4px' }}>
             <img src={logoImg} alt="CONCOUR Logo" style={{ height: '70px', maxWidth: '180px', objectFit: 'contain' }} />
           </div>
-          
-          {/* Navigation Items */}
+
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {navItems.map((item, index) => {
-              const isActive = location.pathname === item.path;
-              // Pour distinguer Résumé et Fiches & Résumés ou Concours Blanc et Concours si même path
-              const isSelected = (index === 0 && location.pathname === '/client-dashboard') ||
-                                 (index === 1 && location.pathname === '/client-examens') ||
-                                 (index === 2 && location.pathname === '/client-resumes') ||
-                                 (index === 4 && location.pathname === '/client-concours');
+              const isSelected = location.pathname === item.path;
 
               return (
                 <div
@@ -191,7 +178,7 @@ export default function ClientLayout() {
                     {item.title}
                   </span>
 
-                  {/* Right Arrow Chevron (hidden on active item in screenshot or displayed subtly) */}
+                  {/* Right Arrow Chevron */}
                   {!isSelected && (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85 }}>
                       <polyline points="9 18 15 12 9 6" />
@@ -203,9 +190,8 @@ export default function ClientLayout() {
           </nav>
         </div>
 
-        {/* BOTTOM: SEPARATOR + DÉCONNEXION + PROFIL ÉTUDIANT */}
+        {/* BOTTOM: Déconnexion & Profil Étudiant */}
         <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
-          {/* Subtle separator line */}
           <div style={{ height: '1px', backgroundColor: '#e2e8f0', width: '90%', margin: '0 auto 16px auto' }} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -306,15 +292,75 @@ export default function ClientLayout() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main style={{
+      {/* ZONE CONTENU PRINCIPAL AVEC TOPBAR */}
+      <div style={{
         flex: 1,
-        overflowY: 'auto',
-        backgroundColor: '#f8fafc',
-        position: 'relative'
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        height: '100vh',
+        overflow: 'hidden',
+        backgroundColor: '#f8fafc'
       }}>
-        <Outlet />
-      </main>
+        {/* TOPBAR EXACTEMENT COMME LE SCREENSHOT (sans la barre de recherche) */}
+        <header style={{
+          height: '64px',
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          flexShrink: 0,
+          zIndex: 40
+        }}>
+          {/* Bouton Hamburger arrondi avec contour doux */}
+          <button
+            onClick={() => setIsSidebarOpen(prev => !prev)}
+            title={isSidebarOpen ? "Masquer le menu" : "Afficher le menu"}
+            aria-label="Toggle menu"
+            style={{
+              width: '42px',
+              height: '42px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              padding: 0
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f8fafc';
+              e.currentTarget.style.borderColor = '#cbd5e1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+            </svg>
+          </button>
+        </header>
+
+        {/* ZONE CONTENU DE LA PAGE */}
+        <main style={{
+          flex: 1,
+          overflowY: 'auto',
+          backgroundColor: '#f8fafc',
+          position: 'relative'
+        }}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

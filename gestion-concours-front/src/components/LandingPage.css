@@ -1028,3 +1028,38 @@
     gap: 40px;
   }
 }
+/* N9asna mn l-3ard (width: 110px) w khllina l-tortfa (height: 150px) */
+.single-image-card {
+  position: absolute;
+  width: 110px;             /* N9asna mn l-3ard mn 150px l 110px */
+  height: 150px;            /* Khllina l-tortfa 150px */
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.16), 0 5px 10px -2px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  will-change: transform, opacity, filter, z-index;
+  cursor: pointer;
+  transition: filter 0.2s ease-out;
+}
+
+.single-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.single-card-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px 4px 4px 4px;
+  z-index: 2;
+}

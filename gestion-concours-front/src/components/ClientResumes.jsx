@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 const API = 'http://localhost:8081';
 
@@ -12,7 +12,7 @@ const MATIERES_CONFIG = [
     btnGradient: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
     badgeBg: '#eff6ff',
     badgeColor: '#2563eb',
-    desc: 'Analyse, Algèbre, Probabilités, Géométrie, Fonctions...',
+    desc: 'Analyse, Algèbre, Limites, Intégrales, Probabilités, Géométrie...',
     renderIcon: () => (
       <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Triangle / Règle d'équerre */}
@@ -41,12 +41,12 @@ const MATIERES_CONFIG = [
   },
   { 
     id: 'Physique-Chimie', 
-    nom: 'Physique-Chimie', 
+    nom: 'Physique - Chimie', 
     color: '#8b5cf6',
     btnGradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
     badgeBg: '#f5f3ff',
     badgeColor: '#7c3aed',
-    desc: 'Mécanique, Électricité, Ondes, Transformations chimiques...',
+    desc: 'Ondes, Électricité (RC/RL/RLC), Mécanique de Newton, Transformations chimiques...',
     renderIcon: () => (
       <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Erlenmeyer / Fiole Chimique */}
@@ -69,12 +69,12 @@ const MATIERES_CONFIG = [
   },
   { 
     id: 'SVT', 
-    nom: 'SVT', 
+    nom: 'SVT (Sciences de la Vie et de la Terre)', 
     color: '#059669',
     btnGradient: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
     badgeBg: '#ecfdf5',
     badgeColor: '#059669',
-    desc: 'Génétique, Immunologie, Écologie, Géologie...',
+    desc: 'Génétique humaine & moléculaire, Immunologie, Écologie, Géologie...',
     renderIcon: () => (
       <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Feuille de plante */}
@@ -94,16 +94,119 @@ const MATIERES_CONFIG = [
         </g>
       </svg>
     )
+  },
+  { 
+    id: 'Philosophie', 
+    nom: 'Philosophie', 
+    color: '#d97706',
+    btnGradient: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)',
+    badgeBg: '#fffbeb',
+    badgeColor: '#b45309',
+    desc: 'La Condition Humaine, La Connaissance, La Politique, La Morale, Méthodologie...',
+    renderIcon: () => (
+      <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Colonne / Pilier grec classique 3D */}
+        <rect x="22" y="24" width="22" height="6" rx="2" fill="#fef3c7" opacity="0.9" />
+        <rect x="25" y="30" width="16" height="42" rx="2" fill="#fde68a" />
+        <line x1="29" y1="32" x2="29" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
+        <line x1="33" y1="32" x2="33" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
+        <line x1="37" y1="32" x2="37" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
+        <rect x="20" y="72" width="26" height="6" rx="2" fill="#fef3c7" />
+        {/* Parchemin doré & plume */}
+        <g transform="translate(44, 28)">
+          <path d="M6 10C6 6 10 4 16 4H36C40 4 44 8 44 14V50C44 56 40 58 34 58H14C8 58 6 54 6 48V10Z" fill="#ffffff" opacity="0.95" />
+          <line x1="12" y1="16" x2="36" y2="16" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <line x1="12" y1="26" x2="38" y2="26" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <line x1="12" y1="36" x2="32" y2="36" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <line x1="12" y1="46" x2="26" y2="46" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <path d="M34 2C34 2 46 14 38 32L34 28L30 36L28 32L34 2Z" fill="#f59e0b" stroke="#b45309" strokeWidth="1.2" />
+          <circle cx="28" cy="38" r="2.5" fill="#b45309" />
+        </g>
+        {/* Symbole Phi grec Φ */}
+        <circle cx="70" cy="22" r="11" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+        <line x1="70" y1="8" x2="70" y2="36" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    id: 'Anglais', 
+    nom: 'Anglais (English)', 
+    color: '#0284c7',
+    btnGradient: 'linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%)',
+    badgeBg: '#f0f9ff',
+    badgeColor: '#0284c7',
+    desc: 'Vocabulary, Grammar, Reading Comprehension, Writing, Youth & Culture...',
+    renderIcon: () => (
+      <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Globe Terrestre 3D */}
+        <circle cx="42" cy="54" r="28" fill="#bae6fd" opacity="0.6"/>
+        <circle cx="42" cy="54" r="28" stroke="#0284c7" strokeWidth="2.5"/>
+        <ellipse cx="42" cy="54" rx="28" ry="12" stroke="#0284c7" strokeWidth="2" fill="none"/>
+        <ellipse cx="42" cy="54" rx="14" ry="28" stroke="#0284c7" strokeWidth="2" fill="none"/>
+        <line x1="14" y1="54" x2="70" y2="54" stroke="#0284c7" strokeWidth="2"/>
+        {/* Bulle de discussion / Chat Speech Bubble avec text "EN" */}
+        <g transform="translate(46, 16)">
+          <rect width="42" height="30" rx="10" fill="#0284c7" stroke="#ffffff" strokeWidth="2" />
+          <path d="M12 30L8 38L20 30H12Z" fill="#0284c7" />
+          <text x="21" y="21" fill="#ffffff" fontSize="14" fontWeight="900" fontFamily="sans-serif" textAnchor="middle">EN</text>
+          <circle cx="34" cy="8" r="3" fill="#facc15" />
+        </g>
+        {/* Drapeau badge */}
+        <g transform="translate(18, 22)">
+          <rect width="20" height="15" rx="3" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+          <line x1="0" y1="7.5" x2="20" y2="7.5" stroke="#ffffff" strokeWidth="2" />
+          <line x1="10" y1="0" x2="10" y2="15" stroke="#ffffff" strokeWidth="2" />
+        </g>
+      </svg>
+    )
   }
 ];
 
-export default function ClientResumes({ clientId: propsClientId }) {
+// Helper: Match flexible des matières
+const isMatiereMatch = (itemMatiere, configId) => {
+  if (!itemMatiere || !configId) return false;
+  const im = itemMatiere.toLowerCase().trim();
+  const cid = configId.toLowerCase().trim();
+
+  if (cid.includes('math')) {
+    return im.includes('math');
+  }
+  if (cid.includes('phys')) {
+    return im.includes('phys') || im.includes('chimie') || im === 'pc';
+  }
+  if (cid.includes('svt')) {
+    return im.includes('svt') || im.includes('vie') || im.includes('terre');
+  }
+  if (cid.includes('philo')) {
+    return im.includes('philo');
+  }
+  if (cid.includes('ang') || cid.includes('eng')) {
+    return im.includes('ang') || im.includes('eng');
+  }
+  return im.includes(cid) || cid.includes(im);
+};
+
+// Helper: Dégradé du conteneur d'illustration selon la couleur de la matière
+const getCardGradient = (color) => {
+  if (color === '#2563eb') return 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)';
+  if (color === '#8b5cf6') return 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)';
+  if (color === '#059669') return 'linear-gradient(135deg, #047857 0%, #10b981 100%)';
+  if (color === '#d97706') return 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)';
+  if (color === '#0284c7') return 'linear-gradient(135deg, #0369a1 0%, #38bdf8 100%)';
+  return 'linear-gradient(135deg, #1e293b 0%, #475569 100%)';
+};
+
+export default function ClientResumes({ clientId: propsClientId, mode: propsMode }) {
   const { id, clientId: paramClientId } = useParams();
   const clientId = propsClientId || id || paramClientId || 1;
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAstucesMode = propsMode === 'astuces' || (location.pathname && location.pathname.includes('astuces'));
 
   // Navigation steps: 'matieres' -> 'chapitres' -> 'resumes' -> 'reader'
   const [currentStep, setCurrentStep] = useState('matieres');
+  const [previousStep, setPreviousStep] = useState('chapitres');
   const [selectedMatiere, setSelectedMatiere] = useState(null);
   const [selectedChapitre, setSelectedChapitre] = useState(null);
   const [activeResume, setActiveResume] = useState(null);
@@ -126,26 +229,54 @@ export default function ClientResumes({ clientId: propsClientId }) {
     try {
       setLoading(true);
       setError(null);
-      let response;
-      try {
-        response = await axios.get(`${API}/api/clients/${clientId}/resumes`);
-      } catch (clientErr) {
-        response = await axios.get(`${API}/api/resumes`);
+
+      // Récupérer en parallèle les données des 2 tables : 'resumes' ET 'cours_bac'
+      const [resResumes, resCoursBac] = await Promise.allSettled([
+        axios.get(`${API}/api/resumes`),
+        axios.get(`${API}/api/cours-bac`)
+      ]);
+
+      const dataToSet = [];
+
+      // 1. Ajouter toutes les fiches de la table 'resumes' (base de données)
+      if (resResumes.status === 'fulfilled') {
+        const raw = resResumes.value?.data;
+        const list = Array.isArray(raw) ? raw : (raw?.value || raw?.resumes || (raw ? [raw] : []));
+        list.forEach(item => {
+          dataToSet.push({
+            ...item,
+            fileType: item.fileType || (item.htmlUrl ? 'HTML' : 'PDF'),
+            sourceTable: 'resumes',
+            uniqueId: `resumes_${item.id}`
+          });
+        });
       }
 
-      let dataToSet = [];
-      if (Array.isArray(response.data)) {
-        dataToSet = response.data;
-      } else if (response.data && Array.isArray(response.data.resumes)) {
-        dataToSet = response.data.resumes;
-      } else if (response.data && typeof response.data === 'object') {
-        dataToSet = [response.data];
+      // 2. Ajouter tous les cours de la table 'cours_bac' (base de données)
+      if (resCoursBac.status === 'fulfilled') {
+        const raw = resCoursBac.value?.data;
+        const list = Array.isArray(raw) ? raw : (raw?.value || raw?.cours || (raw ? [raw] : []));
+        list.forEach(item => {
+          // Éviter doublon si même htmlUrl
+          const exists = dataToSet.some(existing => 
+            (existing.htmlUrl && item.htmlUrl && existing.htmlUrl === item.htmlUrl) ||
+            (existing.titre && item.titre && existing.titre.trim().toLowerCase() === item.titre.trim().toLowerCase() && existing.chapitre === item.chapitre)
+          );
+          if (!exists) {
+            dataToSet.push({
+              ...item,
+              fileType: 'HTML',
+              sourceTable: 'cours_bac',
+              uniqueId: `cours_bac_${item.id}`
+            });
+          }
+        });
       }
 
       setResumes(dataToSet);
     } catch (err) {
-      console.error("Erreur chargement résumés:", err);
-      setError("Erreur lors de la récupération des résumés.");
+      console.error("Erreur chargement résumés & cours BAC:", err);
+      setError("Erreur lors de la récupération des fiches.");
     } finally {
       setLoading(false);
     }
@@ -153,7 +284,12 @@ export default function ClientResumes({ clientId: propsClientId }) {
 
   const getFullUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.includes('localhost:8080') && API.includes('8081')) {
+        return url.replace('localhost:8080', 'localhost:8081');
+      }
+      return url;
+    }
     return `${API}/${url.startsWith('/') ? url.substring(1) : url}`;
   };
 
@@ -164,32 +300,67 @@ export default function ClientResumes({ clientId: propsClientId }) {
     return [];
   };
 
-  // Liste des matières avec compteurs
+  // Liste des matières avec compteurs basés sur la table resumes & cours_bac
   const availableMatieres = MATIERES_CONFIG.map(cfg => {
-    const count = resumes.filter(r => (r.matiere || '').toLowerCase().includes(cfg.nom.toLowerCase().substring(0, 4))).length;
+    const count = resumes.filter(r => isMatiereMatch(r.matiere, cfg.id)).length;
     return { ...cfg, count };
   });
 
-  // Chapitres pour la matière sélectionnée (ceux entrés par l'admin)
+  // Récupérer toutes les fiches d'une matière donnée
+  const getResumesForMatiere = (mat) => {
+    if (!mat) return [];
+    return resumes.filter(r => isMatiereMatch(r.matiere, mat.id));
+  };
+
+  // Chapitres pour la matière sélectionnée (exactement ceux enregistrés en base de données)
   const getChapitresForMatiere = (mat) => {
     if (!mat) return [];
-    const matchedResumes = resumes.filter(r => 
-      (r.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4))
-    );
-    const uniqueChapitres = [...new Set(matchedResumes.map(r => r.chapitre || 'Général / Sans Chapitre'))];
+    const matchedResumes = resumes.filter(r => isMatiereMatch(r.matiere, mat.id));
+
+    // Récupérer la liste des chapitres uniques entrés par l'admin
+    const adminChapitres = matchedResumes
+      .map(r => r.chapitre ? r.chapitre.trim() : '')
+      .filter(ch => ch.length > 0);
+
+    const uniqueMap = new Map();
+    adminChapitres.forEach(chap => {
+      const lower = chap.toLowerCase();
+      if (!uniqueMap.has(lower)) {
+        uniqueMap.set(lower, chap);
+      }
+    });
+
+    const uniqueChapitres = Array.from(uniqueMap.values());
+
+    // Fiches générales s'il y a des résumés sans chapitre spécifié
+    const hasSansChapitre = matchedResumes.some(r => !r.chapitre || !r.chapitre.trim());
+    if (hasSansChapitre) {
+      uniqueChapitres.push('Général / Fiches Complètes');
+    }
+
     return uniqueChapitres.map(chapName => {
-      const count = matchedResumes.filter(r => (r.chapitre || 'Général / Sans Chapitre') === chapName).length;
+      const count = matchedResumes.filter(r => {
+        const c = r.chapitre ? r.chapitre.trim() : '';
+        if (chapName === 'Général / Fiches Complètes') {
+          return !c;
+        }
+        return c.toLowerCase() === chapName.toLowerCase();
+      }).length;
       return { nom: chapName, count };
     });
   };
 
-  // Résumés pour le chapitre sélectionné
+  // Résumés / Fiches pour le chapitre sélectionné
   const getResumesForChapitre = (mat, chapNom) => {
     if (!mat || !chapNom) return [];
-    return resumes.filter(r => 
-      (r.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4)) &&
-      (r.chapitre || 'Général / Sans Chapitre') === chapNom
-    );
+    return resumes.filter(r => {
+      if (!isMatiereMatch(r.matiere, mat.id)) return false;
+      const c = r.chapitre ? r.chapitre.trim() : '';
+      if (chapNom === 'Général / Fiches Complètes') {
+        return !c;
+      }
+      return c.toLowerCase() === chapNom.toLowerCase();
+    });
   };
 
   // Handlers de navigation
@@ -202,12 +373,21 @@ export default function ClientResumes({ clientId: propsClientId }) {
 
   const handleSelectChapitre = (chapNom) => {
     setSelectedChapitre(chapNom);
-    setCurrentStep('resumes');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const chapterResumes = getResumesForChapitre(selectedMatiere, chapNom);
+    if (chapterResumes.length > 0) {
+      // Ouvre DIRECTEMENT le fichier HTML sans étape intermédiaire ("nichan") !
+      setPreviousStep('chapitres');
+      handleOpenResume(chapterResumes[0], 'chapitres');
+    } else {
+      setPreviousStep('chapitres');
+      setCurrentStep('resumes');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  const handleOpenResume = (resume) => {
+  const handleOpenResume = (resume, fromStep = 'resumes') => {
     setActiveResume(resume);
+    setPreviousStep(fromStep);
     setCurrentPage(1);
     setZoomLevel(100);
     setCurrentStep('reader');
@@ -228,7 +408,11 @@ export default function ClientResumes({ clientId: propsClientId }) {
   };
 
   const handleBackToResumes = () => {
-    setCurrentStep('resumes');
+    if (previousStep === 'chapitres') {
+      setCurrentStep('chapitres');
+    } else {
+      setCurrentStep('resumes');
+    }
     setActiveResume(null);
   };
 
@@ -271,7 +455,7 @@ export default function ClientResumes({ clientId: propsClientId }) {
                   gap: '6px'
                 }}
               >
-                ← Retour à la liste
+                {previousStep === 'chapitres' ? '← Retour aux chapitres' : '← Retour aux résumés'}
               </button>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -302,28 +486,57 @@ export default function ClientResumes({ clientId: propsClientId }) {
               </div>
             </div>
 
-            {/* Quick Actions */}
-            {activeResume.htmlUrl && (
-              <a
-                href={getFullUrl(activeResume.htmlUrl)}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: selectedMatiere?.color || '#2563eb',
-                  color: '#ffffff',
-                  padding: '9px 16px',
-                  borderRadius: '10px',
-                  textDecoration: 'none',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                ↗ Plein écran
-              </a>
-            )}
+            {/* Quick Actions & Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {selectedChapitre && getResumesForChapitre(selectedMatiere, selectedChapitre).length > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '5px 10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Fiches du chapitre :</span>
+                  {getResumesForChapitre(selectedMatiere, selectedChapitre).map((r, i) => {
+                    const isCurrent = (activeResume.id && r.id === activeResume.id) || (activeResume.uniqueId && r.uniqueId === activeResume.uniqueId);
+                    return (
+                      <button
+                        key={r.uniqueId || r.id || i}
+                        onClick={() => handleOpenResume(r, 'chapitres')}
+                        style={{
+                          background: isCurrent ? (selectedMatiere?.color || '#2563eb') : '#ffffff',
+                          color: isCurrent ? '#ffffff' : '#334155',
+                          border: isCurrent ? 'none' : '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '4px 10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {r.titre ? (r.titre.length > 25 ? r.titre.substring(0, 22) + '...' : r.titre) : `Fiche ${i + 1}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {activeResume.htmlUrl && (
+                <a
+                  href={getFullUrl(activeResume.htmlUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    background: selectedMatiere?.color || '#2563eb',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '10px',
+                    textDecoration: 'none',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  ↗ Plein écran
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Document Content View */}
@@ -346,7 +559,7 @@ export default function ClientResumes({ clientId: propsClientId }) {
                 color: '#475569',
                 fontWeight: 600
               }}>
-                <span>📐 Fiche Résumé Interactive (Formules & Cours complet)</span>
+                <span>{isAstucesMode ? '💡 Astuce Concours Interactive (Méthodes & Formules)' : '📐 Fiche Résumé Interactive (Formules & Cours complet)'}</span>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>MathJax activé</span>
               </div>
               <iframe
@@ -425,11 +638,14 @@ export default function ClientResumes({ clientId: propsClientId }) {
       {currentStep === 'matieres' && (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#0f172a' }}>
-              📚 Fiches & Résumés de Cours
+            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span>{isAstucesMode ? '💡' : '📚'}</span>
+              <span>{isAstucesMode ? 'Astuces Concours & Formules Clés' : 'Résumés de Cours'}</span>
             </h1>
             <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '15px' }}>
-              Choisissez une matière pour accéder aux chapitres et fiches de révision disponibles
+              {isAstucesMode
+                ? 'Sélectionnez une matière (Mathématiques, Physique - Chimie, SVT) pour accéder aux astuces par chapitre et ouvrir directement le fichier HTML interactif.'
+                : 'Sélectionnez une matière (Mathématiques, Physique - Chimie, SVT) pour accéder à ses chapitres et consulter directement les fiches HTML interactives.'}
             </p>
           </div>
 
@@ -473,11 +689,7 @@ export default function ClientResumes({ clientId: propsClientId }) {
                     minWidth: '180px',
                     height: '100%',
                     minHeight: '125px',
-                    background: mat.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : mat.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                    background: getCardGradient(mat.color),
                     borderRadius: '24px 70px 70px 24px',
                     display: 'flex',
                     alignItems: 'center',
@@ -586,10 +798,12 @@ export default function ClientResumes({ clientId: propsClientId }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
             <div>
               <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
-                📖 Chapitres — {selectedMatiere.nom}
+                {isAstucesMode ? '💡 Astuces par Chapitre — ' : '📖 Chapitres — '}{selectedMatiere.nom}
               </h1>
               <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
-                Choisissez un chapitre pour découvrir les fiches et résumés de cours correspondants
+                {isAstucesMode
+                  ? "Choisissez un chapitre pour ouvrir directement l'astuce HTML correspondante enregistrée par l'administrateur"
+                  : "Choisissez un chapitre pour ouvrir directement le fichier HTML correspondant"}
               </p>
             </div>
             <button
@@ -607,6 +821,38 @@ export default function ClientResumes({ clientId: propsClientId }) {
             >
               ← Changer de matière
             </button>
+          </div>
+
+          {/* Banner d'information */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            padding: '14px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>💡</span>
+              <span style={{ fontSize: '13.5px', color: '#475569', fontWeight: 600 }}>
+                {isAstucesMode
+                  ? "Cliquez sur n'importe quel chapitre pour ouvrir directement son astuce ou fiche méthode HTML (formules MathJax incluses)."
+                  : "Cliquez sur n'importe quel chapitre pour ouvrir directement son cours ou résumé HTML interactif (formules MathJax incluses)."}
+              </span>
+            </div>
+            <span style={{
+              background: selectedMatiere.badgeBg,
+              color: selectedMatiere.badgeColor,
+              padding: '4px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 800
+            }}>
+              {getChapitresForMatiere(selectedMatiere).length} Chapitre{getChapitresForMatiere(selectedMatiere).length > 1 ? 's' : ''}
+            </span>
           </div>
 
           {/* Horizontal Pill Cards des Chapitres - EXACT MÊME STYLE QUE LES MATIÈRES */}
@@ -651,11 +897,7 @@ export default function ClientResumes({ clientId: propsClientId }) {
                     minWidth: '180px',
                     height: '100%',
                     minHeight: '125px',
-                    background: selectedMatiere.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : selectedMatiere.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                    background: getCardGradient(selectedMatiere.color),
                     borderRadius: '24px 70px 70px 24px',
                     display: 'flex',
                     alignItems: 'center',
@@ -761,8 +1003,8 @@ export default function ClientResumes({ clientId: propsClientId }) {
                       onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
                     >
-                      <span>Accéder aux résumés</span>
-                      <span style={{ fontSize: '15px' }}>→</span>
+                      <span>{isAstucesMode ? "Ouvrir l'astuce HTML" : "Ouvrir le fichier HTML"}</span>
+                      <span style={{ fontSize: '15px' }}>🌐</span>
                     </button>
                   </div>
                 </div>
@@ -866,11 +1108,7 @@ export default function ClientResumes({ clientId: propsClientId }) {
                     minWidth: '160px',
                     height: '100%',
                     minHeight: '115px',
-                    background: selectedMatiere.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : selectedMatiere.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                    background: getCardGradient(selectedMatiere.color),
                     borderRadius: '24px 60px 60px 24px',
                     display: 'flex',
                     alignItems: 'center',

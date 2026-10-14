@@ -12,71 +12,33 @@ import './LandingPage.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Configuration du Carrousel (ajusté : cartes encore plus compactes) ─────
+// ─── Configuration de l'orbite 3D ───────────────────────────────────────────
 const CONFIG = {
-  cardCount: 9,              // Nombre de cartes dans le carrousel
-  cycleDurationSec: 24,       // Vitesse : durée d'un cycle complet en secondes
-  maxScale: 1.05,             // Facteur de grossissement minimal pour laisser le mot bien lisible
-  minScale: 0.65,             // Échelle des cartes les plus éloignées
-  maxRotationDeg: 8,          // Angle max d'inclinaison des cartes latérales
-  verticalArchPx: 24,         // Hauteur de courbure en arche
+  cardCount: 14,            // 14 images f l-majmo3
+  cycleDurationSec: 36,     // Cycle complét f 36s
+  maxScale: 1.20,           // Échelle max devant
+  minScale: 0.58,           // Échelle min derrière
+  maxBlurPx: 6,             // Flou derrière
+  minOpacity: 0.35,         // Opacité derrière
+  verticalOffsetPx: -100,   // Décalage vertical centré 3la « réussissez »
 };
 
-const CONCOURS_CARDS_DATA = [
-  [
-    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-  ],
-  [
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-  ],
-  [
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-  ],
-  [
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
-  ],
-  [
-    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-  ],
-  [
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-  ],
-  [
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaMarocImg, desc: 'ENSA' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-  ],
-  [
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-  ],
-  [
-    { slot: 'ENSA', name: 'ENSA', url: ensaImg, desc: 'ENSA' },
-    { slot: 'MED', name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
-    { slot: 'ENCG', name: 'ENCG', url: encgImg, desc: 'ENCG' },
-    { slot: 'ENSAM', name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
-  ],
+// Liste dyal 14 images
+const SINGLE_CARDS_DATA = [
+  { name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+  { name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  { name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  { name: 'ENCG', url: encgImg, desc: 'ENCG' },
+  { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'ENSA Maroc' },
+  { name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  { name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  { name: 'ENCG', url: encgImg, desc: 'ENCG' },
+  { name: 'ENSA', url: ensaImg, desc: 'ENSA' },
+  { name: 'Médecine', url: medcineImg, desc: 'Faculté de Médecine' },
+  { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'ENSA Maroc' },
+  { name: 'ENSAM', url: ensamImg, desc: 'ENSAM' },
+  { name: 'ENCG', url: encgImg, desc: 'ENCG' },
+  { name: 'ENSA', url: ensaImg, desc: 'ENSA' },
 ];
 
 export default function LandingPage({ onNavigateToAuth }) {
@@ -94,12 +56,10 @@ export default function LandingPage({ onNavigateToAuth }) {
   };
 
   useEffect(() => {
-    // ─── Animations d'intro & scroll GSAP ─────────────────────────────────────
     const ctx = gsap.context(() => {
       gsap.set('#nav', { opacity: 0, y: -20 });
       gsap.set('.hero-eyebrow', { opacity: 0, y: -20 });
-      gsap.set('.hero-watermark', { opacity: 0, scale: 0.95 });
-      gsap.set('.carousel-stage', { opacity: 0, y: 30 });
+      gsap.set('.hero-watermark-container', { opacity: 0, scale: 0.95 });
       gsap.set('.hero-actions', { opacity: 0, y: 20 });
       gsap.set('.lp-f-card', { opacity: 0 });
       gsap.set('.lp-stats-inner', { opacity: 0 });
@@ -108,8 +68,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       intro
         .to('#nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
         .to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8 }, 0.25)
-        .to('.hero-watermark', { opacity: 0.95, scale: 1, duration: 1 }, 0.4)
-        .to('.carousel-stage', { opacity: 1, y: 0, duration: 0.9 }, 0.5)
+        .to('.hero-watermark-container', { opacity: 1, scale: 1, duration: 1 }, 0.4)
         .to('.hero-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.7);
 
       gsap.from('.lp-eyebrow, .lp-features-head h2, .lp-features-head p', {
@@ -142,54 +101,45 @@ export default function LandingPage({ onNavigateToAuth }) {
       });
     }, rootRef);
 
-    // ─── Carrousel infini continu en arche 3D (identique à hero.html) ─────────
     const stage = stageRef.current;
     if (!stage) return;
 
     let isPaused = false;
-    let currentOffset = 0;
+    let currentAngle = 0;
     let lastTimestamp = 0;
     let animId = null;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const getCardSpacing = () => (window.innerWidth <= 768 ? 120 : 160);
-    let cardSpacing = getCardSpacing();
-    let totalTrackWidth = CONFIG.cardCount * cardSpacing;
-
     const updateCardPositions = () => {
-      const halfTrack = totalTrackWidth / 2;
+      const stageWidth = stage.clientWidth || window.innerWidth;
+      
+      const radiusX = stageWidth * 0.44;
+      const radiusY = 50;
 
       cardRefs.current.forEach((cardEl, index) => {
         if (!cardEl) return;
-        let rawX = (index * cardSpacing) - currentOffset;
 
-        let normalizedX = ((rawX % totalTrackWidth) + totalTrackWidth) % totalTrackWidth;
-        if (normalizedX > halfTrack) {
-          normalizedX -= totalTrackWidth;
-        }
+        const phaseOffset = (index / CONFIG.cardCount) * Math.PI * 2;
+        const theta = currentAngle + phaseOffset;
 
-        const maxDistRange = halfTrack * 0.95;
-        const normalizedDist = Math.max(-1.5, Math.min(1.5, normalizedX / maxDistRange));
-        const absDist = Math.abs(normalizedDist);
+        const x = Math.cos(theta) * radiusX;
+        const y = Math.sin(theta) * radiusY + CONFIG.verticalOffsetPx;
 
-        const scaleProgress = Math.max(0, 1 - Math.pow(absDist, 1.2));
-        const scale = CONFIG.minScale + (CONFIG.maxScale - CONFIG.minScale) * scaleProgress;
+        const sinVal = Math.sin(theta);
+        const depthFactor = (sinVal + 1) / 2;
 
-        const rotSign = normalizedX >= 0 ? 1 : -1;
-        const rotation = (rotSign * Math.min(absDist, 1) * CONFIG.maxRotationDeg);
+        const scale = CONFIG.minScale + (CONFIG.maxScale - CONFIG.minScale) * depthFactor;
+        const opacity = CONFIG.minOpacity + (1 - CONFIG.minOpacity) * depthFactor;
+        const blur = (1 - depthFactor) * CONFIG.maxBlurPx;
+        const rotation = Math.cos(theta) * 3;
 
-        const translateY = Math.pow(absDist, 1.6) * CONFIG.verticalArchPx;
-        const zIndex = Math.round((1 - absDist) * 100) + 10;
+        const zIndex = Math.round(depthFactor * 100) + 5;
 
-        let opacity = 1;
-        if (absDist > 1.1) {
-          opacity = Math.max(0, 1 - (absDist - 1.1) * 3);
-        }
-
-        cardEl.style.transform = `translate3d(${normalizedX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0px) scale(${scale.toFixed(3)}) rotate(${rotation.toFixed(2)}deg)`;
+        cardEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${scale.toFixed(3)}) rotate(${rotation.toFixed(2)}deg)`;
         cardEl.style.zIndex = zIndex;
         cardEl.style.opacity = opacity.toFixed(3);
+        cardEl.style.filter = blur > 0.2 ? `blur(${blur.toFixed(1)}px)` : 'none';
       });
     };
 
@@ -205,8 +155,8 @@ export default function LandingPage({ onNavigateToAuth }) {
       lastTimestamp = timestamp;
 
       if (!isPaused && deltaTime > 0) {
-        const speedPxPerMs = totalTrackWidth / (CONFIG.cycleDurationSec * 1000);
-        currentOffset = (currentOffset + speedPxPerMs * deltaTime) % totalTrackWidth;
+        const radPerMs = (Math.PI * 2) / (CONFIG.cycleDurationSec * 1000);
+        currentAngle -= radPerMs * deltaTime;
         updateCardPositions();
       }
 
@@ -227,11 +177,7 @@ export default function LandingPage({ onNavigateToAuth }) {
     stage.addEventListener('touchstart', onTouchStart, { passive: true });
     stage.addEventListener('touchend', onTouchEnd);
 
-    const onResize = () => {
-      cardSpacing = getCardSpacing();
-      totalTrackWidth = CONFIG.cardCount * cardSpacing;
-      updateCardPositions();
-    };
+    const onResize = () => { updateCardPositions(); };
     window.addEventListener('resize', onResize);
 
     return () => {
@@ -256,7 +202,7 @@ export default function LandingPage({ onNavigateToAuth }) {
 
       <div className="lp-grain"></div>
 
-      {/* ============ NAVIGATION ============ */}
+      {/* NAVIGATION */}
       <nav className="lp-nav" id="nav">
         <div className="lp-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src={logoImg} alt="Econcour" />
@@ -272,48 +218,36 @@ export default function LandingPage({ onNavigateToAuth }) {
         </button>
       </nav>
 
-      {/* ============ HERO SECTION (Exactement comme hero.html) ============ */}
+      {/* HERO SECTION */}
       <section className="hero-container" id="heroContainer">
-        {/* 1. Grand titre */}
         <h1 className="hero-eyebrow">
           Préparez vos concours,
         </h1>
 
-        {/* 2. Texte géant en filigrane */}
-        <div className="hero-watermark" aria-hidden="true">
-          réussissez
-        </div>
+        <div className="hero-watermark-container">
+          <div className="hero-watermark" aria-hidden="true">
+            réussissez
+          </div>
 
-        {/* 3. Scène du carrousel avec les cartes collage 2x2 */}
-        <div
-          className="carousel-stage"
-          ref={stageRef}
-          aria-label="Carrousel d'étudiants préparant leurs concours"
-        >
-          {Array.from({ length: CONFIG.cardCount }).map((_, cardIndex) => {
-            const cardSlots = CONCOURS_CARDS_DATA[cardIndex % CONCOURS_CARDS_DATA.length];
-            return (
+          <div
+            className="carousel-stage"
+            ref={stageRef}
+            aria-label="Carrousel continu d'images d'étudiants en orbite"
+          >
+            {SINGLE_CARDS_DATA.map((item, cardIndex) => (
               <div
                 key={cardIndex}
-                className="student-card"
+                className="single-image-card"
                 ref={(el) => (cardRefs.current[cardIndex] = el)}
                 onClick={() => handleNav('register')}
               >
-                <div className="collage-grid">
-                  {cardSlots.map((item, slotIndex) => (
-                    <div key={slotIndex} className="photo-slot">
-                      <span className="badge-letter">{item.slot}</span>
-                      <img src={item.url} alt={item.desc} loading="lazy" />
-                      <span className="label-student">{item.name}</span>
-                    </div>
-                  ))}
-                </div>
+                <img src={item.url} alt={item.desc} loading="lazy" />
+                <span className="single-card-label">{item.name}</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* 4. Bouton CTA et sous-ligne */}
         <div className="hero-actions">
           <button className="btn-pill-cta" type="button" onClick={() => handleNav('register')}>
             <span>Commencer maintenant</span>
@@ -330,8 +264,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
       </section>
 
-
-      {/* ============ SECTION 2: FEATURES GRID ============ */}
+      {/* SECTION 2: FEATURES GRID */}
       <section className="lp-features-section" id="fonctionnalites">
         <div className="lp-features-head">
           <div>
@@ -362,7 +295,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
       </section>
 
-      {/* ============ SECTION 3: STATS ============ */}
+      {/* SECTION 3: STATS */}
       <section className="lp-stats" id="apropos">
         <div className="lp-stats-inner">
           <h3>Résultats &<br /> <em>Impact</em>.</h3>
@@ -381,7 +314,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
       </section>
 
-      {/* ============ SECTION 4: TARIFS ============ */}
+      {/* SECTION 4: TARIFS */}
       <section className="lp-pricing" id="tarifs">
         <div className="lp-pricing-head">
           <div className="lp-eyebrow" style={{ justifyContent: 'center' }}>FORMULES D'ACCÈS</div>
@@ -390,7 +323,6 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
 
         <div className="lp-pricing-grid">
-          {/* PACK GRATUIT */}
           <div className="lp-price-card">
             <h3>Pack Découverte</h3>
             <p className="lp-price-sub">Pour démarrer vos révisions</p>
@@ -404,7 +336,6 @@ export default function LandingPage({ onNavigateToAuth }) {
             <button className="lp-price-btn" onClick={() => handleNav('register')}>S'inscrire</button>
           </div>
 
-          {/* PACK PREMIUM (FEATURED) */}
           <div className="lp-price-card lp-featured">
             <div className="lp-price-badge">Recommandé</div>
             <h3>Pack Concours Pro</h3>
@@ -419,7 +350,6 @@ export default function LandingPage({ onNavigateToAuth }) {
             <button className="lp-price-btn" onClick={() => handleNav('register')}>Commencer maintenant</button>
           </div>
 
-          {/* PACK VIP */}
           <div className="lp-price-card">
             <h3>Pack Accompagnement</h3>
             <p className="lp-price-sub">Accompagnement et coaching</p>
@@ -435,7 +365,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
       </section>
 
-      {/* ============ FOOTER ============ */}
+      {/* FOOTER */}
       <footer className="lp-footer" id="faq">
         <div className="lp-footer-inner">
           <div>

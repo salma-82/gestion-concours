@@ -3,6 +3,89 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
 
+const BAC_MATIERES_CONFIG = {
+  'Mathématiques': [
+    'Limites et Continuité',
+    'Dérivation et Étude de Fonctions',
+    'Suites Numériques',
+    'Fonctions Logarithmes (ln)',
+    'Fonctions Exponentielles (exp)',
+    'Nombres Complexes',
+    'Calcul Intégral & Primitives',
+    'Équations Différentielles',
+    'Probabilités & Dénombrement',
+    'Géométrie dans l\'Espace',
+    'Arithmétique (SM)'
+  ],
+  'Physique-Chimie': [
+    'Ondes Mécaniques Progressives',
+    'Ondes Lumineuses',
+    'Transformations Nucléaires',
+    'Circuit RC (Condensateur)',
+    'Circuit RL (Bobine)',
+    'Oscillations Libres RLC',
+    'Modulation d\'Amplitude',
+    'Lois de Newton',
+    'Mouvement des Satellites & Projectiles',
+    'Rotations & Oscillateurs Mécaniques',
+    'Aspect Énergétique',
+    'Réactions Acido-Basiques & Dosage',
+    'Évolution Spontanée / Pile & Électrolyse',
+    'Chimie Organique / Estérification'
+  ],
+  'SVT': [
+    'Consommation de la Matière Organique & Flux d\'Énergie',
+    'Rôle du Muscle Squelettique dans la Conversion d\'Énergie',
+    'Information Génétique & Mécanisme de Transmission',
+    'Génétique Humaine & Génétique des Populations',
+    'Immunologie (Soi, Non-Soi, Réponse Immunitaire)',
+    'Dysfonctionnements du Système Immunitaire',
+    'Phénomènes Géologiques & Chaînes de Montagnes'
+  ],
+  'Philosophie': [
+    'La Condition Humaine (Le Sujet / La Conscience)',
+    'La Personne & L\'Identité',
+    'La Connaissance (Théorie & Expérience)',
+    'La Vérité & Démonstration',
+    'La Politique (L\'État & Pouvoir)',
+    'La Justice et le Droit',
+    'Le Devoir & La Liberté',
+    'Méthodologie & Dissertation'
+  ],
+  'Anglais': [
+    'Gifts of Youth',
+    'Cultural Issues and Values',
+    'Women and Power',
+    'Advances in Science and Technology',
+    'Brain Drain',
+    'Educational Systems',
+    'Cultural Diversity',
+    'Humour',
+    'Sustainable Development',
+    'International Organisations',
+    'Reading Comprehension & Writing Skills'
+  ]
+};
+
+const getBacChapitresList = (matiere) => {
+  if (!matiere) {
+    return [
+      ...BAC_MATIERES_CONFIG['Mathématiques'],
+      ...BAC_MATIERES_CONFIG['Physique-Chimie'],
+      ...BAC_MATIERES_CONFIG['SVT'],
+      ...(BAC_MATIERES_CONFIG['Philosophie'] || []),
+      ...(BAC_MATIERES_CONFIG['Anglais'] || [])
+    ];
+  }
+  const m = matiere.toLowerCase();
+  if (m.includes('math')) return BAC_MATIERES_CONFIG['Mathématiques'];
+  if (m.includes('phys')) return BAC_MATIERES_CONFIG['Physique-Chimie'];
+  if (m.includes('svt')) return BAC_MATIERES_CONFIG['SVT'];
+  if (m.includes('philo')) return BAC_MATIERES_CONFIG['Philosophie'];
+  if (m.includes('ang') || m.includes('eng')) return BAC_MATIERES_CONFIG['Anglais'];
+  return [];
+};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -33,15 +116,18 @@ export default function AdminDashboard() {
   const [searchRealTitre, setSearchRealTitre] = useState('');
   const [selectedRealEcole, setSelectedRealEcole] = useState('');
   const [selectedRealMatiere, setSelectedRealMatiere] = useState('');
+  const [selectedRealChapitre, setSelectedRealChapitre] = useState('');
   const [selectedRealAnnee, setSelectedRealAnnee] = useState('');
   const [realEcolesList, setRealEcolesList] = useState([]);
   const [realMatieresList, setRealMatieresList] = useState([]);
+  const [realChapitresList, setRealChapitresList] = useState([]);
   const [realAnneesList, setRealAnneesList] = useState([]);
 
   const [isRealConcoursModalOpen, setIsRealConcoursModalOpen] = useState(false);
   const [realTitre, setRealTitre] = useState('');
   const [realEcole, setRealEcole] = useState('');
   const [realMatiere, setRealMatiere] = useState('');
+  const [realChapitre, setRealChapitre] = useState('');
   const [realAnnee, setRealAnnee] = useState('');
   const [realFileSujet, setRealFileSujet] = useState(null);
   const [realFileCorrection, setRealFileCorrection] = useState(null);
@@ -59,12 +145,46 @@ export default function AdminDashboard() {
 
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [resTitre, setResTitre] = useState('');
-  const [resMatiere, setResMatiere] = useState('');
+  const [resMatiere, setResMatiere] = useState('Mathématiques');
   const [resChapitre, setResChapitre] = useState('');
   const [resFile, setResFile] = useState(null);
   const [loadingRes, setLoadingRes] = useState(false);
   const [previewResume, setPreviewResume] = useState(null);
   const [previewPageIdx, setPreviewPageIdx] = useState(0);
+
+  // States pour la modification d'un Résumé / Astuce
+  const [isEditResumeModalOpen, setIsEditResumeModalOpen] = useState(false);
+  const [editingResumeId, setEditingResumeId] = useState(null);
+  const [editResTitre, setEditResTitre] = useState('');
+  const [editResMatiere, setEditResMatiere] = useState('Mathématiques');
+  const [editResChapitre, setEditResChapitre] = useState('');
+  const [editResFile, setEditResFile] = useState(null);
+  const [loadingEditRes, setLoadingEditRes] = useState(false);
+
+  // ==================== STATES DYAL COURS_BAC (TABLE COURS_BAC) ====================
+  const [coursBacList, setCoursBacList] = useState([]);
+  const [filteredCoursBac, setFilteredCoursBac] = useState([]);
+  const [searchCoursTitre, setSearchCoursTitre] = useState('');
+  const [selectedCoursMatiere, setSelectedCoursMatiere] = useState('');
+  const [selectedCoursChapitre, setSelectedCoursChapitre] = useState('');
+  const [coursMatieresList, setCoursMatieresList] = useState([]);
+  const [coursChapitresList, setCoursChapitresList] = useState([]);
+
+  const [isCoursModalOpen, setIsCoursModalOpen] = useState(false);
+  const [coursTitre, setCoursTitre] = useState('');
+  const [coursMatiere, setCoursMatiere] = useState('Mathématiques');
+  const [coursChapitre, setCoursChapitre] = useState('');
+  const [coursHtmlFile, setCoursHtmlFile] = useState(null);
+  const [loadingCours, setLoadingCours] = useState(false);
+  const [previewCoursHtml, setPreviewCoursHtml] = useState(null);
+
+  const [isEditCoursModalOpen, setIsEditCoursModalOpen] = useState(false);
+  const [editingCoursId, setEditingCoursId] = useState(null);
+  const [editCoursTitre, setEditCoursTitre] = useState('');
+  const [editCoursMatiere, setEditCoursMatiere] = useState('Mathématiques');
+  const [editCoursChapitre, setEditCoursChapitre] = useState('');
+  const [editCoursHtmlFile, setEditCoursHtmlFile] = useState(null);
+  const [loadingEditCours, setLoadingEditCours] = useState(false);
 
 
   // ==================== STATES DYAL CONCOURS BLANCS ====================
@@ -159,6 +279,7 @@ export default function AdminDashboard() {
       setFilteredRealConcours(data);
       setRealEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
       setRealMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
+      setRealChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
       setRealAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))]);
     } catch (err) { console.error("Erreur fetch real concours:", err); }
   };
@@ -169,8 +290,10 @@ export default function AdminDashboard() {
       const data = Array.isArray(res.data) ? res.data : [];
       setResumesList(data);
       setFilteredResumes(data);
-      setResMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
-      setResChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
+      const existingMats = data.map(item => item.matiere).filter(Boolean);
+      setResMatieresList([...new Set(['Mathématiques', 'Physique-Chimie', 'SVT', ...existingMats])]);
+      const existingChaps = data.map(item => item.chapitre).filter(Boolean);
+      setResChapitresList([...new Set(existingChaps)]);
     } catch (err) { console.error("Erreur resumes:", err); }
   };
 
@@ -209,11 +332,25 @@ export default function AdminDashboard() {
     } catch (err) { console.error("Erreur examens:", err); }
   };
 
+  const fetchCoursBac = async () => {
+    try {
+      const res = await axios.get('http://localhost:8081/api/cours-bac', { withCredentials: true });
+      const data = Array.isArray(res.data) ? res.data : [];
+      setCoursBacList(data);
+      setFilteredCoursBac(data);
+      const existingMats = data.map(item => item.matiere).filter(Boolean);
+      setCoursMatieresList([...new Set(['Mathématiques', 'Physique-Chimie', 'SVT', 'Philosophie', 'Anglais', ...existingMats])]);
+      const existingChaps = data.map(item => item.chapitre).filter(Boolean);
+      setCoursChapitresList([...new Set(existingChaps)]);
+    } catch (err) { console.error("Erreur cours bac:", err); }
+  };
+
   useEffect(() => {
     fetchDemandes();
     fetchUsers();
     fetchRealConcours();
     fetchResumes();
+    fetchCoursBac();
     fetchConcours();
     fetchExamens();
   }, []);
@@ -248,6 +385,7 @@ export default function AdminDashboard() {
     formData.append('titre', realTitre);
     formData.append('ecole', realEcole);
     formData.append('matiere', realMatiere);
+    if (realChapitre) formData.append('chapitre', realChapitre);
     formData.append('annee', realAnnee);
     if (realFileSujet) formData.append('fileSujet', realFileSujet);
     if (realFileCorrection) formData.append('fileCorrection', realFileCorrection);
@@ -260,7 +398,7 @@ export default function AdminDashboard() {
       alert('Concours ajouté avec succès ! 🎉');
       setIsRealConcoursModalOpen(false);
       fetchRealConcours();
-      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
+      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealChapitre(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du concours!");
     } finally { setLoadingRealCon(false); }
@@ -283,9 +421,10 @@ export default function AdminDashboard() {
     if (searchRealTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchRealTitre.toLowerCase()));
     if (selectedRealEcole) result = result.filter(item => item.ecole === selectedRealEcole);
     if (selectedRealMatiere) result = result.filter(item => item.matiere === selectedRealMatiere);
+    if (selectedRealChapitre) result = result.filter(item => item.chapitre === selectedRealChapitre);
     if (selectedRealAnnee) result = result.filter(item => String(item.annee) === String(selectedRealAnnee));
     setFilteredRealConcours(result);
-  }, [searchRealTitre, selectedRealEcole, selectedRealMatiere, selectedRealAnnee, realConcoursList]);
+  }, [searchRealTitre, selectedRealEcole, selectedRealMatiere, selectedRealChapitre, selectedRealAnnee, realConcoursList]);
 
   // --- FILTRES UTILISATEURS PAR DATE ET RECHERCHE ---
   useEffect(() => {
@@ -317,12 +456,31 @@ export default function AdminDashboard() {
     setFilteredUsers(result);
   }, [searchUser, startDate, endDate, usersList]);
 
-  // --- FILTRES RESUMES ---
+  // --- FILTRES RESUMES & ASTUCES ---
   useEffect(() => {
     let result = resumesList;
-    if (searchResTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchResTitre.toLowerCase()));
-    if (selectedResMatiere) result = result.filter(item => item.matiere === selectedResMatiere);
-    if (selectedResChapitre) result = result.filter(item => item.chapitre === selectedResChapitre);
+    if (searchResTitre) {
+      const q = searchResTitre.toLowerCase();
+      result = result.filter(item => 
+        (item.titre && item.titre.toLowerCase().includes(q)) ||
+        (item.chapitre && item.chapitre.toLowerCase().includes(q)) ||
+        (item.matiere && item.matiere.toLowerCase().includes(q))
+      );
+    }
+    if (selectedResMatiere) {
+      result = result.filter(item => {
+        if (!item.matiere) return false;
+        const m = item.matiere.toLowerCase();
+        const sel = selectedResMatiere.toLowerCase();
+        if (sel.includes('math')) return m.includes('math');
+        if (sel.includes('phys')) return m.includes('phys');
+        if (sel.includes('svt')) return m.includes('svt');
+        return m === sel;
+      });
+    }
+    if (selectedResChapitre) {
+      result = result.filter(item => item.chapitre?.toLowerCase() === selectedResChapitre.toLowerCase());
+    }
     setFilteredResumes(result);
   }, [searchResTitre, selectedResMatiere, selectedResChapitre, resumesList]);
 
@@ -348,9 +506,116 @@ export default function AdminDashboard() {
     setFilteredExamens(result);
   }, [searchExamTitre, selectedExamMatiere, selectedExamAnnee, selectedExamOption, selectedExamSession, examensList]);
 
-  // --- SUBMIT RESUME ---
+  // --- FILTRES TABLE COURS_BAC ---
+  useEffect(() => {
+    let result = coursBacList;
+    if (searchCoursTitre) {
+      const q = searchCoursTitre.toLowerCase();
+      result = result.filter(item => 
+        (item.titre && item.titre.toLowerCase().includes(q)) ||
+        (item.chapitre && item.chapitre.toLowerCase().includes(q)) ||
+        (item.matiere && item.matiere.toLowerCase().includes(q))
+      );
+    }
+    if (selectedCoursMatiere) {
+      result = result.filter(item => {
+        if (!item.matiere) return false;
+        const m = item.matiere.toLowerCase();
+        const sel = selectedCoursMatiere.toLowerCase();
+        if (sel.includes('math')) return m.includes('math');
+        if (sel.includes('phys')) return m.includes('phys');
+        if (sel.includes('svt')) return m.includes('svt');
+        if (sel.includes('philo')) return m.includes('philo');
+        if (sel.includes('ang') || sel.includes('eng')) return m.includes('ang') || m.includes('eng');
+        return m === sel;
+      });
+    }
+    if (selectedCoursChapitre) {
+      result = result.filter(item => item.chapitre?.toLowerCase() === selectedCoursChapitre.toLowerCase());
+    }
+    setFilteredCoursBac(result);
+  }, [searchCoursTitre, selectedCoursMatiere, selectedCoursChapitre, coursBacList]);
+
+  // --- ACTIONS TABLE COURS_BAC (AJOUT, MODIFICATION, SUPPRESSION) ---
+  const handleCoursBacSubmit = async (e) => {
+    e.preventDefault();
+    if (!coursHtmlFile) {
+      alert("Veuillez sélectionner un fichier HTML pour le cours BAC.");
+      return;
+    }
+    setLoadingCours(true);
+    const formData = new FormData();
+    formData.append('titre', coursTitre);
+    formData.append('matiere', coursMatiere);
+    formData.append('chapitre', coursChapitre);
+    formData.append('file', coursHtmlFile);
+
+    try {
+      await axios.post('http://localhost:8081/api/cours-bac', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      alert('Cours BAC HTML enregistré avec succès dans la table COURS_BAC ! 🎉');
+      setIsCoursModalOpen(false);
+      fetchCoursBac();
+      setCoursTitre(''); setCoursMatiere('Mathématiques'); setCoursChapitre(''); setCoursHtmlFile(null);
+    } catch (err) {
+      alert("Erreur lors de l'ajout du cours BAC !");
+    } finally { setLoadingCours(false); }
+  };
+
+  const handleOpenEditCours = (item) => {
+    setEditingCoursId(item.id);
+    setEditCoursTitre(item.titre || '');
+    setEditCoursMatiere(item.matiere || 'Mathématiques');
+    setEditCoursChapitre(item.chapitre || '');
+    setEditCoursHtmlFile(null);
+    setIsEditCoursModalOpen(true);
+  };
+
+  const handleEditCoursSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingEditCours(true);
+    const formData = new FormData();
+    formData.append('titre', editCoursTitre);
+    formData.append('matiere', editCoursMatiere);
+    formData.append('chapitre', editCoursChapitre);
+    if (editCoursHtmlFile) {
+      formData.append('file', editCoursHtmlFile);
+    }
+
+    try {
+      await axios.put(`http://localhost:8081/api/cours-bac/${editingCoursId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      alert('Cours BAC mis à jour avec succès dans la table COURS_BAC ! ✅');
+      setIsEditCoursModalOpen(false);
+      setEditingCoursId(null);
+      fetchCoursBac();
+    } catch (err) {
+      alert("Erreur lors de la modification du cours BAC !");
+    } finally { setLoadingEditCours(false); }
+  };
+
+  const handleDeleteCoursBac = async (id) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce cours BAC de la table COURS_BAC ?")) return;
+    try {
+      await axios.delete(`http://localhost:8081/api/cours-bac/${id}`, { withCredentials: true });
+      alert("Cours BAC supprimé avec succès ! 🗑️");
+      fetchCoursBac();
+    } catch (err) {
+      alert("Erreur lors de la suppression du cours BAC !");
+    }
+  };
+
+  // --- SUBMIT RESUME & ASTUCE ---
   const handleResumeSubmit = async (e) => {
     e.preventDefault();
+    if (!resFile) {
+      alert("Veuillez sélectionner un fichier HTML (ou PDF) pour le résumé / astuce.");
+      return;
+    }
     setLoadingRes(true);
     const formData = new FormData();
     formData.append('titre', resTitre);
@@ -363,20 +628,54 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
-      alert('Résumé ajouté avec succès ! Chaque page a été convertie en image PNG haute fidélité.');
+      alert('Résumé / Astuce ajouté avec succès ! 🎉');
       setIsResumeModalOpen(false);
       fetchResumes();
-      setResTitre(''); setResMatiere(''); setResChapitre(''); setResFile(null);
+      setResTitre(''); setResMatiere('Mathématiques'); setResChapitre(''); setResFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du résumé !");
     } finally { setLoadingRes(false); }
   };
 
+  const handleOpenEditResume = (item) => {
+    setEditingResumeId(item.id);
+    setEditResTitre(item.titre || '');
+    setEditResMatiere(item.matiere || 'Mathématiques');
+    setEditResChapitre(item.chapitre || '');
+    setEditResFile(null);
+    setIsEditResumeModalOpen(true);
+  };
+
+  const handleEditResumeSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingEditRes(true);
+    const formData = new FormData();
+    formData.append('titre', editResTitre);
+    formData.append('matiere', editResMatiere);
+    formData.append('chapitre', editResChapitre);
+    if (editResFile) {
+      formData.append('file', editResFile);
+    }
+
+    try {
+      await axios.put(`http://localhost:8081/api/resumes/${editingResumeId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      alert('Résumé / Astuce mis à jour avec succès ! ✅');
+      setIsEditResumeModalOpen(false);
+      setEditingResumeId(null);
+      fetchResumes();
+    } catch (err) {
+      alert("Erreur lors de la mise à jour du résumé !");
+    } finally { setLoadingEditRes(false); }
+  };
+
   const handleDeleteResume = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce résumé ?")) return;
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce résumé / cette astuce ?")) return;
     try {
       await axios.delete(`http://localhost:8081/api/resumes/${id}`, { withCredentials: true });
-      alert("Résumé supprimé avec succès ! 🗑️");
+      alert("Résumé / Astuce supprimé avec succès ! 🗑️");
       fetchResumes();
     } catch (err) {
       alert("Erreur lors de la suppression du résumé !");
@@ -1079,7 +1378,8 @@ export default function AdminDashboard() {
     { key: 'users', icon: '👤', label: 'Utilisateurs', count: usersList.length, countType: 'default', onClick: () => { setActiveTab('users'); fetchUsers(); } },
     { key: 'realConcours', icon: '🏆', label: 'Gestion des Concours', count: realConcoursList.length, countType: 'default', onClick: () => { setActiveTab('realConcours'); fetchRealConcours(); } },
     { key: 'examens', icon: '🎓', label: 'Examens Nationaux', count: examensList.length, countType: 'default', onClick: () => { setActiveTab('examens'); fetchExamens(); } },
-    { key: 'resumes', icon: '📄', label: 'Résumés', count: null, onClick: () => setActiveTab('resumes') },
+    { key: 'coursBac', icon: '📖', label: 'Cours BAC (COURS_BAC)', count: coursBacList.length, countType: 'default', onClick: () => { setActiveTab('coursBac'); fetchCoursBac(); } },
+    { key: 'resumes', icon: '💡', label: 'Résumés & Astuces', count: resumesList.length, countType: 'default', onClick: () => { setActiveTab('resumes'); fetchResumes(); } },
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
   ];
 
@@ -1572,34 +1872,66 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ==================== SECTION: RESUMES ==================== */}
+        {/* ==================== SECTION: RESUMES & ASTUCES ==================== */}
         {activeTab === 'resumes' && (
           <div style={styles.card}>
             <div style={styles.headerRow}>
-              <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Liste des Résumés</h2>
-              <button onClick={() => setIsResumeModalOpen(true)} style={styles.btnPrimary}>
-                <span style={{ fontSize: '18px' }}>+</span> Ajouter Résumé
+              <div>
+                <h2 style={{ ...styles.cardTitle, marginBottom: '4px' }}>💡 Fiches Résumés & Astuces (Mathématiques, Physique-Chimie, SVT)</h2>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Gestion, ajout et modification des fiches résumés et astuces de concours sous format interactif <strong>HTML</strong> ou PDF.
+                </p>
+              </div>
+              <button onClick={() => { setResMatiere('Mathématiques'); setResChapitre(''); setIsResumeModalOpen(true); }} style={styles.btnPrimary}>
+                <span style={{ fontSize: '18px' }}>+</span> Ajouter Résumé / Astuce (HTML)
               </button>
             </div>
 
-            {/* Filtres */}
+            {/* Filtres par Matière et Chapitre */}
             <div style={styles.filterBar}>
               <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Recherche par Titre</label>
-                <input type="text" placeholder="Titre du résumé..." value={searchResTitre} onChange={(e) => setSearchResTitre(e.target.value)} style={styles.input} />
+                <label style={styles.filterLabel}>Recherche par Titre ou Astuce</label>
+                <input 
+                  type="text" 
+                  placeholder="Recherche par titre, mot-clé d'astuce..." 
+                  value={searchResTitre} 
+                  onChange={(e) => setSearchResTitre(e.target.value)} 
+                  style={styles.input} 
+                />
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Matière</label>
-                <select value={selectedResMatiere} onChange={(e) => setSelectedResMatiere(e.target.value)} style={styles.select}>
-                  <option value="">Toutes les matières</option>
-                  {resMatieresList.map((mat, idx) => <option key={idx} value={mat}>{mat}</option>)}
+                <select 
+                  value={selectedResMatiere} 
+                  onChange={(e) => { 
+                    setSelectedResMatiere(e.target.value); 
+                    setSelectedResChapitre(''); 
+                  }} 
+                  style={styles.select}
+                >
+                  <option value="">Toutes les matières (Math, Physique, SVT)</option>
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                  {resMatieresList.filter(m => !['Mathématiques', 'Physique-Chimie', 'SVT'].includes(m)).map((mat, idx) => (
+                    <option key={idx} value={mat}>{mat}</option>
+                  ))}
                 </select>
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Chapitre</label>
-                <select value={selectedResChapitre} onChange={(e) => setSelectedResChapitre(e.target.value)} style={styles.select}>
+                <select 
+                  value={selectedResChapitre} 
+                  onChange={(e) => setSelectedResChapitre(e.target.value)} 
+                  style={styles.select}
+                >
                   <option value="">Tous les chapitres</option>
-                  {resChapitresList.map((chap, idx) => <option key={idx} value={chap}>{chap}</option>)}
+                  {[...new Set([
+                    ...getBacChapitresList(selectedResMatiere),
+                    ...resChapitresList
+                  ])].map((chap, idx) => (
+                    <option key={idx} value={chap}>{chap}</option>
+                  ))}
                 </select>
               </div>
               {(searchResTitre || selectedResMatiere || selectedResChapitre) && (
@@ -1612,11 +1944,11 @@ export default function AdminDashboard() {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Titre</th>
+                  <th style={styles.th}>Titre du Résumé / Astuce</th>
                   <th style={styles.th}>Matière</th>
                   <th style={styles.th}>Chapitre</th>
-                  <th style={styles.th}>Pages PNG</th>
-                  <th style={styles.th}>PDF Original</th>
+                  <th style={styles.th}>Format Document</th>
+                  <th style={styles.th}>Fichier Source</th>
                   <th style={styles.thCenter}>Actions</th>
                 </tr>
               </thead>
@@ -1625,11 +1957,28 @@ export default function AdminDashboard() {
                   filteredResumes.map((item) => {
                     const pages = item.pageImages && item.pageImages.length > 0 ? item.pageImages : [];
                     const pageCount = item.totalPages || pages.length || 1;
+                    const matLower = (item.matiere || '').toLowerCase();
                     return (
                       <tr key={item.id}>
                         <td style={styles.tdBold}>{item.titre}</td>
-                        <td style={styles.td}><span style={styles.tagEcole}>{item.matiere}</span></td>
-                        <td style={styles.td}>{item.chapitre}</td>
+                        <td style={styles.td}>
+                          {matLower.includes('math') ? (
+                            <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              📐 {item.matiere}
+                            </span>
+                          ) : matLower.includes('phys') ? (
+                            <span style={{ background: '#f3e8ff', color: '#7e22ce', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              ⚡ {item.matiere}
+                            </span>
+                          ) : matLower.includes('svt') ? (
+                            <span style={{ background: '#d1fae5', color: '#047857', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              🧬 {item.matiere}
+                            </span>
+                          ) : (
+                            <span style={styles.tagEcole}>{item.matiere}</span>
+                          )}
+                        </td>
+                        <td style={styles.td}>{item.chapitre || '-'}</td>
                         <td style={styles.td}>
                           {item.fileType === 'HTML' || item.htmlUrl ? (
                             <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
@@ -1643,8 +1992,8 @@ export default function AdminDashboard() {
                         </td>
                         <td style={styles.td}>
                           {item.htmlUrl ? (
-                            <a href={getPdfUrl(item.htmlUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
-                              🌐 Ouvrir HTML
+                            <a href={getPdfUrl(item.htmlUrl)} target="_blank" rel="noreferrer" style={{ ...styles.linkBlue, color: '#16a34a', fontWeight: 600 }}>
+                              🌐 Fichier HTML
                             </a>
                           ) : (
                             <a href={getPdfUrl(item.pdfUrl || item.pdf_url)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
@@ -1670,6 +2019,21 @@ export default function AdminDashboard() {
                               {item.htmlUrl || item.fileType === 'HTML' ? '👁️ Aperçu HTML' : '👁️ Voir Pages'}
                             </button>
                             <button
+                              onClick={() => handleOpenEditResume(item)}
+                              style={{
+                                background: '#f1f5f9',
+                                color: '#1e40af',
+                                border: '1px solid #cbd5e1',
+                                padding: '7px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ✏️ Modifier
+                            </button>
+                            <button
                               onClick={() => handleDeleteResume(item.id)}
                               style={styles.btnRedOutline}
                             >
@@ -1681,7 +2045,185 @@ export default function AdminDashboard() {
                     );
                   })
                 ) : (
-                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun résumé trouvé.</td></tr>
+                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun résumé ou astuce trouvé avec ces filtres.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ==================== SECTION: TABLE COURS_BAC ==================== */}
+        {activeTab === 'coursBac' && (
+          <div style={styles.card}>
+            <div style={styles.headerRow}>
+              <div>
+                <h2 style={{ ...styles.cardTitle, marginBottom: '4px' }}>📖 Table COURS_BAC — Fiches HTML</h2>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Table dédiée <code>cours_bac</code> pour les cours du BAC (Mathématiques, Physique-Chimie, SVT) avec upload de fichiers HTML et filtres par Matière et Chapitre.
+                </p>
+              </div>
+              <button onClick={() => { setCoursMatiere('Mathématiques'); setCoursChapitre(''); setIsCoursModalOpen(true); }} style={styles.btnPrimary}>
+                <span style={{ fontSize: '18px' }}>+</span> Ajouter Cours BAC (HTML)
+              </button>
+            </div>
+
+            {/* Filtres par Matière et Chapitre */}
+            <div style={styles.filterBar}>
+              <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>Recherche par Titre</label>
+                <input 
+                  type="text" 
+                  placeholder="Recherche par titre du cours..." 
+                  value={searchCoursTitre} 
+                  onChange={(e) => setSearchCoursTitre(e.target.value)} 
+                  style={styles.input} 
+                />
+              </div>
+              <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>Matière</label>
+                <select 
+                  value={selectedCoursMatiere} 
+                  onChange={(e) => { 
+                    setSelectedCoursMatiere(e.target.value); 
+                    setSelectedCoursChapitre(''); 
+                  }} 
+                  style={styles.select}
+                >
+                  <option value="">Toutes les matières (Math, Physique, SVT, Philo, Anglais)</option>
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                  <option value="Philosophie">🏛️ Philosophie</option>
+                  <option value="Anglais">🌍 Anglais (English)</option>
+                  {coursMatieresList.filter(m => !['Mathématiques', 'Physique-Chimie', 'SVT', 'Philosophie', 'Anglais'].includes(m)).map((mat, idx) => (
+                    <option key={idx} value={mat}>{mat}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>Chapitre</label>
+                <select 
+                  value={selectedCoursChapitre} 
+                  onChange={(e) => setSelectedCoursChapitre(e.target.value)} 
+                  style={styles.select}
+                >
+                  <option value="">Tous les chapitres</option>
+                  {[...new Set([
+                    ...getBacChapitresList(selectedCoursMatiere),
+                    ...coursChapitresList
+                  ])].map((chap, idx) => (
+                    <option key={idx} value={chap}>{chap}</option>
+                  ))}
+                </select>
+              </div>
+              {(searchCoursTitre || selectedCoursMatiere || selectedCoursChapitre) && (
+                <button onClick={() => { setSearchCoursTitre(''); setSelectedCoursMatiere(''); setSelectedCoursChapitre(''); }} style={styles.btnReset}>
+                  Réinitialiser
+                </button>
+              )}
+            </div>
+
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>ID</th>
+                  <th style={styles.th}>Titre du Cours</th>
+                  <th style={styles.th}>Matière</th>
+                  <th style={styles.th}>Chapitre</th>
+                  <th style={styles.th}>Fichier HTML</th>
+                  <th style={styles.thCenter}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCoursBac.length > 0 ? (
+                  filteredCoursBac.map((item) => {
+                    const matLower = (item.matiere || '').toLowerCase();
+                    return (
+                      <tr key={item.id}>
+                        <td style={styles.tdBold}>#{item.id}</td>
+                        <td style={styles.tdBold}>{item.titre}</td>
+                        <td style={styles.td}>
+                          {matLower.includes('math') ? (
+                            <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              📐 {item.matiere}
+                            </span>
+                          ) : matLower.includes('phys') ? (
+                            <span style={{ background: '#f3e8ff', color: '#7e22ce', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              ⚡ {item.matiere}
+                            </span>
+                          ) : matLower.includes('svt') ? (
+                            <span style={{ background: '#d1fae5', color: '#047857', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              🧬 {item.matiere}
+                            </span>
+                          ) : matLower.includes('philo') ? (
+                            <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              🏛️ {item.matiere}
+                            </span>
+                          ) : matLower.includes('ang') || matLower.includes('eng') ? (
+                            <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                              🌍 {item.matiere}
+                            </span>
+                          ) : (
+                            <span style={styles.tagEcole}>{item.matiere}</span>
+                          )}
+                        </td>
+                        <td style={styles.td}>{item.chapitre || '-'}</td>
+                        <td style={styles.td}>
+                          {item.htmlUrl ? (
+                            <a href={getPdfUrl(item.htmlUrl)} target="_blank" rel="noreferrer" style={{ ...styles.linkBlue, color: '#16a34a', fontWeight: 600 }}>
+                              🌐 Ouvrir Fichier HTML
+                            </a>
+                          ) : (
+                            <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Aucun fichier</span>
+                          )}
+                        </td>
+                        <td style={styles.tdCenter}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            {item.htmlUrl && (
+                              <button
+                                onClick={() => setPreviewCoursHtml(item)}
+                                style={{
+                                  background: '#2563eb',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  padding: '7px 12px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                👁️ Aperçu HTML
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleOpenEditCours(item)}
+                              style={{
+                                background: '#f1f5f9',
+                                color: '#1e40af',
+                                border: '1px solid #cbd5e1',
+                                padding: '7px 12px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ✏️ Modifier
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCoursBac(item.id)}
+                              style={styles.btnRedOutline}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun cours BAC trouvé dans la table COURS_BAC avec ces critères.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1873,34 +2415,75 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal: Ajouter Résumé */}
+      {/* Modal: Ajouter Résumé / Astuce */}
       {isResumeModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalBox}>
             <div style={styles.modalHeader}>
               <div>
-                <h3 style={styles.modalTitle}>Ajouter un Résumé de Cours</h3>
+                <h3 style={styles.modalTitle}>💡 Ajouter un Résumé / Astuce (HTML)</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  Vous pouvez uploader un fichier <strong>.html</strong> (avec MathJax et styles) ou un document <strong>.pdf</strong>.
+                  Sélectionnez la matière (Mathématiques, Physique-Chimie, SVT), le chapitre et uploadez le fichier <strong>HTML</strong> (ou PDF).
                 </p>
               </div>
               <button onClick={() => setIsResumeModalOpen(false)} style={styles.modalClose}>&times;</button>
             </div>
             <form onSubmit={handleResumeSubmit}>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Titre du résumé</label>
-                <input type="text" placeholder="Ex: Résumé - Calcul des Limites" value={resTitre} onChange={(e) => setResTitre(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Titre du résumé ou astuce *</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: Astuces Calcul des Limites & Formes Indéterminées" 
+                  value={resTitre} 
+                  onChange={(e) => setResTitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
               </div>
+
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Matière</label>
-                <input type="text" placeholder="Ex: Mathématiques, Physique, SVT" value={resMatiere} onChange={(e) => setResMatiere(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Matière du Concours / BAC *</label>
+                <select 
+                  value={resMatiere} 
+                  onChange={(e) => { 
+                    setResMatiere(e.target.value); 
+                    setResChapitre(''); 
+                  }} 
+                  required 
+                  style={styles.formInput}
+                >
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                </select>
               </div>
+
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Chapitre</label>
-                <input type="text" placeholder="Ex: Suites Numériques, Dérivation" value={resChapitre} onChange={(e) => setResChapitre(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Chapitre *</label>
+                <input 
+                  type="text" 
+                  list="add-chapitres-bac-list" 
+                  placeholder="Sélectionnez ou tapez le nom du chapitre..." 
+                  value={resChapitre} 
+                  onChange={(e) => setResChapitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+                <datalist id="add-chapitres-bac-list">
+                  {getBacChapitresList(resMatiere).map((ch, idx) => (
+                    <option key={idx} value={ch} />
+                  ))}
+                  {resChapitresList.map((ch, idx) => (
+                    <option key={`existing-${idx}`} value={ch} />
+                  ))}
+                </datalist>
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  💡 Choisissez dans la liste déroulante ou tapez directement un nouveau chapitre.
+                </small>
               </div>
+
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Fichier du cours (HTML ou PDF)</label>
+                <label style={styles.formLabel}>Fichier HTML du Résumé / Astuce *</label>
                 <input 
                   type="file" 
                   accept=".html,.htm,.pdf,application/pdf" 
@@ -1908,14 +2491,101 @@ export default function AdminDashboard() {
                   required 
                   style={styles.formFile} 
                 />
-                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
-                  💡 Les fichiers .html conservent automatiquement MathJax et les styles W3Schools.
+                <small style={{ color: '#15803d', display: 'block', marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>
+                  🌐 Fichiers .html recommandés : affichage direct avec formules MathJax/KaTeX, tableaux et styles interactifs.
                 </small>
               </div>
+
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsResumeModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingRes} style={{ ...styles.btnSubmit, opacity: loadingRes ? 0.7 : 1 }}>
-                  {loadingRes ? 'Traitement en cours...' : 'Enregistrer le Résumé'}
+                  {loadingRes ? 'Enregistrement...' : 'Enregistrer le Résumé / Astuce'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Modifier Résumé / Astuce */}
+      {isEditResumeModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>✏️ Modifier le Résumé / Astuce</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Modifiez le titre, la matière, le chapitre ou remplacez le fichier source HTML.
+                </p>
+              </div>
+              <button onClick={() => setIsEditResumeModalOpen(false)} style={styles.modalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleEditResumeSubmit}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Titre du résumé ou astuce *</label>
+                <input 
+                  type="text" 
+                  value={editResTitre} 
+                  onChange={(e) => setEditResTitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Matière du Concours / BAC *</label>
+                <select 
+                  value={editResMatiere} 
+                  onChange={(e) => { 
+                    setEditResMatiere(e.target.value); 
+                    setEditResChapitre(''); 
+                  }} 
+                  required 
+                  style={styles.formInput}
+                >
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Chapitre *</label>
+                <input 
+                  type="text" 
+                  list="edit-chapitres-bac-list" 
+                  value={editResChapitre} 
+                  onChange={(e) => setEditResChapitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+                <datalist id="edit-chapitres-bac-list">
+                  {getBacChapitresList(editResMatiere).map((ch, idx) => (
+                    <option key={idx} value={ch} />
+                  ))}
+                  {resChapitresList.map((ch, idx) => (
+                    <option key={`edit-existing-${idx}`} value={ch} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Remplacer le fichier HTML (Optionnel)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,.pdf,application/pdf" 
+                  onChange={(e) => setEditResFile(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  💡 Laissez ce champ vide pour conserver le fichier HTML actuel.
+                </small>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={() => setIsEditResumeModalOpen(false)} style={styles.btnCancel}>Annuler</button>
+                <button type="submit" disabled={loadingEditRes} style={{ ...styles.btnSubmit, opacity: loadingEditRes ? 0.7 : 1 }}>
+                  {loadingEditRes ? 'Mise à jour...' : 'Enregistrer les modifications'}
                 </button>
               </div>
             </form>
@@ -2014,6 +2684,230 @@ export default function AdminDashboard() {
 
             <div style={{ ...styles.modalFooter, marginTop: '20px' }}>
               <button onClick={() => setPreviewResume(null)} style={styles.btnCancel}>Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Ajouter Cours BAC */}
+      {isCoursModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>📖 Ajouter un Cours BAC (Table COURS_BAC)</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Enregistrement dans la table <strong>cours_bac</strong> avec fichier HTML.
+                </p>
+              </div>
+              <button onClick={() => setIsCoursModalOpen(false)} style={styles.modalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleCoursBacSubmit}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Titre du cours *</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: Cours complet - Calcul des Limites & Fonctions" 
+                  value={coursTitre} 
+                  onChange={(e) => setCoursTitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Matière (Math, Physique, SVT, Philo, Anglais) *</label>
+                <select 
+                  value={coursMatiere} 
+                  onChange={(e) => { 
+                    setCoursMatiere(e.target.value); 
+                    setCoursChapitre(''); 
+                  }} 
+                  required 
+                  style={styles.formInput}
+                >
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                  <option value="Philosophie">🏛️ Philosophie</option>
+                  <option value="Anglais">🌍 Anglais (English)</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Chapitre *</label>
+                <input 
+                  type="text" 
+                  list="add-cours-chapitres-list" 
+                  placeholder="Sélectionnez ou tapez le nom du chapitre..." 
+                  value={coursChapitre} 
+                  onChange={(e) => setCoursChapitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+                <datalist id="add-cours-chapitres-list">
+                  {getBacChapitresList(coursMatiere).map((ch, idx) => (
+                    <option key={idx} value={ch} />
+                  ))}
+                  {coursChapitresList.map((ch, idx) => (
+                    <option key={`cours-${idx}`} value={ch} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Upload du fichier HTML (.html, .htm) *</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setCoursHtmlFile(e.target.files[0])} 
+                  required 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#15803d', display: 'block', marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>
+                  🌐 Fichier HTML interactif sauvegardé dans le dossier uploads/ et lié au cours.
+                </small>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={() => setIsCoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
+                <button type="submit" disabled={loadingCours} style={{ ...styles.btnSubmit, opacity: loadingCours ? 0.7 : 1 }}>
+                  {loadingCours ? 'Enregistrement...' : 'Enregistrer dans COURS_BAC'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Modifier Cours BAC */}
+      {isEditCoursModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>✏️ Modifier Cours BAC</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Modifiez les informations dans la table <strong>cours_bac</strong>.
+                </p>
+              </div>
+              <button onClick={() => setIsEditCoursModalOpen(false)} style={styles.modalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleEditCoursSubmit}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Titre du cours *</label>
+                <input 
+                  type="text" 
+                  value={editCoursTitre} 
+                  onChange={(e) => setEditCoursTitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Matière *</label>
+                <select 
+                  value={editCoursMatiere} 
+                  onChange={(e) => { 
+                    setEditCoursMatiere(e.target.value); 
+                    setEditCoursChapitre(''); 
+                  }} 
+                  required 
+                  style={styles.formInput}
+                >
+                  <option value="Mathématiques">📐 Mathématiques</option>
+                  <option value="Physique-Chimie">⚡ Physique-Chimie</option>
+                  <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                  <option value="Philosophie">🏛️ Philosophie</option>
+                  <option value="Anglais">🌍 Anglais (English)</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Chapitre *</label>
+                <input 
+                  type="text" 
+                  list="edit-cours-chapitres-list" 
+                  value={editCoursChapitre} 
+                  onChange={(e) => setEditCoursChapitre(e.target.value)} 
+                  required 
+                  style={styles.formInput} 
+                />
+                <datalist id="edit-cours-chapitres-list">
+                  {getBacChapitresList(editCoursMatiere).map((ch, idx) => (
+                    <option key={idx} value={ch} />
+                  ))}
+                  {coursChapitresList.map((ch, idx) => (
+                    <option key={`edit-cours-${idx}`} value={ch} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Remplacer le fichier HTML (Optionnel)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setEditCoursHtmlFile(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                  💡 Laissez vide pour conserver le fichier HTML actuel.
+                </small>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={() => setIsEditCoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
+                <button type="submit" disabled={loadingEditCours} style={{ ...styles.btnSubmit, opacity: loadingEditCours ? 0.7 : 1 }}>
+                  {loadingEditCours ? 'Mise à jour...' : 'Enregistrer les modifications'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Aperçu Fichier HTML Cours BAC */}
+      {previewCoursHtml && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '1100px', maxHeight: '92vh', overflowY: 'auto' }}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>📖 {previewCoursHtml.titre}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  {previewCoursHtml.matiere} • {previewCoursHtml.chapitre} • Table COURS_BAC
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a
+                  href={getPdfUrl(previewCoursHtml.htmlUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, textDecoration: 'none', background: '#eff6ff', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  Plein écran ↗
+                </a>
+                <button onClick={() => setPreviewCoursHtml(null)} style={styles.modalClose}>&times;</button>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+              <iframe
+                src={getPdfUrl(previewCoursHtml.htmlUrl)}
+                title={previewCoursHtml.titre}
+                style={{
+                  width: '100%',
+                  height: '74vh',
+                  border: 'none',
+                  display: 'block',
+                  background: '#ffffff'
+                }}
+              />
+            </div>
+
+            <div style={{ ...styles.modalFooter, marginTop: '16px' }}>
+              <button onClick={() => setPreviewCoursHtml(null)} style={styles.btnCancel}>Fermer</button>
             </div>
           </div>
         </div>

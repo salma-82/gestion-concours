@@ -66,7 +66,11 @@ function App() {
           />
           <Route
             path="/client-resumes"
-            element={<ClientResumes />}
+            element={<ClientResumes mode="resumes" />}
+          />
+          <Route
+            path="/client-astuces"
+            element={<ClientResumes mode="astuces" />}
           />
           <Route
             path="/client-examens"
