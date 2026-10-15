@@ -18,8 +18,11 @@ import AdminConcoursBlanc from './components/ConcoursBlancManager';
 import ClientLayout from './components/ClientLayout';
 import ClientDashboard from './components/ClientDashboard';
 import ClientResumes from './components/ClientResumes';
+import ClientResumesPage from './components/ClientResumesPage';
+import ClientCoursPage from './components/ClientCoursPage';
 import ClientExamens from './components/ClientExamens';
 import ClientConcoursBlanc from './components/ClientConcoursBlanc';
+import ClientConcours from './components/ClientConcours';
 
 // PDF → HTML
 import PdfToHtml from './components/PdfToHtml';
@@ -65,12 +68,12 @@ function App() {
             element={<ClientDashboard />}
           />
           <Route
-            path="/client-resumes"
-            element={<ClientResumes mode="resumes" />}
+            path="/client-cours"
+            element={<ClientCoursPage />}
           />
           <Route
-            path="/client-astuces"
-            element={<ClientResumes mode="astuces" />}
+            path="/client-resumes"
+            element={<ClientResumesPage />}
           />
           <Route
             path="/client-examens"
@@ -78,6 +81,10 @@ function App() {
           />
           <Route
             path="/client-concours"
+            element={<ClientConcours />}
+          />
+          <Route
+            path="/client-concours-blanc"
             element={<ClientConcoursBlanc />}
           />
         </Route>

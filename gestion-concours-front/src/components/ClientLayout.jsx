@@ -12,13 +12,12 @@ export default function ClientLayout() {
     navigate('/');
   };
 
-  // Sidebar items strictly matching the user screenshot:
+  // Sidebar items:
   // 1. Dashboard
   // 2. Examens Nationaux
-  // 3. Résumé
-  // 4. Fiches & Résumés
+  // 3. Cours
+  // 4. Résumés
   // 5. Concours Blanc
-  // 6. Concours
   const navItems = [
     {
       title: 'Dashboard',
@@ -49,8 +48,8 @@ export default function ClientLayout() {
       )
     },
     {
-      title: 'Résumés',
-      path: '/client-resumes',
+      title: 'Cours',
+      path: '/client-cours',
       color: '#f43f5e',
       bgColor: '#ffe4e6',
       renderIcon: () => (
@@ -63,8 +62,8 @@ export default function ClientLayout() {
       )
     },
     {
-      title: 'Astuces',
-      path: '/client-astuces',
+      title: 'Résumés',
+      path: '/client-resumes',
       color: '#d97706',
       bgColor: '#fef3c7',
       renderIcon: () => (
@@ -77,8 +76,20 @@ export default function ClientLayout() {
       )
     },
     {
-      title: 'Concours Blanc',
+      title: 'Concours',
       path: '/client-concours',
+      color: '#0d9488',
+      bgColor: '#ccfbf1',
+      renderIcon: () => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+          <path d="M6 12v5c3 3 9 3 12 0v-5" />
+        </svg>
+      )
+    },
+    {
+      title: 'Concours Blanc',
+      path: '/client-concours-blanc',
       color: '#f59e0b',
       bgColor: '#fef3c7',
       renderIcon: () => (
@@ -91,6 +102,11 @@ export default function ClientLayout() {
     }
   ];
 
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
+  const userName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant');
+  const userInitial = (user.prenom || user.nom || 'E').charAt(0).toUpperCase();
+
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f8fafc', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", overflow: 'hidden', position: 'relative' }}>
       
@@ -99,7 +115,7 @@ export default function ClientLayout() {
         width: '280px',
         minWidth: '280px',
         backgroundColor: '#ffffff',
-        borderRight: isSidebarOpen ? '1px solid #f1f5f9' : 'none',
+        borderRight: isSidebarOpen ? '1px solid #e2e8f0' : 'none',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -137,7 +153,8 @@ export default function ClientLayout() {
                     cursor: 'pointer',
                     backgroundColor: isSelected ? '#edf4fe' : 'transparent',
                     borderLeft: isSelected ? '4px solid #2563eb' : '4px solid transparent',
-                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected ? '0 1px 3px rgba(37, 99, 235, 0.06)' : 'none',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     userSelect: 'none'
                   }}
                   onMouseEnter={(e) => {
@@ -162,7 +179,8 @@ export default function ClientLayout() {
                     justifyContent: 'center',
                     flexShrink: 0,
                     marginRight: '14px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                    transition: 'transform 0.2s ease'
                   }}>
                     {item.renderIcon()}
                   </div>
@@ -302,7 +320,7 @@ export default function ClientLayout() {
         overflow: 'hidden',
         backgroundColor: '#f8fafc'
       }}>
-        {/* TOPBAR EXACTEMENT COMME LE SCREENSHOT (sans la barre de recherche) */}
+        {/* TOPBAR MODERNE & ÉLÉGANTE */}
         <header style={{
           height: '64px',
           backgroundColor: '#ffffff',
@@ -312,43 +330,114 @@ export default function ClientLayout() {
           justifyContent: 'space-between',
           padding: '0 24px',
           flexShrink: 0,
-          zIndex: 40
+          zIndex: 40,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)'
         }}>
-          {/* Bouton Hamburger arrondi avec contour doux */}
-          <button
-            onClick={() => setIsSidebarOpen(prev => !prev)}
-            title={isSidebarOpen ? "Masquer le menu" : "Afficher le menu"}
-            aria-label="Toggle menu"
-            style={{
-              width: '42px',
-              height: '42px',
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
+          {/* Gauche : Bouton Hamburger + Fil d'ariane contextuel */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <button
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              title={isSidebarOpen ? "Masquer le menu" : "Afficher le menu"}
+              aria-label="Toggle menu"
+              style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                padding: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="2.2" strokeLinecap="round">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </svg>
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.2px' }}>
+                Espace Étudiant
+              </span>
+              <span style={{ fontSize: '12px', color: '#cbd5e1' }}>•</span>
+              <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600 }}>
+                Portail Prépa Concours
+              </span>
+            </div>
+          </div>
+
+          {/* Droite : Badge Session Active & Profil Candidat */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '5px 12px',
+              borderRadius: '20px',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #a7f3d0'
+            }}>
+              <span style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                boxShadow: '0 0 6px rgba(16, 185, 129, 0.6)'
+              }} />
+              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#047857', letterSpacing: '0.2px' }}>
+                Session 2026
+              </span>
+            </div>
+
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-              padding: 0
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8fafc';
-              e.currentTarget.style.borderColor = '#cbd5e1';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="4" y1="7" x2="20" y2="7" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="17" x2="20" y2="17" />
-            </svg>
-          </button>
+              gap: '10px',
+              padding: '4px 12px 4px 5px',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '13px',
+                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)'
+              }}>
+                {userInitial}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+                  {userName}
+                </span>
+                <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>
+                  Candidat
+                </span>
+              </div>
+            </div>
+          </div>
         </header>
 
         {/* ZONE CONTENU DE LA PAGE */}

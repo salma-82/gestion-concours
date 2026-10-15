@@ -116,22 +116,23 @@ export default function AdminDashboard() {
   const [searchRealTitre, setSearchRealTitre] = useState('');
   const [selectedRealEcole, setSelectedRealEcole] = useState('');
   const [selectedRealMatiere, setSelectedRealMatiere] = useState('');
-  const [selectedRealChapitre, setSelectedRealChapitre] = useState('');
   const [selectedRealAnnee, setSelectedRealAnnee] = useState('');
   const [realEcolesList, setRealEcolesList] = useState([]);
   const [realMatieresList, setRealMatieresList] = useState([]);
-  const [realChapitresList, setRealChapitresList] = useState([]);
   const [realAnneesList, setRealAnneesList] = useState([]);
 
   const [isRealConcoursModalOpen, setIsRealConcoursModalOpen] = useState(false);
+  const [isEditRealConcoursModalOpen, setIsEditRealConcoursModalOpen] = useState(false);
+  const [editingRealConcoursId, setEditingRealConcoursId] = useState(null);
+  const [previewRealConcoursHtml, setPreviewRealConcoursHtml] = useState(null);
   const [realTitre, setRealTitre] = useState('');
   const [realEcole, setRealEcole] = useState('');
   const [realMatiere, setRealMatiere] = useState('');
-  const [realChapitre, setRealChapitre] = useState('');
   const [realAnnee, setRealAnnee] = useState('');
   const [realFileSujet, setRealFileSujet] = useState(null);
   const [realFileCorrection, setRealFileCorrection] = useState(null);
   const [loadingRealCon, setLoadingRealCon] = useState(false);
+  const [loadingEditRealCon, setLoadingEditRealCon] = useState(false);
 
   // ==================== STATES DYAL RESUMES ====================
   const [resumesList, setResumesList] = useState([]);
@@ -279,7 +280,6 @@ export default function AdminDashboard() {
       setFilteredRealConcours(data);
       setRealEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
       setRealMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
-      setRealChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
       setRealAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))]);
     } catch (err) { console.error("Erreur fetch real concours:", err); }
   };
@@ -377,7 +377,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- ACTIONS CONCOURS (REELS): AJOUT / SUPPRESSION ---
+  // --- ACTIONS CONCOURS (REELS): AJOUT / MODIFICATION / SUPPRESSION (HTML) ---
   const handleRealConcoursSubmit = async (e) => {
     e.preventDefault();
     setLoadingRealCon(true);
@@ -385,23 +385,70 @@ export default function AdminDashboard() {
     formData.append('titre', realTitre);
     formData.append('ecole', realEcole);
     formData.append('matiere', realMatiere);
-    if (realChapitre) formData.append('chapitre', realChapitre);
     formData.append('annee', realAnnee);
-    if (realFileSujet) formData.append('fileSujet', realFileSujet);
-    if (realFileCorrection) formData.append('fileCorrection', realFileCorrection);
+    if (realFileSujet) {
+      formData.append('fileHtml', realFileSujet);
+      formData.append('fileSujet', realFileSujet);
+    }
+    if (realFileCorrection) {
+      formData.append('fileHtmlCorrection', realFileCorrection);
+      formData.append('fileCorrection', realFileCorrection);
+    }
 
     try {
       await axios.post('http://localhost:8081/api/concours', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
-      alert('Concours ajouté avec succès ! 🎉');
+      alert('Concours HTML ajouté avec succès ! 🎉');
       setIsRealConcoursModalOpen(false);
       fetchRealConcours();
-      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealChapitre(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
+      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du concours!");
     } finally { setLoadingRealCon(false); }
+  };
+
+  const handleOpenEditRealConcours = (item) => {
+    setEditingRealConcoursId(item.id);
+    setRealTitre(item.titre || '');
+    setRealEcole(item.ecole || '');
+    setRealMatiere(item.matiere || '');
+    setRealAnnee(item.annee || '');
+    setRealFileSujet(null);
+    setRealFileCorrection(null);
+    setIsEditRealConcoursModalOpen(true);
+  };
+
+  const handleEditRealConcoursSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingEditRealCon(true);
+    const formData = new FormData();
+    formData.append('titre', realTitre);
+    formData.append('ecole', realEcole);
+    formData.append('matiere', realMatiere);
+    formData.append('annee', realAnnee);
+    if (realFileSujet) {
+      formData.append('fileHtml', realFileSujet);
+      formData.append('fileSujet', realFileSujet);
+    }
+    if (realFileCorrection) {
+      formData.append('fileHtmlCorrection', realFileCorrection);
+      formData.append('fileCorrection', realFileCorrection);
+    }
+
+    try {
+      await axios.put(`http://localhost:8081/api/concours/${editingRealConcoursId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      });
+      alert('Concours HTML mis à jour avec succès ! ✅');
+      setIsEditRealConcoursModalOpen(false);
+      fetchRealConcours();
+      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
+    } catch (err) {
+      alert("Erreur lors de la mise à jour du concours !");
+    } finally { setLoadingEditRealCon(false); }
   };
 
   const handleDeleteRealConcours = async (id) => {
@@ -421,10 +468,9 @@ export default function AdminDashboard() {
     if (searchRealTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchRealTitre.toLowerCase()));
     if (selectedRealEcole) result = result.filter(item => item.ecole === selectedRealEcole);
     if (selectedRealMatiere) result = result.filter(item => item.matiere === selectedRealMatiere);
-    if (selectedRealChapitre) result = result.filter(item => item.chapitre === selectedRealChapitre);
     if (selectedRealAnnee) result = result.filter(item => String(item.annee) === String(selectedRealAnnee));
     setFilteredRealConcours(result);
-  }, [searchRealTitre, selectedRealEcole, selectedRealMatiere, selectedRealChapitre, selectedRealAnnee, realConcoursList]);
+  }, [searchRealTitre, selectedRealEcole, selectedRealMatiere, selectedRealAnnee, realConcoursList]);
 
   // --- FILTRES UTILISATEURS PAR DATE ET RECHERCHE ---
   useEffect(() => {
@@ -875,6 +921,7 @@ export default function AdminDashboard() {
   const getPdfUrl = (url) => {
     if (!url) return '#';
     if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.includes('localhost:8080')) return url.replace('localhost:8080', 'localhost:8081');
       return url;
     }
     return `http://localhost:8081/uploads/${url}`;
@@ -1573,9 +1620,25 @@ export default function AdminDashboard() {
         {activeTab === 'realConcours' && (
           <div style={styles.card}>
             <div style={styles.headerRow}>
-              <h2 style={{ ...styles.cardTitle, marginBottom: 0 }}>Gestion des Concours (Sujets & Corrections)</h2>
-              <button onClick={() => setIsRealConcoursModalOpen(true)} style={styles.btnPrimary}>
-                <span style={{ fontSize: '18px' }}>+</span> Ajouter un Concours
+              <div>
+                <h2 style={{ ...styles.cardTitle, marginBottom: '4px' }}>🏆 Gestion des Concours (Fichiers HTML)</h2>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Tableau de gestion des concours réels avec import et prévisualisation des fichiers HTML interactifs.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setRealTitre('');
+                  setRealEcole('');
+                  setRealMatiere('');
+                  setRealAnnee('');
+                  setRealFileSujet(null);
+                  setRealFileCorrection(null);
+                  setIsRealConcoursModalOpen(true);
+                }}
+                style={styles.btnPrimary}
+              >
+                <span style={{ fontSize: '18px' }}>+</span> Ajouter un Concours (HTML)
               </button>
             </div>
 
@@ -1621,7 +1684,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>École</th>
                   <th style={styles.th}>Matière</th>
                   <th style={styles.th}>Année</th>
-                  <th style={styles.th}>Fichiers</th>
+                  <th style={styles.th}>Fichiers HTML</th>
                   <th style={styles.thCenter}>Actions</th>
                 </tr>
               </thead>
@@ -1635,19 +1698,99 @@ export default function AdminDashboard() {
                       <td style={styles.td}>{item.matiere}</td>
                       <td style={styles.td}>{item.annee}</td>
                       <td style={styles.td}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {item.pdfUrl ? (
-                            <a href={getPdfUrl(item.pdfUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>📄 Sujet PDF</a>
-                          ) : <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Sujet manquant</span>}
-                          {item.pdfCorrectionUrl ? (
-                            <a href={getPdfUrl(item.pdfCorrectionUrl)} target="_blank" rel="noreferrer" style={styles.linkGreen}>✅ Correction</a>
-                          ) : <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Correction manquante</span>}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {/* Sujet HTML */}
+                          {item.htmlUrl ? (
+                            <button
+                              onClick={() => setPreviewRealConcoursHtml({
+                                titre: item.titre,
+                                url: item.htmlUrl,
+                                type: 'Sujet HTML',
+                                ecole: item.ecole,
+                                matiere: item.matiere,
+                                annee: item.annee
+                              })}
+                              style={{
+                                background: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                width: 'fit-content'
+                              }}
+                              title="Ouvrir l'aperçu du Sujet HTML"
+                            >
+                              <span>🌐</span> Sujet HTML
+                            </button>
+                          ) : (
+                            <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Sujet manquant</span>
+                          )}
+
+                          {/* Correction HTML ou fallback PDF */}
+                          {item.htmlCorrectionUrl ? (
+                            <button
+                              onClick={() => setPreviewRealConcoursHtml({
+                                titre: `${item.titre} (Correction)`,
+                                url: item.htmlCorrectionUrl,
+                                type: 'Correction HTML',
+                                ecole: item.ecole,
+                                matiere: item.matiere,
+                                annee: item.annee
+                              })}
+                              style={{
+                                background: '#f0fdf4',
+                                color: '#15803d',
+                                border: '1px solid #bbf7d0',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                width: 'fit-content'
+                              }}
+                              title="Ouvrir l'aperçu de la Correction HTML"
+                            >
+                              <span>✅</span> Corrigé HTML
+                            </button>
+                          ) : item.pdfCorrectionUrl ? (
+                            <a href={getPdfUrl(item.pdfCorrectionUrl)} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#64748b', textDecoration: 'none' }}>
+                              ✅ Corrigé (PDF)
+                            </a>
+                          ) : (
+                            <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Corrigé manquant</span>
+                          )}
                         </div>
                       </td>
                       <td style={styles.tdCenter}>
-                        <button onClick={() => handleDeleteRealConcours(item.id)} style={styles.btnRedOutline}>
-                          Supprimer
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => handleOpenEditRealConcours(item)}
+                            style={{
+                              background: '#eff6ff',
+                              color: '#2563eb',
+                              border: '1.5px solid #2563eb',
+                              padding: '7px 12px',
+                              borderRadius: '8px',
+                              fontSize: '12.5px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Modifier
+                          </button>
+                          <button onClick={() => handleDeleteRealConcours(item.id)} style={styles.btnRedOutline}>
+                            Supprimer
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -2371,46 +2514,188 @@ export default function AdminDashboard() {
 
       {/* ======================== MODALS ======================== */}
 
-      {/* Modal: Ajouter Concours (Réel) */}
+      {/* Modal: Ajouter Concours (HTML) */}
       {isRealConcoursModalOpen && (
         <div style={styles.modalOverlay}>
-          <div style={styles.modalBox}>
+          <div style={{ ...styles.modalBox, maxWidth: '520px' }}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Ajouter un Concours</h3>
+              <div>
+                <h3 style={styles.modalTitle}>🌐 Ajouter un Concours (Fichiers HTML)</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Importez les fichiers HTML du concours (sujet et corrigé interactifs).
+                </p>
+              </div>
               <button onClick={() => setIsRealConcoursModalOpen(false)} style={styles.modalClose}>&times;</button>
             </div>
             <form onSubmit={handleRealConcoursSubmit}>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Titre</label>
-                <input type="text" placeholder="Ex: Concours ENSA 2025" value={realTitre} onChange={(e) => setRealTitre(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Titre du Concours *</label>
+                <input type="text" placeholder="Ex: Concours ENSA 2025 - Mathématiques" value={realTitre} onChange={(e) => setRealTitre(e.target.value)} required style={styles.formInput} />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>École</label>
-                <input type="text" placeholder="Ex: ENSA, ENCG, FST" value={realEcole} onChange={(e) => setRealEcole(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>École *</label>
+                <input type="text" placeholder="Ex: ENSA, ENCG, FST, ENSAM, ENA, APESA..." value={realEcole} onChange={(e) => setRealEcole(e.target.value)} required style={styles.formInput} />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Matière</label>
-                <input type="text" placeholder="Ex: Mathématiques" value={realMatiere} onChange={(e) => setRealMatiere(e.target.value)} required style={styles.formInput} />
+                <label style={styles.formLabel}>Matière *</label>
+                <input type="text" placeholder="Ex: Mathématiques, Physique, SVT..." value={realMatiere} onChange={(e) => setRealMatiere(e.target.value)} required style={styles.formInput} />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Année</label>
+                <label style={styles.formLabel}>Année *</label>
                 <input type="number" placeholder="Ex: 2025" value={realAnnee} onChange={(e) => setRealAnnee(e.target.value)} required style={styles.formInput} />
               </div>
+
+              {/* Fichier HTML Sujet */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📄 PDF Sujet (Optionnel)</label>
-                <input type="file" accept="application/pdf" onChange={(e) => setRealFileSujet(e.target.files[0])} style={styles.formFile} />
+                <label style={styles.formLabel}>🌐 Fichier HTML Sujet (.html, .htm)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setRealFileSujet(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#2563eb', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
+                  📄 Document HTML interactif du sujet (MathJax, styles CSS supportés).
+                </small>
               </div>
+
+              {/* Fichier HTML Correction */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>✅ PDF Correction (Optionnel)</label>
-                <input type="file" accept="application/pdf" onChange={(e) => setRealFileCorrection(e.target.files[0])} style={styles.formFile} />
+                <label style={styles.formLabel}>✅ Fichier HTML Correction (.html, .htm)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setRealFileCorrection(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#16a34a', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
+                  ✓ Corrigé détaillé et barème au format HTML.
+                </small>
               </div>
+
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsRealConcoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingRealCon} style={{ ...styles.btnSubmit, opacity: loadingRealCon ? 0.7 : 1 }}>
-                  {loadingRealCon ? 'Enregistrement...' : 'Enregistrer'}
+                  {loadingRealCon ? 'Enregistrement...' : 'Enregistrer le Concours HTML'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Modifier Concours (HTML) */}
+      {isEditRealConcoursModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '520px' }}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>✏️ Modifier le Concours (HTML)</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  Modifiez les informations et téléversez de nouveaux fichiers HTML si nécessaire.
+                </p>
+              </div>
+              <button onClick={() => setIsEditRealConcoursModalOpen(false)} style={styles.modalClose}>&times;</button>
+            </div>
+            <form onSubmit={handleEditRealConcoursSubmit}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Titre du Concours *</label>
+                <input type="text" value={realTitre} onChange={(e) => setRealTitre(e.target.value)} required style={styles.formInput} />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>École *</label>
+                <input type="text" value={realEcole} onChange={(e) => setRealEcole(e.target.value)} required style={styles.formInput} />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Matière *</label>
+                <input type="text" value={realMatiere} onChange={(e) => setRealMatiere(e.target.value)} required style={styles.formInput} />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Année *</label>
+                <input type="number" value={realAnnee} onChange={(e) => setRealAnnee(e.target.value)} required style={styles.formInput} />
+              </div>
+
+              {/* Remplacer Sujet HTML */}
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>🌐 Remplacer le Fichier HTML Sujet (Optionnel)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setRealFileSujet(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
+                  Laissez vide pour conserver le sujet actuel.
+                </small>
+              </div>
+
+              {/* Remplacer Correction HTML */}
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>✅ Remplacer le Fichier HTML Correction (Optionnel)</label>
+                <input 
+                  type="file" 
+                  accept=".html,.htm,text/html" 
+                  onChange={(e) => setRealFileCorrection(e.target.files[0])} 
+                  style={styles.formFile} 
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
+                  Laissez vide pour conserver la correction actuelle.
+                </small>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={() => setIsEditRealConcoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
+                <button type="submit" disabled={loadingEditRealCon} style={{ ...styles.btnSubmit, opacity: loadingEditRealCon ? 0.7 : 1 }}>
+                  {loadingEditRealCon ? 'Mise à jour...' : 'Enregistrer les Modifications'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Aperçu Fichier HTML Concours */}
+      {previewRealConcoursHtml && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalBox, maxWidth: '1120px', maxHeight: '92vh', overflowY: 'auto' }}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>🌐 {previewRealConcoursHtml.titre}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  {previewRealConcoursHtml.type} • {previewRealConcoursHtml.ecole} • {previewRealConcoursHtml.matiere} ({previewRealConcoursHtml.annee})
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a
+                  href={getPdfUrl(previewRealConcoursHtml.url)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, textDecoration: 'none', background: '#eff6ff', padding: '6px 12px', borderRadius: '6px' }}
+                >
+                  Plein écran ↗
+                </a>
+                <button onClick={() => setPreviewRealConcoursHtml(null)} style={styles.modalClose}>&times;</button>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+              <iframe
+                src={getPdfUrl(previewRealConcoursHtml.url)}
+                title={previewRealConcoursHtml.titre}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                style={{
+                  width: '100%',
+                  height: '75vh',
+                  border: 'none',
+                  display: 'block',
+                  background: '#ffffff'
+                }}
+              />
+            </div>
+
+            <div style={{ ...styles.modalFooter, marginTop: '16px' }}>
+              <button onClick={() => setPreviewRealConcoursHtml(null)} style={styles.btnCancel}>Fermer</button>
+            </div>
           </div>
         </div>
       )}

@@ -43,15 +43,20 @@ export default function ConcoursManager() {
         formData.append('titre', titre);
         formData.append('ecole', ecole);
         formData.append('matiere', matiere);
-        formData.append('annee', annee);
-        if (fileSujet) formData.append('fileSujet', fileSujet);
-        if (fileCorrection) formData.append('fileCorrection', fileCorrection);
+        if (fileSujet) {
+            formData.append('fileHtml', fileSujet);
+            formData.append('fileSujet', fileSujet);
+        }
+        if (fileCorrection) {
+            formData.append('fileHtmlCorrection', fileCorrection);
+            formData.append('fileCorrection', fileCorrection);
+        }
 
         try {
             await axios.post('http://localhost:8081/api/concours', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert('Concours t-zda b-najah!');
+            alert('Concours HTML ajouté avec succès !');
             // Vider le formulaire
             setTitre(''); setEcole(''); setMatiere(''); setAnnee('');
             setFileSujet(null); setFileCorrection(null);
@@ -86,13 +91,13 @@ export default function ConcoursManager() {
                 <input type="text" placeholder="Matière (Matalan: Math)" value={matiere} onChange={e => setMatiere(e.target.value)} required /><br/><br/>
                 <input type="number" placeholder="Année (Matalan: 2026)" value={annee} onChange={e => setAnnee(e.target.value)} required /><br/><br/>
                 
-                <label>PDF Sujet: </label>
-                <input type="file" onChange={e => setFileSujet(e.target.files[0])} accept="application/pdf" /><br/><br/>
+                <label>Fichier HTML Sujet: </label>
+                <input type="file" onChange={e => setFileSujet(e.target.files[0])} accept=".html,.htm,text/html" /><br/><br/>
                 
-                <label>PDF Correction: </label>
-                <input type="file" onChange={e => setFileCorrection(e.target.files[0])} accept="application/pdf" /><br/><br/>
+                <label>Fichier HTML Correction: </label>
+                <input type="file" onChange={e => setFileCorrection(e.target.files[0])} accept=".html,.htm,text/html" /><br/><br/>
                 
-                <button type="submit">Ajouter Concours</button>
+                <button type="submit">Ajouter Concours HTML</button>
             </form>
 
             {/* --- SECTION FILTRES --- */}
@@ -114,8 +119,8 @@ export default function ConcoursManager() {
                         <th>École</th>
                         <th>Matière</th>
                         <th>Année</th>
-                        <th>Sujet</th>
-                        <th>Correction</th>
+                        <th>Sujet HTML</th>
+                        <th>Correction HTML</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -128,10 +133,18 @@ export default function ConcoursManager() {
                             <td>{c.matiere}</td>
                             <td>{c.annee}</td>
                             <td>
-                                {c.pdfUrl ? <a href={c.pdfUrl} target="_blank" rel="noreferrer">Voir Sujet</a> : 'Aucun'}
+                                {c.htmlUrl ? (
+                                    <a href={c.htmlUrl} target="_blank" rel="noreferrer">
+                                        🌐 Sujet HTML
+                                    </a>
+                                ) : 'Aucun'}
                             </td>
                             <td>
-                                {c.pdfCorrectionUrl ? <a href={c.pdfCorrectionUrl} target="_blank" rel="noreferrer">Voir Correction</a> : 'Aucune'}
+                                {c.htmlCorrectionUrl ? (
+                                    <a href={c.htmlCorrectionUrl} target="_blank" rel="noreferrer">
+                                        ✅ Corrigé HTML
+                                    </a>
+                                ) : 'Aucune'}
                             </td>
                             <td>
                                 <button onClick={() => handleDelete(c.id)} style={{ color: 'red' }}>Supprimer</button>
