@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'http://localhost:8081';
 
@@ -12,6 +13,7 @@ const MATIERES = [
     nom: 'Mathématiques',
     color: '#2563eb',
     gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+    btnGradient: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
     badgeBg: '#eff6ff',
     badgeColor: '#1d4ed8',
     lightBg: '#dbeafe',
@@ -39,6 +41,7 @@ const MATIERES = [
     nom: 'Physique - Chimie',
     color: '#8b5cf6',
     gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
+    btnGradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
     badgeBg: '#f5f3ff',
     badgeColor: '#6d28d9',
     lightBg: '#ede9fe',
@@ -67,6 +70,7 @@ const MATIERES = [
     nom: 'SVT (Sciences de la Vie et de la Terre)',
     color: '#059669',
     gradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+    btnGradient: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
     badgeBg: '#ecfdf5',
     badgeColor: '#047857',
     lightBg: '#d1fae5',
@@ -107,9 +111,17 @@ const matchMatiere = (value, configId) => {
    COMPOSANT PRINCIPAL
    ───────────────────────────────────────────── */
 export default function ClientResumesPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedMatiere = searchParams.get('matiere') || '';
+  const initialMatiere = MATIERES.find(m =>
+    m.id.toLowerCase() === requestedMatiere.toLowerCase()
+    || m.nom.toLowerCase() === requestedMatiere.toLowerCase()
+  ) || null;
+
   // Steps: 'matieres' → 'chapitres' → 'reader'
-  const [step, setStep] = useState('matieres');
-  const [selectedMatiere, setSelectedMatiere] = useState(null);
+  const [step, setStep] = useState(initialMatiere ? 'chapitres' : 'matieres');
+  const [selectedMatiere, setSelectedMatiere] = useState(initialMatiere);
   const [selectedChapitre, setSelectedChapitre] = useState(null);
   const [activeResume, setActiveResume] = useState(null);
 
@@ -118,6 +130,24 @@ export default function ClientResumesPage() {
   const [error, setError] = useState(null);
 
   const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const matiereParam = searchParams.get('matiere') || '';
+    const matiere = MATIERES.find(m =>
+      m.id.toLowerCase() === matiereParam.toLowerCase()
+      || m.nom.toLowerCase() === matiereParam.toLowerCase()
+    );
+
+    if (!matiere) {
+      navigate('/client-dashboard', { replace: true });
+      return;
+    }
+
+    setSelectedMatiere(matiere);
+    setSelectedChapitre(null);
+    setActiveResume(null);
+    setStep('chapitres');
+  }, [searchParams, navigate]);
 
   /* ─── Fetch uniquement la table "resumes" ─── */
   useEffect(() => {
@@ -186,7 +216,7 @@ export default function ClientResumesPage() {
   };
 
   /* ─── Navigation ─── */
-  const goMatieres = () => { setStep('matieres'); setSelectedMatiere(null); setSelectedChapitre(null); setActiveResume(null); };
+  const goMatieres = () => navigate('/client-dashboard', { state: { openSidebarMenu: 'resumes' } });
   const goChapitres = (mat) => { setSelectedMatiere(mat); setSelectedChapitre(null); setActiveResume(null); setStep('chapitres'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   const goReader = (chapNom) => {
@@ -212,7 +242,7 @@ export default function ClientResumesPage() {
      RENDER
      ═══════════════════════════════════════════ */
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {/* ─────────────────────────────────────
           STEP 1 : CHOIX DE LA MATIÈRE
@@ -245,26 +275,26 @@ export default function ClientResumesPage() {
               <p style={{ color: '#dc2626', fontWeight: 700 }}>{error}</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
               {matieresWithCount.map((mat) => (
                 <div
                   key={mat.id}
                   onClick={() => goChapitres(mat)}
                   style={{
                     background: '#ffffff',
-                    borderRadius: '24px',
+                    borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                     overflow: 'hidden',
                     cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
+                    transition: 'all 0.25s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    minHeight: '130px'
+                    minHeight: '125px'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = `0 16px 40px ${mat.color}18`;
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
                     e.currentTarget.style.borderColor = mat.color;
                   }}
                   onMouseLeave={(e) => {
@@ -275,45 +305,50 @@ export default function ClientResumesPage() {
                 >
                   {/* Illustration */}
                   <div style={{
-                    width: '180px', minWidth: '180px', height: '100%', minHeight: '130px',
-                    background: mat.gradient,
-                    borderRadius: '22px 60px 60px 22px',
+                    width: '180px', minWidth: '180px', height: '100%', minHeight: '125px',
+                    background: mat.color === '#2563eb'
+                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)'
+                      : mat.color === '#8b5cf6'
+                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
+                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                    borderRadius: '24px 70px 70px 24px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.2)'
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
+                    padding: '10px'
                   }}>
                     {mat.renderIcon()}
                   </div>
 
                   {/* Contenu central */}
-                  <div style={{ flex: 1, padding: '16px 32px' }}>
-                    <h2 style={{ margin: '0 0 6px', fontSize: '23px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
+                  <div style={{ flex: 1, padding: '0 32px' }}>
+                    <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
                       {mat.nom}
                     </h2>
-                    <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500, lineHeight: 1.5 }}>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
                       {mat.desc}
                     </p>
                   </div>
 
                   {/* Badge + Bouton */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', paddingRight: '32px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', paddingRight: '36px' }}>
                     <span style={{
                       background: mat.badgeBg, color: mat.badgeColor,
                       padding: '5px 16px', borderRadius: '20px',
-                      fontSize: '13px', fontWeight: 800
+                      fontSize: '13px', fontWeight: 800, letterSpacing: '0.2px'
                     }}>
                       {mat.count} Résumé{mat.count > 1 ? 's' : ''}
                     </span>
                     <button
                       onClick={(e) => { e.stopPropagation(); goChapitres(mat); }}
                       style={{
-                        background: mat.gradient, color: '#fff', border: 'none',
-                        padding: '10px 22px', borderRadius: '20px',
+                        background: mat.btnGradient, color: '#fff', border: 'none',
+                        padding: '11px 24px', borderRadius: '22px',
                         fontSize: '14px', fontWeight: 700, cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: '8px',
                         boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s, transform 0.2s'
+                        transition: 'opacity 0.2s ease, transform 0.2s ease'
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
                     >
                       <span>Voir les chapitres</span>
@@ -331,60 +366,32 @@ export default function ClientResumesPage() {
           STEP 2 : CHAPITRES DE LA MATIÈRE
       ───────────────────────────────────── */}
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          {/* Breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '14px' }}>
-            <button onClick={goMatieres} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontWeight: 700, padding: 0 }}>
-              📚 Matières
-            </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800 }}>{selectedMatiere.nom}</span>
-          </div>
-
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
-                📖 Chapitres — {selectedMatiere.nom}
-              </h1>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
-                Cliquez sur un chapitre pour consulter le résumé HTML interactif
-              </p>
-            </div>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
+          <div style={{ marginBottom: '20px' }}>
             <button
               onClick={goMatieres}
               style={{
-                background: '#fff', border: '1px solid #cbd5e1',
-                padding: '8px 16px', borderRadius: '10px',
-                cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#334155',
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: '#ffffff', border: '1px solid #cbd5e1',
+                padding: '10px 16px', borderRadius: '12px',
+                cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
             >
-              ← Changer de matière
+              <span aria-hidden="true">←</span>
+              Retour aux matières
             </button>
           </div>
 
-          {/* Info banner */}
-          <div style={{
-            background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0',
-            padding: '14px 20px', marginBottom: '24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>💡</span>
-              <span style={{ fontSize: '13.5px', color: '#475569', fontWeight: 600 }}>
-                Cliquez sur un chapitre pour ouvrir directement le résumé HTML (avec formules MathJax).
-              </span>
-            </div>
-            <span style={{
-              background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-              padding: '4px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 800
-            }}>
-              {chapitresForMatiere(selectedMatiere).length} Chapitre{chapitresForMatiere(selectedMatiere).length > 1 ? 's' : ''}
-            </span>
+          <div style={{ marginBottom: '28px' }}>
+            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+              📖 Chapitres — {selectedMatiere.nom}
+            </h1>
+            <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+              Cliquez sur un chapitre pour consulter le résumé HTML interactif
+            </p>
           </div>
 
           {/* Liste des chapitres */}
@@ -395,20 +402,20 @@ export default function ClientResumesPage() {
               <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
               {chapitresForMatiere(selectedMatiere).map((chap, idx) => (
                 <div
                   key={idx}
                   onClick={() => goReader(chap.nom)}
                   style={{
-                    background: '#fff', borderRadius: '24px', border: '1.5px solid #e2e8f0',
+                    background: '#fff', borderRadius: '26px', border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)', overflow: 'hidden',
-                    cursor: 'pointer', transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
-                    display: 'flex', alignItems: 'center', minHeight: '120px'
+                    cursor: 'pointer', transition: 'all 0.25s ease',
+                    display: 'flex', alignItems: 'center', minHeight: '125px'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = `0 14px 32px ${selectedMatiere.color}15`;
+                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
                     e.currentTarget.style.borderColor = selectedMatiere.color;
                   }}
                   onMouseLeave={(e) => {
@@ -419,13 +426,18 @@ export default function ClientResumesPage() {
                 >
                   {/* Illustration chapitre */}
                   <div style={{
-                    width: '160px', minWidth: '160px', height: '100%', minHeight: '120px',
-                    background: selectedMatiere.gradient,
-                    borderRadius: '22px 60px 60px 22px',
+                    width: '180px', minWidth: '180px', height: '100%', minHeight: '125px',
+                    background: selectedMatiere.color === '#2563eb'
+                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)'
+                      : selectedMatiere.color === '#8b5cf6'
+                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
+                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
+                    borderRadius: '24px 70px 70px 24px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.2)'
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
+                    padding: '10px'
                   }}>
-                    <svg width="62" height="62" viewBox="0 0 100 100" fill="none">
+                    <svg width="74" height="74" viewBox="0 0 100 100" fill="none">
                       <path d="M50 32C42 26 28 26 18 30V74C28 70 42 70 50 76C58 70 72 70 82 74V30C72 26 58 26 50 32Z" fill="#fff" opacity=".95"/>
                       <path d="M50 32V76" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round"/>
                       <line x1="26" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
@@ -439,7 +451,7 @@ export default function ClientResumesPage() {
                   </div>
 
                   {/* Contenu du chapitre */}
-                  <div style={{ flex: 1, padding: '14px 28px' }}>
+                  <div style={{ flex: 1, padding: '0 32px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                       <span style={{
                         background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
@@ -450,33 +462,33 @@ export default function ClientResumesPage() {
                       <span style={{ color: '#94a3b8', fontSize: '13px' }}>•</span>
                       <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Chapitre {idx + 1}</span>
                     </div>
-                    <h2 style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
+                    <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
                       {chap.nom}
                     </h2>
-                    <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>
+                    <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
                       Résumé interactif avec formules et cours complet
                     </p>
                   </div>
 
                   {/* Badge + Bouton */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', paddingRight: '28px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', paddingRight: '36px' }}>
                     <span style={{
                       background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-                      padding: '4px 14px', borderRadius: '18px', fontSize: '13px', fontWeight: 800
+                      padding: '5px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 800, letterSpacing: '0.2px'
                     }}>
                       {chap.count} Résumé{chap.count > 1 ? 's' : ''}
                     </span>
                     <button
                       onClick={(e) => { e.stopPropagation(); goReader(chap.nom); }}
                       style={{
-                        background: selectedMatiere.gradient, color: '#fff', border: 'none',
-                        padding: '10px 20px', borderRadius: '18px',
-                        fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '6px',
+                        background: selectedMatiere.btnGradient, color: '#fff', border: 'none',
+                        padding: '11px 24px', borderRadius: '22px',
+                        fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '8px',
                         boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s, transform 0.2s'
+                        transition: 'opacity 0.2s ease, transform 0.2s ease'
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
                     >
                       <span>Ouvrir le résumé</span>
@@ -494,7 +506,7 @@ export default function ClientResumesPage() {
           STEP 3 : LECTEUR HTML DU RÉSUMÉ
       ───────────────────────────────────── */}
       {step === 'reader' && activeResume && selectedMatiere && (
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           {/* Top bar */}
           <div style={{
             background: '#fff', borderRadius: '18px',

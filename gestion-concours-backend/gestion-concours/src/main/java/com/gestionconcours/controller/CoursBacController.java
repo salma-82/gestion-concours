@@ -24,13 +24,16 @@ public class CoursBacController {
     private final CoursBacRepository coursBacRepository;
     private final String UPLOAD_DIR = "uploads/";
 
-    // 1. GET: Récupérer tous les cours_bac avec filtre par Matière et Chapitre
+    // 1. GET: Récupérer tous les cours_bac avec filtre par Matière, Chapitre et Filière
     @GetMapping("/api/cours-bac")
     public List<CoursBac> getCoursBac(
             @RequestParam(required = false) String matiere,
-            @RequestParam(required = false) String chapitre) {
-        if ((matiere != null && !matiere.trim().isEmpty()) || (chapitre != null && !chapitre.trim().isEmpty())) {
-            return coursBacRepository.filterCoursBac(matiere, chapitre);
+            @RequestParam(required = false) String chapitre,
+            @RequestParam(required = false) String filiere) {
+        if ((matiere != null && !matiere.trim().isEmpty()) || 
+            (chapitre != null && !chapitre.trim().isEmpty()) || 
+            (filiere != null && !filiere.trim().isEmpty())) {
+            return coursBacRepository.filterCoursBac(matiere, chapitre, filiere);
         }
         return coursBacRepository.findAll();
     }
@@ -55,11 +58,18 @@ public class CoursBacController {
         return coursBacRepository.findDistinctChapitresByMatiere(matiere);
     }
 
+    // 4b. GET: Distinct Filières
+    @GetMapping("/api/cours-bac/filieres")
+    public List<String> getFilieres() {
+        return coursBacRepository.findDistinctFilieres();
+    }
+
     // 5. POST: Ajouter un cours_bac avec fichier HTML
     @PostMapping("/api/cours-bac")
     public ResponseEntity<?> createCoursBac(
             @RequestParam("titre") String titre,
             @RequestParam("matiere") String matiere,
+            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam("file") MultipartFile file) {
         try {
@@ -82,6 +92,7 @@ public class CoursBacController {
             CoursBac cours = new CoursBac();
             cours.setTitre(titre);
             cours.setMatiere(matiere);
+            cours.setFiliere(filiere != null && !filiere.trim().isEmpty() ? filiere.trim() : null);
             cours.setChapitre(chapitre);
             cours.setHtmlUrl("http://localhost:8081/uploads/" + htmlFileName);
 
@@ -100,6 +111,7 @@ public class CoursBacController {
             @PathVariable Long id,
             @RequestParam("titre") String titre,
             @RequestParam("matiere") String matiere,
+            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
@@ -111,6 +123,7 @@ public class CoursBacController {
             CoursBac cours = optionalCours.get();
             cours.setTitre(titre);
             cours.setMatiere(matiere);
+            cours.setFiliere(filiere != null && !filiere.trim().isEmpty() ? filiere.trim() : null);
             cours.setChapitre(chapitre);
 
             if (file != null && !file.isEmpty()) {

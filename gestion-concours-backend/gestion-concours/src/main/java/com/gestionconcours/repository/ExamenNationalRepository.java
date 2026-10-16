@@ -30,6 +30,6 @@ public interface ExamenNationalRepository extends JpaRepository<ExamenNational, 
     @Query("SELECT DISTINCT e.annee FROM ExamenNational e WHERE e.annee IS NOT NULL ORDER BY e.annee DESC")
     List<Integer> findDistinctAnnees();
 
-    @Query("SELECT DISTINCT e.optionBac FROM ExamenNational e WHERE e.optionBac IS NOT NULL ORDER BY e.optionBac ASC")
+    @Query("SELECT DISTINCT e.optionBac FROM ExamenNational e WHERE e.optionBac IS NOT NULL AND TRIM(e.optionBac) <> '' ORDER BY e.optionBac ASC")
     List<String> findDistinctOptions();
 }

@@ -23,7 +23,10 @@ export default function Login() {
         motDePasse
       });
 
-      const user = response.data;
+      const user = { ...response.data };
+      // L'API renvoie l'entité utilisateur complète : ne pas conserver le hash du mot de passe côté navigateur.
+      delete user.motDePasse;
+      delete user.password;
       localStorage.setItem('user', JSON.stringify(user));
 
       if (user.role === 'ADMIN') {

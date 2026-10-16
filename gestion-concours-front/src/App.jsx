@@ -23,6 +23,7 @@ import ClientCoursPage from './components/ClientCoursPage';
 import ClientExamens from './components/ClientExamens';
 import ClientConcoursBlanc from './components/ClientConcoursBlanc';
 import ClientConcours from './components/ClientConcours';
+import ClientProfile from './components/ClientProfile';
 
 // PDF → HTML
 import PdfToHtml from './components/PdfToHtml';
@@ -66,6 +67,10 @@ function App() {
           <Route
             path="/client-dashboard"
             element={<ClientDashboard />}
+          />
+          <Route
+            path="/client-profile"
+            element={<ClientProfile />}
           />
           <Route
             path="/client-cours"

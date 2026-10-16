@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const API = 'http://localhost:8081';
 
@@ -98,7 +98,9 @@ const MATIERES_CONFIG = [
 ];
 
 export default function ClientConcoursBlanc() {
+  const location = useLocation();
   const navigate = useNavigate();
+  const requestedMatiere = new URLSearchParams(location.search).get('matiere');
 
   // Navigation steps: 'matieres' -> 'chapitres' -> 'qcms' -> 'player'
   const [currentStep, setCurrentStep] = useState('matieres'); 
@@ -155,6 +157,8 @@ export default function ClientConcoursBlanc() {
       id: matName,
       nom: matName,
       icon: '📚',
+      color: '#0f766e',
+      btnGradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
       gradient: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
       badgeBg: '#eff6ff',
       badgeColor: '#1d4ed8',
@@ -162,16 +166,54 @@ export default function ClientConcoursBlanc() {
     };
   };
 
-  // Liste des matières avec compteurs
-  const availableMatieres = MATIERES_CONFIG.map(cfg => {
-    const count = concoursList.filter(c => (c.matiere || '').toLowerCase().includes(cfg.nom.toLowerCase().substring(0, 4))).length;
-    return { ...cfg, count };
+  const htmlConcoursList = concoursList.filter(concours =>
+    typeof concours.htmlUrl === 'string' && concours.htmlUrl.trim()
+  );
+
+  useEffect(() => {
+    if (loading) return;
+
+    setSelectedChapitre(null);
+    setActiveConcours(null);
+    if (!requestedMatiere) {
+      setCurrentStep('matieres');
+      setSelectedMatiere(null);
+      return;
+    }
+
+    const matchingConcours = htmlConcoursList.find(concours =>
+      typeof concours.matiere === 'string'
+      && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
+    );
+    setSelectedMatiere(getMatiereConfig(matchingConcours?.matiere || requestedMatiere));
+    setCurrentStep('chapitres');
+  }, [requestedMatiere, loading, concoursList]);
+
+  const filteredConcoursList = requestedMatiere
+    ? htmlConcoursList.filter(concours =>
+        typeof concours.matiere === 'string'
+        && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
+      )
+    : htmlConcoursList;
+
+  // Seules les matières qui ont au moins une épreuve HTML sont proposées.
+  const availableMatieres = Array.from(new Set(
+    htmlConcoursList
+      .map(concours => typeof concours.matiere === 'string' ? concours.matiere.trim() : '')
+      .filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b)).map(matiere => {
+    const config = getMatiereConfig(matiere);
+    const count = htmlConcoursList.filter(concours =>
+      typeof concours.matiere === 'string'
+      && concours.matiere.trim().toLowerCase() === matiere.toLowerCase()
+    ).length;
+    return { ...config, id: matiere, nom: matiere, count };
   });
 
   // 2. Chapitres pour la matière sélectionnée (ceux entrés par l'admin)
   const getChapitresForMatiere = (mat) => {
     if (!mat) return [];
-    const matchedConcours = concoursList.filter(c => 
+    const matchedConcours = filteredConcoursList.filter(c =>
       (c.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4))
     );
     const uniqueChapitres = [...new Set(matchedConcours.map(c => c.chapitre || 'Général / Sans Chapitre'))];
@@ -184,7 +226,7 @@ export default function ClientConcoursBlanc() {
   // 3. Concours pour le chapitre sélectionné
   const getConcoursForChapitre = (mat, chapNom) => {
     if (!mat || !chapNom) return [];
-    return concoursList.filter(c => 
+    return filteredConcoursList.filter(c =>
       (c.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4)) &&
       (c.chapitre || 'Général / Sans Chapitre') === chapNom
     );
@@ -211,10 +253,7 @@ export default function ClientConcoursBlanc() {
   };
 
   const handleBackToMatieres = () => {
-    setCurrentStep('matieres');
-    setSelectedMatiere(null);
-    setSelectedChapitre(null);
-    setActiveConcours(null);
+    navigate('/client-dashboard', { state: { openSidebarMenu: 'concours-blanc' } });
   };
 
   const handleBackToChapitres = () => {
@@ -229,13 +268,13 @@ export default function ClientConcoursBlanc() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {/* ========================================================
           ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           {/* Top Bar Reader */}
           <div style={{
             background: '#ffffff',
@@ -368,7 +407,7 @@ export default function ClientConcoursBlanc() {
               🎓 Concours Blancs
             </h1>
             <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '15px' }}>
-              Choisissez une matière pour accéder aux chapitres et épreuves disponibles
+              Choisissez une matière pour accéder aux chapitres et fichiers HTML disponibles
             </p>
           </div>
 
@@ -507,45 +546,29 @@ export default function ClientConcoursBlanc() {
           ÉTAPE 2 : CHOIX DU CHAPITRE (DÉJÀ ENTRÉ PAR L'ADMIN)
       ======================================================== */}
       {currentStep === 'chapitres' && selectedMatiere && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          {/* Breadcrumb Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-            <button
-              onClick={handleBackToMatieres}
-              style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontWeight: 700, fontSize: '14px', padding: 0 }}
-            >
-              🎓 Matières
-            </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '14px' }}>
-              {selectedMatiere.icon} {selectedMatiere.nom}
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
-                📖 Chapitres — {selectedMatiere.nom}
-              </h1>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
-                Choisissez un chapitre pour découvrir les épreuves QCM correspondantes
-              </p>
-            </div>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
+          <div style={{ marginBottom: '20px' }}>
             <button
               onClick={handleBackToMatieres}
               style={{
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '13px',
-                color: '#334155'
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: '#ffffff', border: '1px solid #cbd5e1',
+                padding: '10px 16px', borderRadius: '12px',
+                cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb'
               }}
             >
-              ← Changer de matière
+              <span aria-hidden="true">←</span>
+              Retour aux matières
             </button>
+          </div>
+
+          <div style={{ marginBottom: '28px' }}>
+            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+              📖 Chapitres — {selectedMatiere.nom}
+            </h1>
+            <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+              Choisissez un chapitre pour découvrir les épreuves QCM correspondantes
+            </p>
           </div>
 
           {/* Horizontal Pill Cards des Chapitres - EXACT MÊME STYLE QUE LES MATIÈRES */}
@@ -715,7 +738,7 @@ export default function ClientConcoursBlanc() {
           ÉTAPE 3 : LISTE DES QCM POUR LE CHAPITRE CHOISI
       ======================================================== */}
       {currentStep === 'qcms' && selectedMatiere && selectedChapitre && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           {/* Breadcrumb Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
             <button

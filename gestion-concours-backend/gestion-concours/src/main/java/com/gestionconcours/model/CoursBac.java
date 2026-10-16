@@ -17,6 +17,8 @@ public class CoursBac {
 
     private String matiere;   // Mathématiques, Physique-Chimie, SVT
 
+    private String filiere;   // Filière / Option Bac (ex: SM-A, SM-B, PC, SVT...)
+
     private String chapitre;  // Nom dyal chapitre
 
     @Column(length = 500)

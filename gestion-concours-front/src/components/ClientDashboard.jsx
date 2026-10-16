@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+import heroBooksImg from '../assets/hero-books.jpg';
 import ensaImg from '../assets/ENSA.jpg';
 import ensamImg from '../assets/ENSAM.jpg';
 import medecineImg from '../assets/MEDCINE.jpg';
@@ -35,18 +36,19 @@ const PRIORITY_CFG = {
 
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-// ═══════════════════════════════════════════════════════════════
-// COMPOSANT PRINCIPAL
-// ═══════════════════════════════════════════════════════════════
 export default function ClientDashboard() {
   const navigate = useNavigate();
+  const showSidebarChoices = (menu) => navigate('/client-dashboard', {
+    replace: true,
+    state: { openSidebarMenu: menu }
+  });
 
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
-  const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Cher Candidat');
+  const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
 
   // ─── Stats API ───
-  const [dataCounts, setDataCounts] = useState({ examens: 18, resumes: 24, concours: 12 });
+  const [dataCounts, setDataCounts] = useState({ examens: 0, resumes: 2, concours: 0 });
   useEffect(() => {
     const fetchCounts = async () => {
       try {
@@ -59,17 +61,17 @@ export default function ClientDashboard() {
         const totalRes = (r3.status === 'fulfilled' && Array.isArray(r3.value.data) ? r3.value.data.length : 0) +
                          (r2.status === 'fulfilled' && Array.isArray(r2.value.data) ? r2.value.data.length : 0);
         setDataCounts({
-          examens: r1.status === 'fulfilled' && Array.isArray(r1.value.data) ? r1.value.data.length : 18,
-          resumes: totalRes > 0 ? totalRes : 24,
-          concours: r4.status === 'fulfilled' && Array.isArray(r4.value.data) ? r4.value.data.length : 12
+          examens: r1.status === 'fulfilled' && Array.isArray(r1.value.data) ? r1.value.data.length : 0,
+          resumes: totalRes > 0 ? totalRes : 2,
+          concours: r4.status === 'fulfilled' && Array.isArray(r4.value.data) ? r4.value.data.length : 0
         });
       } catch (err) {}
     };
     fetchCounts();
   }, []);
 
-  // ─── Live Timer ───
-  const [seconds, setSeconds] = useState(0);
+  // ─── Live Timer (Initial 16s to match screenshot exactly, ticking live) ───
+  const [seconds, setSeconds] = useState(16);
   useEffect(() => {
     const t = setInterval(() => setSeconds(s => s + 1), 1000);
     return () => clearInterval(t);
@@ -259,21 +261,38 @@ export default function ClientDashboard() {
     setShowModal(false);
   };
 
-  // ─── Progress Data ───
+  // ─── Progress Data (Matches the reference image exactly: 78%, 64%, 85%) ───
   const progressByMatiere = [
-    { nom: 'Mathématiques', icon: '📐', percent: 78, color: '#2563eb', gradient: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)', bgColor: '#dbeafe', chapitresFait: 11, totalChapitres: 14, details: 'Limites, Dérivation, Complexes' },
-    { nom: 'Physique-Chimie', icon: '⚡', percent: 64, color: '#7c3aed', gradient: 'linear-gradient(90deg, #8b5cf6 0%, #6d28d9 100%)', bgColor: '#ede9fe', chapitresFait: 9, totalChapitres: 14, details: 'Ondes, Nucléaire, RLC' },
-    { nom: 'SVT', icon: '🧬', percent: 85, color: '#059669', gradient: 'linear-gradient(90deg, #10b981 0%, #047857 100%)', bgColor: '#d1fae5', chapitresFait: 6, totalChapitres: 7, details: 'Génétique, Immunologie' },
-    { nom: 'Philosophie', icon: '🏛️', percent: 70, color: '#d97706', gradient: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)', bgColor: '#fef3c7', chapitresFait: 5, totalChapitres: 8, details: 'Condition humaine, Morale' },
-    { nom: 'Anglais', icon: '🌍', percent: 82, color: '#0284c7', gradient: 'linear-gradient(90deg, #06b6d4 0%, #0284c7 100%)', bgColor: '#e0f2fe', chapitresFait: 8, totalChapitres: 10, details: 'Youth, Culture, Grammar' }
-  ];
-  const globalProgress = Math.round(progressByMatiere.reduce((a, m) => a + m.percent, 0) / progressByMatiere.length);
-
-  const statsCards = [
-    { title: 'Examens Nationaux', value: `${dataCounts.examens}`, icon: '🎓', color: '#4f46e5', bgColor: '#eef2ff', progress: '100% dispo', link: '/client-examens' },
-    { title: 'Fiches & Résumés', value: `${dataCounts.resumes}`, icon: '📚', color: '#0284c7', bgColor: '#e0f2fe', progress: 'Révision', link: '/client-resumes' },
-    { title: 'Concours Blancs', value: `${dataCounts.concours}`, icon: '🏆', color: '#059669', bgColor: '#ecfdf5', progress: 'Simulations', link: '/client-concours-blanc' },
-    { title: 'Taux de Maîtrise', value: `${globalProgress}%`, icon: '📈', color: '#f59e0b', bgColor: '#fffbeb', progress: '+12%', link: '/client-concours-blanc' }
+    {
+      nom: 'Mathématiques',
+      icon: '📐',
+      percent: 78,
+      color: '#2563eb',
+      bgColor: '#eaf2ff',
+      chapitresFait: 11,
+      totalChapitres: 14,
+      details: 'Limites, Dérivation, Complexes'
+    },
+    {
+      nom: 'Physique-Chimie',
+      icon: '⚡',
+      percent: 64,
+      color: '#7c3aed',
+      bgColor: '#f3e8ff',
+      chapitresFait: 9,
+      totalChapitres: 14,
+      details: 'Ondes, Nucléaire, RLC'
+    },
+    {
+      nom: 'SVT',
+      icon: '🧬',
+      percent: 85,
+      color: '#059669',
+      bgColor: '#dcfce7',
+      chapitresFait: 6,
+      totalChapitres: 7,
+      details: 'Génétique, Immunologie'
+    }
   ];
 
   const recentActivities = [
@@ -303,164 +322,211 @@ export default function ClientDashboard() {
     { name: 'Karim B.', action: 'Streak 22j', img: 8 }
   ];
 
-  // ═══════════════════════════════════════════════════════
-  // RENDER
-  // ═══════════════════════════════════════════════════════
   return (
-    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif", padding: '28px 32px 64px', color: '#0f172a' }}>
-      <div style={{ maxWidth: '1260px', margin: '0 auto' }}>
+    <div style={{
+      minHeight: '100%',
+      backgroundColor: '#f3f6fb',
+      fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      padding: '26px 32px 50px 32px',
+      color: '#0f172a'
+    }}>
+      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
 
-        {/* ═══ HERO BANNER - VERSION PREMIUM ═══ */}
+        {/* ══════════════════════════════════════════════════════════
+            1. HERO BANNER (IDENTIQUE AU DESIGN DE L'IMAGE)
+        ══════════════════════════════════════════════════════════ */}
         <div style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8faff 45%, #eff6ff 100%)',
-          border: '1px solid #e2e8f0',
-          borderRadius: '20px',
-          padding: '26px 32px',
-          marginBottom: '28px',
-          boxShadow: '0 4px 20px -2px rgba(99, 102, 241, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
           position: 'relative',
-          overflow: 'hidden'
+          backgroundColor: '#ffffff',
+          backgroundImage: 'linear-gradient(105deg, #ffffff 0%, #ffffff 52%, #edf6fe 78%, #dbedfe 100%)',
+          borderRadius: '26px',
+          border: '1px solid rgba(226, 232, 240, 0.8)',
+          boxShadow: '0 4px 20px -2px rgba(37, 99, 235, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)',
+          padding: '28px 36px',
+          marginBottom: '24px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: '230px'
         }}>
-          {/* Subtle ambient blur circle in the corner */}
+          {/* Subtle Decorative Dots Pattern in Top-Right */}
           <div style={{
             position: 'absolute',
-            top: '-40px',
-            right: '-40px',
-            width: '180px',
-            height: '180px',
-            background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)',
-            borderRadius: '50%',
+            top: '20px',
+            right: '40px',
+            width: '120px',
+            height: '60px',
+            backgroundImage: 'radial-gradient(#93c5fd 1.2px, transparent 1.2px)',
+            backgroundSize: '14px 14px',
+            opacity: 0.55,
             pointerEvents: 'none'
           }} />
 
-          {/* Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 12px',
-            borderRadius: '20px',
-            backgroundColor: '#eef2ff',
-            border: '1px solid #c7d2fe',
-            marginBottom: '12px'
-          }}>
-            <span style={{ fontSize: '12px' }}>🎯</span>
-            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#4338ca', letterSpacing: '0.2px' }}>
-              Session Concours 2026 · Candidat Actif
-            </span>
+          {/* Left Content */}
+          <div style={{ flex: 1, maxWidth: '640px', zIndex: 2 }}>
+            {/* Pill Tag */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              backgroundColor: '#e9f2fe',
+              color: '#1d68f2',
+              fontSize: '12px',
+              fontWeight: 700,
+              marginBottom: '14px'
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span>Session Concours 2026 • Candidat Actif</span>
+            </div>
+
+            {/* Title */}
+            <h1 style={{
+              margin: '0 0 10px 0',
+              fontSize: '30px',
+              fontWeight: 800,
+              color: '#0f172a',
+              letterSpacing: '-0.5px',
+              lineHeight: 1.2
+            }}>
+              Bonjour, {candidateName} 👋
+            </h1>
+
+            {/* Description Subtitle */}
+            <p style={{
+              margin: '0 0 22px 0',
+              fontSize: '13.5px',
+              color: '#475569',
+              lineHeight: 1.55,
+              fontWeight: 450
+            }}>
+              Suivez votre progression en temps réel, préparez votre admission aux Grandes Écoles (ENSA, ENSAM, Médecine, ENCG) et perfectionnez pour le Baccalauréat.
+            </p>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              {/* Primary Blue Button */}
+              <button
+                onClick={() => showSidebarChoices('examens')}
+                style={{
+                  background: 'linear-gradient(90deg, #1862ea 0%, #2979fb 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '12px 26px',
+                  borderRadius: '9999px',
+                  fontWeight: 750,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: '0 6px 18px -2px rgba(24, 98, 234, 0.35)',
+                  transition: 'all 0.18s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 22px -2px rgba(24, 98, 234, 0.45)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px -2px rgba(24, 98, 234, 0.35)';
+                }}
+              >
+                <span>→</span>
+                <span>Consulter les Examens</span>
+              </button>
+
+              {/* Secondary Outline Button */}
+              <button
+                onClick={() => showSidebarChoices('concours-blanc')}
+                style={{
+                  background: '#ffffff',
+                  color: '#1862ea',
+                  border: '1.5px solid #2563eb',
+                  padding: '11px 24px',
+                  borderRadius: '9999px',
+                  fontWeight: 750,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.18s ease',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f8faff';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <span style={{ fontSize: '15px' }}>🏆</span>
+                <span>Concours Blancs</span>
+              </button>
+            </div>
           </div>
 
-          {/* Titre */}
-          <h1 style={{
-            margin: '0 0 8px 0',
-            fontSize: '26px',
-            fontWeight: 850,
-            color: '#0f172a',
-            letterSpacing: '-0.4px',
-            lineHeight: 1.25
+          {/* Right Hero Illustration & Live Timer Badge */}
+          <div style={{
+            position: 'relative',
+            width: '280px',
+            height: '200px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
-            Bonjour, {candidateName} 👋
-          </h1>
-
-          {/* Description */}
-          <p style={{
-            margin: '0 0 18px 0',
-            fontSize: '14px',
-            color: '#475569',
-            lineHeight: 1.6,
-            maxWidth: '720px'
-          }}>
-            Suivez votre progression en temps réel, préparez votre admission aux Grandes Écoles (ENSA, ENSAM, Médecine, ENCG) et perfectionnez pour le Baccalauréat.
-          </p>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-            <button
-              onClick={() => navigate('/client-examens')}
+            {/* 3D Stacked Books + Cap Illustration */}
+            <img
+              src={heroBooksImg}
+              alt="Préparation Concours"
               style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '12px',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(15,23,42,0.18)',
-                transition: 'all 0.15s ease'
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 10px 24px rgba(37, 99, 235, 0.12))',
+                zIndex: 2
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 18px rgba(15,23,42,0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 14px rgba(15,23,42,0.18)';
-              }}
-            >
-              <span>🎓</span> Consulter les Examens
-            </button>
+            />
 
-            <button
-              onClick={() => navigate('/client-concours-blanc')}
-              style={{
-                background: '#ffffff',
-                color: '#0f172a',
-                border: '1.5px solid #cbd5e1',
-                padding: '10px 20px',
-                borderRadius: '12px',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.backgroundColor = '#f8fafc';
-                e.currentTarget.style.borderColor = '#94a3b8';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                e.currentTarget.style.borderColor = '#cbd5e1';
-              }}
-            >
-              <span>🏆</span> Concours Blancs
-            </button>
-
-            {/* Live Timer */}
+            {/* Live Timer Badge (Exact style from screenshot: 🟢 00:00:16) */}
             <div style={{
-              display: 'flex',
+              position: 'absolute',
+              right: '4px',
+              bottom: '12px',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
               background: '#ffffff',
               border: '1.5px solid #a7f3d0',
-              padding: '9px 16px',
-              borderRadius: '12px',
-              marginLeft: 'auto',
-              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.08)'
+              padding: '6px 14px',
+              borderRadius: '20px',
+              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.12)',
+              zIndex: 3
             }}>
-              <div style={{
+              <span style={{
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                background: '#10b981',
-                boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
-                animation: 'pulse 2s infinite'
+                backgroundColor: '#10b981',
+                boxShadow: '0 0 6px rgba(16, 185, 129, 0.7)'
               }} />
               <span style={{
                 fontFamily: 'monospace',
+                fontSize: '13px',
                 fontWeight: 800,
-                fontSize: '13.5px',
                 color: '#047857',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.4px'
               }}>
                 {fmtTime()}
               </span>
@@ -468,189 +534,472 @@ export default function ClientDashboard() {
           </div>
         </div>
 
-        {/* ═══ KPI CARDS ═══ */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '36px' }}>
-          {statsCards.map((st, i) => (
-            <div
-              key={i}
-              onClick={() => navigate(st.link)}
-              style={{
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '20px',
-                padding: '24px 22px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                cursor: 'pointer',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.025)',
-                transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 12px 28px -4px rgba(15, 23, 42, 0.08)';
-                e.currentTarget.style.borderColor = st.color;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.025)';
-                e.currentTarget.style.borderColor = '#e2e8f0';
-              }}
-            >
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '16px',
-                background: st.bgColor,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '26px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                flexShrink: 0
-              }}>
-                {st.icon}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '26px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                    {st.value}
-                  </span>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    color: st.color,
-                    background: st.bgColor,
-                    padding: '3px 9px',
-                    borderRadius: '20px',
-                    letterSpacing: '0.2px'
-                  }}>
-                    {st.progress}
-                  </span>
-                </div>
-                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {st.title}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ═══ PROGRESSION PAR MATIÈRE ═══ */}
+        {/* ══════════════════════════════════════════════════════════
+            2. STATS CARDS (4 CARTES IDENTIQUES AU DESIGN)
+        ══════════════════════════════════════════════════════════ */}
         <div style={{
-          background: '#ffffff',
-          borderRadius: '24px',
-          border: '1px solid #e2e8f0',
-          padding: '28px 32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
-          marginBottom: '36px'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '18px',
+          marginBottom: '24px'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '22px' }}>📊</span>
-              <h2 style={{ fontSize: '20px', fontWeight: 850, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
-                Progression de Maîtrise par Matière
-              </h2>
-            </div>
-            <div style={{
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-              border: '1px solid #e2e8f0',
-              padding: '10px 18px',
-              borderRadius: '16px',
+          {/* Carte 1 : Examens Nationaux */}
+          <div
+            onClick={() => showSidebarChoices('examens')}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '22px',
+              border: '1px solid #edf2f7',
+              padding: '20px 22px',
               display: 'flex',
               alignItems: 'center',
-              gap: '14px',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+              gap: '16px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(37, 99, 235, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
+            }}
+          >
+            {/* Blue Icon Box */}
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              backgroundColor: '#eaf2ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Score Global</div>
-                <div style={{ fontSize: '20px', fontWeight: 850, color: '#0f172a' }}>{globalProgress}% Réalisé</div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#2563eb">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                  {dataCounts.examens}
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 750,
+                  backgroundColor: '#eaf2ff',
+                  color: '#2563eb',
+                  padding: '3px 9px',
+                  borderRadius: '12px'
+                }}>
+                  100% dispo
+                </span>
+              </div>
+              <div style={{
+                fontSize: '13.5px',
+                fontWeight: 650,
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>Examens Nationaux</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '22px' }}>
+          {/* Carte 2 : Fiches & Résumés */}
+          <div
+            onClick={() => showSidebarChoices('resumes')}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '22px',
+              border: '1px solid #edf2f7',
+              padding: '20px 22px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(147, 51, 234, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
+            }}
+          >
+            {/* Purple Icon Box */}
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              backgroundColor: '#f3e8ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#9333ea">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                  {dataCounts.resumes}
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 750,
+                  backgroundColor: '#f3e8ff',
+                  color: '#9333ea',
+                  padding: '3px 9px',
+                  borderRadius: '12px'
+                }}>
+                  Accès libre
+                </span>
+              </div>
+              <div style={{
+                fontSize: '13.5px',
+                fontWeight: 650,
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>Fiches & Résumés</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Carte 3 : Concours Blancs */}
+          <div
+            onClick={() => showSidebarChoices('concours-blanc')}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '22px',
+              border: '1px solid #edf2f7',
+              padding: '20px 22px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(245, 158, 11, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
+            }}
+          >
+            {/* Orange Icon Box */}
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              backgroundColor: '#fef3c7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#d97706">
+                <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.8-.45 3.22-1.89 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zm-14 3V5h2v4.08C5.83 8.78 5 8 5 7zm12 1.08V5h2v2c0 1-.83 1.78-2 2.08z" />
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                  {dataCounts.concours}
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 750,
+                  backgroundColor: '#fef3c7',
+                  color: '#d97706',
+                  padding: '3px 9px',
+                  borderRadius: '12px'
+                }}>
+                  Simulation
+                </span>
+              </div>
+              <div style={{
+                fontSize: '13.5px',
+                fontWeight: 650,
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>Concours Blancs</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Carte 4 : Taux de Maîtrise */}
+          <div
+            onClick={() => showSidebarChoices('concours-blanc')}
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '22px',
+              border: '1px solid #edf2f7',
+              padding: '20px 22px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
+            }}
+          >
+            {/* Green Icon Box */}
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              backgroundColor: '#dcfce7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#059669">
+                <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zM16.2 13h2.8v6h-2.8z" />
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                  76%
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 750,
+                  backgroundColor: '#dcfce7',
+                  color: '#059669',
+                  padding: '3px 9px',
+                  borderRadius: '12px'
+                }}>
+                  +12%
+                </span>
+              </div>
+              <div style={{
+                fontSize: '13.5px',
+                fontWeight: 650,
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span>Taux de Maîtrise</span>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════
+            3. PROGRESSION DE MAÎTRISE PAR MATIÈRE
+        ══════════════════════════════════════════════════════════ */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '24px',
+          border: '1px solid #edf2f7',
+          padding: '24px 28px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
+          marginBottom: '26px'
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: '#eaf2ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563eb">
+                  <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zM16.2 13h2.8v6h-2.8z" />
+                </svg>
+              </div>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                margin: 0,
+                color: '#0f172a',
+                letterSpacing: '-0.3px'
+              }}>
+                Progression de Maîtrise par Matière
+              </h2>
+            </div>
+
+            {/* Score Global Badge */}
+            <div style={{
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '6px 18px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '10px',
+                fontWeight: 800,
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                lineHeight: 1.2
+              }}>
+                SCORE GLOBAL
+              </div>
+              <div style={{
+                fontSize: '17px',
+                fontWeight: 850,
+                color: '#0f172a',
+                lineHeight: 1.3
+              }}>
+                76% Réalisé
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Subject Cards Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '18px'
+          }}>
             {progressByMatiere.map((mat, idx) => (
               <div
                 key={idx}
                 style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '18px',
-                  padding: '20px 22px',
-                  transition: 'all 0.2s ease'
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e8edf4',
+                  borderRadius: '16px',
+                  padding: '16px 18px',
+                  transition: 'all 0.18s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#ffffff';
                   e.currentTarget.style.borderColor = mat.color;
-                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.04)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.03)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = '#f8fafc';
-                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.borderColor = '#e8edf4';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                {/* Title + Percentage Pill */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '14px'
+                }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '20px' }}>{mat.icon}</span>
-                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>{mat.nom}</span>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: mat.bgColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px'
+                    }}>
+                      {mat.icon}
+                    </div>
+                    <span style={{ fontSize: '14.5px', fontWeight: 750, color: '#0f172a' }}>
+                      {mat.nom}
+                    </span>
                   </div>
+
                   <span style={{
-                    fontSize: '13px',
-                    fontWeight: 800,
+                    fontSize: '12px',
+                    fontWeight: 750,
                     color: mat.color,
-                    background: mat.bgColor,
-                    padding: '3px 10px',
-                    borderRadius: '14px'
+                    backgroundColor: mat.bgColor,
+                    padding: '3px 9px',
+                    borderRadius: '10px'
                   }}>
                     {mat.percent}%
                   </span>
                 </div>
 
-                <div style={{ height: '10px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', marginBottom: '12px' }}>
+                {/* Progress Bar */}
+                <div style={{
+                  height: '8px',
+                  backgroundColor: '#e2e8f0',
+                  borderRadius: '999px',
+                  overflow: 'hidden'
+                }}>
                   <div style={{
                     height: '100%',
                     width: `${mat.percent}%`,
-                    background: mat.gradient || mat.color,
+                    backgroundColor: mat.color,
                     borderRadius: '999px',
                     transition: 'width 0.8s ease'
                   }} />
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
-                  <span>Chapitres : <strong style={{ color: '#0f172a' }}>{mat.chapitresFait}/{mat.totalChapitres}</strong></span>
-                  <span style={{
-                    color: mat.percent >= 75 ? '#059669' : '#d97706',
-                    fontWeight: 700,
-                    backgroundColor: mat.percent >= 75 ? '#ecfdf5' : '#fffbeb',
-                    padding: '2px 8px',
-                    borderRadius: '6px'
-                  }}>
-                    {mat.percent >= 75 ? '✓ Maîtrisé' : '⏳ À renforcer'}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '11.5px', color: '#94a3b8', borderTop: '1px solid #edf2f7', paddingTop: '8px', marginTop: '10px' }}>
-                  Focus : {mat.details}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ═══ CALENDRIER ═══ */}
+        {/* ══════════════════════════════════════════════════════════
+            4. CALENDRIER DES CONCOURS & PLANNING PERSONNEL
+        ══════════════════════════════════════════════════════════ */}
         <div style={{
-          background: '#ffffff',
+          backgroundColor: '#ffffff',
           borderRadius: '24px',
-          border: '1px solid #e2e8f0',
-          padding: '28px 32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
-          marginBottom: '36px'
+          border: '1px solid #edf2f7',
+          padding: '26px 30px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
+          marginBottom: '26px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '22px' }}>📅</span>
-            <h2 style={{ fontSize: '20px', fontWeight: 850, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
+            <span style={{ fontSize: '20px' }}>📅</span>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
               Calendrier des Concours
             </h2>
           </div>
@@ -659,15 +1008,15 @@ export default function ClientDashboard() {
             <button
               onClick={() => { setTab('concours'); setSelectedDay(null); }}
               style={{
-                padding: '10px 18px',
+                padding: '9px 18px',
                 borderRadius: '12px',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '13px',
                 cursor: 'pointer',
-                background: tab === 'concours' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : '#f1f5f9',
+                background: tab === 'concours' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : '#f1f5f9',
                 color: tab === 'concours' ? '#ffffff' : '#475569',
-                boxShadow: tab === 'concours' ? '0 4px 12px rgba(99, 102, 241, 0.25)' : 'none',
+                boxShadow: tab === 'concours' ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none',
                 transition: 'all 0.15s ease'
               }}
             >
@@ -677,15 +1026,15 @@ export default function ClientDashboard() {
             <button
               onClick={() => { setTab('planning'); setSelectedDay(null); }}
               style={{
-                padding: '10px 18px',
+                padding: '9px 18px',
                 borderRadius: '12px',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '13px',
                 cursor: 'pointer',
-                background: tab === 'planning' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : '#f1f5f9',
+                background: tab === 'planning' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : '#f1f5f9',
                 color: tab === 'planning' ? '#ffffff' : '#475569',
-                boxShadow: tab === 'planning' ? '0 4px 12px rgba(99, 102, 241, 0.25)' : 'none',
+                boxShadow: tab === 'planning' ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none',
                 transition: 'all 0.15s ease'
               }}
             >
@@ -696,7 +1045,7 @@ export default function ClientDashboard() {
               <button
                 onClick={() => setShowModal(true)}
                 style={{
-                  padding: '10px 18px',
+                  padding: '9px 18px',
                   borderRadius: '12px',
                   border: 'none',
                   fontWeight: 700,
@@ -714,14 +1063,14 @@ export default function ClientDashboard() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '28px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '26px' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <button
                   onClick={() => setCurDate(new Date(curDate.getFullYear(), curDate.getMonth() - 1, 1))}
                   style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '10px',
                     border: '1px solid #e2e8f0',
                     background: '#ffffff',
@@ -735,14 +1084,14 @@ export default function ClientDashboard() {
                 >
                   ◀
                 </button>
-                <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#0f172a' }}>
                   {MONTHS[curDate.getMonth()]} {curDate.getFullYear()}
                 </h3>
                 <button
                   onClick={() => setCurDate(new Date(curDate.getFullYear(), curDate.getMonth() + 1, 1))}
                   style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '10px',
                     border: '1px solid #e2e8f0',
                     background: '#ffffff',
@@ -780,7 +1129,7 @@ export default function ClientDashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '560px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '520px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 800, margin: '0 0 12px 0', color: '#0f172a' }}>
                 {tab === 'concours' ? '🎓 Concours Disponibles' : '👤 Mon Planning Personnel'}
               </h4>
@@ -791,18 +1140,19 @@ export default function ClientDashboard() {
           </div>
         </div>
 
-        {/* ═══ DISCORD + AMIS + CLASSEMENT ═══ */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '22px', marginBottom: '36px' }}>
-
+        {/* ══════════════════════════════════════════════════════════
+            5. DISCORD + AMIS + CLASSEMENT
+        ══════════════════════════════════════════════════════════ */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '22px', marginBottom: '28px' }}>
           {/* Discord Card */}
           <div style={{
             background: '#ffffff',
-            borderRadius: '20px',
-            border: '1px solid #e2e8f0',
+            borderRadius: '22px',
+            border: '1px solid #edf2f7',
             padding: '24px',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
           }}>
             <div style={{
               position: 'absolute',
@@ -810,40 +1160,40 @@ export default function ClientDashboard() {
               right: 0,
               width: '160px',
               height: '160px',
-              background: 'radial-gradient(circle, rgba(88,101,242,0.15) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(88,101,242,0.12) 0%, transparent 70%)',
               borderRadius: '50%',
               pointerEvents: 'none'
             }} />
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
                 <div style={{
-                  width: '56px',
-                  height: '56px',
+                  width: '52px',
+                  height: '52px',
                   borderRadius: '16px',
                   background: 'linear-gradient(135deg, #5865F2 0%, #4752c4 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '26px',
-                  boxShadow: '0 4px 14px rgba(88, 101, 242, 0.3)'
+                  fontSize: '24px',
+                  boxShadow: '0 4px 14px rgba(88, 101, 242, 0.25)'
                 }}>
                   💬
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 850, margin: 0, color: '#0f172a' }}>Discord Communauté</h3>
+                  <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, color: '#0f172a' }}>Discord Communauté</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
                     <span style={{ fontSize: '12px', color: '#059669', fontWeight: 700 }}>1,247 en ligne</span>
                   </div>
                 </div>
               </div>
-              <p style={{ fontSize: '13.5px', color: '#64748b', marginBottom: '16px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px', lineHeight: 1.5 }}>
                 Rejoignez +12,500 étudiants pour réviser ensemble, échanger des astuces et poser vos questions 24/7 !
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
                 {[['12.5K', 'Membres'], ['45', 'Salons'], ['24/7', 'Actif']].map(([v, l], i) => (
-                  <div key={i} style={{ textAlign: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 6px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 850, color: '#0f172a' }}>{v}</div>
+                  <div key={i} style={{ textAlign: 'center', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px', padding: '10px 6px' }}>
+                    <div style={{ fontSize: '15px', fontWeight: 850, color: '#0f172a' }}>{v}</div>
                     <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 700 }}>{l}</div>
                   </div>
                 ))}
@@ -858,8 +1208,8 @@ export default function ClientDashboard() {
                   background: 'linear-gradient(135deg, #5865F2 0%, #4752c4 100%)',
                   color: '#ffffff',
                   fontWeight: 700,
-                  fontSize: '13.5px',
-                  padding: '12px',
+                  fontSize: '13px',
+                  padding: '11px',
                   borderRadius: '12px',
                   textDecoration: 'none',
                   boxShadow: '0 4px 12px rgba(88, 101, 242, 0.25)',
@@ -874,13 +1224,13 @@ export default function ClientDashboard() {
           {/* Amis en ligne Card */}
           <div style={{
             background: '#ffffff',
-            borderRadius: '20px',
-            border: '1px solid #e2e8f0',
+            borderRadius: '22px',
+            border: '1px solid #edf2f7',
             padding: '24px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: 850, margin: 0, color: '#0f172a' }}>👥 Amis en ligne</h3>
+              <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, color: '#0f172a' }}>👥 Amis en ligne</h3>
               <span style={{ fontSize: '11px', background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '12px', fontWeight: 800 }}>
                 5 actifs
               </span>
@@ -893,18 +1243,17 @@ export default function ClientDashboard() {
                   alignItems: 'center',
                   gap: '12px',
                   padding: '8px 6px',
-                  borderRadius: '10px',
-                  transition: 'background-color 0.15s ease'
+                  borderRadius: '10px'
                 }}
               >
                 <div style={{ position: 'relative' }}>
-                  <img src={`https://i.pravatar.cc/40?img=${f.img}`} alt={f.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={`https://i.pravatar.cc/40?img=${f.img}`} alt={f.name} style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{
                     position: 'absolute',
                     bottom: 0,
                     right: 0,
-                    width: '10px',
-                    height: '10px',
+                    width: '9px',
+                    height: '9px',
                     borderRadius: '50%',
                     background: '#10b981',
                     border: '2px solid #ffffff'
@@ -917,8 +1266,8 @@ export default function ClientDashboard() {
                 <button
                   style={{
                     fontSize: '11.5px',
-                    background: '#eef2ff',
-                    color: '#4f46e5',
+                    background: '#edf4fe',
+                    color: '#2563eb',
                     padding: '5px 10px',
                     borderRadius: '8px',
                     border: 'none',
@@ -935,12 +1284,12 @@ export default function ClientDashboard() {
           {/* Top Classement Card */}
           <div style={{
             background: '#ffffff',
-            borderRadius: '20px',
-            border: '1px solid #e2e8f0',
+            borderRadius: '22px',
+            border: '1px solid #edf2f7',
             padding: '24px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
           }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 850, margin: '0 0 16px 0', color: '#0f172a' }}>
+            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 16px 0', color: '#0f172a' }}>
               🏆 Top Classement
             </h3>
             {[
@@ -954,7 +1303,7 @@ export default function ClientDashboard() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 12px',
+                  padding: '9px 12px',
                   borderRadius: '12px',
                   background: u.bg,
                   border: `1px solid ${u.border}30`,
@@ -962,8 +1311,8 @@ export default function ClientDashboard() {
                 }}
               >
                 <div style={{
-                  width: '30px',
-                  height: '30px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   background: u.border,
                   color: '#ffffff',
@@ -971,16 +1320,16 @@ export default function ClientDashboard() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 800,
-                  fontSize: '12px'
+                  fontSize: '11px'
                 }}>
                   {u.rank}
                 </div>
-                <img src={`https://i.pravatar.cc/40?img=${u.img}`} alt={u.name} style={{ width: '38px', height: '38px', borderRadius: '50%', border: `2px solid ${u.border}` }} />
+                <img src={`https://i.pravatar.cc/40?img=${u.img}`} alt={u.name} style={{ width: '36px', height: '36px', borderRadius: '50%', border: `2px solid ${u.border}` }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{u.name}</div>
                   <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{u.score}</div>
                 </div>
-                <span style={{ fontSize: '20px' }}>{u.medal}</span>
+                <span style={{ fontSize: '18px' }}>{u.medal}</span>
               </div>
             ))}
 
@@ -988,50 +1337,52 @@ export default function ClientDashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              padding: '10px 12px',
+              padding: '9px 12px',
               borderRadius: '12px',
-              background: '#eef2ff',
-              border: '1.5px solid #c7d2fe',
+              background: '#edf4fe',
+              border: '1.5px solid #bfdbfe',
               marginTop: '12px'
             }}>
               <div style={{
-                width: '30px',
-                height: '30px',
+                width: '28px',
+                height: '28px',
                 borderRadius: '50%',
-                background: '#4f46e5',
+                background: '#2563eb',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 800,
-                fontSize: '12px'
+                fontSize: '11px'
               }}>
                 23
               </div>
-              <img src="https://i.pravatar.cc/40?img=47" alt="Toi" style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #4f46e5' }} />
+              <img src="https://i.pravatar.cc/40?img=47" alt="Toi" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #2563eb' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>Toi ({user.prenom || 'Sara'})</div>
-                <div style={{ fontSize: '11.5px', color: '#4f46e5', fontWeight: 700 }}>14.0/20</div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>Toi ({candidateName.split(' ')[0]})</div>
+                <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 700 }}>14.0/20</div>
               </div>
-              <span style={{ fontSize: '11px', background: '#10b981', color: '#ffffff', padding: '3px 8px', borderRadius: '8px', fontWeight: 800 }}>
+              <span style={{ fontSize: '11px', background: '#10b981', color: '#ffffff', padding: '2px 7px', borderRadius: '8px', fontWeight: 800 }}>
                 ↑7
               </span>
             </div>
           </div>
         </div>
 
-        {/* ═══ ACTIVITÉS RÉCENTES ═══ */}
+        {/* ══════════════════════════════════════════════════════════
+            6. ACTIVITÉS RÉCENTES
+        ══════════════════════════════════════════════════════════ */}
         <div style={{
-          background: '#ffffff',
+          backgroundColor: '#ffffff',
           borderRadius: '24px',
-          border: '1px solid #e2e8f0',
-          padding: '28px 32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
-          marginBottom: '36px'
+          border: '1px solid #edf2f7',
+          padding: '26px 30px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
+          marginBottom: '26px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '22px' }}>⏱️</span>
-            <h2 style={{ fontSize: '20px', fontWeight: 850, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
+            <span style={{ fontSize: '20px' }}>⏱️</span>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
               Activités Récentes
             </h2>
           </div>
@@ -1042,9 +1393,9 @@ export default function ClientDashboard() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '14px 18px',
+                padding: '13px 18px',
                 background: '#f8fafc',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #edf2f7',
                 borderRadius: '16px',
                 marginBottom: '10px',
                 flexWrap: 'wrap',
@@ -1062,8 +1413,8 @@ export default function ClientDashboard() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <div style={{
-                  width: '40px',
-                  height: '40px',
+                  width: '38px',
+                  height: '38px',
                   borderRadius: '12px',
                   background: act.statusBg,
                   color: act.statusColor,
@@ -1071,25 +1422,25 @@ export default function ClientDashboard() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 800,
-                  fontSize: '11.5px',
+                  fontSize: '11px',
                   flexShrink: 0
                 }}>
                   {act.type}
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{act.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{act.date}</div>
+                  <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>{act.title}</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>{act.date}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>{act.score}</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{act.score}</span>
                 <span style={{
                   fontSize: '11px',
                   fontWeight: 800,
                   color: act.statusColor,
                   background: act.statusBg,
-                  padding: '3px 10px',
-                  borderRadius: '14px'
+                  padding: '3px 9px',
+                  borderRadius: '12px'
                 }}>
                   {act.status}
                 </span>
@@ -1098,73 +1449,75 @@ export default function ClientDashboard() {
           ))}
         </div>
 
-        {/* ═══ GRANDES ÉCOLES ═══ */}
-        <div style={{ marginBottom: '44px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '22px' }}>🎯</span>
-            <h2 style={{ fontSize: '20px', fontWeight: 850, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
+        {/* ══════════════════════════════════════════════════════════
+            7. GRANDES ÉCOLES PRÉPARÉES
+        ══════════════════════════════════════════════════════════ */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+            <span style={{ fontSize: '20px' }}>🎯</span>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
               Grandes Écoles Préparées
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '22px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
             {schools.map((sc, i) => (
               <div
                 key={i}
                 style={{
                   background: '#ffffff',
                   borderRadius: '18px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.025)',
+                  border: '1px solid #edf2f7',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
                   overflow: 'hidden',
-                  transition: 'all 0.22s ease'
+                  transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.06)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.025)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
                 }}
               >
-                <div style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: '130px', overflow: 'hidden', position: 'relative' }}>
                   <img src={sc.img} alt={sc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{
                     position: 'absolute',
-                    top: '12px',
-                    left: '12px',
+                    top: '10px',
+                    left: '10px',
                     background: 'rgba(15,23,42,0.8)',
                     backdropFilter: 'blur(6px)',
                     color: '#ffffff',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 800,
-                    padding: '4px 10px',
+                    padding: '3px 9px',
                     borderRadius: '20px'
                   }}>
                     {sc.field}
                   </div>
                 </div>
-                <div style={{ padding: '18px' }}>
-                  <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 850, color: '#0f172a' }}>{sc.name}</h4>
-                  <p style={{ margin: '0 0 14px', fontSize: '12.5px', color: '#64748b' }}>{sc.desc}</p>
+                <div style={{ padding: '16px' }}>
+                  <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>{sc.name}</h4>
+                  <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>{sc.desc}</p>
                   <button
-                    onClick={() => navigate('/client-concours')}
+                    onClick={() => showSidebarChoices('concours')}
                     style={{
                       width: '100%',
                       background: '#f8fafc',
                       border: '1px solid #e2e8f0',
                       color: '#0f172a',
                       fontWeight: 700,
-                      fontSize: '12.5px',
-                      padding: '9px',
+                      fontSize: '12px',
+                      padding: '8px',
                       borderRadius: '10px',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#0f172a';
+                      e.currentTarget.style.backgroundColor = '#1862ea';
                       e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.borderColor = '#0f172a';
+                      e.currentTarget.style.borderColor = '#1862ea';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = '#f8fafc';
@@ -1180,27 +1533,29 @@ export default function ClientDashboard() {
           </div>
         </div>
 
-        {/* ═══ CONSEILS CLÉS ═══ */}
+        {/* ══════════════════════════════════════════════════════════
+            8. CONSEILS CLÉS POUR RÉUSSIR
+        ══════════════════════════════════════════════════════════ */}
         <div style={{
-          background: '#ffffff',
+          backgroundColor: '#ffffff',
           borderRadius: '24px',
-          border: '1px solid #e2e8f0',
-          padding: '28px 32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.02)'
+          border: '1px solid #edf2f7',
+          padding: '26px 30px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.015)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '22px' }}>💡</span>
-            <h3 style={{ fontSize: '18px', fontWeight: 850, margin: 0, color: '#0f172a' }}>Conseils Clés pour Réussir</h3>
+            <span style={{ fontSize: '20px' }}>💡</span>
+            <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#0f172a' }}>Conseils Clés pour Réussir</h3>
           </div>
-          <p style={{ fontSize: '13.5px', color: '#64748b', margin: '0 0 24px 0' }}>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0' }}>
             Habitudes éprouvées et recommandées par les lauréats des sessions précédentes :
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '18px' }}>
             {adviceList.map((adv, i) => (
-              <div key={i} style={{ padding: '18px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
-                <div style={{ fontSize: '26px', marginBottom: '8px' }}>{adv.icon}</div>
-                <h4 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>{adv.title}</h4>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>{adv.text}</p>
+              <div key={i} style={{ padding: '16px', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '16px' }}>
+                <div style={{ fontSize: '24px', marginBottom: '6px' }}>{adv.icon}</div>
+                <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{adv.title}</h4>
+                <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', lineHeight: 1.5 }}>{adv.text}</p>
               </div>
             ))}
           </div>
@@ -1208,7 +1563,9 @@ export default function ClientDashboard() {
 
       </div>
 
-      {/* ═══ MODAL ADD EVENT ═══ */}
+      {/* ══════════════════════════════════════════════════════════
+          MODAL ADD EVENT (PLANNING PERSONNEL)
+      ══════════════════════════════════════════════════════════ */}
       {showModal && (
         <div style={{
           position: 'fixed',
@@ -1233,13 +1590,13 @@ export default function ClientDashboard() {
             border: '1px solid #e2e8f0'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 850, margin: 0, color: '#0f172a' }}>➕ Nouvel événement</h3>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#0f172a' }}>➕ Nouvel événement</h3>
               <button
                 onClick={() => setShowModal(false)}
                 style={{
                   background: '#f1f5f9',
                   border: 'none',
-                  fontSize: '18px',
+                  fontSize: '16px',
                   cursor: 'pointer',
                   color: '#64748b',
                   width: '32px',
@@ -1329,7 +1686,7 @@ export default function ClientDashboard() {
                   onClick={() => setShowModal(false)}
                   style={{
                     flex: 1,
-                    padding: '12px',
+                    padding: '11px',
                     borderRadius: '10px',
                     border: '1.5px solid #e2e8f0',
                     background: '#ffffff',
@@ -1344,14 +1701,14 @@ export default function ClientDashboard() {
                   onClick={handleAdd}
                   style={{
                     flex: 1,
-                    padding: '12px',
+                    padding: '11px',
                     borderRadius: '10px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                     color: '#ffffff',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
                   }}
                 >
                   ✓ Enregistrer

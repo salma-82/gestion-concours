@@ -66,6 +66,17 @@ public class ExamenNationalController {
         return examenNationalRepository.findDistinctAnnees();
     }
 
+    // 3b. GET: Liste des options / filières distinctes
+    @GetMapping("/options")
+    public List<String> getOptions() {
+        return examenNationalRepository.findDistinctOptions();
+    }
+
+    @GetMapping("/filieres")
+    public List<String> getFilieres() {
+        return examenNationalRepository.findDistinctOptions();
+    }
+
     // 4. GET: Détail d'un examen par ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getExamenById(@PathVariable Long id) {

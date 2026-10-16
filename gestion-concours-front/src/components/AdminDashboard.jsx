@@ -67,6 +67,18 @@ const BAC_MATIERES_CONFIG = {
   ]
 };
 
+const BAC_FILIERES_LIST = [
+  'Sciences Mathématiques A',
+  'Sciences Mathématiques B',
+  'Sciences Physiques (PC)',
+  'Sciences de la Vie et de la Terre (SVT)',
+  'Sciences Économiques & Gestion',
+  'Sciences et Technologies Électriques (STE)',
+  'Sciences et Technologies Mécaniques (STM)',
+  'Lettres et Sciences Humaines',
+  'Toutes les filières'
+];
+
 const getBacChapitresList = (matiere) => {
   if (!matiere) {
     return [
@@ -167,13 +179,16 @@ export default function AdminDashboard() {
   const [filteredCoursBac, setFilteredCoursBac] = useState([]);
   const [searchCoursTitre, setSearchCoursTitre] = useState('');
   const [selectedCoursMatiere, setSelectedCoursMatiere] = useState('');
+  const [selectedCoursFiliere, setSelectedCoursFiliere] = useState('');
   const [selectedCoursChapitre, setSelectedCoursChapitre] = useState('');
   const [coursMatieresList, setCoursMatieresList] = useState([]);
   const [coursChapitresList, setCoursChapitresList] = useState([]);
+  const [coursFilieresList, setCoursFilieresList] = useState([]);
 
   const [isCoursModalOpen, setIsCoursModalOpen] = useState(false);
   const [coursTitre, setCoursTitre] = useState('');
   const [coursMatiere, setCoursMatiere] = useState('Mathématiques');
+  const [coursFiliere, setCoursFiliere] = useState('');
   const [coursChapitre, setCoursChapitre] = useState('');
   const [coursHtmlFile, setCoursHtmlFile] = useState(null);
   const [loadingCours, setLoadingCours] = useState(false);
@@ -183,6 +198,7 @@ export default function AdminDashboard() {
   const [editingCoursId, setEditingCoursId] = useState(null);
   const [editCoursTitre, setEditCoursTitre] = useState('');
   const [editCoursMatiere, setEditCoursMatiere] = useState('Mathématiques');
+  const [editCoursFiliere, setEditCoursFiliere] = useState('');
   const [editCoursChapitre, setEditCoursChapitre] = useState('');
   const [editCoursHtmlFile, setEditCoursHtmlFile] = useState(null);
   const [loadingEditCours, setLoadingEditCours] = useState(false);
@@ -342,6 +358,8 @@ export default function AdminDashboard() {
       setCoursMatieresList([...new Set(['Mathématiques', 'Physique-Chimie', 'SVT', 'Philosophie', 'Anglais', ...existingMats])]);
       const existingChaps = data.map(item => item.chapitre).filter(Boolean);
       setCoursChapitresList([...new Set(existingChaps)]);
+      const existingFilieres = data.map(item => item.filiere).filter(Boolean);
+      setCoursFilieresList([...new Set([...BAC_FILIERES_LIST, ...existingFilieres])]);
     } catch (err) { console.error("Erreur cours bac:", err); }
   };
 
@@ -560,7 +578,8 @@ export default function AdminDashboard() {
       result = result.filter(item => 
         (item.titre && item.titre.toLowerCase().includes(q)) ||
         (item.chapitre && item.chapitre.toLowerCase().includes(q)) ||
-        (item.matiere && item.matiere.toLowerCase().includes(q))
+        (item.matiere && item.matiere.toLowerCase().includes(q)) ||
+        (item.filiere && item.filiere.toLowerCase().includes(q))
       );
     }
     if (selectedCoursMatiere) {
@@ -576,11 +595,20 @@ export default function AdminDashboard() {
         return m === sel;
       });
     }
+    if (selectedCoursFiliere) {
+      result = result.filter(item => {
+        if (!item.filiere) return false;
+        const itemFil = item.filiere.trim().toLowerCase();
+        const selFil = selectedCoursFiliere.trim().toLowerCase();
+        if (selFil === 'toutes les filières' || selFil === 'toutes filières') return true;
+        return itemFil === selFil || itemFil.includes(selFil) || selFil.includes(itemFil);
+      });
+    }
     if (selectedCoursChapitre) {
       result = result.filter(item => item.chapitre?.toLowerCase() === selectedCoursChapitre.toLowerCase());
     }
     setFilteredCoursBac(result);
-  }, [searchCoursTitre, selectedCoursMatiere, selectedCoursChapitre, coursBacList]);
+  }, [searchCoursTitre, selectedCoursMatiere, selectedCoursFiliere, selectedCoursChapitre, coursBacList]);
 
   // --- ACTIONS TABLE COURS_BAC (AJOUT, MODIFICATION, SUPPRESSION) ---
   const handleCoursBacSubmit = async (e) => {
@@ -593,6 +621,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append('titre', coursTitre);
     formData.append('matiere', coursMatiere);
+    formData.append('filiere', coursFiliere);
     formData.append('chapitre', coursChapitre);
     formData.append('file', coursHtmlFile);
 
@@ -604,7 +633,7 @@ export default function AdminDashboard() {
       alert('Cours BAC HTML enregistré avec succès dans la table COURS_BAC ! 🎉');
       setIsCoursModalOpen(false);
       fetchCoursBac();
-      setCoursTitre(''); setCoursMatiere('Mathématiques'); setCoursChapitre(''); setCoursHtmlFile(null);
+      setCoursTitre(''); setCoursMatiere('Mathématiques'); setCoursFiliere(''); setCoursChapitre(''); setCoursHtmlFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du cours BAC !");
     } finally { setLoadingCours(false); }
@@ -614,6 +643,7 @@ export default function AdminDashboard() {
     setEditingCoursId(item.id);
     setEditCoursTitre(item.titre || '');
     setEditCoursMatiere(item.matiere || 'Mathématiques');
+    setEditCoursFiliere(item.filiere || '');
     setEditCoursChapitre(item.chapitre || '');
     setEditCoursHtmlFile(null);
     setIsEditCoursModalOpen(true);
@@ -625,6 +655,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append('titre', editCoursTitre);
     formData.append('matiere', editCoursMatiere);
+    formData.append('filiere', editCoursFiliere);
     formData.append('chapitre', editCoursChapitre);
     if (editCoursHtmlFile) {
       formData.append('file', editCoursHtmlFile);
@@ -2202,15 +2233,15 @@ export default function AdminDashboard() {
               <div>
                 <h2 style={{ ...styles.cardTitle, marginBottom: '4px' }}>📖 Table COURS_BAC — Fiches HTML</h2>
                 <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
-                  Table dédiée <code>cours_bac</code> pour les cours du BAC (Mathématiques, Physique-Chimie, SVT) avec upload de fichiers HTML et filtres par Matière et Chapitre.
+                  Table dédiée <code>cours_bac</code> pour les cours du BAC avec upload de fichiers HTML et filtres par Matière, Filière et Chapitre.
                 </p>
               </div>
-              <button onClick={() => { setCoursMatiere('Mathématiques'); setCoursChapitre(''); setIsCoursModalOpen(true); }} style={styles.btnPrimary}>
+              <button onClick={() => { setCoursMatiere('Mathématiques'); setCoursFiliere(''); setCoursChapitre(''); setIsCoursModalOpen(true); }} style={styles.btnPrimary}>
                 <span style={{ fontSize: '18px' }}>+</span> Ajouter Cours BAC (HTML)
               </button>
             </div>
 
-            {/* Filtres par Matière et Chapitre */}
+            {/* Filtres par Matière, Filière et Chapitre */}
             <div style={styles.filterBar}>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Recherche par Titre</label>
@@ -2244,6 +2275,19 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>🏷️ Filière</label>
+                <select 
+                  value={selectedCoursFiliere} 
+                  onChange={(e) => setSelectedCoursFiliere(e.target.value)} 
+                  style={styles.select}
+                >
+                  <option value="">Toutes les filières</option>
+                  {coursFilieresList.map((fil, idx) => (
+                    <option key={idx} value={fil}>{fil}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Chapitre</label>
                 <select 
                   value={selectedCoursChapitre} 
@@ -2259,8 +2303,8 @@ export default function AdminDashboard() {
                   ))}
                 </select>
               </div>
-              {(searchCoursTitre || selectedCoursMatiere || selectedCoursChapitre) && (
-                <button onClick={() => { setSearchCoursTitre(''); setSelectedCoursMatiere(''); setSelectedCoursChapitre(''); }} style={styles.btnReset}>
+              {(searchCoursTitre || selectedCoursMatiere || selectedCoursFiliere || selectedCoursChapitre) && (
+                <button onClick={() => { setSearchCoursTitre(''); setSelectedCoursMatiere(''); setSelectedCoursFiliere(''); setSelectedCoursChapitre(''); }} style={styles.btnReset}>
                   Réinitialiser
                 </button>
               )}
@@ -2272,6 +2316,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>ID</th>
                   <th style={styles.th}>Titre du Cours</th>
                   <th style={styles.th}>Matière</th>
+                  <th style={styles.th}>Filière</th>
                   <th style={styles.th}>Chapitre</th>
                   <th style={styles.th}>Fichier HTML</th>
                   <th style={styles.thCenter}>Actions</th>
@@ -2308,6 +2353,24 @@ export default function AdminDashboard() {
                             </span>
                           ) : (
                             <span style={styles.tagEcole}>{item.matiere}</span>
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {item.filiere ? (
+                            <span style={{
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              padding: '4px 9px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              display: 'inline-block'
+                            }}>
+                              🏷️ {item.filiere}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '12px', fontStyle: 'italic' }}>Toutes filières</span>
                           )}
                         </td>
                         <td style={styles.td}>{item.chapitre || '-'}</td>
@@ -2366,7 +2429,7 @@ export default function AdminDashboard() {
                     );
                   })
                 ) : (
-                  <tr><td colSpan="6" style={styles.emptyRow}>Aucun cours BAC trouvé dans la table COURS_BAC avec ces critères.</td></tr>
+                  <tr><td colSpan="7" style={styles.emptyRow}>Aucun cours BAC trouvé dans la table COURS_BAC avec ces critères.</td></tr>
                 )}
               </tbody>
             </table>
@@ -3020,6 +3083,26 @@ export default function AdminDashboard() {
               </div>
 
               <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Filière / Option</label>
+                <input 
+                  type="text" 
+                  list="add-cours-filieres-list" 
+                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)" 
+                  value={coursFiliere} 
+                  onChange={(e) => setCoursFiliere(e.target.value)} 
+                  style={styles.formInput} 
+                />
+                <datalist id="add-cours-filieres-list">
+                  {BAC_FILIERES_LIST.map((fil, idx) => (
+                    <option key={idx} value={fil} />
+                  ))}
+                  {coursFilieresList.filter(f => !BAC_FILIERES_LIST.includes(f)).map((fil, idx) => (
+                    <option key={`dyn-fil-${idx}`} value={fil} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
                 <input 
                   type="text" 
@@ -3110,6 +3193,26 @@ export default function AdminDashboard() {
               </div>
 
               <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Filière / Option</label>
+                <input 
+                  type="text" 
+                  list="edit-cours-filieres-list" 
+                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)" 
+                  value={editCoursFiliere} 
+                  onChange={(e) => setEditCoursFiliere(e.target.value)} 
+                  style={styles.formInput} 
+                />
+                <datalist id="edit-cours-filieres-list">
+                  {BAC_FILIERES_LIST.map((fil, idx) => (
+                    <option key={idx} value={fil} />
+                  ))}
+                  {coursFilieresList.filter(f => !BAC_FILIERES_LIST.includes(f)).map((fil, idx) => (
+                    <option key={`edit-dyn-fil-${idx}`} value={fil} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
                 <input 
                   type="text" 
@@ -3161,7 +3264,7 @@ export default function AdminDashboard() {
               <div>
                 <h3 style={styles.modalTitle}>📖 {previewCoursHtml.titre}</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  {previewCoursHtml.matiere} • {previewCoursHtml.chapitre} • Table COURS_BAC
+                  {previewCoursHtml.matiere} • {previewCoursHtml.filiere ? `${previewCoursHtml.filiere} • ` : ''}{previewCoursHtml.chapitre} • Table COURS_BAC
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

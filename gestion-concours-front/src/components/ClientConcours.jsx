@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const API_BASE = 'http://localhost:8081';
 
@@ -125,6 +126,9 @@ const getPdfUrl = (url) => {
 };
 
 export default function ClientConcours() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const requestedEcole = new URLSearchParams(location.search).get('ecole');
   const [concoursList, setConcoursList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -148,6 +152,10 @@ export default function ClientConcours() {
     concours: null,
     activeTab: 'sujet' // 'sujet' | 'correction'
   });
+
+  const returnToConcoursOptions = () => {
+    navigate('/client-dashboard', { state: { openSidebarMenu: 'concours' } });
+  };
 
   // Chargement des données live depuis la base de données
   const fetchAllConcours = async () => {
@@ -200,6 +208,21 @@ export default function ClientConcours() {
       matieresList: Object.keys(item.matieresMap).sort((a, b) => a.localeCompare(b))
     })).sort((a, b) => a.name.localeCompare(b.name));
   }, [concoursList]);
+
+  // Une école choisie dans le sous-menu du sidebar ouvre directement ses matières.
+  useEffect(() => {
+    if (!requestedEcole) return;
+    const matchingEcole = ecolesSummary.find(
+      ecole => ecole.name.toLowerCase() === requestedEcole.trim().toLowerCase()
+    );
+    if (!matchingEcole) return;
+
+    setSelectedEcole(matchingEcole.name);
+    setSelectedMatiere(null);
+    setSelectedYear('');
+    setSearchMatiere('');
+    setSearchConcours('');
+  }, [requestedEcole, ecolesSummary]);
 
   // Écoles filtrées par la recherche globale
   const filteredEcoles = useMemo(() => {
@@ -312,11 +335,12 @@ export default function ClientConcours() {
   }, [viewerModal]);
 
   return (
-    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: '24px 28px 60px 28px', color: '#0f172a' }}>
+    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: '#0f172a' }}>
 
       {/* =========================================================================
           FIL D'ARIANE / NAVIGATION HIÉRARCHIQUE (ÉCOLES -> MATIÈRES -> CONCOURS)
       ========================================================================= */}
+      {!requestedEcole && (
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -401,6 +425,7 @@ export default function ClientConcours() {
           </>
         )}
       </div>
+      )}
 
       {/* Message d'erreur éventuel */}
       {error && (
@@ -794,12 +819,7 @@ export default function ClientConcours() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <button
-                  onClick={() => {
-                    setSelectedEcole(null);
-                    setSelectedMatiere(null);
-                    setSelectedYear('');
-                    setSearchMatiere('');
-                  }}
+                  onClick={returnToConcoursOptions}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -817,7 +837,7 @@ export default function ClientConcours() {
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; }}
                 >
-                  ← Changer d'école
+                  ← Retour aux écoles
                 </button>
 
                 <div>
@@ -889,7 +909,7 @@ export default function ClientConcours() {
                 Aucune matière n'est actuellement associée à cette école.
               </p>
               <button
-                onClick={() => setSelectedEcole(null)}
+                onClick={returnToConcoursOptions}
                 style={{
                   background: '#0d9488',
                   color: '#ffffff',
