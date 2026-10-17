@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { recordStudentActivity } from '../studentProgress';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const matchOption = (itemOption, targetFiliere) => {
@@ -232,6 +233,13 @@ export default function ClientExamens() {
   const handleOpenReader = (exam, type = 'sujet') => {
     setActiveExam(exam);
     setActiveDocType(type);
+    recordStudentActivity({
+      type: 'Examen national',
+      resourceId: `${exam.id}:${type}`,
+      title: exam.titre || exam.title || `${type === 'correction' ? 'Correction' : 'Épreuve'} ${exam.annee || ''}`.trim(),
+      subject: exam.matiere || selectedMatiereCard || '',
+      chapter: exam.annee ? String(exam.annee) : ''
+    });
     setCurrentPage(1);
     setZoomLevel(100);
     window.scrollTo({ top: 0, behavior: 'smooth' });

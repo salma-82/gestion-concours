@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
+import ConcoursBlancStats from './ConcoursBlancStats';
 
 const BAC_MATIERES_CONFIG = {
   'Mathématiques': [
@@ -1459,6 +1460,7 @@ export default function AdminDashboard() {
     { key: 'coursBac', icon: '📖', label: 'Cours BAC (COURS_BAC)', count: coursBacList.length, countType: 'default', onClick: () => { setActiveTab('coursBac'); fetchCoursBac(); } },
     { key: 'resumes', icon: '💡', label: 'Résumés & Astuces', count: resumesList.length, countType: 'default', onClick: () => { setActiveTab('resumes'); fetchResumes(); } },
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
+    { key: 'concoursStats', icon: '📊', label: 'Statistiques QCM', count: null, onClick: () => setActiveTab('concoursStats') },
   ];
 
   return (
@@ -2435,6 +2437,8 @@ export default function AdminDashboard() {
             </table>
           </div>
         )}
+
+        {activeTab === 'concoursStats' && <ConcoursBlancStats />}
 
         {/* ==================== SECTION: CONCOURS BLANCS ==================== */}
         {activeTab === 'concours' && (

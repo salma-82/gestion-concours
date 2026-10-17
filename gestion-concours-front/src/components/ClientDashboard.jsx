@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import ClientMistakesDashboard from './ClientMistakesDashboard';
 
-import heroBooksImg from '../assets/hero-books.jpg';
-import ensaImg from '../assets/ENSA.jpg';
-import ensamImg from '../assets/ENSAM.jpg';
-import medecineImg from '../assets/MEDCINE.jpg';
-import encgImg from '../assets/ENCG.jpeg';
-
-const API = 'http://localhost:8081';
+import logoImg from '../assets/logo.png';
+import {
+  getStudentPlanningKey,
+  readStudentPlanning,
+  readStudentProgress,
+  setStudentActivityCompleted
+} from '../studentProgress';
 
 // ═══════════ DATA CALENDRIER ═══════════
 const CONCOURS_OFFICIELS = [
@@ -36,6 +36,16 @@ const PRIORITY_CFG = {
 
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
+const getSubjectStyle = (subject) => {
+  const normalized = String(subject || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (normalized.includes('math')) return { name: 'Mathématiques', icon: '📐', color: '#2563eb', bgColor: '#eaf2ff' };
+  if (normalized.includes('phys') || normalized.includes('chim') || normalized === 'pc') return { name: 'Physique-Chimie', icon: '⚡', color: '#7c3aed', bgColor: '#f3e8ff' };
+  if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return { name: 'SVT', icon: '🧬', color: '#059669', bgColor: '#dcfce7' };
+  if (normalized.includes('philo')) return { name: 'Philosophie', icon: '🏛️', color: '#d97706', bgColor: '#fef3c7' };
+  if (normalized.includes('ang') || normalized.includes('eng')) return { name: 'Anglais', icon: '🌐', color: '#0284c7', bgColor: '#e0f2fe' };
+  return { name: subject || 'Autres ressources', icon: '📚', color: '#475569', bgColor: '#f1f5f9' };
+};
+
 export default function ClientDashboard() {
   const navigate = useNavigate();
   const showSidebarChoices = (menu) => navigate('/client-dashboard', {
@@ -45,58 +55,36 @@ export default function ClientDashboard() {
 
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
-  const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
+  const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant');
+  const currentYear = new Date().getFullYear();
 
-  // ─── Stats API ───
-  const [dataCounts, setDataCounts] = useState({ examens: 0, resumes: 2, concours: 0 });
+  const [studentActivities, setStudentActivities] = useState(() => readStudentProgress());
   useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const [r1, r2, r3, r4] = await Promise.allSettled([
-          axios.get(`${API}/api/examens-nationaux`),
-          axios.get(`${API}/api/resumes`),
-          axios.get(`${API}/api/cours-bac`),
-          axios.get(`${API}/api/concours-blancs/publies`)
-        ]);
-        const totalRes = (r3.status === 'fulfilled' && Array.isArray(r3.value.data) ? r3.value.data.length : 0) +
-                         (r2.status === 'fulfilled' && Array.isArray(r2.value.data) ? r2.value.data.length : 0);
-        setDataCounts({
-          examens: r1.status === 'fulfilled' && Array.isArray(r1.value.data) ? r1.value.data.length : 0,
-          resumes: totalRes > 0 ? totalRes : 2,
-          concours: r4.status === 'fulfilled' && Array.isArray(r4.value.data) ? r4.value.data.length : 0
-        });
-      } catch (err) {}
+    const refreshProgress = () => {
+      setStudentActivities(readStudentProgress());
     };
-    fetchCounts();
+    refreshProgress();
+    window.addEventListener('student-progress-updated', refreshProgress);
+    window.addEventListener('storage', refreshProgress);
+    return () => {
+      window.removeEventListener('student-progress-updated', refreshProgress);
+      window.removeEventListener('storage', refreshProgress);
+    };
   }, []);
-
-  // ─── Live Timer (Initial 16s to match screenshot exactly, ticking live) ───
-  const [seconds, setSeconds] = useState(16);
-  useEffect(() => {
-    const t = setInterval(() => setSeconds(s => s + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const fmtTime = () => {
-    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    return `${h}:${m}:${s}`;
-  };
 
   // ─── Calendrier State ───
-  const [tab, setTab] = useState('concours');
-  const [curDate, setCurDate] = useState(new Date(2026, 9, 1));
+  const [curDate, setCurDate] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
   const [selectedDay, setSelectedDay] = useState(null);
-  const [planning, setPlanning] = useState([]);
+  const [planning, setPlanning] = useState(() => readStudentPlanning());
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ title: '', date: '', time: '', type: 'revision', subject: '', priority: 'medium' });
 
-  useEffect(() => {
-    try { setPlanning(JSON.parse(localStorage.getItem('userPlanning') || '[]')); } catch (e) { setPlanning([]); }
-  }, []);
-  useEffect(() => { localStorage.setItem('userPlanning', JSON.stringify(planning)); }, [planning]);
+  useEffect(() => { localStorage.setItem(getStudentPlanningKey(), JSON.stringify(planning)); }, [planning]);
 
-  const getEvents = () => tab === 'concours' ? CONCOURS_OFFICIELS : planning;
+  const getEvents = () => planning;
 
   const renderCalendarGrid = () => {
     const y = curDate.getFullYear(), m = curDate.getMonth();
@@ -261,6 +249,32 @@ export default function ClientDashboard() {
     setShowModal(false);
   };
 
+  const progressBySubject = studentActivities.reduce((groups, activity) => {
+    const style = getSubjectStyle(activity.subject);
+    const group = groups[style.name] || { ...style, total: 0, completed: 0 };
+    group.total += 1;
+    if (activity.completed) group.completed += 1;
+    groups[style.name] = group;
+    return groups;
+  }, {});
+  const studentProgressByMatiere = Object.values(progressBySubject)
+    .map((group) => ({ ...group, percent: group.total ? Math.round((group.completed / group.total) * 100) : 0 }))
+    .sort((a, b) => b.total - a.total);
+  const trackedResourceCount = studentActivities.length;
+  const completedResourceCount = studentActivities.filter((activity) => activity.completed).length;
+  const overallProgress = trackedResourceCount ? Math.round((completedResourceCount / trackedResourceCount) * 100) : 0;
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const activitiesThisWeek = studentActivities.filter((activity) => new Date(activity.lastViewedAt).getTime() >= weekAgo).length;
+  const completionsThisWeek = studentActivities.filter((activity) => activity.completedAt && new Date(activity.completedAt).getTime() >= weekAgo).length;
+  const recentStudentActivities = [...studentActivities]
+    .sort((a, b) => new Date(b.lastViewedAt).getTime() - new Date(a.lastViewedAt).getTime())
+    .slice(0, 5);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const upcomingPlanning = planning
+    .filter((event) => new Date(`${event.date}T00:00:00`).getTime() >= todayStart.getTime())
+    .sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime())
+    .slice(0, 3);
   // ─── Progress Data (Matches the reference image exactly: 78%, 64%, 85%) ───
   const progressByMatiere = [
     {
@@ -299,13 +313,6 @@ export default function ClientDashboard() {
     { type: 'QCM', title: 'Concours Blanc ENSA - Math', date: 'Aujourd\'hui 16:30', score: '17.5/20', status: 'Terminé', statusColor: '#059669', statusBg: '#dcfce7' },
     { type: 'Examen', title: 'Bac 2023 - Physique-Chimie', date: 'Hier 20:15', score: 'Consulté', status: 'Révisé', statusColor: '#2563eb', statusBg: '#dbeafe' },
     { type: 'Fiche', title: 'Nombres Complexes', date: 'Il y a 2 jours', score: '100% lu', status: 'Validé', statusColor: '#7c3aed', statusBg: '#f3e8ff' }
-  ];
-
-  const schools = [
-    { name: 'ENSA Maroc', desc: 'Sciences Appliquées', img: ensaImg, field: 'Ingénierie' },
-    { name: 'ENSAM', desc: 'Arts et Métiers', img: ensamImg, field: 'Génie Mécanique' },
-    { name: 'Médecine', desc: 'Médecine & Pharmacie', img: medecineImg, field: 'Médical' },
-    { name: 'ENCG Maroc', desc: 'Commerce & Gestion', img: encgImg, field: 'Management' }
   ];
 
   const adviceList = [
@@ -384,7 +391,7 @@ export default function ClientDashboard() {
                 <line x1="8" y1="2" x2="8" y2="6" />
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
-              <span>Session Concours 2026 • Candidat Actif</span>
+              <span>Préparation {currentYear} · Espace étudiant</span>
             </div>
 
             {/* Title */}
@@ -476,7 +483,7 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Right Hero Illustration & Live Timer Badge */}
+          {/* Logo du site */}
           <div style={{
             position: 'relative',
             width: '280px',
@@ -484,354 +491,33 @@ export default function ClientDashboard() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexShrink: 0
+            flexShrink: 0,
+            padding: '14px',
+            boxSizing: 'border-box',
+            borderRadius: '24px',
+            border: '1px solid rgba(191, 219, 254, 0.9)',
+            background: 'rgba(255, 255, 255, 0.72)',
+            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.08)'
           }}>
-            {/* 3D Stacked Books + Cap Illustration */}
             <img
-              src={heroBooksImg}
-              alt="Préparation Concours"
+              src={logoImg}
+              alt="Logo ECONCOURS"
               style={{
                 width: '100%',
                 height: '100%',
+                maxWidth: '250px',
+                maxHeight: '170px',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 10px 24px rgba(37, 99, 235, 0.12))',
-                zIndex: 2
+                filter: 'drop-shadow(0 5px 10px rgba(37, 99, 235, 0.12))'
               }}
             />
-
-            {/* Live Timer Badge (Exact style from screenshot: 🟢 00:00:16) */}
-            <div style={{
-              position: 'absolute',
-              right: '4px',
-              bottom: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: '#ffffff',
-              border: '1.5px solid #a7f3d0',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              boxShadow: '0 4px 14px rgba(16, 185, 129, 0.12)',
-              zIndex: 3
-            }}>
-              <span style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#10b981',
-                boxShadow: '0 0 6px rgba(16, 185, 129, 0.7)'
-              }} />
-              <span style={{
-                fontFamily: 'monospace',
-                fontSize: '13px',
-                fontWeight: 800,
-                color: '#047857',
-                letterSpacing: '0.4px'
-              }}>
-                {fmtTime()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
-            2. STATS CARDS (4 CARTES IDENTIQUES AU DESIGN)
-        ══════════════════════════════════════════════════════════ */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '18px',
-          marginBottom: '24px'
-        }}>
-          {/* Carte 1 : Examens Nationaux */}
-          <div
-            onClick={() => showSidebarChoices('examens')}
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '22px',
-              border: '1px solid #edf2f7',
-              padding: '20px 22px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(37, 99, 235, 0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
-            }}
-          >
-            {/* Blue Icon Box */}
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              backgroundColor: '#eaf2ff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#2563eb">
-                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-              </svg>
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                  {dataCounts.examens}
-                </span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 750,
-                  backgroundColor: '#eaf2ff',
-                  color: '#2563eb',
-                  padding: '3px 9px',
-                  borderRadius: '12px'
-                }}>
-                  100% dispo
-                </span>
-              </div>
-              <div style={{
-                fontSize: '13.5px',
-                fontWeight: 650,
-                color: '#475569',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <span>Examens Nationaux</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Carte 2 : Fiches & Résumés */}
-          <div
-            onClick={() => showSidebarChoices('resumes')}
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '22px',
-              border: '1px solid #edf2f7',
-              padding: '20px 22px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(147, 51, 234, 0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
-            }}
-          >
-            {/* Purple Icon Box */}
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              backgroundColor: '#f3e8ff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#9333ea">
-                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
-              </svg>
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                  {dataCounts.resumes}
-                </span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 750,
-                  backgroundColor: '#f3e8ff',
-                  color: '#9333ea',
-                  padding: '3px 9px',
-                  borderRadius: '12px'
-                }}>
-                  Accès libre
-                </span>
-              </div>
-              <div style={{
-                fontSize: '13.5px',
-                fontWeight: 650,
-                color: '#475569',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <span>Fiches & Résumés</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Carte 3 : Concours Blancs */}
-          <div
-            onClick={() => showSidebarChoices('concours-blanc')}
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '22px',
-              border: '1px solid #edf2f7',
-              padding: '20px 22px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(245, 158, 11, 0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
-            }}
-          >
-            {/* Orange Icon Box */}
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              backgroundColor: '#fef3c7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#d97706">
-                <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.8-.45 3.22-1.89 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zm-14 3V5h2v4.08C5.83 8.78 5 8 5 7zm12 1.08V5h2v2c0 1-.83 1.78-2 2.08z" />
-              </svg>
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                  {dataCounts.concours}
-                </span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 750,
-                  backgroundColor: '#fef3c7',
-                  color: '#d97706',
-                  padding: '3px 9px',
-                  borderRadius: '12px'
-                }}>
-                  Simulation
-                </span>
-              </div>
-              <div style={{
-                fontSize: '13.5px',
-                fontWeight: 650,
-                color: '#475569',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <span>Concours Blancs</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Carte 4 : Taux de Maîtrise */}
-          <div
-            onClick={() => showSidebarChoices('concours-blanc')}
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '22px',
-              border: '1px solid #edf2f7',
-              padding: '20px 22px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
-            }}
-          >
-            {/* Green Icon Box */}
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
-              backgroundColor: '#dcfce7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#059669">
-                <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zM16.2 13h2.8v6h-2.8z" />
-              </svg>
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 850, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                  76%
-                </span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 750,
-                  backgroundColor: '#dcfce7',
-                  color: '#059669',
-                  padding: '3px 9px',
-                  borderRadius: '12px'
-                }}>
-                  +12%
-                </span>
-              </div>
-              <div style={{
-                fontSize: '13.5px',
-                fontWeight: 650,
-                color: '#475569',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}>
-                <span>Taux de Maîtrise</span>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>›</span>
-              </div>
-            </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════════════════
             3. PROGRESSION DE MAÎTRISE PAR MATIÈRE
         ══════════════════════════════════════════════════════════ */}
-        <div style={{
+        <div id="student-progress-section" style={{
           backgroundColor: '#ffffff',
           borderRadius: '24px',
           border: '1px solid #edf2f7',
@@ -869,7 +555,7 @@ export default function ClientDashboard() {
                 color: '#0f172a',
                 letterSpacing: '-0.3px'
               }}>
-                Progression de Maîtrise par Matière
+                Ma progression par matière
               </h2>
             </div>
 
@@ -889,7 +575,7 @@ export default function ClientDashboard() {
                 letterSpacing: '0.6px',
                 lineHeight: 1.2
               }}>
-                SCORE GLOBAL
+                AVANCEMENT SUIVI
               </div>
               <div style={{
                 fontSize: '17px',
@@ -897,20 +583,23 @@ export default function ClientDashboard() {
                 color: '#0f172a',
                 lineHeight: 1.3
               }}>
-                76% Réalisé
+                {overallProgress}% terminé
+              </div>
+              <div style={{ color: '#64748b', fontSize: '10px', marginTop: '2px' }}>
+                {completedResourceCount} sur {trackedResourceCount} ressources consultées
               </div>
             </div>
           </div>
 
-          {/* 3 Subject Cards Grid */}
+          {/* Progression calculée à partir des ressources réellement consultées */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
             gap: '18px'
           }}>
-            {progressByMatiere.map((mat, idx) => (
+            {studentProgressByMatiere.map((mat) => (
               <div
-                key={idx}
+                key={mat.name}
                 style={{
                   backgroundColor: '#f8fafc',
                   border: '1px solid #e8edf4',
@@ -981,9 +670,20 @@ export default function ClientDashboard() {
                     transition: 'width 0.8s ease'
                   }} />
                 </div>
+                <div style={{ marginTop: '8px', color: '#64748b', fontSize: '11.5px' }}>
+                  {mat.completed} terminée{mat.completed > 1 ? 's' : ''} sur {mat.total} ressource{mat.total > 1 ? 's' : ''} consultée{mat.total > 1 ? 's' : ''}
+                </div>
               </div>
             ))}
           </div>
+          {studentProgressByMatiere.length === 0 && (
+            <div style={{ padding: '22px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '13px', textAlign: 'center' }}>
+              Votre progression apparaîtra ici après la consultation de vos cours, résumés ou épreuves.
+            </div>
+          )}
+          <p style={{ margin: '16px 0 0', color: '#64748b', fontSize: '12px' }}>
+            Marquez une ressource comme terminée dans « Activités récentes » pour suivre votre avancement.
+          </p>
         </div>
 
         {/* ══════════════════════════════════════════════════════════
@@ -1000,67 +700,24 @@ export default function ClientDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <span style={{ fontSize: '20px' }}>📅</span>
             <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
-              Calendrier des Concours
+              Calendrier de révision
             </h2>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
+              Organisez vos révisions, concours et objectifs personnels.
+            </p>
             <button
-              onClick={() => { setTab('concours'); setSelectedDay(null); }}
+              onClick={() => setShowModal(true)}
               style={{
-                padding: '9px 18px',
-                borderRadius: '12px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-                background: tab === 'concours' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : '#f1f5f9',
-                color: tab === 'concours' ? '#ffffff' : '#475569',
-                boxShadow: tab === 'concours' ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
+                padding: '9px 18px', borderRadius: '12px', border: 'none', fontWeight: 700,
+                fontSize: '13px', cursor: 'pointer', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)', transition: 'all 0.15s ease'
               }}
             >
-              🎓 Concours Officiels ({CONCOURS_OFFICIELS.length})
+              ➕ Ajouter un objectif
             </button>
-
-            <button
-              onClick={() => { setTab('planning'); setSelectedDay(null); }}
-              style={{
-                padding: '9px 18px',
-                borderRadius: '12px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-                background: tab === 'planning' ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : '#f1f5f9',
-                color: tab === 'planning' ? '#ffffff' : '#475569',
-                boxShadow: tab === 'planning' ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              👤 Mon Planning ({planning.length})
-            </button>
-
-            {tab === 'planning' && (
-              <button
-                onClick={() => setShowModal(true)}
-                style={{
-                  padding: '9px 18px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: '#ffffff',
-                  marginLeft: 'auto',
-                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                ➕ Ajouter
-              </button>
-            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '26px' }}>
@@ -1131,7 +788,7 @@ export default function ClientDashboard() {
 
             <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '520px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 800, margin: '0 0 12px 0', color: '#0f172a' }}>
-                {tab === 'concours' ? '🎓 Concours Disponibles' : '👤 Mon Planning Personnel'}
+                Mon planning personnel ({planning.length})
               </h4>
               <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
                 {renderEventList()}
@@ -1181,20 +838,15 @@ export default function ClientDashboard() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, color: '#0f172a' }}>Discord Communauté</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
-                    <span style={{ fontSize: '12px', color: '#059669', fontWeight: 700 }}>1,247 en ligne</span>
-                  </div>
                 </div>
               </div>
               <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px', lineHeight: 1.5 }}>
-                Rejoignez +12,500 étudiants pour réviser ensemble, échanger des astuces et poser vos questions 24/7 !
+                Rejoignez la communauté pour réviser ensemble, échanger des conseils et poser vos questions.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
-                {[['12.5K', 'Membres'], ['45', 'Salons'], ['24/7', 'Actif']].map(([v, l], i) => (
-                  <div key={i} style={{ textAlign: 'center', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px', padding: '10px 6px' }}>
-                    <div style={{ fontSize: '15px', fontWeight: 850, color: '#0f172a' }}>{v}</div>
-                    <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 700 }}>{l}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                {['Révisions en groupe', 'Questions & réponses', 'Entraide'].map((label) => (
+                  <div key={label} style={{ background: '#f5f6ff', border: '1px solid #e1e4ff', borderRadius: '999px', padding: '7px 10px', color: '#4752c4', fontSize: '10.5px', fontWeight: 700 }}>
+                    {label}
                   </div>
                 ))}
               </div>
@@ -1221,157 +873,54 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Amis en ligne Card */}
+          {/* Weekly progress from this student's actual activity */}
           <div style={{
-            background: '#ffffff',
-            borderRadius: '22px',
-            border: '1px solid #edf2f7',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
+            background: '#ffffff', borderRadius: '22px', border: '1px solid #edf2f7',
+            padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, color: '#0f172a' }}>👥 Amis en ligne</h3>
-              <span style={{ fontSize: '11px', background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '12px', fontWeight: 800 }}>
-                5 actifs
-              </span>
-            </div>
-            {friends.map((f, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '8px 6px',
-                  borderRadius: '10px'
-                }}
-              >
-                <div style={{ position: 'relative' }}>
-                  <img src={`https://i.pravatar.cc/40?img=${f.img}`} alt={f.name} style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    right: 0,
-                    width: '9px',
-                    height: '9px',
-                    borderRadius: '50%',
-                    background: '#10b981',
-                    border: '2px solid #ffffff'
-                  }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{f.name}</div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b' }}>{f.action}</div>
-                </div>
-                <button
-                  style={{
-                    fontSize: '11.5px',
-                    background: '#edf4fe',
-                    color: '#2563eb',
-                    padding: '5px 10px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  💬
-                </button>
+            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 6px', color: '#0f172a' }}>Cette semaine</h3>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 18px' }}>Votre activité sur les 7 derniers jours.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '25px', fontWeight: 850, color: '#2563eb' }}>{activitiesThisWeek}</div>
+                <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700 }}>Ressources étudiées</div>
               </div>
-            ))}
+              <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '25px', fontWeight: 850, color: '#059669' }}>{completionsThisWeek}</div>
+                <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700 }}>Terminées cette semaine</div>
+              </div>
+            </div>
+            {activitiesThisWeek === 0 && (
+              <p style={{ margin: '14px 0 0', color: '#64748b', fontSize: '12px' }}>Consultez un cours ou un résumé pour commencer à suivre votre progression.</p>
+            )}
           </div>
 
-          {/* Top Classement Card */}
+          {/* Events coming from the student's own calendar */}
           <div style={{
-            background: '#ffffff',
-            borderRadius: '22px',
-            border: '1px solid #edf2f7',
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
+            background: '#ffffff', borderRadius: '22px', border: '1px solid #edf2f7',
+            padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
           }}>
-            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 16px 0', color: '#0f172a' }}>
-              🏆 Top Classement
-            </h3>
-            {[
-              { rank: 1, name: 'Mehdi A.', score: '18.5/20', img: 15, medal: '🥇', bg: '#fef3c7', border: '#f59e0b' },
-              { rank: 2, name: 'Salma F.', score: '17.8/20', img: 22, medal: '🥈', bg: '#f8fafc', border: '#94a3b8' },
-              { rank: 3, name: 'Rayan K.', score: '17.2/20', img: 33, medal: '🥉', bg: '#fff7ed', border: '#ea580c' }
-            ].map((u, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '9px 12px',
-                  borderRadius: '12px',
-                  background: u.bg,
-                  border: `1px solid ${u.border}30`,
-                  marginBottom: '8px'
-                }}
-              >
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  background: u.border,
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '11px'
-                }}>
-                  {u.rank}
-                </div>
-                <img src={`https://i.pravatar.cc/40?img=${u.img}`} alt={u.name} style={{ width: '36px', height: '36px', borderRadius: '50%', border: `2px solid ${u.border}` }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{u.name}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{u.score}</div>
-                </div>
-                <span style={{ fontSize: '18px' }}>{u.medal}</span>
+            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 6px', color: '#0f172a' }}>À venir</h3>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 14px' }}>Vos prochains objectifs enregistrés.</p>
+            {upcomingPlanning.length === 0 ? (
+              <div style={{ padding: '18px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '12px', textAlign: 'center' }}>
+                Aucun objectif à venir. Ajoutez une date dans le calendrier.
+              </div>
+            ) : upcomingPlanning.map((event) => (
+              <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '11px 12px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #edf2f7', marginBottom: '8px' }}>
+                <span style={{ color: '#0f172a', fontSize: '12px', fontWeight: 750 }}>{event.title}</span>
+                <span style={{ color: '#2563eb', fontSize: '11px', fontWeight: 750, whiteSpace: 'nowrap' }}>
+                  {new Date(`${event.date}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}{event.time ? ` · ${event.time}` : ''}
+                </span>
               </div>
             ))}
-
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '9px 12px',
-              borderRadius: '12px',
-              background: '#edf4fe',
-              border: '1.5px solid #bfdbfe',
-              marginTop: '12px'
-            }}>
-              <div style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                background: '#2563eb',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 800,
-                fontSize: '11px'
-              }}>
-                23
-              </div>
-              <img src="https://i.pravatar.cc/40?img=47" alt="Toi" style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #2563eb' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>Toi ({candidateName.split(' ')[0]})</div>
-                <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: 700 }}>14.0/20</div>
-              </div>
-              <span style={{ fontSize: '11px', background: '#10b981', color: '#ffffff', padding: '2px 7px', borderRadius: '8px', fontWeight: 800 }}>
-                ↑7
-              </span>
-            </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════════════════
-            6. ACTIVITÉS RÉCENTES
+            6. ERREURS QCM ET ACTIVITÉS RÉCENTES
         ══════════════════════════════════════════════════════════ */}
+        <ClientMistakesDashboard />
         <div style={{
           backgroundColor: '#ffffff',
           borderRadius: '24px',
@@ -1386,9 +935,13 @@ export default function ClientDashboard() {
               Activités Récentes
             </h2>
           </div>
-          {recentActivities.map((act, i) => (
+          {recentStudentActivities.length === 0 ? (
+            <div style={{ padding: '24px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', textAlign: 'center', fontSize: '13px' }}>
+              Vos cours, résumés et épreuves consultés apparaîtront ici.
+            </div>
+          ) : recentStudentActivities.map((act) => (
             <div
-              key={i}
+              key={act.id}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1416,8 +969,8 @@ export default function ClientDashboard() {
                   width: '38px',
                   height: '38px',
                   borderRadius: '12px',
-                  background: act.statusBg,
-                  color: act.statusColor,
+                  background: act.completed ? '#dcfce7' : '#dbeafe',
+                  color: act.completed ? '#059669' : '#2563eb',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1425,112 +978,31 @@ export default function ClientDashboard() {
                   fontSize: '11px',
                   flexShrink: 0
                 }}>
-                  {act.type}
+                  {act.type.slice(0, 3).toUpperCase()}
                 </div>
                 <div>
                   <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>{act.title}</div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>{act.date}</div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
+                    {[act.subject, act.chapter].filter(Boolean).join(' · ')}{act.lastViewedAt ? ` · ${new Date(act.lastViewedAt).toLocaleString('fr-FR')}` : ''}
+                  </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>{act.score}</span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  color: act.statusColor,
-                  background: act.statusBg,
-                  padding: '3px 9px',
-                  borderRadius: '12px'
-                }}>
-                  {act.status}
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 650 }}>Consulté {act.visits || 1} fois</span>
+                <button
+                  type="button"
+                  onClick={() => setStudentActivityCompleted(act.id, !act.completed)}
+                  style={{
+                    fontSize: '11px', fontWeight: 750, color: act.completed ? '#047857' : '#2563eb',
+                    background: act.completed ? '#ecfdf5' : '#eff6ff', border: `1px solid ${act.completed ? '#a7f3d0' : '#bfdbfe'}`,
+                    padding: '7px 10px', borderRadius: '10px', cursor: 'pointer'
+                  }}
+                >
+                  {act.completed ? '✓ Terminée · Réouvrir' : 'Marquer terminée'}
+                </button>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
-            7. GRANDES ÉCOLES PRÉPARÉES
-        ══════════════════════════════════════════════════════════ */}
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-            <span style={{ fontSize: '20px' }}>🎯</span>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
-              Grandes Écoles Préparées
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-            {schools.map((sc, i) => (
-              <div
-                key={i}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '18px',
-                  border: '1px solid #edf2f7',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.015)',
-                  overflow: 'hidden',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.06)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.015)';
-                }}
-              >
-                <div style={{ height: '130px', overflow: 'hidden', position: 'relative' }}>
-                  <img src={sc.img} alt={sc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    background: 'rgba(15,23,42,0.8)',
-                    backdropFilter: 'blur(6px)',
-                    color: '#ffffff',
-                    fontSize: '10.5px',
-                    fontWeight: 800,
-                    padding: '3px 9px',
-                    borderRadius: '20px'
-                  }}>
-                    {sc.field}
-                  </div>
-                </div>
-                <div style={{ padding: '16px' }}>
-                  <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>{sc.name}</h4>
-                  <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>{sc.desc}</p>
-                  <button
-                    onClick={() => showSidebarChoices('concours')}
-                    style={{
-                      width: '100%',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      color: '#0f172a',
-                      fontWeight: 700,
-                      fontSize: '12px',
-                      padding: '8px',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1862ea';
-                      e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.borderColor = '#1862ea';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f8fafc';
-                      e.currentTarget.style.color = '#0f172a';
-                      e.currentTarget.style.borderColor = '#e2e8f0';
-                    }}
-                  >
-                    Voir les épreuves →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* ══════════════════════════════════════════════════════════

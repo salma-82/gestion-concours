@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
-import sidebarBooksImg from '../assets/sidebar-books.jpg';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -281,17 +280,24 @@ export default function ClientLayout() {
               alignItems: 'center',
               justifyContent: 'center',
               width: '100%',
+              minHeight: '88px',
               boxSizing: 'border-box',
-              padding: '6px 0 28px',
-              cursor: 'pointer'
+              padding: '10px 12px',
+              marginBottom: '22px',
+              borderRadius: '20px',
+              border: '1px solid #dbeafe',
+              background: 'linear-gradient(135deg, #f3f8ff 0%, #eaf3ff 100%)',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.06)',
+              cursor: 'pointer',
+              overflow: 'hidden'
             }}
           >
             <img
               src={logoImg}
               alt="ECONCOURS"
               style={{
-                height: '54px',
-                maxWidth: '170px',
+                height: '62px',
+                maxWidth: '150px',
                 objectFit: 'contain'
               }}
             />
@@ -745,99 +751,45 @@ export default function ClientLayout() {
           </nav>
         </div>
 
-        {/* BOTTOM: Déconnexion & Profil Étudiant & Ton avenir commence ici */}
+        {/* Déconnexion, à la place de la carte décorative */}
         <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '14px' }}>
-            {/* Déconnexion */}
-            <div
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '10px 14px',
-                borderRadius: '14px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                userSelect: 'none'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fff1f2'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            >
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                backgroundColor: '#fee2e2',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                marginRight: '12px'
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </div>
-
-              <span style={{
-                flex: 1,
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#ef4444',
-                letterSpacing: '-0.2px'
-              }}>
-                Déconnexion
-              </span>
-            </div>
-
-          </div>
-
-          {/* Decorative Card "Ton avenir commence ici" */}
-          <div style={{
-            position: 'relative',
-            borderRadius: '18px',
-            background: 'linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%)',
-            border: '1px solid #dbeafe',
-            padding: '16px 14px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.04)'
-          }}>
-            <div style={{
-              fontFamily: "'Caveat', cursive",
-              fontSize: '20px',
-              fontWeight: 700,
-              color: '#1e40af',
-              lineHeight: 1.2,
-              transform: 'rotate(-3deg)',
-              display: 'inline-block',
-              marginBottom: '4px'
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '14px',
+              borderRadius: '16px',
+              border: '1px solid #fecdd3',
+              background: '#fff1f2',
+              color: '#e11d48',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'background 0.18s ease, border-color 0.18s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#ffe4e6'; e.currentTarget.style.borderColor = '#fda4af'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff1f2'; e.currentTarget.style.borderColor = '#fecdd3'; }}
+          >
+            <span style={{
+              width: '38px',
+              height: '38px',
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0,
+              borderRadius: '12px',
+              background: '#fee2e2'
             }}>
-              Ton avenir<br />commence ici
-            </div>
-
-            <div style={{
-              position: 'absolute',
-              right: '-6px',
-              bottom: '-12px',
-              width: '80px',
-              height: '80px',
-              opacity: 0.85,
-              pointerEvents: 'none'
-            }}>
-              <img
-                src={sidebarBooksImg}
-                alt="Books"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 4px 8px rgba(30, 64, 175, 0.15))'
-                }}
-              />
-            </div>
-          </div>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </span>
+            <span style={{ fontSize: '14px', fontWeight: 750 }}>Déconnexion</span>
+          </button>
         </div>
       </aside>
 
@@ -864,7 +816,7 @@ export default function ClientLayout() {
           zIndex: 40,
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.015)'
         }}>
-          {/* Gauche : Bouton Hamburger + Dropdown Session Concours 2026 */}
+          {/* Gauche : Bouton Hamburger */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button
               onClick={() => setIsSidebarOpen(prev => !prev)}
@@ -894,30 +846,6 @@ export default function ClientLayout() {
               </svg>
             </button>
 
-            {/* Dropdown Pill: Session Concours 2026 ⌵ */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '7px 18px',
-              borderRadius: '24px',
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-              userSelect: 'none',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-            >
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>
-                Session Concours 2026
-              </span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </div>
           </div>
 
           {/* Droite : Notification Bell & Profil Étudiant avec Initiale SB */}

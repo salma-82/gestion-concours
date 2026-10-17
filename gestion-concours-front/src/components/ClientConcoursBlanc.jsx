@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { recordStudentActivity } from '../studentProgress';
+import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const API = 'http://localhost:8081';
@@ -249,6 +251,13 @@ export default function ClientConcoursBlanc() {
   const handleOpenQcm = (concours) => {
     setActiveConcours(concours);
     setCurrentStep('player');
+    recordStudentActivity({
+      type: 'Concours blanc',
+      resourceId: concours.id,
+      title: concours.titre || concours.title || 'Concours blanc',
+      subject: concours.matiere || selectedMatiere?.nom || '',
+      chapter: concours.chapitre || selectedChapitre || ''
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -372,10 +381,14 @@ export default function ClientConcoursBlanc() {
                 <span>⏱️ Épreuve Interactive QCM (Questions, Timer & Corrigé intégrés)</span>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>MathJax & Formules activées</span>
               </div>
-              <iframe
+              <TrackedQcmFrame
                 src={getFullUrl(activeConcours.htmlUrl)}
                 title={activeConcours.titre}
-                sandbox="allow-scripts allow-same-origin allow-forms"
+                sourceType="Concours blanc"
+                resourceId={activeConcours.id}
+                resourceTitle={activeConcours.titre || activeConcours.title}
+                subject={activeConcours.matiere || selectedMatiere?.nom || ''}
+                chapter={activeConcours.chapitre || selectedChapitre || ''}
                 style={{
                   width: '100%',
                   height: '84vh',

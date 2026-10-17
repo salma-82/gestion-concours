@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { recordStudentActivity } from '../studentProgress';
+import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const API_BASE = 'http://localhost:8081';
@@ -322,6 +324,13 @@ export default function ClientConcours() {
       isOpen: true,
       concours,
       activeTab: finalTab
+    });
+    recordStudentActivity({
+      type: 'Concours',
+      resourceId: `${concours.id}:${finalTab}`,
+      title: concours.titre || concours.title || `${concours.ecole || 'Concours'} — ${concours.annee || ''}`.trim(),
+      subject: concours.matiere || selectedMatiere || '',
+      chapter: concours.annee ? String(concours.annee) : ''
     });
   };
 
@@ -1624,19 +1633,39 @@ export default function ClientConcours() {
               display: 'flex'
             }}>
               {currentViewerUrl ? (
-                <iframe
-                  src={currentViewerUrl}
-                  title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    minHeight: '68vh',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '12px',
-                    backgroundColor: '#ffffff'
-                  }}
-                />
+                viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (
+                  <TrackedQcmFrame
+                    src={currentViewerUrl}
+                    title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
+                    sourceType="Concours"
+                    resourceId={viewerModal.concours.id}
+                    resourceTitle={viewerModal.concours.titre || viewerModal.concours.title}
+                    subject={viewerModal.concours.matiere || selectedMatiere || ''}
+                    school={viewerModal.concours.ecole || selectedEcole || ''}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '68vh',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff'
+                    }}
+                  />
+                ) : (
+                  <iframe
+                    src={currentViewerUrl}
+                    title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '68vh',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff'
+                    }}
+                  />
+                )
               ) : (
                 <div style={{
                   flex: 1,

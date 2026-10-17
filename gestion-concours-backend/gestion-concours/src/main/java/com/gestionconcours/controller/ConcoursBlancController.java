@@ -23,13 +23,16 @@ public class ConcoursBlancController {
     private final ConcoursBlancRepository concoursBlancRepository;
     private final PdfQcmExtractorService pdfQcmExtractorService;
     private final QcmQuestionRepository qcmQuestionRepository;
+    private final com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository;
 
     public ConcoursBlancController(ConcoursBlancRepository concoursBlancRepository,
                                     PdfQcmExtractorService pdfQcmExtractorService,
-                                    QcmQuestionRepository qcmQuestionRepository) {
+                                    QcmQuestionRepository qcmQuestionRepository,
+                                    com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository) {
         this.concoursBlancRepository = concoursBlancRepository;
         this.pdfQcmExtractorService = pdfQcmExtractorService;
         this.qcmQuestionRepository = qcmQuestionRepository;
+        this.qcmResponseRepository = qcmResponseRepository;
     }
 
     private final String UPLOAD_DIR = "uploads/";
@@ -392,6 +395,7 @@ public class ConcoursBlancController {
         }
         qcmQuestionRepository.deleteChoicesByConcoursBlancId(id);
         qcmQuestionRepository.deleteByConcoursBlancId(id);
+        qcmResponseRepository.deleteByConcoursBlancId(id);
         concoursBlancRepository.deleteById(id);
         return ResponseEntity.ok("Concours blanc supprimé avec succès !");
     }

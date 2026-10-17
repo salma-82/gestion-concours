@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { recordStudentActivity } from '../studentProgress';
 
 const API = 'http://localhost:8081';
 
@@ -460,9 +461,23 @@ export default function ClientCoursPage() {
     if (specificCours) {
       setActiveCours(specificCours);
       setStep('reader');
+      recordStudentActivity({
+        type: 'Cours',
+        resourceId: specificCours.id,
+        title: specificCours.titre || `Cours — ${chapNom}`,
+        subject: specificCours.matiere || selectedMatiere?.nom,
+        chapter: specificCours.chapitre || chapNom
+      });
     } else if (list.length > 0) {
       setActiveCours(list[0]);
       setStep('reader');
+      recordStudentActivity({
+        type: 'Cours',
+        resourceId: list[0].id,
+        title: list[0].titre || `Cours — ${chapNom}`,
+        subject: list[0].matiere || selectedMatiere?.nom,
+        chapter: list[0].chapitre || chapNom
+      });
     } else {
       // Aucun cours en base pour ce chapitre
       setActiveCours({

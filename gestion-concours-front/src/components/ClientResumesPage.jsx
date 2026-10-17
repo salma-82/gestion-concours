@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { recordStudentActivity } from '../studentProgress';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'http://localhost:8081';
@@ -225,6 +226,13 @@ export default function ClientResumesPage() {
     if (list.length > 0) {
       setActiveResume(list[0]);
       setStep('reader');
+      recordStudentActivity({
+        type: 'Résumé',
+        resourceId: list[0].id,
+        title: list[0].titre || `Résumé — ${chapNom}`,
+        subject: list[0].matiere || selectedMatiere?.nom,
+        chapter: list[0].chapitre || chapNom
+      });
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -232,6 +240,13 @@ export default function ClientResumesPage() {
   const openResume = (resume) => {
     setActiveResume(resume);
     setStep('reader');
+    recordStudentActivity({
+      type: 'Résumé',
+      resourceId: resume.id,
+      title: resume.titre || resume.nom || 'Résumé',
+      subject: resume.matiere || selectedMatiere?.nom,
+      chapter: resume.chapitre || selectedChapitre || ''
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
