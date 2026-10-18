@@ -111,8 +111,30 @@ export const recordStudentMistake = (mistake) => {
 };
 
 export const markStudentMistakeReviewed = (id, reviewed = true) => {
-  const items = readStudentMistakes().map((item) => item.id === id ? { ...item, reviewed } : item);
+  const items = readStudentMistakes().map((item) => (item.id === id || item.databaseId === id) ? { ...item, reviewed } : item);
   localStorage.setItem(getStudentMistakesKey(), JSON.stringify(items));
   window.dispatchEvent(new CustomEvent('student-mistakes-updated'));
   return items;
 };
+
+export const deleteStudentMistakeLocally = (id) => {
+  const items = readStudentMistakes().filter((item) => item.id !== id && item.databaseId !== id);
+  localStorage.setItem(getStudentMistakesKey(), JSON.stringify(items));
+  window.dispatchEvent(new CustomEvent('student-mistakes-updated'));
+  return items;
+};
+
+export const deleteStudentMistake = async (id, studentId) => {
+  deleteStudentMistakeLocally(id);
+  const cleanId = String(id).replace(/^db-/, '');
+  if (/^\d+$/.test(cleanId)) {
+    try {
+      await fetch(`http://localhost:8081/api/student-mistakes/${cleanId}${studentId ? `?studentId=${studentId}` : ''}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {
+      console.warn('Erreur lors de la suppression de l\'erreur sur le serveur:', e);
+    }
+  }
+};
+

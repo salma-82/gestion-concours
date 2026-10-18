@@ -24,6 +24,7 @@ import ClientExamens from './components/ClientExamens';
 import ClientConcoursBlanc from './components/ClientConcoursBlanc';
 import ClientConcours from './components/ClientConcours';
 import ClientProfile from './components/ClientProfile';
+import CompetitionCalendar from './components/CompetitionCalendar';
 
 // PDF → HTML
 import PdfToHtml from './components/PdfToHtml';
@@ -67,6 +68,10 @@ function App() {
           <Route
             path="/client-dashboard"
             element={<ClientDashboard />}
+          />
+          <Route
+            path="/client-calendrier"
+            element={<CompetitionCalendar />}
           />
           <Route
             path="/client-profile"

@@ -171,6 +171,17 @@ export default function ClientLayout() {
       )
     },
     {
+      title: 'Calendrier des concours',
+      path: '/client-calendrier',
+      renderIcon: (isActive) => (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M16 3v4M8 3v4M3 10h18" />
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
+        </svg>
+      )
+    },
+    {
       title: 'Examens Nationaux',
       path: '/client-examens',
       renderIcon: (isActive) => (

@@ -1,67 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import MathContent from './MathContent';
+import { readStudentMistakes, markStudentMistakeReviewed, deleteStudentMistake } from '../studentProgress';
 import './ClientMistakesDashboard.css';
 
-const questions = [
-  {
-    id: 1, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:41', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 7 : Si $\int_1^2 f'(x)f''(x) dx = 8$ et $f'(2) - f'(1) = 2$ alors $f'(2) + f'(1)$ est égal à :`,
-    selected: String.raw`D - 10`, correct: String.raw`C - 8`,
-    explanation: String.raw`On pose : $g(x) = f'(x)$
-$\int_1^2 g(x) \cdot g'(x) dx = 8$
-$\frac{1}{2} \int_1^2 2 \cdot g(x) \cdot g'(x) dx = 8 \iff [\frac{1}{2} g^2(x)]_1^2 = 8$
-$\iff [\frac{1}{2} f'^2(x)]_1^2 = 8 \iff f'^2(2) - f'^2(1) = 16$
-$\iff (f'(2) - f'(1))(f'(2) + f'(1)) = 16$
-$\iff 2(f'(2) + f'(1)) = 16 \iff f'(2) + f'(1) = 8$`
-  },
-  {
-    id: 2, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:39', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 6 : L'intégrale $\int_0^1 \frac{x}{1 + e^{-x^2}} dx$ est égale à :`,
-    selected: String.raw`C - $\ln(1+e)$`, correct: String.raw`D - $\ln\sqrt{\frac{1+e}{2}}$`,
-    explanation: String.raw`$=\int_0^1 \frac{x e^{x^2}}{e^{x^2}+1} dx = \frac{1}{2} \int_0^1 \frac{(e^{x^2}+1)'}{e^{x^2}+1} dx$
-$=\frac{1}{2} [\ln|e^{x^2}+1|]_0^1 = \frac{1}{2}(\ln(e+1) - \ln(2)) = \frac{1}{2}\ln(\frac{e+1}{2})$`
-  },
-  {
-    id: 3, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:37', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 5 : Si pour tout entier naturel $n$, $I_n = \int_1^e x(\ln x)^n dx$ alors $(\forall n \in \mathbb{N}^*) \, 2I_{n+1} + (n+1)I_n$ est égal à :`,
-    selected: String.raw`C - 1`, correct: String.raw`B - $e^2$`,
-    explanation: String.raw`$I_{n+1} = \int_1^e x \cdot \ln^{n+1}(x) dx$
-Intégration par parties : $U(x) = \ln^{n+1}(x)$, $U'(x) = \frac{n+1}{x}\ln^n(x)$ ; $V'(x) = x$, $V(x) = \frac{x^2}{2}$.
-$I_{n+1} = [\frac{x^2}{2}\ln^{n+1}(x)]_1^e - \frac{1}{2}(n+1)\int_1^e x \cdot \ln^n(x) dx$
-$I_{n+1} = \frac{e^2}{2} - \frac{1}{2}(n+1)I_n$
-$2I_{n+1} = e^2 - (n+1)I_n \implies 2I_{n+1} + (n+1)I_n = e^2$`.replace(/^\+/gm, '')
-  },
-  {
-    id: 4, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:33', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 4 : L'intégrale $\int_0^3 \frac{x^2+2}{\sqrt{x^3+6x+4}} dx$ est égale à :`,
-    selected: String.raw`B - $\frac{8}{3}$`, correct: String.raw`C - $\frac{10}{3}$`,
-    explanation: String.raw`$\int_0^3 (x^2+2)(x^3+6x+4)^{-1/2} dx = \frac{1}{3} \int_0^3 (x^3+6x+4)'(x^3+6x+4)^{-1/2} dx$
-$=\frac{1}{3} [\frac{(x^3+6x+4)^{1/2}}{1/2}]_0^3 = \frac{10}{3}$`.replace(/^\+/gm, '')
-  },
-  {
-    id: 5, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:32', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 3 : Soit $\alpha \in \mathbb{R}^*$, si $\int_0^1 \frac{e^{\alpha x}}{1+e^{\alpha x}} dx = \frac{1}{\alpha}$ alors $\alpha$ est égal à :`,
-    selected: String.raw`C - $\ln(2e+1)$`, correct: String.raw`D - $\ln(2e-1)$`,
-    explanation: String.raw`$\frac{1}{\alpha} \int_0^1 \frac{(1+e^{\alpha x})'}{1+e^{\alpha x}} dx = \frac{1}{\alpha} \implies [\ln|1+e^{\alpha x}|]_0^1 = 1$
-$\implies \ln(\frac{1+e^\alpha}{2}) = 1 \implies \alpha = \ln(2e-1)$`.replace(/^\+/gm, '')
-  },
-  {
-    id: 6, source: 'Concours blanc · 1', date: '17/10/2026', time: '14:44:25', subject: 'math', chapter: 'les suite',
-    question: String.raw`Question 1 : L'intégrale $\int_{\pi/6}^{\pi/4} \frac{1}{\sin x \tan x} dx$ est égale à :`,
-    selected: String.raw`A - $\frac{1}{2} - \frac{\sqrt{2}}{2}$`, correct: String.raw`B - $2 - \sqrt{2}$`,
-    explanation: String.raw`$\int_{\pi/6}^{\pi/4} \frac{\cos x}{\sin^2 x} dx = \int_{\pi/6}^{\pi/4} \sin'(x)\sin^{-2}(x) dx$
-$= [-\frac{1}{\sin x}]_{\pi/6}^{\pi/4} = [\frac{1}{\sin x}]_{\pi/4}^{\pi/6} = 2 - \sqrt{2}$`.replace(/^\+/gm, '')
-  }
-];
+const API_BASE = 'http://localhost:8081';
 
-const stats = [
-  ['Erreurs', '11'], ['Participations', '2'], ['Questions répondues', '14'],
-  ['Bonnes réponses', '3'], ['Score moyen', '21.4%'], ['Taux de réussite', '0%']
-];
-
-const isoWeekFor = (dateText) => {
-  const [day, month, year] = dateText.split('/').map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
+const isoWeekForDate = (d) => {
+  if (!d || isNaN(d.getTime())) return '';
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
@@ -71,133 +18,402 @@ const isoWeekFor = (dateText) => {
 export default function ClientMistakesDashboard() {
   const [isReviewing, setIsReviewing] = useState(false);
   const [type, setType] = useState('all');
-  const [dateMode, setDateMode] = useState('week');
-  const [week, setWeek] = useState('2026-W42');
-  const [day, setDay] = useState('2026-10-17');
+  const [dateMode, setDateMode] = useState('all'); // 'all' | 'week' | 'day'
+  const [week, setWeek] = useState(() => isoWeekForDate(new Date()));
+  const [day, setDay] = useState(() => new Date().toISOString().slice(0, 10));
   const [subject, setSubject] = useState('all');
   const [chapter, setChapter] = useState('all');
   const [reviewed, setReviewed] = useState({});
+  const [rawMistakes, setRawMistakes] = useState(() => readStudentMistakes());
+  const [loading, setLoading] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState('');
 
-  const filteredQuestions = useMemo(() => questions.filter((item) => {
-    if (type === 'schools') return false;
-    if (dateMode === 'week' && isoWeekFor(item.date) !== week) return false;
-    if (dateMode === 'day') {
-      const [d, m, y] = item.date.split('/');
-      if (`${y}-${m}-${d}` !== day) return false;
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
+  const studentId = user?.id;
+
+  // Charger les erreurs depuis le backend et localStorage
+  const fetchMistakes = useCallback(async () => {
+    const localItems = readStudentMistakes();
+    if (!studentId) {
+      setRawMistakes(localItems);
+      return;
     }
-    if (subject !== 'all' && item.subject !== subject) return false;
-    if (chapter !== 'all' && item.chapter !== chapter) return false;
-    return true;
-  }), [type, dateMode, week, day, subject, chapter]);
-  const visibleStats = filteredQuestions.length
-    ? stats
-    : stats.map(([label], index) => [label, index >= 4 ? '0%' : '0']);
+
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/api/student-mistakes`, {
+        params: { studentId }
+      });
+      if (Array.isArray(res.data)) {
+        // Fusionner backend et local pour ne rien perdre
+        const dbItems = res.data.map(item => ({
+          ...item,
+          id: `db-${item.id}`,
+          databaseId: item.id,
+          source: item.sourceType || item.resourceTitle || 'QCM',
+          occurredAt: item.createdAt || new Date().toISOString()
+        }));
+
+        // Combiner en évitant les doublons
+        const combined = [...dbItems];
+        localItems.forEach(loc => {
+          const already = combined.some(c =>
+            (c.databaseId && loc.databaseId && c.databaseId === loc.databaseId) ||
+            (c.questionText && loc.questionText && c.questionText === loc.questionText)
+          );
+          if (!already) combined.push(loc);
+        });
+
+        setRawMistakes(combined);
+
+        // Synchroniser reviewed state
+        const revMap = {};
+        combined.forEach(m => {
+          if (m.reviewed) revMap[m.id] = true;
+        });
+        setReviewed(revMap);
+      } else {
+        setRawMistakes(localItems);
+      }
+    } catch (e) {
+      console.warn('Impossible de charger les erreurs du serveur (mode local):', e);
+      setRawMistakes(localItems);
+    } finally {
+      setLoading(false);
+    }
+  }, [studentId]);
+
+  useEffect(() => {
+    fetchMistakes();
+
+    const handleUpdate = () => fetchMistakes();
+    window.addEventListener('student-mistakes-updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('student-mistakes-updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchMistakes]);
+
+  // Normalisation des questions pour l'affichage
+  const normalizedQuestions = useMemo(() => {
+    return rawMistakes.map((item, idx) => {
+      const dateObj = item.occurredAt || item.createdAt ? new Date(item.occurredAt || item.createdAt) : new Date();
+      const validDate = isNaN(dateObj.getTime()) ? new Date() : dateObj;
+      const dateStr = validDate.toLocaleDateString('fr-FR');
+      const timeStr = validDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const isoDate = validDate.toISOString().slice(0, 10);
+      const isoWeek = isoWeekForDate(validDate);
+
+      const source = item.source || item.sourceType || item.resourceTitle || 'QCM';
+      const subj = (item.subject || 'Mathématiques').trim();
+      const chap = (item.chapter || '').trim();
+
+      const selectedLabel = item.selectedChoiceLabel ? `${item.selectedChoiceLabel} - ` : '';
+      const selectedText = item.selectedChoiceText || 'Réponse enregistrée';
+      const correctLabel = item.correctChoiceLabel ? `${item.correctChoiceLabel} - ` : '';
+      const correctText = item.correctChoiceText || 'Bonne réponse';
+
+      return {
+        id: item.id || `mistake-${idx}`,
+        databaseId: item.databaseId || (/^\d+$/.test(String(item.id)) ? item.id : null),
+        source,
+        date: dateStr,
+        time: timeStr,
+        isoDate,
+        isoWeek,
+        subject: subj,
+        chapter: chap,
+        question: item.questionText || item.question || 'Énoncé de la question',
+        selected: item.selected || `${selectedLabel}${selectedText}`,
+        correct: item.correct || `${correctLabel}${correctText}`,
+        explanation: item.explanation || 'Aucune explication détaillée disponible pour cette question.',
+        reviewed: Boolean(reviewed[item.id] ?? item.reviewed)
+      };
+    });
+  }, [rawMistakes, reviewed]);
+
+  // Liste des matières uniques pour les filtres
+  const availableSubjects = useMemo(() => {
+    const set = new Set();
+    normalizedQuestions.forEach(q => { if (q.subject) set.add(q.subject); });
+    return Array.from(set);
+  }, [normalizedQuestions]);
+
+  // Liste des chapitres uniques pour la matière sélectionnée
+  const availableChapters = useMemo(() => {
+    const set = new Set();
+    normalizedQuestions.forEach(q => {
+      if ((subject === 'all' || q.subject.toLowerCase() === subject.toLowerCase()) && q.chapter) {
+        set.add(q.chapter);
+      }
+    });
+    return Array.from(set);
+  }, [normalizedQuestions, subject]);
+
+  // Filtrage des questions selon les sélections de l'étudiant
+  const filteredQuestions = useMemo(() => {
+    return normalizedQuestions.filter((item) => {
+      // Filtre par type
+      if (type === 'blancs' && !item.source.toLowerCase().includes('blanc')) return false;
+      if (type === 'schools' && item.source.toLowerCase().includes('blanc')) return false;
+
+      // Filtre de période
+      if (dateMode === 'week' && item.isoWeek !== week) return false;
+      if (dateMode === 'day' && item.isoDate !== day) return false;
+
+      // Filtre par matière
+      if (subject !== 'all' && item.subject.toLowerCase() !== subject.toLowerCase()) return false;
+
+      // Filtre par chapitre
+      if (chapter !== 'all' && item.chapter.toLowerCase() !== chapter.toLowerCase()) return false;
+
+      return true;
+    });
+  }, [normalizedQuestions, type, dateMode, week, day, subject, chapter]);
+
+  // Statistiques calculées dynamiquement
+  const statsList = useMemo(() => {
+    const total = filteredQuestions.length;
+    const reviewedCount = filteredQuestions.filter(q => reviewed[q.id] || q.reviewed).length;
+    const remaining = total - reviewedCount;
+    const reviewRate = total > 0 ? Math.round((reviewedCount / total) * 100) : 0;
+    const subjectsCount = new Set(filteredQuestions.map(q => q.subject)).size;
+
+    return [
+      ['Erreurs sauvegardées', String(total)],
+      ['À réviser', String(remaining)],
+      ['Questions révisées', String(reviewedCount)],
+      ['Taux de révision', `${reviewRate}%`],
+      ['Matières concernées', String(subjectsCount)],
+      ['Taux de réussite', reviewRate >= 80 ? '80%+' : `${reviewRate}%`]
+    ];
+  }, [filteredQuestions, reviewed]);
+
+  // Basculer l'état révisée
+  const handleToggleReviewed = async (id) => {
+    const nextReviewed = !reviewed[id];
+    setReviewed(current => ({ ...current, [id]: nextReviewed }));
+    markStudentMistakeReviewed(id, nextReviewed);
+
+    const cleanId = String(id).replace(/^db-/, '');
+    if (/^\d+$/.test(cleanId) && studentId) {
+      try {
+        await axios.patch(`${API_BASE}/api/student-mistakes/${cleanId}/reviewed`, { reviewed: nextReviewed }, {
+          params: { studentId }
+        });
+      } catch (err) {
+        console.warn('Erreur mise à jour révisée sur le serveur:', err);
+      }
+    }
+  };
+
+  // Côté étudiant : Supprimer de mes erreurs
+  const handleDeleteMistake = async (id) => {
+    if (!window.confirm('Voulez-vous retirer cette question de vos erreurs sauvegardées ?')) {
+      return;
+    }
+
+    try {
+      await deleteStudentMistake(id, studentId);
+      setRawMistakes(prev => prev.filter(item => item.id !== id && `db-${item.databaseId}` !== id));
+      setDeleteNotice('✓ Question retirée de vos erreurs.');
+      setTimeout(() => setDeleteNotice(''), 3000);
+    } catch (err) {
+      console.error('Erreur lors de la suppression de l\'erreur:', err);
+    }
+  };
 
   return (
     <section className={`mistakes-dashboard${isReviewing ? ' is-fullscreen' : ''}`}>
       <header className="mistakes-header">
         <div>
-          <p className="mistakes-eyebrow">Semaine 42, 2026 · 📐 math{type === 'blancs' ? ' · les suite' : ''}</p>
+          <p className="mistakes-eyebrow">
+            🎯 Révision QCM · {subject !== 'all' ? subject : 'Toutes les matières'}{chapter !== 'all' ? ` · ${chapter}` : ''}
+          </p>
           <h2>Erreurs QCM à réviser</h2>
-          <p>Erreurs des concours blancs et concours, conservées pour les revoir plus tard.</p>
+          <p>Questions enregistrées lors de vos QCM pour vous entraîner et les maîtriser définitivement.</p>
         </div>
         <div className="mistakes-header-actions">
-          <span className="mistakes-week-badge">Semaine 42, 2026</span>
+          {deleteNotice && (
+            <span style={{ color: '#059669', fontSize: '12px', fontWeight: 700, padding: '6px 12px', background: '#ecfdf5', borderRadius: '8px' }}>
+              {deleteNotice}
+            </span>
+          )}
+          <span className="mistakes-week-badge">
+            {filteredQuestions.length} erreur{filteredQuestions.length > 1 ? 's' : ''}
+          </span>
           {isReviewing ? (
             <button className="mistakes-navigation-button secondary" type="button" onClick={() => setIsReviewing(false)}>← Retour</button>
           ) : (
-            <button className="mistakes-navigation-button" type="button" onClick={() => setIsReviewing(true)}>Réviser</button>
+            <button className="mistakes-navigation-button" type="button" onClick={() => setIsReviewing(true)}>
+              Réviser mes erreurs ({filteredQuestions.length})
+            </button>
           )}
         </div>
       </header>
 
+      {/* Filtres des erreurs */}
       <div className="mistakes-filters" aria-label="Filtres des erreurs">
         <label>Type de concours
           <select value={type} onChange={(event) => { setType(event.target.value); setChapter('all'); }}>
-            <option value="all">Tous</option>
+            <option value="all">Tous les concours</option>
             <option value="blancs">Concours Blancs</option>
             <option value="schools">Concours Écoles</option>
           </select>
         </label>
         <label>Période
           <select value={dateMode} onChange={(event) => setDateMode(event.target.value)}>
+            <option value="all">Toutes les dates</option>
             <option value="week">Par semaine</option>
             <option value="day">Par date précise</option>
           </select>
         </label>
-        {dateMode === 'week' ? (
+        {dateMode === 'week' && (
           <label>Semaine<input type="week" value={week} onChange={(event) => setWeek(event.target.value)} /></label>
-        ) : (
+        )}
+        {dateMode === 'day' && (
           <label>Date<input type="date" value={day} onChange={(event) => setDay(event.target.value)} /></label>
         )}
         <label>Matière
-          <select value={subject} onChange={(event) => setSubject(event.target.value)}>
+          <select value={subject} onChange={(event) => { setSubject(event.target.value); setChapter('all'); }}>
             <option value="all">Toutes les matières</option>
-            <option value="math">math</option>
+            {availableSubjects.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+            {availableSubjects.length === 0 && (
+              <>
+                <option value="Mathématiques">Mathématiques</option>
+                <option value="Physique-Chimie">Physique-Chimie</option>
+                <option value="SVT">SVT</option>
+              </>
+            )}
           </select>
         </label>
-        {type === 'blancs' && (
-          <label>Chapitre
-            <select value={chapter} onChange={(event) => setChapter(event.target.value)}>
-              <option value="all">Tous les chapitres</option>
-              <option value="les suite">les suite</option>
-            </select>
-          </label>
-        )}
+        <label>Chapitre
+          <select value={chapter} onChange={(event) => setChapter(event.target.value)}>
+            <option value="all">Tous les chapitres</option>
+            {availableChapters.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
+      {/* Statistiques dynamiques */}
       <div className="mistakes-stats" aria-label="Statistiques">
-        {visibleStats.map(([label, value]) => (
-          <article className="mistakes-stat" key={label}><span>{label}</span><strong>{value}</strong></article>
+        {statsList.map(([label, value]) => (
+          <article className="mistakes-stat" key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </article>
         ))}
       </div>
 
-      {isReviewing && (
+      {/* Liste des cartes d'erreurs en mode révision ou aperçu */}
+      {isReviewing ? (
         <>
           <div className="mistakes-list-heading">
             <div>
-              <h3>📐 math <span>({filteredQuestions.length ? '11' : '0'} erreurs)</span></h3>
-              {type === 'blancs' && <p>Chapitre : les suite</p>}
+              <h3>
+                📚 {subject !== 'all' ? subject : 'Toutes les matières'} <span>({filteredQuestions.length} question{filteredQuestions.length > 1 ? 's' : ''})</span>
+              </h3>
+              {chapter !== 'all' && <p>Chapitre : {chapter}</p>}
             </div>
-            <span>{filteredQuestions.length} questions fournies</span>
+            <span>{filteredQuestions.length} question(s) trouvée(s)</span>
           </div>
 
           {filteredQuestions.length === 0 ? (
-            <div className="mistakes-empty">Aucune erreur ne correspond à ces filtres.</div>
+            <div className="mistakes-empty">
+              {loading ? 'Chargement de vos erreurs...' : 'Aucune erreur ne correspond à ces filtres. Utilisez le bouton « Sauvegarder mes erreurs » lors d\'un QCM pour les ajouter.'}
+            </div>
           ) : (
             <div className="mistakes-cards">
               {filteredQuestions.map((item) => (
-            <article className={`mistake-card${reviewed[item.id] ? ' is-reviewed' : ''}`} key={item.id}>
-              <div className="mistake-card-meta">
-                <div className="mistake-badges">
-                  <span className="mistake-badge subject">📐 {item.subject}</span>
-                  {item.source.startsWith('Concours blanc') && <span className="mistake-badge chapter">{item.chapter}</span>}
-                  <span className="mistake-badge source">{item.source}</span>
-                </div>
-                <time>{item.date} {item.time}</time>
-              </div>
-              <p className="mistake-question"><MathContent>{item.question}</MathContent></p>
-              <div className="mistake-answers">
-                <div className="mistake-answer incorrect"><span>Votre reponse</span><strong><MathContent>{item.selected}</MathContent></strong></div>
-                <div className="mistake-answer correct"><span>Bonne reponse</span><strong><MathContent>{item.correct}</MathContent></strong></div>
-              </div>
-              <details className="mistake-explanation">
-                <summary>Explication</summary>
-                <div><MathContent>{item.explanation}</MathContent></div>
-              </details>
-              <button
-                className={`mistake-review-button${reviewed[item.id] ? ' is-reviewed' : ''}`}
-                type="button"
-                aria-pressed={Boolean(reviewed[item.id])}
-                onClick={() => setReviewed((current) => ({ ...current, [item.id]: !current[item.id] }))}
-              >
-                {reviewed[item.id] ? '✓ Révisée' : 'Marquer révisée'}
-              </button>
-            </article>
+                <article className={`mistake-card${reviewed[item.id] ? ' is-reviewed' : ''}`} key={item.id}>
+                  <div className="mistake-card-meta">
+                    <div className="mistake-badges">
+                      <span className="mistake-badge subject">📐 {item.subject}</span>
+                      {item.chapter && <span className="mistake-badge chapter">{item.chapter}</span>}
+                      <span className="mistake-badge source">{item.source}</span>
+                    </div>
+                    <time>{item.date} {item.time}</time>
+                  </div>
+
+                  <p className="mistake-question">
+                    <MathContent>{item.question}</MathContent>
+                  </p>
+
+                  <div className="mistake-answers">
+                    <div className="mistake-answer incorrect">
+                      <span>Votre réponse</span>
+                      <strong><MathContent>{item.selected}</MathContent></strong>
+                    </div>
+                    <div className="mistake-answer correct">
+                      <span>Bonne réponse</span>
+                      <strong><MathContent>{item.correct}</MathContent></strong>
+                    </div>
+                  </div>
+
+                  <details className="mistake-explanation">
+                    <summary>Explication & Corrigé</summary>
+                    <div><MathContent>{item.explanation}</MathContent></div>
+                  </details>
+
+                  <div className="mistake-card-actions">
+                    <button
+                      className={`mistake-review-button${reviewed[item.id] ? ' is-reviewed' : ''}`}
+                      type="button"
+                      aria-pressed={Boolean(reviewed[item.id])}
+                      onClick={() => handleToggleReviewed(item.id)}
+                    >
+                      {reviewed[item.id] ? '✓ Révisée' : 'Marquer révisée'}
+                    </button>
+
+                    {/* Bouton demandé : « Supprimer de mes erreurs » pour retirer une question une fois maîtrisée */}
+                    <button
+                      className="mistake-delete-button"
+                      type="button"
+                      title="Retirer définitivement cette question une fois maîtrisée"
+                      onClick={() => handleDeleteMistake(item.id)}
+                    >
+                      🗑️ Supprimer de mes erreurs
+                    </button>
+                  </div>
+                </article>
               ))}
             </div>
           )}
         </>
+      ) : (
+        filteredQuestions.length > 0 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '16px'
+          }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#0f172a' }}>
+                Vous avez {filteredQuestions.length} question(s) enregistrée(s) dans votre carnet d'erreurs
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                Consultez la correction détaillée, cochez les questions révisées ou supprimez celles que vous maîtrisez.
+              </div>
+            </div>
+            <button
+              className="mistakes-navigation-button"
+              type="button"
+              onClick={() => setIsReviewing(true)}
+            >
+              Ouvrir la révision ({filteredQuestions.length}) →
+            </button>
+          </div>
+        )
       )}
     </section>
   );

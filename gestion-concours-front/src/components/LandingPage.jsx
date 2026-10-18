@@ -113,7 +113,7 @@ export default function LandingPage({ onNavigateToAuth }) {
 
     const updateCardPositions = () => {
       const stageWidth = stage.clientWidth || window.innerWidth;
-      
+
       const radiusX = stageWidth * 0.44;
       const radiusY = 50;
 
@@ -221,7 +221,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       {/* HERO SECTION */}
       <section className="hero-container" id="heroContainer">
         <h1 className="hero-eyebrow">
-          Préparez vos concours,
+          Préparez vos concours
         </h1>
 
         <div className="hero-watermark-container">

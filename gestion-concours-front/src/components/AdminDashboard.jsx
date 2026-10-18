@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
 import ConcoursBlancStats from './ConcoursBlancStats';
+import AdminOverview from './AdminOverview';
+import CompetitionCalendar from './CompetitionCalendar';
+import MathContent from './MathContent';
 
 const BAC_MATIERES_CONFIG = {
   'Mathématiques': [
@@ -108,8 +111,9 @@ export default function AdminDashboard() {
   };
 
   // --- STATE DYAL LES ONGLETS (Tabs) ---
-  const [activeTab, setActiveTab] = useState('concours'); // 'demandes', 'users', 'realConcours', 'resumes', 'concours'
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [hoveredTab, setHoveredTab] = useState(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
   // ==================== STATES DYAL DEMANDES D'INSCRIPTION ====================
   const [demandesList, setDemandesList] = useState([]);
@@ -268,7 +272,60 @@ export default function AdminDashboard() {
   const [examFileCorrection, setExamFileCorrection] = useState(null);
   const [loadingExam, setLoadingExam] = useState(false);
 
+  // ==================== STATES DYAL ERREURS ÉTUDIANTS ====================
+  const [adminMistakesList, setAdminMistakesList] = useState([]);
+  const [adminMistakesStats, setAdminMistakesStats] = useState({});
+  const [loadingAdminMistakes, setLoadingAdminMistakes] = useState(false);
+  const [searchMistake, setSearchMistake] = useState('');
+  const [selectedStudentFilter, setSelectedStudentFilter] = useState('');
+  const [selectedMistakeSubject, setSelectedMistakeSubject] = useState('');
+  const [selectedMistakeStatus, setSelectedMistakeStatus] = useState('all');
+  const [mistakeActionMessage, setMistakeActionMessage] = useState('');
+
   // --- FETCH DATA ---
+  const fetchAdminMistakes = async () => {
+    try {
+      setLoadingAdminMistakes(true);
+      const res = await axios.get('http://localhost:8081/api/student-mistakes/admin/all', { withCredentials: true });
+      if (res.data) {
+        setAdminMistakesList(Array.isArray(res.data.mistakes) ? res.data.mistakes : []);
+        setAdminMistakesStats(res.data.stats || {});
+      }
+    } catch (err) {
+      console.error("Erreur fetch admin mistakes:", err);
+    } finally {
+      setLoadingAdminMistakes(false);
+    }
+  };
+
+  const handleAdminDeleteMistake = async (id) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette erreur sauvegardée ?")) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:8081/api/student-mistakes/admin/${id}`, { withCredentials: true });
+      setMistakeActionMessage("✓ Erreur supprimée avec succès.");
+      setTimeout(() => setMistakeActionMessage(''), 3000);
+      fetchAdminMistakes();
+    } catch (err) {
+      alert("Erreur lors de la suppression de l'erreur.");
+    }
+  };
+
+  const handleAdminDeleteStudentAllMistakes = async (studentId, studentName) => {
+    if (!window.confirm(`Supprimer TOUTES les erreurs sauvegardées par ${studentName || 'cet étudiant'} ?`)) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:8081/api/student-mistakes/admin/student/${studentId}`, { withCredentials: true });
+      setMistakeActionMessage(`✓ Toutes les erreurs de ${studentName || 'cet étudiant'} ont été supprimées.`);
+      setTimeout(() => setMistakeActionMessage(''), 3000);
+      fetchAdminMistakes();
+    } catch (err) {
+      alert("Erreur lors de la suppression des erreurs de l'étudiant.");
+    }
+  };
+
   const fetchDemandes = async () => {
     try {
       const res = await axios.get('http://localhost:8081/api/admin/demandes-inscription', { withCredentials: true });
@@ -365,13 +422,16 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetchDemandes();
-    fetchUsers();
-    fetchRealConcours();
-    fetchResumes();
-    fetchCoursBac();
-    fetchConcours();
-    fetchExamens();
+    Promise.allSettled([
+      fetchDemandes(),
+      fetchUsers(),
+      fetchRealConcours(),
+      fetchResumes(),
+      fetchCoursBac(),
+      fetchConcours(),
+      fetchExamens(),
+      fetchAdminMistakes()
+    ]).finally(() => setDashboardLoading(false));
   }, []);
 
   // --- ACTIONS: ACCEPTER / REFUSER ---
@@ -1453,6 +1513,8 @@ export default function AdminDashboard() {
 
   // Sidebar navigation items config
   const sidebarItems = [
+    { key: 'dashboard', icon: '📊', label: 'Dashboard', count: null, onClick: () => setActiveTab('dashboard') },
+    { key: 'calendar', icon: '📅', label: 'Calendrier des concours', count: null, onClick: () => setActiveTab('calendar') },
     { key: 'demandes', icon: '👥', label: 'Demandes', count: demandesList.length, countType: demandesList.length > 0 ? 'red' : 'default', onClick: () => setActiveTab('demandes') },
     { key: 'users', icon: '👤', label: 'Utilisateurs', count: usersList.length, countType: 'default', onClick: () => { setActiveTab('users'); fetchUsers(); } },
     { key: 'realConcours', icon: '🏆', label: 'Gestion des Concours', count: realConcoursList.length, countType: 'default', onClick: () => { setActiveTab('realConcours'); fetchRealConcours(); } },
@@ -1460,8 +1522,44 @@ export default function AdminDashboard() {
     { key: 'coursBac', icon: '📖', label: 'Cours BAC (COURS_BAC)', count: coursBacList.length, countType: 'default', onClick: () => { setActiveTab('coursBac'); fetchCoursBac(); } },
     { key: 'resumes', icon: '💡', label: 'Résumés & Astuces', count: resumesList.length, countType: 'default', onClick: () => { setActiveTab('resumes'); fetchResumes(); } },
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
-    { key: 'concoursStats', icon: '📊', label: 'Statistiques QCM', count: null, onClick: () => setActiveTab('concoursStats') },
+    { key: 'studentMistakes', icon: '❌', label: 'Erreurs Étudiants', count: adminMistakesList.length || null, countType: 'default', onClick: () => { setActiveTab('studentMistakes'); fetchAdminMistakes(); } },
   ];
+
+  const uniqueMistakeStudents = useMemo(() => {
+    const map = new Map();
+    adminMistakesList.forEach((m) => {
+      if (m.studentId && !map.has(m.studentId)) {
+        map.set(m.studentId, {
+          id: m.studentId,
+          name: m.studentName || `Étudiant #${m.studentId}`,
+          email: m.studentEmail || ''
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [adminMistakesList]);
+
+  const uniqueMistakeSubjects = useMemo(() => {
+    const set = new Set();
+    adminMistakesList.forEach((m) => { if (m.subject) set.add(m.subject); });
+    return Array.from(set);
+  }, [adminMistakesList]);
+
+  const filteredAdminMistakes = useMemo(() => {
+    return adminMistakesList.filter((m) => {
+      if (selectedStudentFilter && String(m.studentId) !== String(selectedStudentFilter)) return false;
+      if (selectedMistakeSubject && m.subject !== selectedMistakeSubject) return false;
+      if (selectedMistakeStatus === 'reviewed' && !m.reviewed) return false;
+      if (selectedMistakeStatus === 'pending' && m.reviewed) return false;
+      if (searchMistake.trim()) {
+        const q = searchMistake.toLowerCase();
+        const studentInfo = `${m.studentName || ''} ${m.studentEmail || ''}`.toLowerCase();
+        const contentInfo = `${m.questionText || ''} ${m.resourceTitle || ''} ${m.subject || ''} ${m.chapter || ''}`.toLowerCase();
+        if (!studentInfo.includes(q) && !contentInfo.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [adminMistakesList, selectedStudentFilter, selectedMistakeSubject, selectedMistakeStatus, searchMistake]);
 
   return (
     <div style={styles.wrapper}>
@@ -1523,6 +1621,21 @@ export default function AdminDashboard() {
 
       {/* ======================== MAIN CONTENT ======================== */}
       <main style={styles.main}>
+
+        {activeTab === 'dashboard' && (
+          <AdminOverview
+            requests={demandesList}
+            users={usersList}
+            contests={realConcoursList}
+            whiteContests={concoursList}
+            exams={examensList}
+            courses={coursBacList}
+            resumes={resumesList}
+            studentMistakesCount={adminMistakesList.length}
+            loading={dashboardLoading}
+            onNavigate={setActiveTab}
+          />
+        )}
 
         {/* ==================== SECTION: DEMANDES ==================== */}
         {activeTab === 'demandes' && (
@@ -2439,6 +2552,7 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'concoursStats' && <ConcoursBlancStats />}
+        {activeTab === 'calendar' && <CompetitionCalendar admin />}
 
         {/* ==================== SECTION: CONCOURS BLANCS ==================== */}
         {activeTab === 'concours' && (
@@ -2575,6 +2689,384 @@ export default function AdminDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* ==================== SECTION: ERREURS ÉTUDIANTS ==================== */}
+        {activeTab === 'studentMistakes' && (
+          <div style={styles.card}>
+            <div style={{ ...styles.headerRow, alignItems: 'flex-start' }}>
+              <div>
+                <h2 style={{ ...styles.cardTitle, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>❌</span> Erreurs QCM Sauvegardées par les Étudiants
+                </h2>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Consultez les questions incorrectes enregistrées par chaque candidat lors de ses entraînements, et gérez-les (suppression unitaire ou globale).
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {selectedStudentFilter && (
+                  <button
+                    onClick={() => {
+                      const studentObj = uniqueMistakeStudents.find(s => String(s.id) === String(selectedStudentFilter));
+                      handleAdminDeleteStudentAllMistakes(selectedStudentFilter, studentObj?.name);
+                    }}
+                    style={{
+                      ...styles.btnDanger,
+                      padding: '8px 14px',
+                      fontSize: '12px',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    🗑️ Supprimer tout pour cet étudiant
+                  </button>
+                )}
+                <button
+                  onClick={fetchAdminMistakes}
+                  disabled={loadingAdminMistakes}
+                  style={{
+                    ...styles.btnPrimary,
+                    padding: '8px 14px',
+                    fontSize: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    cursor: loadingAdminMistakes ? 'wait' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span>🔄</span> Actualiser
+                </button>
+              </div>
+            </div>
+
+            {mistakeActionMessage && (
+              <div style={{
+                margin: '16px 0',
+                padding: '12px 18px',
+                background: '#ecfdf5',
+                borderLeft: '4px solid #10b981',
+                borderRadius: '0 8px 8px 0',
+                color: '#065f46',
+                fontWeight: 700,
+                fontSize: '13px'
+              }}>
+                {mistakeActionMessage}
+              </div>
+            )}
+
+            {/* 4 Indicateurs Clés */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '14px',
+              margin: '20px 0'
+            }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Total Erreurs Enregistrées</div>
+                <div style={{ fontSize: '26px', fontWeight: 850, color: '#0f172a', marginTop: '4px' }}>
+                  {adminMistakesStats.totalMistakes ?? adminMistakesList.length}
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '2px' }}>Toutes épreuves confondues</div>
+              </div>
+
+              <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase' }}>Étudiants Concernés</div>
+                <div style={{ fontSize: '26px', fontWeight: 850, color: '#2563eb', marginTop: '4px' }}>
+                  {adminMistakesStats.uniqueStudents ?? uniqueMistakeStudents.length}
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#60a5fa', marginTop: '2px' }}>Candidats ayant sauvegardé</div>
+              </div>
+
+              <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#c2410c', textTransform: 'uppercase' }}>En Attente de Révision</div>
+                <div style={{ fontSize: '26px', fontWeight: 850, color: '#ea580c', marginTop: '4px' }}>
+                  {adminMistakesStats.pendingCount ?? (adminMistakesList.filter(m => !m.reviewed).length)}
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#fb923c', marginTop: '2px' }}>Non encore révisées</div>
+              </div>
+
+              <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '14px', padding: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>Questions Révisées</div>
+                <div style={{ fontSize: '26px', fontWeight: 850, color: '#059669', marginTop: '4px' }}>
+                  {adminMistakesStats.reviewedCount ?? (adminMistakesList.filter(m => m.reviewed).length)}
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#34d399', marginTop: '2px' }}>Marquées révisées par le candidat</div>
+              </div>
+            </div>
+
+            {/* Barre de filtres */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px',
+              padding: '16px',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              marginBottom: '20px'
+            }}>
+              <div>
+                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Recherche par mot-clé</label>
+                <input
+                  type="text"
+                  placeholder="Étudiant, email, énoncé..."
+                  value={searchMistake}
+                  onChange={(e) => setSearchMistake(e.target.value)}
+                  style={styles.input}
+                />
+              </div>
+
+              <div>
+                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Filtrer par Étudiant</label>
+                <select
+                  value={selectedStudentFilter}
+                  onChange={(e) => setSelectedStudentFilter(e.target.value)}
+                  style={styles.select}
+                >
+                  <option value="">Tous les étudiants ({uniqueMistakeStudents.length})</option>
+                  {uniqueMistakeStudents.map((st) => (
+                    <option key={st.id} value={st.id}>
+                      {st.name} {st.email ? `(${st.email})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Filtrer par Matière</label>
+                <select
+                  value={selectedMistakeSubject}
+                  onChange={(e) => setSelectedMistakeSubject(e.target.value)}
+                  style={styles.select}
+                >
+                  <option value="">Toutes les matières</option>
+                  {uniqueMistakeSubjects.map((sub) => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Statut de révision</label>
+                <select
+                  value={selectedMistakeStatus}
+                  onChange={(e) => setSelectedMistakeStatus(e.target.value)}
+                  style={styles.select}
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="pending">⏳ En attente de révision</option>
+                  <option value="reviewed">✓ Révisée par l'étudiant</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Liste des erreurs */}
+            {loadingAdminMistakes ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                Chargement des erreurs sauvegardées...
+              </div>
+            ) : filteredAdminMistakes.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '48px 24px',
+                border: '1px dashed #cbd5e1',
+                borderRadius: '14px',
+                color: '#64748b',
+                background: '#fafafa'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📂</div>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: '#334155' }}>
+                  Aucune erreur sauvegardée ne correspond à vos filtres
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: '13px' }}>
+                  Les erreurs que les candidats enregistrent lors des QCM apparaîtront automatiquement ici.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '14px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 750, color: '#475569' }}>
+                  {filteredAdminMistakes.length} question(s) enregistrée(s) trouvée(s) :
+                </div>
+
+                {filteredAdminMistakes.map((m) => (
+                  <article
+                    key={m.id}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '16px',
+                      background: m.reviewed ? '#fbfffc' : '#ffffff',
+                      borderColor: m.reviewed ? '#86efac' : '#e2e8f0',
+                      padding: '18px 22px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                      display: 'grid',
+                      gap: '12px'
+                    }}
+                  >
+                    {/* Header de la carte d'erreur */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '10px',
+                          background: '#eff6ff',
+                          color: '#2563eb',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '13px'
+                        }}>
+                          {(m.studentName || 'E').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#0f172a' }}>
+                            {m.studentName || `Étudiant #${m.studentId}`}
+                          </div>
+                          <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            {m.studentEmail || 'Email non renseigné'} · {m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR') : 'Date inconnue'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {m.subject && (
+                          <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#eff6ff', color: '#1d4ed8' }}>
+                            📐 {m.subject}
+                          </span>
+                        )}
+                        {m.chapter && (
+                          <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#f5f3ff', color: '#6d28d9' }}>
+                            {m.chapter}
+                          </span>
+                        )}
+                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#f1f5f9', color: '#334155' }}>
+                          {m.sourceType || m.resourceTitle || 'QCM'}
+                        </span>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          padding: '4px 9px',
+                          borderRadius: '999px',
+                          background: m.reviewed ? '#ecfdf5' : '#fff7ed',
+                          color: m.reviewed ? '#047857' : '#c2410c',
+                          border: `1px solid ${m.reviewed ? '#a7f3d0' : '#fed7aa'}`
+                        }}>
+                          {m.reviewed ? '✓ Révisée par l\'étudiant' : '⏳ En attente de révision'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Énoncé de la question */}
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 650,
+                      color: '#1e293b',
+                      lineHeight: 1.7,
+                      padding: '10px 14px',
+                      background: '#f8fafc',
+                      borderRadius: '10px',
+                      borderLeft: '4px solid #3b82f6'
+                    }}>
+                      <MathContent>{m.questionText}</MathContent>
+                    </div>
+
+                    {/* Comparatif des réponses */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
+                      <div style={{
+                        padding: '10px 14px',
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        borderRadius: '10px',
+                        color: '#9f1239',
+                        fontSize: '12.5px',
+                        lineHeight: 1.6
+                      }}>
+                        <div style={{ fontSize: '10.5px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '3px' }}>
+                          ❌ Réponse sélectionnée par l'étudiant
+                        </div>
+                        <strong>{m.selectedChoiceLabel ? `${m.selectedChoiceLabel} - ` : ''}</strong>
+                        <MathContent>{m.selectedChoiceText || 'Non spécifiée'}</MathContent>
+                      </div>
+
+                      <div style={{
+                        padding: '10px 14px',
+                        background: '#ecfdf5',
+                        border: '1px solid #a7f3d0',
+                        borderRadius: '10px',
+                        color: '#065f46',
+                        fontSize: '12.5px',
+                        lineHeight: 1.6
+                      }}>
+                        <div style={{ fontSize: '10.5px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '3px' }}>
+                          ✅ Bonne réponse attendue
+                        </div>
+                        <strong>{m.correctChoiceLabel ? `${m.correctChoiceLabel} - ` : ''}</strong>
+                        <MathContent>{m.correctChoiceText || 'Non spécifiée'}</MathContent>
+                      </div>
+                    </div>
+
+                    {/* Explication */}
+                    {m.explanation && (
+                      <details style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        padding: '9px 13px',
+                        fontSize: '12px',
+                        color: '#475569'
+                      }}>
+                        <summary style={{ fontWeight: 800, color: '#334155', cursor: 'pointer' }}>
+                          💡 Explication détaillée du corrigé
+                        </summary>
+                        <div style={{ paddingTop: '8px', lineHeight: 1.8 }}>
+                          <MathContent>{m.explanation}</MathContent>
+                        </div>
+                      </details>
+                    )}
+
+                    {/* Actions de l'admin sur cette erreur */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingTop: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleAdminDeleteMistake(m.id)}
+                        style={{
+                          padding: '7px 14px',
+                          border: '1px solid #fecaca',
+                          borderRadius: '8px',
+                          background: '#ffffff',
+                          color: '#dc2626',
+                          fontWeight: 750,
+                          fontSize: '11.5px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fef2f2';
+                          e.currentTarget.style.borderColor = '#f87171';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#ffffff';
+                          e.currentTarget.style.borderColor = '#fecaca';
+                        }}
+                      >
+                        🗑️ Supprimer de la base
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

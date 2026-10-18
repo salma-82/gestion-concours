@@ -1,40 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ClientMistakesDashboard from './ClientMistakesDashboard';
 
 import logoImg from '../assets/logo.png';
+import './ClientDashboard.css';
 import {
-  getStudentPlanningKey,
-  readStudentPlanning,
   readStudentProgress,
   setStudentActivityCompleted
 } from '../studentProgress';
-
-// ═══════════ DATA CALENDRIER ═══════════
-const CONCOURS_OFFICIELS = [
-  { id: 'c1', title: 'Examen National - Mathématiques', date: '2026-10-17', time: '09:00', type: 'exam', subject: 'Math' },
-  { id: 'c2', title: 'Concours Médecine', date: '2026-10-26', time: '08:00', type: 'concours', subject: 'SVT' },
-  { id: 'c3', title: 'Concours ENSA', date: '2026-11-02', time: '08:00', type: 'concours', subject: 'Math' },
-  { id: 'c4', title: 'Concours ENCG', date: '2026-11-08', time: '09:00', type: 'concours', subject: '' },
-  { id: 'c5', title: 'Concours ENSAM', date: '2026-11-15', time: '08:30', type: 'concours', subject: 'PC' },
-  { id: 'c6', title: 'Concours FMP', date: '2026-11-22', time: '08:00', type: 'concours', subject: 'SVT' }
-];
-
-const TYPE_CFG = {
-  exam: { icon: '🎯', color: '#ef4444', bg: '#fee2e2', label: 'Examen' },
-  concours: { icon: '🏆', color: '#ec4899', bg: '#fce7f3', label: 'Concours' },
-  qcm: { icon: '📝', color: '#10b981', bg: '#d1fae5', label: 'QCM' },
-  revision: { icon: '📚', color: '#f59e0b', bg: '#fef3c7', label: 'Révision' },
-  personal: { icon: '👤', color: '#8b5cf6', bg: '#ede9fe', label: 'Personnel' }
-};
-
-const PRIORITY_CFG = {
-  low: { color: '#059669', bg: '#d1fae5', label: 'Basse' },
-  medium: { color: '#d97706', bg: '#fef3c7', label: 'Moyenne' },
-  high: { color: '#dc2626', bg: '#fee2e2', label: 'Urgent' }
-};
-
-const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 const getSubjectStyle = (subject) => {
   const normalized = String(subject || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -47,12 +19,6 @@ const getSubjectStyle = (subject) => {
 };
 
 export default function ClientDashboard() {
-  const navigate = useNavigate();
-  const showSidebarChoices = (menu) => navigate('/client-dashboard', {
-    replace: true,
-    state: { openSidebarMenu: menu }
-  });
-
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant');
@@ -71,183 +37,6 @@ export default function ClientDashboard() {
       window.removeEventListener('storage', refreshProgress);
     };
   }, []);
-
-  // ─── Calendrier State ───
-  const [curDate, setCurDate] = useState(() => {
-    const today = new Date();
-    return new Date(today.getFullYear(), today.getMonth(), 1);
-  });
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [planning, setPlanning] = useState(() => readStudentPlanning());
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ title: '', date: '', time: '', type: 'revision', subject: '', priority: 'medium' });
-
-  useEffect(() => { localStorage.setItem(getStudentPlanningKey(), JSON.stringify(planning)); }, [planning]);
-
-  const getEvents = () => planning;
-
-  const renderCalendarGrid = () => {
-    const y = curDate.getFullYear(), m = curDate.getMonth();
-    const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
-    let start = first.getDay() - 1; if (start < 0) start = 6;
-    const today = new Date();
-    const isCurMonth = today.getFullYear() === y && today.getMonth() === m;
-    const cells = [];
-    for (let i = 0; i < start; i++) cells.push(<div key={`e${i}`} style={{ minHeight: '66px' }} />);
-    for (let d = 1; d <= last.getDate(); d++) {
-      const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const dayEvs = getEvents().filter(e => e.date === dateStr);
-      const isToday = isCurMonth && d === today.getDate();
-      const isSel = selectedDay === dateStr;
-      cells.push(
-        <div
-          key={d}
-          onClick={() => setSelectedDay(isSel ? null : dateStr)}
-          style={{
-            minHeight: '66px',
-            padding: '8px 10px',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            backgroundColor: isToday 
-              ? '#eff6ff' 
-              : isSel 
-                ? '#e0e7ff' 
-                : '#ffffff',
-            border: isToday 
-              ? '1.5px solid #3b82f6' 
-              : isSel 
-                ? '1.5px solid #4f46e5' 
-                : '1px solid #e2e8f0',
-            boxShadow: (isToday || isSel) 
-              ? '0 2px 8px rgba(59, 130, 246, 0.12)' 
-              : '0 1px 2px rgba(0,0,0,0.02)',
-            transition: 'all 0.15s ease'
-          }}
-          onMouseEnter={(e) => {
-            if (!isToday && !isSel) {
-              e.currentTarget.style.backgroundColor = '#f8fafc';
-              e.currentTarget.style.borderColor = '#cbd5e1';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isToday && !isSel) {
-              e.currentTarget.style.backgroundColor = '#ffffff';
-              e.currentTarget.style.borderColor = '#e2e8f0';
-            }
-          }}
-        >
-          <div style={{
-            fontSize: '13.5px',
-            fontWeight: 800,
-            color: isToday ? '#1d4ed8' : isSel ? '#4338ca' : '#1e293b'
-          }}>
-            {d}
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
-            {dayEvs.slice(0, 4).map((ev, i) => (
-              <div
-                key={i}
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  backgroundColor: (TYPE_CFG[ev.type] || TYPE_CFG.personal).color,
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    return cells;
-  };
-
-  const renderEventList = () => {
-    let evs = [...getEvents()];
-    if (selectedDay) evs = evs.filter(e => e.date === selectedDay);
-    evs.sort((a, b) => new Date(a.date) - new Date(b.date));
-    if (evs.length === 0) {
-      return (
-        <div style={{
-          textAlign: 'center',
-          padding: '44px 20px',
-          color: '#94a3b8',
-          backgroundColor: '#f8fafc',
-          borderRadius: '14px',
-          border: '1px dashed #cbd5e1'
-        }}>
-          <div style={{ fontSize: '38px', marginBottom: '8px' }}>📭</div>
-          <div style={{ fontSize: '13.5px', fontWeight: 600 }}>Aucun événement prévu</div>
-        </div>
-      );
-    }
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    return evs.map(ev => {
-      const cfg = TYPE_CFG[ev.type] || TYPE_CFG.personal;
-      const d = new Date(ev.date);
-      const diff = Math.ceil((d - today) / 86400000);
-      const diffTxt = diff > 0 ? `J-${diff}` : diff === 0 ? "Aujourd'hui" : 'Passé';
-      return (
-        <div
-          key={ev.id}
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderLeft: `4px solid ${cfg.color}`,
-            borderRadius: '12px',
-            padding: '12px 14px',
-            marginBottom: '10px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-            transition: 'transform 0.15s ease'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateX(2px)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateX(0)'; }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', lineHeight: 1.3 }}>
-              {cfg.icon} {ev.title}
-            </span>
-            <span style={{
-              fontSize: '11px',
-              fontWeight: 800,
-              color: diff <= 3 ? '#b91c1c' : '#475569',
-              backgroundColor: diff <= 3 ? '#fee2e2' : '#f1f5f9',
-              padding: '2px 8px',
-              borderRadius: '6px',
-              flexShrink: 0,
-              marginLeft: '8px'
-            }}>
-              {diffTxt}
-            </span>
-          </div>
-          <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <span>📅 {d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-            {ev.time && <span>• 🕐 {ev.time}</span>}
-            {ev.subject && (
-              <span style={{
-                backgroundColor: '#f1f5f9',
-                color: '#334155',
-                padding: '1px 6px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: 600
-              }}>
-                {ev.subject}
-              </span>
-            )}
-          </div>
-        </div>
-      );
-    });
-  };
-
-  const handleAdd = () => {
-    if (!form.title || !form.date) { alert('Titre et date obligatoires'); return; }
-    setPlanning([...planning, { ...form, id: 'u' + Date.now() }]);
-    setForm({ title: '', date: '', time: '', type: 'revision', subject: '', priority: 'medium' });
-    setShowModal(false);
-  };
 
   const progressBySubject = studentActivities.reduce((groups, activity) => {
     const style = getSubjectStyle(activity.subject);
@@ -269,12 +58,6 @@ export default function ClientDashboard() {
   const recentStudentActivities = [...studentActivities]
     .sort((a, b) => new Date(b.lastViewedAt).getTime() - new Date(a.lastViewedAt).getTime())
     .slice(0, 5);
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const upcomingPlanning = planning
-    .filter((event) => new Date(`${event.date}T00:00:00`).getTime() >= todayStart.getTime())
-    .sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime())
-    .slice(0, 3);
   // ─── Progress Data (Matches the reference image exactly: 78%, 64%, 85%) ───
   const progressByMatiere = [
     {
@@ -336,13 +119,13 @@ export default function ClientDashboard() {
       fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
       padding: '26px 32px 50px 32px',
       color: '#0f172a'
-    }}>
-      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+    }} className="client-dashboard">
+      <div style={{ maxWidth: '1560px', margin: '0 auto' }} className="client-dashboard-content">
 
         {/* ══════════════════════════════════════════════════════════
             1. HERO BANNER (IDENTIQUE AU DESIGN DE L'IMAGE)
         ══════════════════════════════════════════════════════════ */}
-        <div style={{
+        <div className="client-dashboard-hero" style={{
           position: 'relative',
           backgroundColor: '#ffffff',
           backgroundImage: 'linear-gradient(105deg, #ffffff 0%, #ffffff 52%, #edf6fe 78%, #dbedfe 100%)',
@@ -371,9 +154,9 @@ export default function ClientDashboard() {
           }} />
 
           {/* Left Content */}
-          <div style={{ flex: 1, maxWidth: '640px', zIndex: 2 }}>
+          <div className="client-dashboard-hero-content" style={{ flex: 1, maxWidth: '640px', zIndex: 2 }}>
             {/* Pill Tag */}
-            <div style={{
+            <div className="client-dashboard-hero-badge" style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
@@ -395,7 +178,7 @@ export default function ClientDashboard() {
             </div>
 
             {/* Title */}
-            <h1 style={{
+            <h1 className="client-dashboard-hero-title" style={{
               margin: '0 0 10px 0',
               fontSize: '30px',
               fontWeight: 800,
@@ -407,7 +190,7 @@ export default function ClientDashboard() {
             </h1>
 
             {/* Description Subtitle */}
-            <p style={{
+            <p className="client-dashboard-hero-description" style={{
               margin: '0 0 22px 0',
               fontSize: '13.5px',
               color: '#475569',
@@ -419,9 +202,8 @@ export default function ClientDashboard() {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-              {/* Primary Blue Button */}
               <button
-                onClick={() => showSidebarChoices('examens')}
+                onClick={() => document.getElementById('client-mistakes-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 style={{
                   background: 'linear-gradient(90deg, #1862ea 0%, #2979fb 100%)',
                   color: '#ffffff',
@@ -447,44 +229,13 @@ export default function ClientDashboard() {
                 }}
               >
                 <span>→</span>
-                <span>Consulter les Examens</span>
-              </button>
-
-              {/* Secondary Outline Button */}
-              <button
-                onClick={() => showSidebarChoices('concours-blanc')}
-                style={{
-                  background: '#ffffff',
-                  color: '#1862ea',
-                  border: '1.5px solid #2563eb',
-                  padding: '11px 24px',
-                  borderRadius: '9999px',
-                  fontWeight: 750,
-                  fontSize: '13.5px',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.18s ease',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f8faff';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#ffffff';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <span style={{ fontSize: '15px' }}>🏆</span>
-                <span>Concours Blancs</span>
+                <span>Consulter mes erreurs</span>
               </button>
             </div>
           </div>
 
           {/* Logo du site */}
-          <div style={{
+          <div className="client-dashboard-logo-stage" style={{
             position: 'relative',
             width: '280px',
             height: '200px',
@@ -502,6 +253,7 @@ export default function ClientDashboard() {
             <img
               src={logoImg}
               alt="Logo ECONCOURS"
+              className="client-dashboard-logo"
               style={{
                 width: '100%',
                 height: '100%',
@@ -686,118 +438,7 @@ export default function ClientDashboard() {
           </p>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════
-            4. CALENDRIER DES CONCOURS & PLANNING PERSONNEL
-        ══════════════════════════════════════════════════════════ */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          border: '1px solid #edf2f7',
-          padding: '26px 30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
-          marginBottom: '26px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '20px' }}>📅</span>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
-              Calendrier de révision
-            </h2>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
-              Organisez vos révisions, concours et objectifs personnels.
-            </p>
-            <button
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: '9px 18px', borderRadius: '12px', border: 'none', fontWeight: 700,
-                fontSize: '13px', cursor: 'pointer', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: '#ffffff', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)', transition: 'all 0.15s ease'
-              }}
-            >
-              ➕ Ajouter un objectif
-            </button>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '26px' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <button
-                  onClick={() => setCurDate(new Date(curDate.getFullYear(), curDate.getMonth() - 1, 1))}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    border: '1px solid #e2e8f0',
-                    background: '#ffffff',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  ◀
-                </button>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0, color: '#0f172a' }}>
-                  {MONTHS[curDate.getMonth()]} {curDate.getFullYear()}
-                </h3>
-                <button
-                  onClick={() => setCurDate(new Date(curDate.getFullYear(), curDate.getMonth() + 1, 1))}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    border: '1px solid #e2e8f0',
-                    background: '#ffffff',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  ▶
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px', marginBottom: '8px' }}>
-                {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d, i) => (
-                  <div key={i} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '6px 0' }}>
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
-                {renderCalendarGrid()}
-              </div>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-                {Object.entries(TYPE_CFG).map(([k, cfg]) => (
-                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: '#64748b', fontWeight: 600 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: cfg.color }} />
-                    {cfg.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '520px' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 800, margin: '0 0 12px 0', color: '#0f172a' }}>
-                Mon planning personnel ({planning.length})
-              </h4>
-              <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
-                {renderEventList()}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
+        {/*
             5. DISCORD + AMIS + CLASSEMENT
         ══════════════════════════════════════════════════════════ */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '22px', marginBottom: '28px' }}>
@@ -895,32 +536,14 @@ export default function ClientDashboard() {
             )}
           </div>
 
-          {/* Events coming from the student's own calendar */}
-          <div style={{
-            background: '#ffffff', borderRadius: '22px', border: '1px solid #edf2f7',
-            padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
-          }}>
-            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 6px', color: '#0f172a' }}>À venir</h3>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 14px' }}>Vos prochains objectifs enregistrés.</p>
-            {upcomingPlanning.length === 0 ? (
-              <div style={{ padding: '18px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '12px', textAlign: 'center' }}>
-                Aucun objectif à venir. Ajoutez une date dans le calendrier.
-              </div>
-            ) : upcomingPlanning.map((event) => (
-              <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '11px 12px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #edf2f7', marginBottom: '8px' }}>
-                <span style={{ color: '#0f172a', fontSize: '12px', fontWeight: 750 }}>{event.title}</span>
-                <span style={{ color: '#2563eb', fontSize: '11px', fontWeight: 750, whiteSpace: 'nowrap' }}>
-                  {new Date(`${event.date}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}{event.time ? ` · ${event.time}` : ''}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* ══════════════════════════════════════════════════════════
             6. ERREURS QCM ET ACTIVITÉS RÉCENTES
         ══════════════════════════════════════════════════════════ */}
+        </div>
+        <div id="client-mistakes-section">
         <ClientMistakesDashboard />
+        </div>
         <div style={{
           backgroundColor: '#ffffff',
           borderRadius: '24px',
@@ -1035,161 +658,6 @@ export default function ClientDashboard() {
 
       </div>
 
-      {/* ══════════════════════════════════════════════════════════
-          MODAL ADD EVENT (PLANNING PERSONNEL)
-      ══════════════════════════════════════════════════════════ */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(15, 23, 42, 0.65)',
-          backdropFilter: 'blur(6px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
-        }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '24px',
-            padding: '28px 30px',
-            width: '100%',
-            maxWidth: '460px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.2)',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#0f172a' }}>➕ Nouvel événement</h3>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  color: '#64748b',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700
-                }}
-              >
-                ✕
-              </button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Titre *</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="Ex: Révision Mathématiques - Analyse"
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', marginTop: '4px', fontSize: '13.5px', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date *</label>
-                  <input
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', marginTop: '4px', fontSize: '13.5px', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Heure</label>
-                  <input
-                    type="time"
-                    value={form.time}
-                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', marginTop: '4px', fontSize: '13.5px', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #cbd5e1', marginTop: '4px', fontSize: '13.5px', outline: 'none', boxSizing: 'border-box', backgroundColor: '#ffffff' }}
-                >
-                  <option value="revision">📚 Révision</option>
-                  <option value="qcm">📝 QCM</option>
-                  <option value="exam">🎯 Examen</option>
-                  <option value="personal">👤 Personnel</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Priorité</label>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                  {['low', 'medium', 'high'].map(p => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setForm({ ...form, priority: p })}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '10px',
-                        border: form.priority === p ? `2px solid ${PRIORITY_CFG[p].color}` : '1.5px solid #e2e8f0',
-                        background: form.priority === p ? PRIORITY_CFG[p].bg : '#ffffff',
-                        color: form.priority === p ? PRIORITY_CFG[p].color : '#64748b',
-                        fontWeight: 800,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      {PRIORITY_CFG[p].label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                <button
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    flex: 1,
-                    padding: '11px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #e2e8f0',
-                    background: '#ffffff',
-                    color: '#475569',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleAdd}
-                  style={{
-                    flex: 1,
-                    padding: '11px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
-                  }}
-                >
-                  ✓ Enregistrer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

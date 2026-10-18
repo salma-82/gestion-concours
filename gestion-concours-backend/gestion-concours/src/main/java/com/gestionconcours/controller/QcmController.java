@@ -31,19 +31,134 @@ public class QcmController {
     private static final String QCM_TRACKING_BRIDGE = """
             (() => {
               const messageType = 'econcourse-qcm-mistake';
+              const saveActionType = 'econcourse-save-mistakes-action';
               const attemptId = Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
               const sent = new Set();
+              const mistakesMap = new Map();
               const textOf = (value) => String(value || '').replace(/\\s+/g, ' ').trim().slice(0, 5000);
+
+              const recordMistake = (payload) => {
+                const key = String(payload.questionId ?? payload.questionNumber ?? payload.questionText).trim();
+                mistakesMap.set(key, payload);
+              };
+
               const publish = (payload) => {
                 const key = [payload.questionId, payload.selectedChoiceLabel, payload.selectedChoiceText].join(':');
                 if (sent.has(key)) return;
                 sent.add(key);
+                if (!payload.isCorrect) {
+                  recordMistake(payload);
+                }
                 window.parent.postMessage({ type: messageType, attemptId, mistake: payload }, '*');
               };
+
               const getData = () => typeof QCM_DATA !== 'undefined' ? QCM_DATA : window.QCM_DATA;
               const getState = () => typeof S !== 'undefined' ? S : window.S;
               const getChoiceLabel = (choice) => String(choice?.k ?? choice?.choiceLabel ?? choice?.label ?? choice?.id ?? '').trim().toUpperCase();
               const getChoiceText = (choice) => textOf(choice?.t ?? choice?.choiceText ?? choice?.text ?? choice?.label ?? '');
+
+              const collectAllCurrentMistakes = () => {
+                const data = getData();
+                const state = getState();
+                if (Array.isArray(data?.questions) && state?.answers) {
+                  data.questions.forEach((q, idx) => {
+                    const ans = state.answers[q.id];
+                    const correctLabel = String(q.correct ?? q.correctChoiceLabel ?? q.answer ?? '').trim().toUpperCase();
+                    if (ans && ans !== correctLabel) {
+                      const options = q.options ?? q.choices ?? [];
+                      const selOpt = options.find((c) => getChoiceLabel(c) === ans);
+                      const corOpt = options.find((c) => getChoiceLabel(c) === correctLabel);
+                      recordMistake({
+                        questionId: q.id ?? q.questionNumber ?? idx + 1,
+                        questionNumber: q.questionNumber ?? q.id ?? idx + 1,
+                        questionText: textOf(q.enonce ?? q.questionText ?? q.text ?? ''),
+                        selectedChoiceLabel: ans,
+                        selectedChoiceText: textOf(selOpt?.t ?? selOpt?.choiceText ?? selOpt?.text ?? ans),
+                        correctChoiceLabel: correctLabel,
+                        isCorrect: false,
+                        correctChoiceText: getChoiceText(corOpt),
+                        explanation: textOf(Array.isArray(q.explication) ? q.explication.join(' ') : (q.explication ?? q.explanation ?? '')),
+                        chapter: textOf(data.chapitre ?? data.chapter ?? '')
+                      });
+                    }
+                  });
+                }
+                return Array.from(mistakesMap.values());
+              };
+
+              const sendSaveAllMistakes = (btnElement) => {
+                const list = collectAllCurrentMistakes();
+                window.parent.postMessage({
+                  type: saveActionType,
+                  attemptId,
+                  mistakes: list
+                }, '*');
+
+                if (btnElement) {
+                  const originalHtml = btnElement.innerHTML;
+                  btnElement.innerHTML = '✓ Erreurs sauvegardées !';
+                  btnElement.style.background = '#059669';
+                  btnElement.style.borderColor = '#059669';
+                  btnElement.style.color = '#ffffff';
+                  setTimeout(() => {
+                    btnElement.innerHTML = '✓ Sauvegardé';
+                  }, 2500);
+                }
+              };
+
+              const injectSaveButtons = () => {
+                // 1. Bouton principal dans les actions de fin de test
+                const actions = document.querySelector('.actions');
+                if (actions && !document.getElementById('saveMistakesBtn')) {
+                  const saveBtn = document.createElement('button');
+                  saveBtn.id = 'saveMistakesBtn';
+                  saveBtn.type = 'button';
+                  saveBtn.className = 'btn';
+                  saveBtn.innerHTML = '💾 Sauvegarder mes erreurs';
+                  saveBtn.style.cssText = 'background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: 0; padding: 11px 18px; border-radius: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(37,99,235,0.25); transition: 0.2s; font-family: inherit; font-size: 1rem;';
+                  saveBtn.onclick = () => sendSaveAllMistakes(saveBtn);
+                  actions.appendChild(saveBtn);
+                }
+
+                // 2. Bouton individuel sur chaque bloc de correction ko
+                document.querySelectorAll('.corr.ko').forEach((card) => {
+                  if (card.querySelector('.btn-save-single-mistake')) return;
+                  const singleBtn = document.createElement('button');
+                  singleBtn.className = 'btn-save-single-mistake';
+                  singleBtn.type = 'button';
+                  singleBtn.innerHTML = '💾 Sauvegarder cette erreur';
+                  singleBtn.style.cssText = 'margin-top: 10px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;';
+                  singleBtn.onclick = () => {
+                    const qhead = card.querySelector('.qhead')?.innerText || '';
+                    const qtext = card.querySelector('.qtext')?.innerText || '';
+                    const note = card.querySelector('.note')?.innerText || '';
+                    const expl = card.querySelector('.expl')?.innerText || '';
+                    const qIdMatch = qhead.match(/\\d+/);
+                    const qNum = qIdMatch ? parseInt(qIdMatch[0], 10) : 1;
+                    const mistake = {
+                      questionId: qNum,
+                      questionNumber: qNum,
+                      questionText: textOf(qtext),
+                      selectedChoiceLabel: 'RÉPONSE ÉTUDIANT',
+                      selectedChoiceText: textOf(note),
+                      correctChoiceLabel: 'BONNE RÉPONSE',
+                      correctChoiceText: '',
+                      explanation: textOf(expl),
+                      chapter: ''
+                    };
+                    window.parent.postMessage({
+                      type: saveActionType,
+                      attemptId,
+                      mistakes: [mistake]
+                    }, '*');
+                    singleBtn.innerHTML = '✓ Erreur sauvegardée !';
+                    singleBtn.style.background = '#dcfce7';
+                    singleBtn.style.color = '#059669';
+                    singleBtn.style.borderColor = '#86efac';
+                  };
+                  card.appendChild(singleBtn);
+                });
+              };
 
               document.addEventListener('click', (event) => {
                 const button = event.target.closest('button[data-k], button[data-answer], [data-choice]');
@@ -56,10 +171,11 @@ public class QcmController {
                 if (!question) return;
                 const selectedLabel = String(button.dataset.k ?? button.dataset.answer ?? button.dataset.choice ?? '').trim().toUpperCase();
                 const correctLabel = String(question.correct ?? question.correctChoiceLabel ?? question.answer ?? '').trim().toUpperCase();
-        if (!selectedLabel || !correctLabel) return;
+                if (!selectedLabel || !correctLabel) return;
                 const options = question.options ?? question.choices ?? [];
                 const selected = options.find((choice) => getChoiceLabel(choice) === selectedLabel);
                 const correct = options.find((choice) => getChoiceLabel(choice) === correctLabel);
+                const isCorrect = selectedLabel === correctLabel;
                 const payload = {
                   questionId: question.id ?? question.questionNumber ?? index + 1,
                   questionNumber: question.questionNumber ?? question.id ?? index + 1,
@@ -67,7 +183,7 @@ public class QcmController {
                   selectedChoiceLabel: selectedLabel,
                   selectedChoiceText: textOf(selected?.t ?? selected?.choiceText ?? selected?.text ?? button.innerText),
                   correctChoiceLabel: correctLabel,
-          isCorrect: selectedLabel === correctLabel,
+                  isCorrect: isCorrect,
                   correctChoiceText: getChoiceText(correct),
                   explanation: textOf(Array.isArray(question.explication) ? question.explication.join(' ') : (question.explication ?? question.explanation ?? '')),
                   chapter: textOf(data.chapitre ?? data.chapter ?? '')
@@ -78,8 +194,10 @@ public class QcmController {
                 }, 0);
               }, true);
 
-              // Repli pour les QCM HTML qui marquent visuellement les réponses fausses/vraies.
+              // Observer pour détecter la fin de test et injecter les boutons de sauvegarde
               const observer = new MutationObserver(() => {
+                injectSaveButtons();
+
                 if (Array.isArray(getData()?.questions)) return;
                 document.querySelectorAll('.bad, .incorrect, .wrong, .is-wrong, [data-correct="false"]').forEach((wrong) => {
                   if (wrong.dataset.econcourseTracked) return;
@@ -100,11 +218,24 @@ public class QcmController {
                     correctChoiceLabel: String(correctChoiceLabel || 'Bonne réponse').toUpperCase(),
                     correctChoiceText: textOf(correct.innerText),
                     explanation: textOf(container.querySelector('.explanation, .explication, .fb.ko')?.innerText || ''),
-                    chapter: ''
+                    chapter: '',
+                    isCorrect: false
                   });
                 });
               });
               observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'data-correct'] });
+
+              window.addEventListener('message', (event) => {
+                if (event.data?.type === 'econcourse-mistakes-saved-ack') {
+                  const btn = document.getElementById('saveMistakesBtn');
+                  if (btn) {
+                    btn.innerHTML = '✓ Erreurs sauvegardées !';
+                    btn.style.background = '#059669';
+                    btn.style.borderColor = '#059669';
+                    btn.style.color = '#ffffff';
+                  }
+                }
+              });
             })();
             """;
 
