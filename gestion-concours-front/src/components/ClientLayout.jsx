@@ -14,6 +14,7 @@ export default function ClientLayout() {
   const [resumesOpen, setResumesOpen] = useState(location.pathname.startsWith('/client-resumes'));
   const [concoursOpen, setConcoursOpen] = useState(location.pathname === '/client-concours');
   const [concoursBlancOpen, setConcoursBlancOpen] = useState(location.pathname === '/client-concours-blanc');
+  const [mistakesOpen, setMistakesOpen] = useState(location.pathname === '/client-erreurs');
   const [coursFilieres, setCoursFilieres] = useState([]);
   const [examensFilieres, setExamensFilieres] = useState([]);
   const [concoursEcoles, setConcoursEcoles] = useState([]);
@@ -45,6 +46,7 @@ export default function ClientLayout() {
     if (location.pathname === '/client-concours-blanc') {
       setConcoursBlancOpen(true);
     }
+    if (location.pathname === '/client-erreurs') setMistakesOpen(true);
   }, [location.pathname]);
 
   // Les raccourcis du dashboard demandent l'ouverture d'un sous-menu sans
@@ -178,6 +180,16 @@ export default function ClientLayout() {
           <rect x="3" y="5" width="18" height="16" rx="2" />
           <path d="M16 3v4M8 3v4M3 10h18" />
           <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
+        </svg>
+      )
+    },
+    {
+      id: 'mistakes',
+      title: 'Réviser erreurs',
+      path: '/client-erreurs',
+      renderIcon: (isActive) => (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? '#ffffff' : '#2563eb'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 4h14v16H5z" /><path d="m8 9 2 2 4-4M8 15h8" />
         </svg>
       )
     },
@@ -316,6 +328,7 @@ export default function ClientLayout() {
 
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {navItems.map((item, index) => {
+              const isMistakes = item.id === 'mistakes';
               const isSelected = location.pathname === item.path
                 && !currentFiliereParam
                 && !(item.path === '/client-resumes' && currentResumeMatiere);
@@ -324,13 +337,16 @@ export default function ClientLayout() {
               const isResumes = item.path === '/client-resumes';
               const isConcours = item.path === '/client-concours';
               const isConcoursBlanc = item.path === '/client-concours-blanc';
-              const hasSubmenu = isCours || isExamens || isResumes || isConcours || isConcoursBlanc;
+              const hasSubmenu = isCours || isExamens || isResumes || isConcours || isConcoursBlanc || isMistakes;
               const isSubmenuOpen = isCours
                 ? coursOpen
-                : (isExamens ? examensOpen : (isResumes ? resumesOpen : (isConcours ? concoursOpen : (isConcoursBlanc ? concoursBlancOpen : false))));
+                : (isExamens ? examensOpen : (isResumes ? resumesOpen : (isConcours ? concoursOpen : (isConcoursBlanc ? concoursBlancOpen : (isMistakes ? mistakesOpen : false)))));
 
               const handleItemClick = () => {
-                if (isCours) {
+                if (isMistakes) {
+                  setMistakesOpen((prev) => !prev);
+                  if (location.pathname !== '/client-erreurs') navigate('/client-erreurs?view=all');
+                } else if (isCours) {
                   setCoursOpen(prev => !prev);
                   if (location.pathname !== '/client-dashboard') {
                     navigate('/client-dashboard');
@@ -430,6 +446,7 @@ export default function ClientLayout() {
                           if (isResumes) setResumesOpen(prev => !prev);
                           if (isConcours) setConcoursOpen(prev => !prev);
                           if (isConcoursBlanc) setConcoursBlancOpen(prev => !prev);
+                          if (isMistakes) setMistakesOpen(prev => !prev);
                         }}
                         style={{
                           display: 'flex',
@@ -751,6 +768,23 @@ export default function ClientLayout() {
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={matiere}>
                               {matiere}
                             </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {isMistakes && isSubmenuOpen && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '14px', marginTop: '4px', marginBottom: '6px', borderLeft: '2px solid #e2e8f0', marginLeft: '26px' }}>
+                      {[
+                        ['all', 'Mes erreurs'],
+                        ['saved', 'Erreurs sauvegardées']
+                      ].map(([view, label]) => {
+                        const selected = location.pathname === '/client-erreurs' && new URLSearchParams(location.search).get('view') === view;
+                        return (
+                          <div key={view} onClick={(event) => { event.stopPropagation(); navigate(`/client-erreurs?view=${view}`); }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 12.5, fontWeight: selected ? 750 : 600, color: selected ? '#1865f2' : '#475569', backgroundColor: selected ? '#eff6ff' : 'transparent', userSelect: 'none' }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: selected ? '#1865f2' : '#cbd5e1', flexShrink: 0 }} />
+                            <span>{label}</span>
                           </div>
                         );
                       })}

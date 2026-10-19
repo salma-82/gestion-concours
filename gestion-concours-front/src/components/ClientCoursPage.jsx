@@ -443,7 +443,7 @@ export default function ClientCoursPage() {
     setSelectedChapitre(null);
     setActiveCours(null);
     setSearchQuery('');
-    setStep('chapitres');
+    setStep('matieres');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -460,7 +460,7 @@ export default function ClientCoursPage() {
     const list = coursForChapitre(selectedMatiere, chapNom);
     if (specificCours) {
       setActiveCours(specificCours);
-      setStep('reader');
+      setStep('chapitres');
       recordStudentActivity({
         type: 'Cours',
         resourceId: specificCours.id,
@@ -470,7 +470,7 @@ export default function ClientCoursPage() {
       });
     } else if (list.length > 0) {
       setActiveCours(list[0]);
-      setStep('reader');
+      setStep('chapitres');
       recordStudentActivity({
         type: 'Cours',
         resourceId: list[0].id,
@@ -487,7 +487,7 @@ export default function ClientCoursPage() {
         chapitre: chapNom,
         htmlUrl: null
       });
-      setStep('reader');
+      setStep('chapitres');
     }
     setIframeLoading(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -522,7 +522,7 @@ export default function ClientCoursPage() {
   return (
     <div style={pageStyle}>
 
-            {step === 'matieres' && (
+            {step === 'matieres' && !selectedFiliere && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           {!selectedFiliere ? (
             <div style={{
@@ -718,7 +718,88 @@ export default function ClientCoursPage() {
         </div>
       )}
 
+      {step === 'matieres' && selectedFiliere && (
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <button type="button" onClick={() => navigate('/client-dashboard')} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Retour aux filières</button>
+            <div style={{ padding: '4px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Filière : {selectedFiliere}</div>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des matières…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+              {matieresWithCount.map((matiere) => {
+                const active = selectedMatiere?.id === matiere.id;
+                return <button key={matiere.id} type="button" onClick={() => goChapitres(matiere)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: active ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: active ? '#eff6ff' : '#ffffff', color: active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>;
+              })}
+            </div>}
+            {selectedMatiere && !loading && !error && <div style={{ marginTop: '17px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+              <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres · {selectedMatiere.nom}</h2>
+              <input type="search" placeholder="Rechercher un chapitre…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} style={{ width: '100%', boxSizing: 'border-box', marginBottom: '9px', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '9px', fontSize: '12px', outline: 'none' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.nom.toLowerCase().includes(searchQuery.trim().toLowerCase())).map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? selectedMatiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? selectedMatiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '10px', fontWeight: 500 }}>{chapitre.count ? `${chapitre.count} cours` : 'Bientôt disponible'}</span></button>)}
+              </div>
+            </div>}
+          </aside>
+
+          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+            <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
+            {selectedMatiere ? (
+              <div style={{ display: 'none', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  <div><div style={{ color: selectedMatiere.badgeColor, fontSize: '12px', fontWeight: 800 }}>{selectedFiliere}</div><h1 style={{ margin: '4px 0 0', color: '#0f172a', fontSize: '22px', fontWeight: 850 }}>{selectedMatiere.nom} — Chapitres</h1></div>
+                  <input type="search" placeholder="Rechercher un chapitre…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} style={{ width: 'min(100%, 260px)', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '10px', fontSize: '13px', outline: 'none' }} />
+                </div>
+                {loading ? <div style={{ padding: '40px 12px', color: '#64748b', textAlign: 'center' }}>Chargement des chapitres…</div> : error ? <div style={{ padding: '40px 12px', color: '#dc2626', textAlign: 'center' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '10px' }}>
+                  {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.nom.toLowerCase().includes(searchQuery.trim().toLowerCase())).map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ minHeight: '74px', padding: '12px 14px', border: '1px solid #e2e8f0', borderRadius: '11px', background: '#ffffff', color: '#1e293b', textAlign: 'left', cursor: 'pointer', fontWeight: 750, fontSize: '13px' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '6px', color: '#64748b', fontSize: '11px', fontWeight: 550 }}>{chapitre.count ? `${chapitre.count} cours disponibles` : 'Cours bientôt disponible'}</span></button>)}
+                </div>}
+              </div>
+            ) : (
+              <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez une matière dans le menu de gauche pour afficher ses chapitres.</div>
+            )}
+          </main>
+        </div>
+      )}
+
       {step === 'chapitres' && selectedMatiere && (
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <button type="button" onClick={() => navigate('/client-dashboard')} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Filières</button>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' }}>
+              {matieresWithCount.map((matiere) => {
+                const active = selectedMatiere.id === matiere.id;
+                return <button key={matiere.id} type="button" onClick={() => goChapitres(matiere)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '9px 10px', border: '1px solid', borderColor: active ? '#93c5fd' : '#e2e8f0', borderRadius: '9px', background: active ? '#eff6ff' : '#ffffff', color: active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>;
+              })}
+            </div>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+                const active = selectedChapitre === chapitre.nom;
+                return <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: active ? selectedMatiere.color : '#e2e8f0', borderRadius: '10px', background: active ? selectedMatiere.lightBg : '#ffffff', color: active ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '11px', fontWeight: 500 }}>{chapitre.count ? `${chapitre.count} cours` : 'Cours bientôt disponible'}</span></button>;
+              })}
+            </div>
+          </aside>
+
+          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+            {activeCours ? (
+              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div>
+                    <div style={{ color: selectedMatiere.badgeColor, fontSize: '11px', fontWeight: 800 }}>{selectedMatiere.nom}{selectedFiliere ? ` · ${selectedFiliere}` : ''}</div>
+                    <div style={{ color: '#1e293b', fontSize: '16px', fontWeight: 750, marginTop: '3px' }}>{activeCours.titre || selectedChapitre}</div>
+                  </div>
+                  {coursForChapitre(selectedMatiere, selectedChapitre).length > 1 && <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {coursForChapitre(selectedMatiere, selectedChapitre).map((cours, index) => <button key={cours.id || index} type="button" onClick={() => openReader(selectedChapitre, cours)} style={{ border: '1px solid #cbd5e1', borderRadius: '7px', padding: '5px 9px', background: String(activeCours.id) === String(cours.id) ? selectedMatiere.color : '#fff', color: String(activeCours.id) === String(cours.id) ? '#fff' : '#334155', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}>{cours.titre || `Cours ${index + 1}`}</button>)}
+                  </div>}
+                </div>
+                {activeCours.htmlUrl ? <iframe key={activeCours.id || activeCours.htmlUrl} src={getFullUrl(activeCours.htmlUrl)} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: 'calc(100vh - 120px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
+              </div>
+            ) : (
+              <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
+            )}
+          </main>
+        </div>
+      )}
+
+      {false && step === 'chapitres' && selectedMatiere && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           
           {/* Fil d'Ariane harmonisé : 🏠 Cours Bac > {selectedFiliere} > {selectedMatiere.nom} */}
@@ -1202,13 +1283,40 @@ export default function ClientCoursPage() {
           width: '100vw',
           height: '100vh',
           zIndex: 99999,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#f8fafc',
           display: 'flex',
-          flexDirection: 'column',
           overflow: 'hidden',
           margin: 0,
           padding: 0
         }}>
+          <div style={{ width: '100%', minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'flex-start', gap: '18px', overflow: 'auto', padding: '20px 16px', boxSizing: 'border-box' }}>
+            <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: 0 }}>
+              <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et cours</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+                  const cours = coursForChapitre(selectedMatiere, chapitre.nom);
+                  const isActive = selectedChapitre === chapitre.nom;
+                  return <div key={chapitre.nom}>
+                    <button type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
+                    {isActive && cours.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
+                      {cours.map((coursItem, index) => <button key={coursItem.id || index} type="button" onClick={() => openReader(chapitre.nom, coursItem)} style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeCours.id) === String(coursItem.id) ? '#2563eb' : 'transparent', color: String(activeCours.id) === String(coursItem.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{coursItem.titre || `Cours ${index + 1}`}</button>)}
+                    </div>}
+                  </div>;
+                })}
+              </div>
+            </aside>
+            <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
+                <button type="button" onClick={() => { setStep('chapitres'); setActiveCours(null); setSelectedChapitre(null); }} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>← Retour</button>
+              </div>
+              {activeCours.htmlUrl ? <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                <iframe src={getFullUrl(activeCours.htmlUrl)} title={activeCours.titre || activeCours.chapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: '84vh', border: 'none', display: 'block', backgroundColor: '#ffffff' }} />
+              </div> : <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1', padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div><h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>Aucun fichier HTML rattaché</h2><p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML pour ce cours.</p>
+              </div>}
+            </div>
+          </div>
+          <div style={{ display: 'none' }}>
           {/* Fil d'Ariane cliquable : Matières / Matière / Cours */}
           <div style={{
             height: '48px',
@@ -1342,6 +1450,7 @@ export default function ClientCoursPage() {
               </button>
             </div>
           )}
+          </div>
         </div>
       )}
 

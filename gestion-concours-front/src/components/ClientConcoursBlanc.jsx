@@ -105,7 +105,7 @@ export default function ClientConcoursBlanc() {
   const requestedMatiere = new URLSearchParams(location.search).get('matiere');
 
   // Navigation steps: 'matieres' -> 'chapitres' -> 'qcms' -> 'player'
-  const [currentStep, setCurrentStep] = useState('matieres'); 
+  const [currentStep, setCurrentStep] = useState('loading');
   const [selectedMatiere, setSelectedMatiere] = useState(null);
   const [selectedChapitre, setSelectedChapitre] = useState(null);
   const [activeConcours, setActiveConcours] = useState(null);
@@ -177,18 +177,32 @@ export default function ClientConcoursBlanc() {
 
     setSelectedChapitre(null);
     setActiveConcours(null);
-    if (!requestedMatiere) {
-      setCurrentStep('matieres');
-      setSelectedMatiere(null);
-      return;
+    const matchingConcours = requestedMatiere
+      ? htmlConcoursList.filter(concours =>
+          typeof concours.matiere === 'string'
+          && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
+        )
+      : htmlConcoursList;
+    const firstQcm = matchingConcours[0];
+    const matiereConfig = firstQcm
+      ? getMatiereConfig(firstQcm.matiere)
+      : requestedMatiere ? getMatiereConfig(requestedMatiere) : null;
+    setSelectedMatiere(matiereConfig);
+    if (firstQcm) {
+      const chapitre = firstQcm.chapitre || 'Général / Sans Chapitre';
+      setSelectedChapitre(chapitre);
+      setActiveConcours(firstQcm);
+      setCurrentStep('player');
+      recordStudentActivity({
+        type: 'Concours blanc',
+        resourceId: firstQcm.id,
+        title: firstQcm.titre || firstQcm.title || 'Concours blanc',
+        subject: firstQcm.matiere || matiereConfig.nom,
+        chapter: chapitre
+      });
+    } else {
+      setCurrentStep(matiereConfig ? 'chapitres' : 'matieres');
     }
-
-    const matchingConcours = htmlConcoursList.find(concours =>
-      typeof concours.matiere === 'string'
-      && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
-    );
-    setSelectedMatiere(getMatiereConfig(matchingConcours?.matiere || requestedMatiere));
-    setCurrentStep('chapitres');
   }, [requestedMatiere, loading, concoursList]);
 
   const filteredConcoursList = requestedMatiere
@@ -237,6 +251,14 @@ export default function ClientConcoursBlanc() {
   // Handlers de navigation
   const handleSelectMatiere = (cfg) => {
     setSelectedMatiere(cfg);
+    const chapitres = getChapitresForMatiere(cfg);
+    const firstChapitre = chapitres[0]?.nom;
+    const firstQcm = firstChapitre ? getConcoursForChapitre(cfg, firstChapitre)[0] : null;
+    if (firstQcm) {
+      setSelectedChapitre(firstChapitre);
+      handleOpenQcm(firstQcm, firstChapitre, cfg);
+      return;
+    }
     setSelectedChapitre(null);
     setCurrentStep('chapitres');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -244,19 +266,32 @@ export default function ClientConcoursBlanc() {
 
   const handleSelectChapitre = (chapNom) => {
     setSelectedChapitre(chapNom);
+    const qcms = getConcoursForChapitre(selectedMatiere, chapNom);
+    if (qcms.length === 1) {
+      handleOpenQcm(qcms[0], chapNom);
+      return;
+    }
     setCurrentStep('qcms');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenQcm = (concours) => {
+  const handleNavigateChapitre = (chapNom) => {
+    const qcms = getConcoursForChapitre(selectedMatiere, chapNom);
+    setSelectedChapitre(chapNom);
+    if (qcms.length > 0) {
+      handleOpenQcm(qcms[0], chapNom);
+    }
+  };
+
+  const handleOpenQcm = (concours, chapterOverride = selectedChapitre, matiereOverride = selectedMatiere) => {
     setActiveConcours(concours);
     setCurrentStep('player');
     recordStudentActivity({
       type: 'Concours blanc',
       resourceId: concours.id,
       title: concours.titre || concours.title || 'Concours blanc',
-      subject: concours.matiere || selectedMatiere?.nom || '',
-      chapter: concours.chapitre || selectedChapitre || ''
+      subject: concours.matiere || matiereOverride?.nom || '',
+      chapter: concours.chapitre || chapterOverride || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -271,142 +306,95 @@ export default function ClientConcoursBlanc() {
     setActiveConcours(null);
   };
 
-  const handleBackToQcms = () => {
-    setCurrentStep('qcms');
-    setActiveConcours(null);
-  };
-
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+
+      {currentStep === 'loading' && (
+        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+          <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
+          <p style={{ fontWeight: 600 }}>Chargement du premier QCM...</p>
+        </div>
+      )}
 
       {/* ========================================================
           ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          {/* Top Bar Reader */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '16px',
-            padding: '18px 24px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-            border: '1px solid #e2e8f0',
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '16px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '18px', width: '100%', flexWrap: 'wrap' }}>
+          <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et QCM</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
+                const qcms = getConcoursForChapitre(selectedMatiere, chapitre.nom);
+                const isActiveChapter = selectedChapitre === chapitre.nom;
+                return (
+                  <div key={chapitre.nom}>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigateChapitre(chapitre.nom)}
+                      style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActiveChapter ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActiveChapter ? '#eff6ff' : '#ffffff', color: isActiveChapter ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}
+                    >
+                      {chapitre.nom}
+                    </button>
+                    {isActiveChapter && qcms.length > 1 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
+                        {qcms.map((qcm, index) => {
+                          const isActiveQcm = String(activeConcours.id) === String(qcm.id);
+                          return (
+                            <button
+                              key={qcm.id || index}
+                              type="button"
+                              onClick={() => handleOpenQcm(qcm, chapitre.nom)}
+                              style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: isActiveQcm ? '#2563eb' : 'transparent', color: isActiveQcm ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: isActiveQcm ? 750 : 600, cursor: 'pointer' }}
+                            >
+                              {qcm.titre || qcm.title || `QCM ${index + 1}`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
+
+          <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
               <button
-                onClick={handleBackToQcms}
-                style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  color: '#1e293b',
-                  padding: '9px 16px',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
+                type="button"
+                onClick={handleBackToMatieres}
+                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}
               >
-                ← Retour à la liste des QCM
+                ← Retour
               </button>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                  <span style={{ background: selectedMatiere?.badgeBg, color: selectedMatiere?.badgeColor, padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                    {selectedMatiere?.icon} {selectedMatiere?.nom}
-                  </span>
-                  <span style={{ background: '#f1f5f9', color: '#475569', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
-                    📌 {selectedChapitre}
-                  </span>
-                  <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                    🌐 Épreuve Web HTML
-                  </span>
-                </div>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
-                  {activeConcours.titre}
-                </h2>
-              </div>
             </div>
 
-            {activeConcours.htmlUrl && (
-              <a
-                href={getFullUrl(activeConcours.htmlUrl)}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: '#2563eb',
-                  color: '#ffffff',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                ↗ Plein écran
-              </a>
+            {activeConcours.htmlUrl ? (
+              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                <TrackedQcmFrame
+                  src={getFullUrl(activeConcours.htmlUrl)}
+                  title={activeConcours.titre}
+                  sourceType="Concours blanc"
+                  resourceId={activeConcours.id}
+                  resourceTitle={activeConcours.titre || activeConcours.title}
+                  subject={activeConcours.matiere || selectedMatiere?.nom || ''}
+                  chapter={activeConcours.chapitre || selectedChapitre || ''}
+                  year={activeConcours.annee || ''}
+                  school={activeConcours.ecole || ''}
+                  style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                />
+              </div>
+            ) : activeConcours.pdfUrl ? (
+              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                <iframe src={getFullUrl(activeConcours.pdfUrl)} title={activeConcours.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                <p>Aucun fichier HTML n'est rattaché à cette épreuve.</p>
+              </div>
             )}
           </div>
-
-          {/* Iframe Viewer */}
-          {activeConcours.htmlUrl ? (
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{
-                padding: '12px 20px',
-                background: '#f8fafc',
-                borderBottom: '1px solid #e2e8f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontSize: '13px',
-                color: '#475569',
-                fontWeight: 600
-              }}>
-                <span>⏱️ Épreuve Interactive QCM (Questions, Timer & Corrigé intégrés)</span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>MathJax & Formules activées</span>
-              </div>
-              <TrackedQcmFrame
-                src={getFullUrl(activeConcours.htmlUrl)}
-                title={activeConcours.titre}
-                sourceType="Concours blanc"
-                resourceId={activeConcours.id}
-                resourceTitle={activeConcours.titre || activeConcours.title}
-                subject={activeConcours.matiere || selectedMatiere?.nom || ''}
-                chapter={activeConcours.chapitre || selectedChapitre || ''}
-                style={{
-                  width: '100%',
-                  height: '84vh',
-                  border: 'none',
-                  display: 'block',
-                  background: '#ffffff'
-                }}
-              />
-            </div>
-          ) : activeConcours.pdfUrl ? (
-            <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-              <iframe src={getFullUrl(activeConcours.pdfUrl)} title={activeConcours.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <p>Aucun fichier HTML n'est rattaché à cette épreuve.</p>
-            </div>
-          )}
         </div>
       )}
 

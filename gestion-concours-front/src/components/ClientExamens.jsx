@@ -304,7 +304,57 @@ export default function ClientExamens() {
       
 
       {/* ==================== VUE 1 : VISIONNEUSE DU DOCUMENT (PLEINE PAGE) ==================== */}
-      {activeExam ? (
+      {selectedFiliere ? (
+        <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <button type="button" onClick={() => navigate('/client-dashboard', { replace: true, state: { openSidebarMenu: 'examens' } })} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Retour aux filières</button>
+            <div style={{ padding: '3px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Filière : {selectedFiliere}</div>
+            <label style={{ display: 'block', margin: '0 2px 16px', color: '#475569', fontSize: '12px', fontWeight: 700 }}>Année
+              <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#fff', color: '#334155', fontSize: '12px' }}>
+                <option value="">Toutes les années</option>
+                {filiereAnneesList.map((annee) => <option key={annee} value={annee}>{annee}</option>)}
+              </select>
+            </label>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+              {examMatieresWithCount.map((matiere) => {
+                const isActive = selectedMatiereCard === matiere.id;
+                const subjectExams = filiereExamsForSelectedYear.filter((exam) => matchMatiere(exam.matiere, matiere.id));
+                return <React.Fragment key={matiere.id}>
+                  <button type="button" onClick={() => { setSelectedMatiereCard(matiere.id); setActiveExam(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>
+                  {isActive && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '1px 0 8px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
+                    {subjectExams.length ? subjectExams.map((exam, index) => <button key={exam.id || index} type="button" onClick={() => handleOpenReader(exam, 'sujet')} style={{ width: '100%', padding: '8px 9px', border: '0', borderRadius: '8px', background: activeExam?.id === exam.id ? '#2563eb' : 'transparent', color: activeExam?.id === exam.id ? '#fff' : '#475569', textAlign: 'left', fontSize: '11px', fontWeight: 650, cursor: 'pointer' }}><span>{exam.titre || `Examen National ${exam.annee || ''}`}</span><span style={{ display: 'block', marginTop: '3px', color: activeExam?.id === exam.id ? '#dbeafe' : '#94a3b8', fontSize: '10px' }}>{exam.annee || 'Année inconnue'} · {exam.session || 'Normale'}</span></button>) : <div style={{ padding: '8px 9px', color: '#94a3b8', fontSize: '11px' }}>Aucune épreuve pour cette matière.</div>}
+                  </div>}
+                </React.Fragment>;
+              })}
+            </div>}
+          </aside>
+          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+            {activeExam ? (
+              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                  <div><div style={{ color: '#64748b', fontSize: '11px', fontWeight: 700 }}>{activeExam.matiere || selectedMatiereCard} · {activeExam.annee || ''} · {activeExam.session || 'Normale'}</div><div style={{ marginTop: '3px', color: '#1e293b', fontSize: '15px', fontWeight: 750 }}>{activeExam.titre || `Examen National ${activeExam.annee || ''}`}</div></div>
+                  <div style={{ display: 'flex', gap: '7px' }}>
+                    <button type="button" onClick={() => setActiveDocType('sujet')} style={{ padding: '7px 12px', border: `1px solid ${activeDocType === 'sujet' ? '#2563eb' : '#cbd5e1'}`, borderRadius: '8px', background: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff', color: activeDocType === 'sujet' ? '#2563eb' : '#475569', fontWeight: 700, cursor: 'pointer' }}>Sujet</button>
+                    <button type="button" disabled={!activeExam.pdfCorrectionUrl && !activeExam.correctionPageImages?.length} onClick={() => setActiveDocType('correction')} style={{ padding: '7px 12px', border: `1px solid ${activeDocType === 'correction' ? '#059669' : '#cbd5e1'}`, borderRadius: '8px', background: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff', color: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? '#059669' : '#94a3b8', fontWeight: 700, cursor: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? 'pointer' : 'not-allowed' }}>Corrigé</button>
+                  </div>
+                </div>
+                {(() => {
+                  const documentUrl = activeDocType === 'correction' ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl) : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
+                  const pages = getActivePages(activeExam, activeDocType);
+                  if (documentUrl) return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: 'calc(100vh - 135px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} />;
+                  if (pages.length) return <div style={{ height: 'calc(100vh - 135px)', minHeight: '520px', overflowY: 'auto', background: '#525659', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: '16px' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} style={{ width: '92%', maxWidth: '900px', height: 'auto', background: '#fff', boxShadow: '0 4px 18px rgba(0,0,0,0.3)' }} />)}</div>;
+                  return <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>Le document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} n’est pas encore disponible.</div>;
+                })()}
+              </div>
+            ) : (
+              <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>
+                {selectedMatiereCard ? 'Choisissez une épreuve dans le menu de gauche pour afficher le sujet et son corrigé.' : 'Choisissez une matière dans le menu de gauche pour afficher ses épreuves.'}
+              </div>
+            )}
+          </main>
+        </div>
+      ) : activeExam ? (
         <div style={{
           position: 'fixed',
           top: 0,

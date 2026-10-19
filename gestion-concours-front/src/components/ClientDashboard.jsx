@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import ClientMistakesDashboard from './ClientMistakesDashboard';
+import { useNavigate } from 'react-router-dom';
+import ClientCompetitions from './ClientCompetitions';
 
 import logoImg from '../assets/logo.png';
 import './ClientDashboard.css';
@@ -19,6 +20,7 @@ const getSubjectStyle = (subject) => {
 };
 
 export default function ClientDashboard() {
+  const navigate = useNavigate();
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant');
@@ -203,7 +205,7 @@ export default function ClientDashboard() {
             {/* Action Buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
               <button
-                onClick={() => document.getElementById('client-mistakes-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                onClick={() => navigate('/client-erreurs')}
                 style={{
                   background: 'linear-gradient(90deg, #1862ea 0%, #2979fb 100%)',
                   color: '#ffffff',
@@ -541,9 +543,7 @@ export default function ClientDashboard() {
             6. ERREURS QCM ET ACTIVITÉS RÉCENTES
         ══════════════════════════════════════════════════════════ */}
         </div>
-        <div id="client-mistakes-section">
-        <ClientMistakesDashboard />
-        </div>
+        <ClientCompetitions />
         <div style={{
           backgroundColor: '#ffffff',
           borderRadius: '24px',

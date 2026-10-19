@@ -32,7 +32,7 @@ public class StudentMistakeController {
         if (studentId == null) {
             return ResponseEntity.badRequest().body("Le paramètre studentId est requis.");
         }
-        List<StudentMistake> list = studentMistakeRepository.findByStudentIdOrderByCreatedAtDesc(studentId);
+        List<StudentMistake> list = studentMistakeRepository.findByStudentIdAndSavedForReviewTrueOrderByCreatedAtDesc(studentId);
         return ResponseEntity.ok(list);
     }
 
@@ -74,9 +74,10 @@ public class StudentMistakeController {
 
             // Vérifier si cette question a déjà été enregistrée pour cet étudiant et ce test
             Optional<StudentMistake> existingOpt = studentMistakeRepository
-                    .findByStudentIdAndResourceIdAndQuestionId(studentId, resourceId, questionId);
+                    .findByStudentIdAndResourceIdAndAttemptIdAndQuestionId(studentId, resourceId, stringOf(m.get("attemptId")), questionId);
 
             StudentMistake mistake = existingOpt.orElseGet(StudentMistake::new);
+            boolean alreadyInReview = existingOpt.map(StudentMistake::isSavedForReview).orElse(false);
             mistake.setStudentId(studentId);
             mistake.setUser(user);
             mistake.setStudentName(studentName);
@@ -87,6 +88,7 @@ public class StudentMistakeController {
             mistake.setSubject(stringOf(m.get("subject")));
             mistake.setChapter(stringOf(m.get("chapter")));
             mistake.setSchool(stringOf(m.get("school")));
+            mistake.setYear(parseInteger(m.get("year")));
             mistake.setQuestionId(questionId);
             mistake.setQuestionNumber(parseInteger(m.get("questionNumber")));
             mistake.setQuestionText(stringOf(m.get("questionText")));
@@ -97,6 +99,7 @@ public class StudentMistakeController {
             mistake.setExplanation(stringOf(m.get("explanation")));
             mistake.setAttemptId(stringOf(m.get("attemptId")));
             mistake.setReviewed(false);
+            mistake.setSavedForReview(alreadyInReview || !Boolean.FALSE.equals(body.get("saveForReview")));
             if (mistake.getCreatedAt() == null) {
                 mistake.setCreatedAt(LocalDateTime.now());
             }
@@ -109,6 +112,30 @@ public class StudentMistakeController {
                 "savedCount", savedList.size(),
                 "mistakes", savedList
         ));
+    }
+
+    /** Enregistre automatiquement l'erreur dans l'historique sans l'ajouter au carnet choisi. */
+    @PostMapping("/auto")
+    @Transactional
+    public ResponseEntity<?> saveAutomaticMistake(@RequestBody Map<String, Object> body) {
+        body.put("saveForReview", false);
+        return saveMistakesBatch(body);
+    }
+
+    /** Retire de la liste de révision les erreurs réussies lors d'une nouvelle tentative. */
+    @PostMapping("/resolve")
+    @Transactional
+    public ResponseEntity<?> resolveMistake(@RequestBody Map<String, Object> body) {
+        Long studentId = parseLong(body.get("studentId"));
+        String resourceId = stringOf(body.get("resourceId"));
+        String questionId = stringOf(body.get("questionId"));
+        if (studentId == null || resourceId.isBlank() || questionId.isBlank()) {
+            return ResponseEntity.badRequest().body("studentId, resourceId et questionId sont requis.");
+        }
+        List<StudentMistake> history = studentMistakeRepository.findByStudentIdAndResourceIdAndQuestionId(studentId, resourceId, questionId);
+        history.forEach(mistake -> mistake.setSavedForReview(false));
+        studentMistakeRepository.saveAll(history);
+        return ResponseEntity.ok(Map.of("resolvedCount", history.size()));
     }
 
     /**

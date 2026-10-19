@@ -49,7 +49,8 @@ public class QcmController {
                 if (!payload.isCorrect) {
                   recordMistake(payload);
                 }
-                window.parent.postMessage({ type: messageType, attemptId, mistake: payload }, '*');
+                const questionCount = Array.isArray(getData()?.questions) ? getData().questions.length : null;
+                window.parent.postMessage({ type: messageType, attemptId, totalQuestions: questionCount, mistake: payload }, '*');
               };
 
               const getData = () => typeof QCM_DATA !== 'undefined' ? QCM_DATA : window.QCM_DATA;
@@ -300,6 +301,26 @@ public class QcmController {
         result.put("averageScore", Math.round(averageScore * 10.0) / 10.0);
         result.put("successRate", attempts.isEmpty() ? 0 : Math.round(successfulAttempts * 1000.0 / attempts.size()) / 10.0);
         result.put("mistakes", mistakes);
+        List<Map<String, Object>> attemptHistory = attempts.values().stream().map(answerSet -> {
+            QcmResponse first = answerSet.get(0);
+            long correctCount = answerSet.stream().filter(QcmResponse::isCorrect).count();
+            Map<String, Object> attempt = new LinkedHashMap<>();
+            attempt.put("attemptId", first.getAttemptId());
+            attempt.put("resourceId", first.getConcoursBlanc().getId());
+            attempt.put("resourceTitle", first.getConcoursBlanc().getTitre());
+            attempt.put("subject", first.getConcoursBlanc().getMatiere());
+            attempt.put("answeredAt", answerSet.stream().map(QcmResponse::getAnsweredAt).max(Comparator.naturalOrder()).orElse(first.getAnsweredAt()));
+            attempt.put("correctAnswers", correctCount);
+            attempt.put("totalQuestions", answerSet.size());
+            attempt.put("score", Math.round(correctCount * 1000.0 / answerSet.size()) / 10.0);
+            return attempt;
+        }).sorted((a, b) -> ((Comparable) b.get("answeredAt")).compareTo(a.get("answeredAt"))).toList();
+        result.put("attemptHistory", attemptHistory);
+        result.put("responses", responses.stream().map(response -> {
+            Map<String, Object> item = studentMistake(response);
+            item.put("correct", response.isCorrect());
+            return item;
+        }).toList());
         return ResponseEntity.ok(result);
     }
 

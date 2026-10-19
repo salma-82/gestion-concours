@@ -33,6 +33,7 @@ public class StudentMistake {
     private String subject;
     private String chapter;
     private String school;
+    private Integer year;
 
     private String questionId;
     private Integer questionNumber;
@@ -58,6 +59,10 @@ public class StudentMistake {
     @Column(nullable = false)
     @Builder.Default
     private boolean reviewed = false;
+
+    @Column(name = "saved_for_review", nullable = false)
+    @Builder.Default
+    private boolean savedForReview = true;
 
     @Column(name = "created_at")
     @Builder.Default

@@ -225,7 +225,7 @@ export default function ClientResumesPage() {
     const list = resumesForChapitre(selectedMatiere, chapNom);
     if (list.length > 0) {
       setActiveResume(list[0]);
-      setStep('reader');
+      setStep('chapitres');
       recordStudentActivity({
         type: 'Résumé',
         resourceId: list[0].id,
@@ -239,7 +239,7 @@ export default function ClientResumesPage() {
 
   const openResume = (resume) => {
     setActiveResume(resume);
-    setStep('reader');
+    setStep('chapitres');
     recordStudentActivity({
       type: 'Résumé',
       resourceId: resume.id,
@@ -381,7 +381,42 @@ export default function ClientResumesPage() {
           STEP 2 : CHAPITRES DE LA MATIÈRE
       ───────────────────────────────────── */}
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px' }}>
+          <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <button type="button" onClick={goMatieres} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Matières</button>
+            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+                const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
+                const isActive = selectedChapitre === chapitre.nom;
+                return <div key={chapitre.nom}>
+                  <button type="button" onClick={() => goReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
+                  {isActive && chapterResumes.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
+                    {chapterResumes.map((resume, index) => <button key={resume.id || index} type="button" onClick={() => openResume(resume)} style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>)}
+                  </div>}
+                </div>;
+              })}
+            </div>
+          </aside>
+          <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+          {activeResume && (
+            <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+              <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#1e293b', fontWeight: 750 }}>{activeResume.titre || selectedChapitre}</div>
+              {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
+                <iframe src={getFullUrl(activeResume.htmlUrl)} title={activeResume.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms" style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} />
+              ) : activeResume.pdfUrl ? (
+                <iframe src={getFullUrl(activeResume.pdfUrl)} title={activeResume.titre || selectedChapitre} style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block' }} />
+              ) : activeResume.pageImages?.length ? (
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  {activeResume.pageImages.map((url, index) => <img key={`${url}-${index}`} src={getFullUrl(url)} alt={`Page ${index + 1}`} style={{ width: '100%', maxWidth: '950px', height: 'auto', borderRadius: '10px' }} />)}
+                </div>
+              ) : <div style={{ padding: '48px 24px', color: '#64748b', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
+            </div>
+          )}
+          <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: activeResume ? 'none' : 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>
+            Sélectionnez un chapitre dans le menu à gauche pour afficher son résumé.
+          </div>
+          <div style={{ display: 'none' }}>
           <div style={{ marginBottom: '20px' }}>
             <button
               onClick={goMatieres}
@@ -514,6 +549,8 @@ export default function ClientResumesPage() {
               ))}
             </div>
           )}
+          </div>
+          </div>
         </div>
       )}
 
@@ -521,7 +558,23 @@ export default function ClientResumesPage() {
           STEP 3 : LECTEUR HTML DU RÉSUMÉ
       ───────────────────────────────────── */}
       {step === 'reader' && activeResume && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px' }}>
+          <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+                const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
+                const isActive = selectedChapitre === chapitre.nom;
+                return <div key={chapitre.nom}>
+                  <button type="button" onClick={() => goReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
+                  {isActive && chapterResumes.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
+                    {chapterResumes.map((resume, index) => <button key={resume.id || index} type="button" onClick={() => openResume(resume)} style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>)}
+                  </div>}
+                </div>;
+              })}
+            </div>
+          </aside>
+          <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
           {/* Top bar */}
           <div style={{
             background: '#fff', borderRadius: '18px',
@@ -678,6 +731,7 @@ export default function ClientResumesPage() {
               <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML ou PDF pour ce résumé.</p>
             </div>
           )}
+          </div>
         </div>
       )}
 

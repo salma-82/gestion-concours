@@ -12,11 +12,15 @@ public interface StudentMistakeRepository extends JpaRepository<StudentMistake, 
 
     List<StudentMistake> findByStudentIdOrderByCreatedAtDesc(Long studentId);
 
+    List<StudentMistake> findByStudentIdAndSavedForReviewTrueOrderByCreatedAtDesc(Long studentId);
+
+    List<StudentMistake> findByStudentIdAndResourceIdAndQuestionId(Long studentId, String resourceId, String questionId);
+
     List<StudentMistake> findAllByOrderByCreatedAtDesc();
 
     Optional<StudentMistake> findByIdAndStudentId(Long id, Long studentId);
 
-    Optional<StudentMistake> findByStudentIdAndResourceIdAndQuestionId(Long studentId, String resourceId, String questionId);
+    Optional<StudentMistake> findByStudentIdAndResourceIdAndAttemptIdAndQuestionId(Long studentId, String resourceId, String attemptId, String questionId);
 
     void deleteByIdAndStudentId(Long id, Long studentId);
 

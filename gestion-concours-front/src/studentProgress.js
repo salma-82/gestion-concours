@@ -97,12 +97,14 @@ export const recordStudentMistake = (mistake) => {
     subject: String(mistake.subject || '').slice(0, 120),
     chapter: String(mistake.chapter || '').slice(0, 160),
     school: String(mistake.school || '').slice(0, 160),
+    year: mistake.year || null,
     questionText: String(mistake.questionText).slice(0, 4000),
     selectedChoiceText: String(mistake.selectedChoiceText || '').slice(0, 1200),
     correctChoiceText: String(mistake.correctChoiceText || '').slice(0, 1200),
     explanation: String(mistake.explanation || '').slice(0, 2500),
     occurredAt,
-    reviewed: false
+    reviewed: false,
+    savedForReview: Boolean(mistake.savedForReview)
   };
   const updated = [saved, ...items.filter((item) => item.id !== id)].slice(0, 300);
   localStorage.setItem(getStudentMistakesKey(), JSON.stringify(updated));
@@ -112,6 +114,17 @@ export const recordStudentMistake = (mistake) => {
 
 export const markStudentMistakeReviewed = (id, reviewed = true) => {
   const items = readStudentMistakes().map((item) => (item.id === id || item.databaseId === id) ? { ...item, reviewed } : item);
+  localStorage.setItem(getStudentMistakesKey(), JSON.stringify(items));
+  window.dispatchEvent(new CustomEvent('student-mistakes-updated'));
+  return items;
+};
+
+export const resolveStudentMistakes = (resourceId, questionId) => {
+  const items = readStudentMistakes().map((item) =>
+    String(item.resourceId) === String(resourceId) && String(item.questionId) === String(questionId)
+      ? { ...item, savedForReview: false }
+      : item
+  );
   localStorage.setItem(getStudentMistakesKey(), JSON.stringify(items));
   window.dispatchEvent(new CustomEvent('student-mistakes-updated'));
   return items;

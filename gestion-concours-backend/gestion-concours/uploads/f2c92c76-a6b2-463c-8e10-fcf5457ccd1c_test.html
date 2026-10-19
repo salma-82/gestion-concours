@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QCM Concours – Algèbre & Analyse</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --navy:#0b2a4a; --navy2:#123b66; --teal:#14b8a6; --teal-d:#0d9488;
+  --bg:#f3f7fb; --card:#fff; --text:#1b2a3a; --muted:#64748b; --line:#e2e8f0;
+  --ok:#16a34a; --okbg:#e8f8ee; --ko:#dc2626; --kobg:#fdecec; --na:#d97706; --nabg:#fff6e0;
+  --shadow:0 4px 18px rgba(11,42,74,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+
+header.top{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:14px 20px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top-in{max-width:1400px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.brand h1{font-size:1.1rem;margin:0;font-weight:700;color:#fff}
+.brand small{color:#9fe8df;font-size:.82rem}
+
+.timer{display:flex;align-items:center;gap:10px}
+.timer .t{font-variant-numeric:tabular-nums;font-size:1.4rem;font-weight:700;background:rgba(255,255,255,.12);padding:4px 16px;border-radius:12px;border:2px solid var(--teal)}
+.timer.warn .t{background:var(--ko);border-color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.65}}
+
+.wrap{width:100%;max-width:1450px;margin:0 auto;padding:12px;min-height:calc(100vh - 70px)}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:24px}
+.hidden{display:none!important}
+
+h2{color:var(--navy);margin-top:0}
+.btn{border:0;border-radius:12px;padding:11px 20px;font-size:.95rem;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--teal-d)}
+.btn-n{background:var(--navy);color:#fff}.btn-n:hover{background:var(--navy2)}
+.btn-o{background:#fff;color:var(--navy);border:2px solid var(--navy)}.btn-o:hover{background:#eef4fa}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Layout : Chapitres | Grille QCM | Question Active | Explication */
+.layout{display:grid;grid-template-columns:220px 210px minmax(0,1fr) 300px;gap:14px;align-items:start;width:100%}
+@media(max-width:1250px){.layout{grid-template-columns:200px 180px minmax(0,1fr);}.explain-side{grid-column:span 3;position:static!important}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.side-nav,.side-grid,.explain-side{position:static!important}}
+
+/* Menu latéral des chapitres */
+.side-nav{position:sticky;top:80px}
+.side-nav h3{margin:0 0 12px;color:var(--navy);font-size:1rem;border-bottom:2px solid var(--teal);padding-bottom:6px}
+.chap-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.chap-item{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);cursor:pointer;font-weight:600;font-size:.88rem;color:var(--navy);transition:.15s}
+.chap-item:hover{background:#eefaf8;border-color:var(--teal)}
+.chap-item.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Grille des questions */
+.side-grid{position:sticky;top:80px}
+.side-grid h3{margin:0 0 10px;color:var(--navy);font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.gb{height:38px;border-radius:8px;border:2px solid var(--line);background:#fff;font-weight:700;color:var(--navy);cursor:pointer;transition:.15s;font-size:.85rem}
+.gb:hover{border-color:var(--teal)}
+.gb.ok{background:var(--teal);color:#fff;border-color:var(--teal)}
+.gb.ko{background:#fee2e2;color:#b91c1c;border-color:#f87171}
+.gb.cur{outline:3px solid var(--navy);outline-offset:1px}
+.legend{margin-top:12px;font-size:.8rem;color:var(--muted)}
+
+.prog{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.prog>div{height:100%;background:linear-gradient(90deg,var(--teal),#38d9c9);width:0;transition:width .35s}
+.progtxt{display:flex;justify-content:space-between;color:var(--muted);font-size:.88rem;margin-bottom:14px}
+
+.qhead{display:inline-block;background:var(--navy);color:#fff;border-radius:8px;padding:4px 12px;font-weight:700;margin-bottom:12px;font-size:.88rem}
+.qtext{font-size:1.15rem;margin-bottom:18px;overflow-x:auto}
+
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;background:#fff;transition:.15s;text-align:left;font-size:1rem;font-family:inherit;color:var(--text);width:100%}
+.opt:hover{border-color:var(--teal);background:#f6fffd}
+.opt .k{flex:0 0 34px;height:34px;border-radius:50%;background:#e6eef7;color:var(--navy);display:grid;place-items:center;font-weight:700}
+.opt.sel{border-color:var(--teal);background:#eefaf8}
+.opt.sel .k{background:var(--teal);color:#fff}
+.opt.good{border-color:var(--ok);background:var(--okbg)}
+.opt.good .k{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--ko);background:var(--kobg)}
+.opt.bad .k{background:var(--ko);color:#fff}
+.opts.locked .opt{cursor:default}
+
+.fb{margin-top:14px;padding:12px 16px;border-radius:12px;font-weight:700;font-size:1rem}
+.fb.ok{background:var(--okbg);color:var(--ok)}
+.fb.ko{background:var(--kobg);color:var(--ko)}
+
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}
+
+/* Colonne Explication */
+.explain-side{position:sticky;top:80px;background:#f4f9ff;border:1px solid #cbdff0}
+.explain-side h3{margin:0 0 8px;color:var(--navy)}
+.explain-side .side-expl-content{font-size:.92rem;overflow-wrap:anywhere}
+.explain-side .line{margin:8px 0;padding:6px;background:#fff;border-radius:6px;border-left:3px solid var(--teal)}
+.hint{color:var(--muted);font-size:.88rem}
+
+/* Résultats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
+.stat{border-radius:14px;padding:14px;text-align:center}
+.stat b{display:block;font-size:1.6rem}
+.stat span{font-size:.82rem;color:var(--muted)}
+.s-score{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}.s-score span{color:#9fe8df}
+.s-ok{background:var(--okbg);color:var(--ok)}
+.s-ko{background:var(--kobg);color:var(--ko)}
+.s-na{background:var(--nabg);color:var(--na)}
+
+.corr{border-radius:16px;border:2px solid var(--line);padding:18px;margin:16px 0;background:#fff}
+.corr.ok{border-color:var(--ok)}.corr.ko{border-color:var(--ko)}.corr.na{border-color:var(--na)}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-size:.82rem;font-weight:700;margin-left:8px}
+.corr.ok .badge{background:var(--okbg);color:var(--ok)}
+.corr.ko .badge{background:var(--kobg);color:var(--ko)}
+.corr.na .badge{background:var(--nabg);color:var(--na)}
+
+.copt{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 12px;margin:6px 0}
+.copt.good{background:var(--okbg);border-color:var(--ok)}
+.copt.bad{background:var(--kobg);border-color:var(--ko)}
+.tag{margin-left:auto;font-size:.8rem;font-weight:700}
+
+.expl{background:#f2f7fc;border-left:5px solid var(--navy2);border-radius:10px;padding:12px 16px;margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(11,42,74,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.modal>div{background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+.katex-display{overflow-x:auto;padding:2px 0}
+</style>
+</head>
+<body>
+
+<header class="top" id="hdr">
+  <div class="top-in">
+    <div class="brand">
+      <h1>QCM Entraînement Concours</h1>
+      <small>Algèbre & Analyse – Ingénierie & Médecine</small>
+    </div>
+    <div class="timer" id="timerBox">
+      <span>⏱</span><span class="t" id="timerTxt">25:00</span>
+      <button class="btn btn-o" id="pauseBtn" style="padding:4px 12px;background:#fff;font-size:.85rem">⏸ Pause</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="layout" id="quiz">
+    
+    <!-- Menu Chapitres -->
+    <aside class="card side-nav">
+      <h3>📚 Matières</h3>
+      <ul class="chap-list" id="chapList">
+        <li class="chap-item active" data-chap="algebre">Algèbre Linéaire</li>
+        <li class="chap-item" data-chap="suites">Suites Numériques</li>
+      </ul>
+    </aside>
+
+    <!-- Grille Navigation Questions -->
+    <aside class="card side-grid">
+      <h3>Questions</h3>
+      <p style="margin:0 0 10px;color:var(--muted);font-size:.8rem">Navigation rapide :</p>
+      <div class="grid" id="grid"></div>
+      <div class="legend">
+        <div>🟩 Correcte</div>
+        <div>🟥 Incorrecte</div>
+        <div>⬜ Sans réponse</div>
+        <div>🔵 Actuelle</div>
+      </div>
+    </aside>
+
+    <!-- Question Active -->
+    <div class="card">
+      <div id="pauseView" class="hidden" style="text-align:center;padding:50px 10px">
+        <h2>⏸ Test en pause</h2>
+        <p>Le chronomètre est suspendu.</p>
+        <button class="btn btn-p" id="resumePause">▶ Reprendre</button>
+      </div>
+      <div id="qView">
+        <div class="prog"><div id="progBar"></div></div>
+        <div class="progtxt"><span id="progL"></span><span id="progR"></span></div>
+        <div id="qBody"></div>
+        <div class="nav">
+          <button class="btn btn-o" id="prevBtn">← Précédente</button>
+          <button class="btn btn-n" id="finishBtn">Terminer</button>
+          <button class="btn btn-p" id="nextBtn">Suivante →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne Explication -->
+    <aside class="card explain-side">
+      <h3>💡 Explication</h3>
+      <div class="side-expl-content" id="sideExplainContent">
+        <p class="hint">Choisis une réponse pour afficher la correction détaillée.</p>
+      </div>
+    </aside>
+  </section>
+
+  <!-- Résultats -->
+  <section class="hidden" id="results">
+    <div class="card">
+      <h2>📊 Résultats</h2>
+      <p id="rMsg" class="note"></p>
+      <div class="stats" id="stats"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn btn-p" id="restartBtn">↻ Recommencer</button>
+        <button class="btn btn-n" id="errBtn">✖ Revoir mes erreurs</button>
+        <button class="btn btn-o" id="allBtn">📖 Toutes les corrections</button>
+      </div>
+    </div>
+    <h2 id="corrTitle" style="margin-top:24px">Correction détaillée</h2>
+    <div id="corrList"></div>
+  </section>
+</main>
+
+<div class="modal hidden" id="modal"><div id="modalIn"></div></div>
+
+<script>
+const CHAPTERS_DATA = {
+  algebre: {
+    title: "Algèbre Linéaire",
+    questions: [
+      {
+        id: 1,
+        enonce: String.raw`Soit \(A\) une matrice carrée d'ordre 3 telle que \(\det(A) = 4\). Quelle est la valeur de \(\det(2A)\) ?`,
+        options: [
+          {k:"A", t:String.raw`\(8\)`},
+          {k:"B", t:String.raw`\(12\)`},
+          {k:"C", t:String.raw`\(16\)`},
+          {k:"D", t:String.raw`\(32\)`},
+          {k:"E", t:String.raw`\(64\)`}
+        ],
+        correct: "D",
+        explication: [
+          String.raw`Propriété : Pour une matrice \(A\) d'ordre \(n\), \(\det(\lambda A) = \lambda^n \det(A)\).`,
+          String.raw`\[\det(2A) = 2^3 \times \det(A) = 8 \times 4 = 32\]`
+        ]
+      },
+      {
+        id: 2,
+        enonce: String.raw`Soit \(f\) un endomorphisme d'un espace vectoriel de dimension 5. Si le rang de \(f\) est égal à 3, quelle est la dimension du noyau \(\ker(f)\) ?`,
+        options: [
+          {k:"A", t:String.raw`\(0\)`},
+          {k:"B", t:String.raw`\(1\)`},
+          {k:"C", t:String.raw`\(2\)`},
+          {k:"D", t:String.raw`\(3\)`},
+          {k:"E", t:String.raw`\(5\)`}
+        ],
+        correct: "C",
+        explication: [
+          String.raw`D'après le théorème du rang : \(\dim(E) = \dim(\ker(f)) + \text{rg}(f)\).`,
+          String.raw`\[5 = \dim(\ker(f)) + 3 \implies \dim(\ker(f)) = 2\]`
+        ]
+      }
+    ]
+  },
+  suites: {
+    title: "Suites Numériques",
+    questions: [
+      {
+        id: 1,
+        enonce: String.raw`Quelle est la limite de la suite \((u_n)\) définie par \(u_n = \dfrac{n^2 + 3n}{2n^2 + 1}\) lorsque \(n\) tend vers \(+\infty\) ?`,
+        options: [
+          {k:"A", t:String.raw`\(0\)`},
+          {k:"B", t:String.raw`\(\dfrac{1}{2}\)`},
+          {k:"C", t:String.raw`\(1\)`},
+          {k:"D", t:String.raw`\(2\)`},
+          {k:"E", t:String.raw`\(+\infty\)`}
+        ],
+        correct: "B",
+        explication: [
+          String.raw`En factorisant par le terme dominant \(n^2\) au numérateur et au dénominateur :`,
+          String.raw`\[u_n = \frac{n^2(1 + \frac{3}{n})}{n^2(2 + \frac{1}{n^2})} = \frac{1 + \frac{3}{n}}{2 + \frac{1}{n^2}} \xrightarrow{n\to+\infty} \frac{1}{2}\]`
+        ]
+      }
+    ]
+  }
+};
+
+let currentChapKey = "algebre";
+let Q = CHAPTERS_DATA[currentChapKey].questions;
+let N = Q.length;
+let S = null, tickId = null;
+
+function math(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el,{delimiters:[{left:"[",right:"]",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false});
+  }
+}
+function fmt(sec){
+  sec=Math.max(0,Math.round(sec));
+  const m=Math.floor(sec/60), s=sec%60;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+function show(id){ ["quiz","results"].forEach(x=>$(x).classList.toggle("hidden",x!==id)); }
+
+function newTest(){
+  const dur = 25*60;
+  S = {dur, answers:{}, cur:0, startAt:Date.now(), endAt:Date.now()+dur*1000, paused:false, remaining:dur, finished:false};
+  startQuiz();
+}
+
+function startQuiz(){
+  show("quiz");
+  buildGrid(); renderQ(); tick();
+  clearInterval(tickId); tickId=setInterval(tick,250);
+}
+
+function remaining(){ return S.paused ? S.remaining : (S.endAt-Date.now())/1000; }
+function tick(){
+  const r = remaining();
+  $("timerTxt").textContent = fmt(r);
+  $("timerBox").classList.toggle("warn", r<=180 && r>0);
+  if(r<=0 && !S.finished) finish(true);
+}
+
+document.querySelectorAll(".chap-item").forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll(".chap-item").forEach(i => i.classList.remove("active"));
+    item.classList.add("active");
+    currentChapKey = item.dataset.chap;
+    if(CHAPTERS_DATA[currentChapKey]){
+      Q = CHAPTERS_DATA[currentChapKey].questions;
+      N = Q.length;
+      newTest();
+    }
+  };
+});
+
+$("pauseBtn").onclick = ()=>{
+  S.remaining = remaining(); S.paused = true;
+  $("pauseView").classList.remove("hidden"); $("qView").classList.add("hidden");
+};
+$("resumePause").onclick = ()=>{
+  S.endAt = Date.now()+S.remaining*1000; S.paused = false;
+  $("pauseView").classList.add("hidden"); $("qView").classList.remove("hidden");
+};
+
+function renderQ(){
+  const q = Q[S.cur], body = $("qBody"), ans = S.answers[q.id];
+  const cls = o => ans===undefined ? "" : (o.k===q.correct ? " good" : (o.k===ans ? " bad" : ""));
+  body.innerHTML = `<span class="qhead">Question ${String(q.id).padStart(2,"0")} / ${N}</span>
+    <div class="qtext">${q.enonce}</div>
+    <div class="opts ${ans!==undefined?"locked":""}">${q.options.map(o=>`
+      <button class="opt${cls(o)}" data-k="${o.k}">
+        <span class="k">${o.k}</span><span style="flex:1">${o.t}</span>
+      </button>`).join("")}</div>
+    ${ans===undefined ? "" : (ans===q.correct ? `<div class="fb ok">✔ Bonne réponse !</div>` : `<div class="fb ko">✘ Mauvaise réponse. La bonne réponse était ${q.correct}.</div>`)}`;
+  
+  body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(S.answers[q.id]!==undefined) return;
+    S.answers[q.id] = b.dataset.k;
+    renderQ();
+  });
+  math(body);
+
+  const side = $("sideExplainContent");
+  if(ans === undefined){
+    side.innerHTML = `<p class="hint">Choisis une réponse pour afficher ici la correction détaillée.</p>`;
+  } else {
+    side.innerHTML = `<p><b>${ans===q.correct ? "✅ Bonne réponse" : "❌ Mauvaise réponse (Bonne : "+q.correct+")"}</b></p>` +
+      (q.explication ? q.explication.map(l=>`<div class="line">${l}</div>`).join("") : "");
+    math(side);
+  }
+
+  $("prevBtn").disabled = S.cur===0;
+  $("nextBtn").disabled = S.cur===N-1;
+  $("progBar").style.width = (Object.keys(S.answers).length/N*100)+"%";
+  $("progL").textContent = `Question ${S.cur+1}`;
+  $("progR").textContent = `${Object.keys(S.answers).length}/${N} traitées`;
+  updateGrid();
+}
+
+function buildGrid(){
+  $("grid").innerHTML = Q.map((q,i)=>`<button class="gb" data-i="${i}">Q${q.id}</button>`).join("");
+  $("grid").querySelectorAll(".gb").forEach(b=>b.onclick=()=>{ S.cur=+b.dataset.i; renderQ(); });
+}
+function updateGrid(){
+  $("grid").querySelectorAll(".gb").forEach((b,i)=>{
+    const a = S.answers[Q[i].id];
+    b.className = "gb" + (a!==undefined ? (a===Q[i].correct ? " ok" : " ko") : "") + (i===S.cur ? " cur" : "");
+  });
+}
+
+$("prevBtn").onclick = ()=>{ if(S.cur>0){S.cur--; renderQ();} };
+$("nextBtn").onclick = ()=>{ if(S.cur<N-1){S.cur++; renderQ();} };
+
+$("finishBtn").onclick = ()=>{
+  const un = N - Object.keys(S.answers).length;
+  $("modalIn").innerHTML = `<h3>Terminer le test ?</h3><p>${un>0 ? `Il reste ${un} question(s) sans réponse.` : "Voulez-vous vraiment valider vos réponses ?"}</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-o" id="mNo">Annuler</button>
+      <button class="btn btn-p" id="mYes">Confirmer</button>
+    </div>`;
+  $("modal").classList.remove("hidden");
+  $("mNo").onclick = ()=> $("modal").classList.add("hidden");
+  $("mYes").onclick = ()=>{ $("modal").classList.add("hidden"); finish(false); };
+};
+
+function finish(auto){
+  if(S.finished) return;
+  S.finished = true;
+  clearInterval(tickId);
+  $("hdr").classList.add("hidden");
+  showResults(auto);
+}
+
+function showResults(auto){
+  let ok=0, ko=0, na=0;
+  Q.forEach(q=>{
+    const a = S.answers[q.id];
+    if(a===undefined) na++; else if(a===q.correct) ok++; else ko++;
+  });
+  const pct = Math.round(ok/N*1000)/10;
+  $("rMsg").textContent = auto ? "⏰ Temps écoulé : le test a été validé automatiquement." : "";
+  $("stats").innerHTML = `
+    <div class="stat s-score"><b>${ok} / ${N}</b><span>Score (${pct}%)</span></div>
+    <div class="stat s-ok"><b>${ok}</b><span>Correctes</span></div>
+    <div class="stat s-ko"><b>${ko}</b><span>Incorrectes</span></div>
+    <div class="stat s-na"><b>${na}</b><span>Sans réponse</span></div>`;
+  show("results");
+  renderCorr(false);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderCorr(onlyErr){
+  const list = Q.filter(q=> !onlyErr || (S.answers[q.id]!==q.correct));
+  $("corrTitle").textContent = onlyErr ? "Mes erreurs" : "Correction détaillée";
+  $("corrList").innerHTML = list.length === 0 ? `<div class="card">🎉 Aucune erreur !</div>` : list.map(q=>{
+    const a = S.answers[q.id], st = a===undefined?"na":a===q.correct?"ok":"ko";
+    return `<div class="corr ${st}">
+      <div><span class="qhead">Question ${q.id}</span><span class="badge">${st.toUpperCase()}</span></div>
+      <div class="qtext">${q.enonce}</div>
+      ${q.options.map(o=>{
+        const good = o.k===q.correct, bad = o.k===a && !good;
+        return `<div class="copt ${good?"good":bad?"bad":""}">
+          <span class="k">${o.k}</span><span style="flex:1">${o.t}</span>
+          <span class="tag">${good?"✔ Bonne réponse":""}${o.k===a?(good?" · ":"")+"Votre réponse":""}</span></div>`;
+      }).join("")}
+      <div class="expl">${q.explication ? q.explication.join("<br>") : ""}</div>
+    </div>`;
+  }).join("");
+  math($("corrList"));
+}
+
+$("errBtn").onclick = ()=> renderCorr(true);
+$("allBtn").onclick = ()=> renderCorr(false);
+$("restartBtn").onclick = ()=>{ newTest(); };
+
+newTest();
+</script>
+</body>
+</html>

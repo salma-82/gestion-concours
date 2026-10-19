@@ -127,6 +127,8 @@ const getPdfUrl = (url) => {
   return `${API_BASE}/uploads/${url}`;
 };
 
+const ALL_MATIERES = 'Toutes les matières';
+
 export default function ClientConcours() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -142,6 +144,8 @@ export default function ClientConcours() {
   const [selectedEcole, setSelectedEcole] = useState(null);
   const [selectedMatiere, setSelectedMatiere] = useState(null);
   const [selectedYear, setSelectedYear] = useState('');
+  const [expandedYear, setExpandedYear] = useState('');
+  const [expandedSubject, setExpandedSubject] = useState(null);
 
   // Recherches rapides
   const [searchEcole, setSearchEcole] = useState('');
@@ -211,20 +215,28 @@ export default function ClientConcours() {
     })).sort((a, b) => a.name.localeCompare(b.name));
   }, [concoursList]);
 
-  // Une école choisie dans le sous-menu du sidebar ouvre directement ses matières.
+  // Sans école choisie, revenir au Dashboard où les écoles sont dans la sidebar.
   useEffect(() => {
-    if (!requestedEcole) return;
+    if (!requestedEcole) {
+      navigate('/client-dashboard', {
+        replace: true,
+        state: { openSidebarMenu: 'concours' }
+      });
+      return;
+    }
+
     const matchingEcole = ecolesSummary.find(
       ecole => ecole.name.toLowerCase() === requestedEcole.trim().toLowerCase()
     );
-    if (!matchingEcole) return;
-
-    setSelectedEcole(matchingEcole.name);
-    setSelectedMatiere(null);
-    setSelectedYear('');
-    setSearchMatiere('');
-    setSearchConcours('');
-  }, [requestedEcole, ecolesSummary]);
+    if (matchingEcole) {
+      handleOpenSchool(matchingEcole);
+    } else if (!loading) {
+      navigate('/client-dashboard', {
+        replace: true,
+        state: { openSidebarMenu: 'concours' }
+      });
+    }
+  }, [requestedEcole, ecolesSummary, loading, navigate]);
 
   // Écoles filtrées par la recherche globale
   const filteredEcoles = useMemo(() => {
@@ -272,7 +284,7 @@ export default function ClientConcours() {
 
     const concs = activeEcoleData.concours.filter(c => {
       const m = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-      return m.toLowerCase() === selectedMatiere.toLowerCase();
+      return selectedMatiere === ALL_MATIERES || m.toLowerCase() === selectedMatiere.toLowerCase();
     });
 
     const years = Array.from(new Set(concs.map(c => Number(c.annee)).filter(Boolean)));
@@ -286,7 +298,7 @@ export default function ClientConcours() {
 
     let list = activeEcoleData.concours.filter(c => {
       const m = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-      return m.toLowerCase() === selectedMatiere.toLowerCase();
+      return selectedMatiere === ALL_MATIERES || m.toLowerCase() === selectedMatiere.toLowerCase();
     });
 
     // Filtre Année choisie par l'étudiant
@@ -311,6 +323,17 @@ export default function ClientConcours() {
     });
   }, [activeEcoleData, selectedMatiere, selectedYear, searchConcours]);
 
+  const concoursForNavigation = useMemo(() => {
+    if (!activeEcoleData || !selectedMatiere) return [];
+    return activeEcoleData.concours
+      .filter(c => selectedMatiere === ALL_MATIERES || ((c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général').toLowerCase() === selectedMatiere.toLowerCase())
+      .sort((a, b) => (Number(b.annee) || 0) - (Number(a.annee) || 0));
+  }, [activeEcoleData, selectedMatiere]);
+
+  const concoursForNavigationYear = (year) => concoursForNavigation.filter(
+    concours => String(concours.annee || 'Sans année') === String(year)
+  );
+
   // Gestion de l'ouverture du visualiseur
   const handleOpenViewer = (concours, tab = 'sujet') => {
     let finalTab = tab;
@@ -332,6 +355,30 @@ export default function ClientConcours() {
       subject: concours.matiere || selectedMatiere || '',
       chapter: concours.annee ? String(concours.annee) : ''
     });
+  };
+
+  const handleOpenSchool = (ecole) => {
+    const contests = [...(ecole.concours || [])].sort((a, b) => {
+      const yearDiff = (Number(b.annee) || 0) - (Number(a.annee) || 0);
+      return yearDiff || (a.titre || '').localeCompare(b.titre || '');
+    });
+    const firstConcours = contests.find(c => c.htmlUrl || c.htmlCorrectionUrl || c.pdfCorrectionUrl) || contests[0];
+    setSelectedEcole(ecole.name);
+    setSelectedMatiere(ALL_MATIERES);
+    setSelectedYear(firstConcours?.annee ? String(firstConcours.annee) : '');
+    setExpandedYear('');
+    setExpandedSubject(null);
+    setSearchMatiere('');
+    setSearchConcours('');
+    if (firstConcours) handleOpenViewer(firstConcours, 'sujet');
+  };
+
+  const closeViewerAndReturnToDashboard = () => {
+    setViewerModal({ isOpen: false, concours: null, activeTab: 'sujet' });
+    setSelectedEcole(null);
+    setSelectedMatiere(null);
+    setSelectedYear('');
+    returnToConcoursOptions();
   };
 
   const currentViewerUrl = useMemo(() => {
@@ -393,7 +440,7 @@ export default function ClientConcours() {
             <span style={{ color: '#94a3b8', fontWeight: 600 }}>›</span>
             <button
               onClick={() => {
-                setSelectedMatiere(null);
+                setSelectedMatiere(ALL_MATIERES);
                 setSelectedYear('');
                 setSearchConcours('');
               }}
@@ -629,13 +676,7 @@ export default function ClientConcours() {
                 return (
                   <div
                     key={ec.name}
-                    onClick={() => {
-                      setSelectedEcole(ec.name);
-                      setSelectedMatiere(null);
-                      setSelectedYear('');
-                      setSearchMatiere('');
-                      setSearchConcours('');
-                    }}
+                    onClick={() => handleOpenSchool(ec)}
                     style={{
                       backgroundColor: '#ffffff',
                       borderRadius: '18px',
@@ -1076,7 +1117,7 @@ export default function ClientConcours() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button
                   onClick={() => {
-                    setSelectedMatiere(null);
+                    setSelectedMatiere(ALL_MATIERES);
                     setSelectedYear('');
                     setSearchConcours('');
                   }}
@@ -1097,7 +1138,7 @@ export default function ClientConcours() {
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; }}
                 >
-                  ← Changer de matière
+                  ← Tous les concours
                 </button>
 
                 <div>
@@ -1110,7 +1151,7 @@ export default function ClientConcours() {
                     alignItems: 'center',
                     gap: '8px'
                   }}>
-                    Concours {selectedMatiere} • {selectedEcole}
+                    Concours {selectedMatiere === ALL_MATIERES ? '' : `${selectedMatiere} • `}{selectedEcole}
                     <span style={{
                       fontSize: '12px',
                       fontWeight: 700,
@@ -1452,219 +1493,142 @@ export default function ClientConcours() {
       {viewerModal.isOpen && viewerModal.concours && (
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.75)',
-          backdropFilter: 'blur(4px)',
+          inset: 0,
+          backgroundColor: '#f8fafc',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           zIndex: 9999,
-          padding: '16px'
+          padding: 0
         }}>
           <div style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
+            backgroundColor: '#f8fafc',
             width: '100%',
-            maxWidth: '1180px',
-            maxHeight: '94vh',
+            height: '100dvh',
+            minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid #cbd5e1',
             overflow: 'hidden'
           }}>
-            {/* Header du Viewer */}
-            <div style={{
-              padding: '16px 24px',
-              borderBottom: '1px solid #e2e8f0',
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-              backgroundColor: '#f8fafc'
-            }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    backgroundColor: '#0f172a',
-                    color: '#ffffff',
-                    padding: '2px 8px',
-                    borderRadius: '4px'
-                  }}>
-                    {viewerModal.concours.ecole}
-                  </span>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    backgroundColor: '#e0f2fe',
-                    color: '#0369a1',
-                    padding: '2px 8px',
-                    borderRadius: '4px'
-                  }}>
-                    Année {viewerModal.concours.annee}
-                  </span>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    backgroundColor: '#f1f5f9',
-                    color: '#475569',
-                    padding: '2px 8px',
-                    borderRadius: '4px'
-                  }}>
-                    {viewerModal.concours.matiere}
-                  </span>
-                </div>
-
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '17px',
-                  fontWeight: 800,
-                  color: '#0f172a'
-                }}>
-                  {viewerModal.concours.titre}
-                </h3>
-              </div>
-
-              {/* Onglets Sujet / Corrigé & Contrôles */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <div style={{
-                  display: 'flex',
-                  backgroundColor: '#e2e8f0',
-                  padding: '3px',
-                  borderRadius: '10px'
-                }}>
-                  <button
-                    onClick={() => setViewerModal(prev => ({ ...prev, activeTab: 'sujet' }))}
-                    disabled={!viewerModal.concours.htmlUrl}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '12.5px',
-                      fontWeight: 800,
-                      cursor: viewerModal.concours.htmlUrl ? 'pointer' : 'not-allowed',
-                      backgroundColor: viewerModal.activeTab === 'sujet' ? '#ffffff' : 'transparent',
-                      color: viewerModal.activeTab === 'sujet' ? '#1d4ed8' : (viewerModal.concours.htmlUrl ? '#475569' : '#94a3b8'),
-                      boxShadow: viewerModal.activeTab === 'sujet' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    📄 Sujet {viewerModal.concours.htmlUrl ? '' : '(N/D)'}
-                  </button>
-
-                  <button
-                    onClick={() => setViewerModal(prev => ({ ...prev, activeTab: 'correction' }))}
-                    disabled={!viewerModal.concours.htmlCorrectionUrl && !viewerModal.concours.pdfCorrectionUrl}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '12.5px',
-                      fontWeight: 800,
-                      cursor: (viewerModal.concours.htmlCorrectionUrl || viewerModal.concours.pdfCorrectionUrl) ? 'pointer' : 'not-allowed',
-                      backgroundColor: viewerModal.activeTab === 'correction' ? '#ffffff' : 'transparent',
-                      color: viewerModal.activeTab === 'correction' ? '#15803d' : ((viewerModal.concours.htmlCorrectionUrl || viewerModal.concours.pdfCorrectionUrl) ? '#475569' : '#94a3b8'),
-                      boxShadow: viewerModal.activeTab === 'correction' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    ✅ Corrigé {(viewerModal.concours.htmlCorrectionUrl || viewerModal.concours.pdfCorrectionUrl) ? '' : '(N/D)'}
-                  </button>
-                </div>
-
-                {currentViewerUrl && (
-                  <a
-                    href={currentViewerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      color: '#2563eb',
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      padding: '6px 12px',
-                      borderRadius: '8px',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    Plein écran ↗
-                  </a>
-                )}
-
-                <button
-                  onClick={() => setViewerModal({ isOpen: false, concours: null, activeTab: 'sujet' })}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    color: '#64748b',
-                    cursor: 'pointer',
-                    fontWeight: 700
-                  }}
-                  title="Fermer"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
             {/* Contenu du Document (Iframe) */}
             <div style={{
               flex: 1,
+              minHeight: 0,
               backgroundColor: '#f1f5f9',
-              padding: '12px',
-              minHeight: '68vh',
-              display: 'flex'
+              padding: '20px 16px',
+              display: 'flex',
+              gap: '18px',
+              overflow: 'auto',
+              alignItems: 'flex-start'
             }}>
+              <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', padding: '14px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: 0 }}>
+                <h2 style={{ margin: '2px 4px 12px', color: '#1e3a8a', fontSize: '15px', fontWeight: 750 }}>Concours et QCM</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                  {availableYearsForSelectedMatiere.map((year) => {
+                    const yearConcours = concoursForNavigationYear(year);
+                    const yearKey = String(year);
+                    const isExpandedYear = expandedYear === yearKey;
+                    const concoursBySubject = yearConcours.reduce((groups, concours) => {
+                      const subject = (concours.matiere || 'G\u00e9n\u00e9ral').trim();
+                      if (!groups[subject]) groups[subject] = [];
+                      groups[subject].push(concours);
+                      return groups;
+                    }, {});
+
+                    return (
+                      <div key={year}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedYear(yearKey);
+                            setExpandedYear(current => current === yearKey ? '' : yearKey);
+                            setExpandedSubject(null);
+                          }}
+                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 10px', border: '1px solid', borderColor: isExpandedYear ? '#60a5fa' : '#dbeafe', borderRadius: '12px', background: isExpandedYear ? '#eff6ff' : '#ffffff', color: isExpandedYear ? '#1d4ed8' : '#1e293b', textAlign: 'left', fontWeight: 750, fontSize: '13px', cursor: 'pointer', boxShadow: isExpandedYear ? '0 4px 12px rgba(37,99,235,.12)' : '0 2px 6px rgba(15,23,42,.04)', transition: 'all .15s ease' }}
+                        >
+                          <span style={{ width: '36px', height: '36px', flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '10px', background: isExpandedYear ? '#dbeafe' : '#f1f5f9', color: '#2563eb' }} aria-hidden="true">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M7 3.75h7l5 5v11.5a1.75 1.75 0 0 1-1.75 1.75h-10.5A1.75 1.75 0 0 1 5 20.25V5.5a1.75 1.75 0 0 1 2-1.75Z" />
+                              <path d="M14 4v5h5M8.5 13h7M8.5 16.5h7" />
+                            </svg>
+                          </span>
+                          <span style={{ flex: 1 }}>Concours {year}</span>
+                          <span style={{ fontSize: '21px', lineHeight: 1, color: isExpandedYear ? '#2563eb' : '#94a3b8' }} aria-hidden="true">{isExpandedYear ? '\u2304' : '\u203a'}</span>
+                        </button>
+                        {isExpandedYear && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '5px 0 2px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
+                            {Object.entries(concoursBySubject).map(([subject, subjectConcours]) => {
+                              const subjectKey = `${yearKey}:${subject}`;
+                              const isExpandedSubject = expandedSubject === subjectKey;
+                              return (
+                                <div key={subjectKey}>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedSubject(current => current === subjectKey ? null : subjectKey)}
+                                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '8px 10px', border: 0, borderRadius: '8px', background: isExpandedSubject ? '#dbeafe' : 'transparent', color: isExpandedSubject ? '#1d4ed8' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                  >
+                                    <span>{subject}</span>
+                                    <span>{subjectConcours.length}</span>
+                                  </button>
+                                  {isExpandedSubject && subjectConcours.map(concours => {
+                                    const activeConcours = String(viewerModal.concours.id) === String(concours.id);
+                                    return (
+                                      <button
+                                        key={concours.id}
+                                        type="button"
+                                        onClick={() => {
+                                          setSelectedYear(String(concours.annee || ''));
+                                          handleOpenViewer(concours, 'sujet');
+                                        }}
+                                        style={{ width: '100%', marginTop: '3px', padding: '8px 10px 8px 16px', border: 0, borderRadius: '8px', background: activeConcours ? '#2563eb' : 'transparent', color: activeConcours ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: activeConcours ? 750 : 600, cursor: 'pointer' }}
+                                      >
+                                        {concours.titre || `QCM ${concours.id}`}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </aside>
+              <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
+                  <button
+                    type="button"
+                    onClick={closeViewerAndReturnToDashboard}
+                    style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}
+                  >
+                    ← Retour
+                  </button>
+                </div>
+                <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
               {currentViewerUrl ? (
                 viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (
-                  <TrackedQcmFrame
-                    src={currentViewerUrl}
-                    title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
-                    sourceType="Concours"
-                    resourceId={viewerModal.concours.id}
-                    resourceTitle={viewerModal.concours.titre || viewerModal.concours.title}
-                    subject={viewerModal.concours.matiere || selectedMatiere || ''}
-                    school={viewerModal.concours.ecole || selectedEcole || ''}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      minHeight: '68vh',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '12px',
-                      backgroundColor: '#ffffff'
-                    }}
-                  />
+                  <div style={{ width: '100%', background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                    <TrackedQcmFrame
+                      src={currentViewerUrl}
+                      title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
+                      sourceType="Concours"
+                      resourceId={viewerModal.concours.id}
+                      resourceTitle={viewerModal.concours.titre || viewerModal.concours.title}
+                      subject={viewerModal.concours.matiere || selectedMatiere || ''}
+                      school={viewerModal.concours.ecole || selectedEcole || ''}
+                      year={viewerModal.concours.annee || ''}
+                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                    />
+                  </div>
                 ) : (
-                  <iframe
-                    src={currentViewerUrl}
-                    title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      minHeight: '68vh',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '12px',
-                      backgroundColor: '#ffffff'
-                    }}
-                  />
+                  <div style={{ width: '100%', background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                    <iframe
+                      src={currentViewerUrl}
+                      title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                    />
+                  </div>
                 )
               ) : (
                 <div style={{
@@ -1687,36 +1651,10 @@ export default function ClientConcours() {
                   </p>
                 </div>
               )}
+                </div>
+              </div>
             </div>
 
-            {/* Footer du viewer */}
-            <div style={{
-              padding: '12px 24px',
-              borderTop: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: '#ffffff'
-            }}>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>
-                Affichage officiel • {viewerModal.concours.ecole} ({viewerModal.concours.annee})
-              </span>
-              <button
-                onClick={() => setViewerModal({ isOpen: false, concours: null, activeTab: 'sujet' })}
-                style={{
-                  background: '#0f172a',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '7px 18px',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                Fermer
-              </button>
-            </div>
           </div>
         </div>
       )}
