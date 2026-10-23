@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
+import ClientMascot from './ClientMascot';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -989,6 +990,7 @@ export default function ClientLayout() {
           <Outlet />
         </main>
       </div>
+      <ClientMascot />
     </div>
   );
 }

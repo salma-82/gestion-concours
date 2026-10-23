@@ -115,6 +115,10 @@ export default function ClientConcoursBlanc() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage: currentStep } }));
+  }, [currentStep]);
+
+  useEffect(() => {
     fetchConcours();
   }, []);
 

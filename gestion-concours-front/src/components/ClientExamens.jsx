@@ -178,6 +178,14 @@ export default function ClientExamens() {
   const [showThumbnails, setShowThumbnails] = useState(true);
 
   useEffect(() => {
+    const stage = activeExam ? activeDocType : 'selection';
+    const context = activeExam
+      ? [activeExam.matiere, activeExam.annee || activeExam.anneeScolaire].filter(Boolean).join(' · ')
+      : [selectedFiliere, selectedMatiereCard?.nom || selectedMatiere, selectedAnnee].filter(Boolean).join(' · ');
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage, context } }));
+  }, [activeExam, activeDocType, selectedFiliere, selectedMatiereCard, selectedMatiere, selectedAnnee]);
+
+  useEffect(() => {
     fetchExamens();
   }, []);
 

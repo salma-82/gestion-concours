@@ -1,0 +1,113 @@
+.client-mascot {
+  position: fixed;
+  z-index: 80;
+  right: 22px;
+  bottom: 20px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+.client-mascot__card {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: min(390px, calc(100vw - 32px));
+  animation: mascot-arrive .35s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.client-mascot__speech {
+  position: relative;
+  flex: 1;
+  padding: 17px 18px 13px;
+  border: 1px solid #dbe7f7;
+  border-radius: 19px 19px 5px 19px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 12px 36px rgba(32,68,125,.17);
+  animation: mascot-talk .25s ease both;
+}
+
+.client-mascot__eyebrow {
+  margin-bottom: 6px;
+  color: #3974d8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.client-mascot__speech strong {
+  display: block;
+  color: #203452;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.client-mascot__speech p {
+  margin: 6px 0 12px;
+  color: #56677e;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.client-mascot__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.client-mascot__actions button {
+  border: 0;
+  background: transparent;
+  color: #2563c9;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.client-mascot__actions button:hover { color: #174a9e; }
+.client-mascot__actions .client-mascot__minimize { color: #7b899c; font-size: 10px; }
+
+.client-mascot__character {
+  width: 83px;
+  flex: 0 0 83px;
+  transform-origin: 50% 100%;
+  animation: mascot-bob 3s ease-in-out infinite;
+}
+
+.client-mascot__art { display: block; width: 100%; height: auto; }
+
+.client-mascot__launcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid #dbe7f7;
+  border-radius: 999px;
+  background: #fff;
+  color: #274875;
+  box-shadow: 0 8px 24px rgba(32,68,125,.18);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  animation: mascot-arrive .3s ease both;
+}
+
+.client-mascot__launcher .client-mascot__art { width: 42px; }
+.client-mascot__launcher:hover { transform: translateY(-2px); }
+
+@keyframes mascot-bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5px) rotate(1deg); } }
+@keyframes mascot-arrive { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes mascot-talk { from { opacity: .45; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 600px) {
+  .client-mascot { right: 10px; bottom: 10px; }
+  .client-mascot__card { width: min(350px, calc(100vw - 20px)); gap: 3px; }
+  .client-mascot__character { width: 61px; flex-basis: 61px; }
+  .client-mascot__speech { padding: 13px 14px 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .client-mascot *, .client-mascot *::before, .client-mascot *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

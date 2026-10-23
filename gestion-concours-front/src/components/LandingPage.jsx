@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -8,6 +8,10 @@ import ensaImg from '../assets/ENSA.jpg';
 import ensaMarocImg from '../assets/ENSA Maroc.png';
 import ensamImg from '../assets/ENSAM.jpg';
 import encgImg from '../assets/ENCG.jpeg';
+import logoEncgImg from '../assets/logo-encg.png';
+import logoEnsaMarocImg from '../assets/logo-ensa-maroc.jpg';
+import logoEnsamiImg from '../assets/logo-ensam-umi.png';
+import logoFmpcImg from '../assets/logo-fmpc.png';
 import './LandingPage.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -36,100 +40,74 @@ const CARDS_DATA = [
   { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'Réseau ENSA Maroc' },
 ];
 
-// Marquee institutions list
-const MARQUEE_SCHOOLS = [
-  { name: 'ENSA Tanger', city: 'Tanger' },
-  { name: 'FMP Casablanca', city: 'Casablanca' },
-  { name: 'ENSAM Meknès', city: 'Meknès' },
-  { name: 'ENCG Settat', city: 'Settat' },
-  { name: 'ENSA Marrakech', city: 'Marrakech' },
-  { name: 'FMP Rabat', city: 'Rabat' },
-  { name: 'ENSAM Casablanca', city: 'Casablanca' },
-  { name: 'ENCG Agadir', city: 'Agadir' },
-  { name: 'ENSA Agadir', city: 'Agadir' },
-  { name: 'FMP Fès', city: 'Fès' },
-  { name: 'Concours National Commun (CNC)', city: 'National' },
-  { name: 'Examens Nationaux du Bac', city: 'National' }
-];
-
-// Interactive Filières / Concours tabs
-const FILIERES_DATA = {
-  sm: {
-    id: 'sm',
-    label: 'Sciences Mathématiques',
-    icon: '📐',
-    title: 'Programme d’Élite Sciences Mathématiques (SM-A & SM-B)',
-    desc: 'Un entraînement intensif axé sur la rigueur logique, les limites, les suites, l’arithmétique et la géométrie dans l’espace pour viser la mention Très Bien et les meilleures écoles d’ingénieurs.',
-    badge: 'Filière d’Excellence',
-    stats: { qcm: '5 400+', examens: '24 Années', coefficient: 'Coeff 9 & 7' },
-    features: [
-      'Formules d’analyse et dérivation pas-à-pas en LaTeX',
-      'Corrigés complets des examens nationaux de 2008 à 2025',
-      'Entraînement direct aux QCM ENSA & ENSAM',
-      'Astuces de calcul rapide et élimination des pièges'
-    ]
-  },
-  pc: {
-    id: 'pc',
-    label: 'Sciences Physiques (PC)',
-    icon: '⚡',
-    title: 'Programme Complet Sciences Physiques & Chimie',
-    desc: 'Maîtrisez les lois de Newton, les circuits RLC, les ondes lumineuses et les réactions acido-basiques grâce à des synthèses visuelles et des QCM de concours ciblés.',
-    badge: 'Filière Populaire',
-    stats: { qcm: '4 800+', examens: '24 Années', coefficient: 'Coeff 7 & 7' },
-    features: [
-      'Schémas d’expériences clairs et fiches de synthèse',
-      'Exercices types Bac et concours d’ingénieurs',
-      'Explications détaillées de chaque réaction chimique',
-      'Chronométrage adapté aux épreuves de 3 heures'
-    ]
-  },
-  svt: {
-    id: 'svt',
-    label: 'Sciences de la Vie et de la Terre (SVT)',
-    icon: '🧬',
-    title: 'Programme Approfondi SVT & Biologie',
-    desc: 'Idéal pour les élèves préparant les concours des Facultés de Médecine et de Pharmacie (FMP/FMD). Une assimilation parfaite de la génétique, de l’immunologie et de la géologie.',
-    badge: 'Objectif Médecine',
-    stats: { qcm: '3 600+', examens: '20 Années', coefficient: 'Coeff 7' },
-    features: [
-      'Hélices d’ADN, schémas de méiose et cycles cellulaires',
-      'Analyse des questions de déduction des concours FMP',
-      'Fiches mémo synthétiques pour mémoriser vite',
-      'QCM chronométrés avec barème officiel'
-    ]
-  },
-  ensa: {
-    id: 'ensa',
-    label: 'Concours ENSA & ENSAM',
-    icon: '⚙️',
-    title: 'Préparation Concours ENSA & ENSAM d’Ingénieurs',
-    desc: 'Préparez les concours les plus sélectifs du Maroc avec les archives intégrales des épreuves officielles, corrigées et classées par chapitre.',
-    badge: 'Grande École',
-    stats: { qcm: '4 200+', examens: '18 Épreuves', coefficient: 'QCM Chrono' },
-    features: [
-      'Simulation en temps réel avec timer officiel (45 min par matière)',
-      'Barème officiel de pénalité négative (+1 / -0.25)',
-      'Détection automatique de vos erreurs pour cibler vos révisions',
-      'Classement indicatif par rapport aux autres candidats'
-    ]
-  },
-  medecine: {
-    id: 'medecine',
-    label: 'Concours Médecine & Pharmacie',
-    icon: '🩺',
-    title: 'Concours d’Accès Médecine, Pharmacie & Dentaire (FMP/FMD)',
-    desc: 'Le concours commun de médecine nécessite une vitesse d’exécution hors pair sur 4 épreuves : Mathématiques, Physique, Chimie et SVT.',
-    badge: 'Très Sélectif',
-    stats: { qcm: '3 900+', examens: '16 Épreuves', coefficient: 'Score Seuil' },
-    features: [
-      'QCM des 4 composantes de l’épreuve commune',
-      'Conseils pour gérer le stress et optimiser son temps',
-      'Corrigés exhaustifs validés par des professeurs',
-      'Rappels méthodologiques des questions récurrentes'
-    ]
-  }
-};
+function LandingMascot({ className = '', showCap = true }) {
+  const mascotId = useId().replace(/:/g, '');
+  return (
+    <svg className={className} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
+      <defs>
+        <linearGradient id={`${mascotId}-owlBrown`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8c4b28" />
+          <stop offset="60%" stopColor="#733b1e" />
+          <stop offset="100%" stopColor="#572b13" />
+        </linearGradient>
+        <linearGradient id={`${mascotId}-owlBelly`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#fff8eb" />
+          <stop offset="100%" stopColor="#f5e4c8" />
+        </linearGradient>
+        <radialGradient id={`${mascotId}-owlEye`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffe033" />
+          <stop offset="70%" stopColor="#ffb000" />
+          <stop offset="100%" stopColor="#e68a00" />
+        </radialGradient>
+        <filter id={`${mascotId}-softShadow`} x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity=".2" />
+        </filter>
+      </defs>
+      <ellipse cx="120" cy="235" rx="55" ry="10" fill="#000" opacity=".12" />
+      <g stroke="#ff7700" strokeWidth="6" strokeLinecap="round">
+        <path d="m90 220-12 16m12-16v18m0-18 10 15m50-15-10 15m10-15v18m0-18 12 16" />
+      </g>
+      <ellipse cx="120" cy="155" rx="68" ry="72" fill={`url(#${mascotId}-owlBrown)`} />
+      <ellipse cx="120" cy="165" rx="46" ry="50" fill={`url(#${mascotId}-owlBelly)`} />
+      <path d="M102 150q8 6 16 0m4 0q8 6 16 0M98 168q12 7 24 0m-2 0q10 7 22 0" stroke="#d1b894" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <g className="lp-mascot-wing lp-mascot-wing-left">
+        <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
+      </g>
+      <g className="lp-mascot-wing lp-mascot-wing-right">
+        <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
+      </g>
+      <g className="lp-mascot-head">
+        <ellipse cx="120" cy="95" rx="60" ry="52" fill={`url(#${mascotId}-owlBrown)`} />
+        <path d="M70 55Q55 20 85 42ZM170 55q15-35-15-13Z" fill="#572b13" />
+        <circle cx="94" cy="95" r="28" fill="#fff8eb" />
+        <circle cx="146" cy="95" r="28" fill="#fff8eb" />
+        <g className="lp-mascot-eye">
+          <circle cx="94" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
+          <circle cx="96" cy="95" r="12" fill="#140b04" />
+          <circle cx="100" cy="90" r="4.5" fill="#fff" />
+          <circle cx="92" cy="98" r="2" fill="#fff" />
+        </g>
+        <g className="lp-mascot-eye">
+          <circle cx="146" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
+          <circle cx="144" cy="95" r="12" fill="#140b04" />
+          <circle cx="148" cy="90" r="4.5" fill="#fff" />
+          <circle cx="140" cy="98" r="2" fill="#fff" />
+        </g>
+        <path d="m114 102 12 0-6 18Z" fill="#ff7700" />
+        {showCap && (
+          <g transform="translate(0 -18)" filter={`url(#${mascotId}-softShadow)`}>
+            <rect x="94" y="42" width="52" height="18" rx="3" fill="#1e2b37" />
+            <polygon points="120,20 182,38 120,56 58,38" fill="#243342" />
+            <polygon points="120,20 182,38 120,41 58,38" fill="#324558" />
+            <circle cx="120" cy="38" r="4" fill="#ffaa00" />
+            <path d="M120 38q40 4 45 27" stroke="#ffb700" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="m161 65 8 0-2 13h-4Z" fill="#ffb700" />
+          </g>
+        )}
+      </g>
+    </svg>
+  );
+}
 
 export default function LandingPage({ onNavigateToAuth }) {
   const navigate = useNavigate();
@@ -138,7 +116,6 @@ export default function LandingPage({ onNavigateToAuth }) {
   const cardRefs = useRef([]);
 
   // States
-  const [activeFiliere, setActiveFiliere] = useState('sm');
   const [pricingPeriod, setPricingPeriod] = useState('annual');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
@@ -147,6 +124,11 @@ export default function LandingPage({ onNavigateToAuth }) {
   // Mini-Quiz interactive demo state
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [mascotClickCount, setMascotClickCount] = useState(0);
+  const [mascotNavigation, setMascotNavigation] = useState({ side: 'right', speech: 'Marhaba! 👋' });
+  const mascotRef = useRef(null);
+  const mascotProgressRef = useRef(0);
+  const mascotMouseXRef = useRef(window.innerWidth / 2);
 
   const handleNav = (mode) => {
     if (onNavigateToAuth) {
@@ -177,6 +159,107 @@ export default function LandingPage({ onNavigateToAuth }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Follow the active methodology step and alternate Bibi beside each timeline row.
+  useEffect(() => {
+    let activeZone = '';
+
+    const setZone = (zoneId, side, speech) => {
+      if (activeZone === zoneId) return;
+      activeZone = zoneId;
+      setMascotNavigation({ side, speech });
+    };
+
+    const updateOwlMotion = () => {
+      const progress = mascotProgressRef.current;
+      const element = mascotRef.current;
+      if (!element) return;
+
+      const wingAngle = Math.sin(progress * 0.12) * 12;
+      const headTilt = ((mascotMouseXRef.current / window.innerWidth) - 0.5) * 8 + Math.sin(progress * 0.1) * 8;
+      element.style.setProperty('--owl-wing-left', `${wingAngle}deg`);
+      element.style.setProperty('--owl-wing-right', `${-wingAngle}deg`);
+      element.style.setProperty('--owl-head-tilt', `${headTilt}deg`);
+    };
+
+    const handleScroll = () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = maxScroll > 0 ? Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100)) : 0;
+      mascotProgressRef.current = progress;
+
+      const anchorY = window.innerHeight * 0.42;
+      const methodSection = document.querySelector('.lp-methodology-section');
+      const methodRows = Array.from(document.querySelectorAll('.lp-method-row'));
+      const activeRow = methodRows.find((row) => {
+        const rect = row.getBoundingClientRect();
+        return rect.top <= anchorY && rect.bottom >= anchorY;
+      });
+      const methodRect = methodSection?.getBoundingClientRect();
+      const insideMethod = methodRect && methodRect.top <= anchorY && methodRect.bottom >= anchorY;
+
+      if (activeRow || (insideMethod && methodRows.length)) {
+        const row = activeRow || methodRows.reduce((closest, candidate) => {
+          const candidateRect = candidate.getBoundingClientRect();
+          const closestRect = closest.getBoundingClientRect();
+          return Math.abs(candidateRect.top + candidateRect.height / 2 - anchorY) < Math.abs(closestRect.top + closestRect.height / 2 - anchorY) ? candidate : closest;
+        }, methodRows[0]);
+        const stepIndex = methodRows.indexOf(row);
+        setZone(`step-${stepIndex}`, stepIndex % 2 === 0 ? 'left' : 'right', row.dataset.mascotSpeech || 'Yallah nkemlo!');
+      } else if (window.scrollY <= 1) {
+        setZone('start', 'right', 'Marhaba! 👋');
+      } else if (methodSection && anchorY < methodSection.getBoundingClientRect().top) {
+        setZone('approach', 'left', 'Nbdaw b planning! 📅');
+      } else {
+        const nextSection = [
+          { selector: '#demo-qcm', side: 'left', speech: 'Yallah, jarrab QCM! ✏️' },
+          { selector: '#apropos', side: 'right', speech: 'Chouf l-progress dyalk! 📊' },
+          { selector: '#tarifs', side: 'left', speech: 'Khtar l-formule li tnasbek! ⭐' },
+          { selector: '#faq', side: 'right', speech: '3endek chi sou2al? 💡' },
+          { selector: '.lp-bottom-cta-section', side: 'center', speech: 'Yallah, bda l-mouchwar! 🚀' },
+          { selector: '.lp-footer', side: 'center', speech: 'B tawfiq! 🎓' }
+        ].find(({ selector }) => {
+          const section = document.querySelector(selector);
+          if (!section) return false;
+          const rect = section.getBoundingClientRect();
+          return rect.top <= anchorY && rect.bottom >= anchorY;
+        });
+
+        if (nextSection) {
+          setZone(nextSection.selector, nextSection.side, nextSection.speech);
+        } else if (methodSection && anchorY >= methodSection.getBoundingClientRect().bottom) {
+          setZone('last-step', 'left', methodRows[methodRows.length - 1]?.dataset.mascotSpeech || 'Bravo! 🎓');
+        } else {
+          setZone('approach', 'left', 'Nbdaw b planning! 📅');
+        }
+      }
+      updateOwlMotion();
+    };
+
+    const handleMouseMove = (event) => {
+      mascotMouseXRef.current = event.clientX;
+      updateOwlMotion();
+    };
+
+    let scrollFrame = 0;
+    const scheduleScrollUpdate = () => {
+      if (scrollFrame) return;
+      scrollFrame = window.requestAnimationFrame(() => {
+        scrollFrame = 0;
+        handleScroll();
+      });
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+    window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', scheduleScrollUpdate);
+      window.removeEventListener('resize', scheduleScrollUpdate);
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+    };
+  }, []);
+
   // GSAP Animations and 3D Orbit Carousel
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -185,47 +268,78 @@ export default function LandingPage({ onNavigateToAuth }) {
       if (!prefersReducedMotion) {
         // Entrance animations
         gsap.from('.lp-hero-badge', { opacity: 0, y: -20, duration: 0.7, ease: 'power3.out', delay: 0.1 });
-        gsap.from('.lp-hero-title', { opacity: 0, y: 30, duration: 0.9, ease: 'power3.out', delay: 0.25 });
+        gsap.fromTo('.lp-hero-title', { autoAlpha: 0, y: 42, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, ease: 'power3.out', delay: 0.25, clearProps: 'opacity,visibility,transform' });
         gsap.from('.lp-hero-desc', { opacity: 0, y: 25, duration: 0.8, ease: 'power3.out', delay: 0.4 });
-        gsap.from('.lp-hero-actions', { opacity: 0, y: 20, duration: 0.8, ease: 'power3.out', delay: 0.55 });
+        gsap.fromTo('.lp-hero-actions', { autoAlpha: 0, y: 30, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.9, ease: 'power3.out', delay: 0.55, clearProps: 'opacity,visibility,transform' });
         gsap.from('.lp-social-proof', { opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.7 });
+        // Reveal each item as it becomes about 20% visible. One-shot triggers
+        // keep the motion stable when scrolling back through the page.
+        const revealGroup = (sectionSelector, itemSelector, { stagger = 0.11, start = 'top 80%' } = {}) => {
+          gsap.utils.toArray(sectionSelector).forEach((section) => {
+            const elements = gsap.utils.toArray(itemSelector, section);
+            elements.forEach((element, index) => {
+              let hasRevealed = false;
+              const revealTween = gsap.fromTo(element,
+                { autoAlpha: 0, y: 42, scale: 0.96 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  scale: 1,
+                  duration: 0.95,
+                  delay: Math.min(index * stagger, 0.44),
+                  ease: 'power3.out',
+                  paused: true,
+                  clearProps: 'opacity,visibility,transform',
+                }
+              );
+              const revealOnce = () => {
+                if (hasRevealed) return;
+                hasRevealed = true;
+                revealTween.play();
+              };
+              ScrollTrigger.create({
+                trigger: element,
+                start: () => {
+                  const visibleThreshold = Math.min(element.getBoundingClientRect().height * 0.2, window.innerHeight * 0.2);
+                  return `top bottom-=${visibleThreshold}px`;
+                },
+                onEnter: revealOnce,
+                onEnterBack: revealOnce,
+                invalidateOnRefresh: true
+              });
+            });
+          });
+        };
+
+        gsap.utils.toArray('.lp-hero-section').forEach((section) => {
+          gsap.utils.toArray('.lp-partner-heading, .lp-partner-logo-item, .lp-hero-decor', section).forEach((element, index) => {
+            gsap.fromTo(element,
+              { autoAlpha: 0, y: 32, scale: 0.96 },
+              { autoAlpha: 1, y: 0, scale: 1, duration: 0.9, delay: Math.min(index * 0.08, 0.4), ease: 'power3.out', clearProps: 'opacity,visibility,transform' }
+            );
+          });
+        });
+
+        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-feat-cat-label, .lp-feat-card, .lp-features-cta');
+        revealGroup('.lp-methodology-section', '.lp-section-header > *, .lp-method-copy, .lp-method-preview');
+        revealGroup('.lp-quiz-demo-section', '.lp-section-header > *, .lp-quiz-widget');
+        revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
+        revealGroup('.lp-pricing-section', '.lp-section-header > *, .lp-pricing-toggle-wrap, .lp-discount-badge, .lp-plan-card, .lp-plan-btn');
+        revealGroup('.lp-faq-section', '.lp-section-header > *, .lp-faq-item');
+        revealGroup('.lp-bottom-cta-section', '.lp-bottom-cta-content > *');
+        revealGroup('.lp-footer', '.lp-footer-brand > *, .lp-footer-col, .lp-footer-bottom > *', { start: 'top 80%', stagger: 0.08 });
 
         // Scroll reveals for sections
-        gsap.from('.lp-method-card', {
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power3.out',
+        gsap.to('.lp-method-track-fill', {
+          scaleY: 1,
+          ease: 'none',
           scrollTrigger: {
-            trigger: '.lp-methodology-section',
-            start: 'top 80%'
+            trigger: '.lp-method-timeline',
+            start: 'top 65%',
+            end: 'bottom 70%',
+            scrub: 0.5
           }
         });
-
-        gsap.from('.lp-tab-card', {
-          opacity: 0,
-          y: 30,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.lp-filieres-section',
-            start: 'top 75%'
-          }
-        });
-
-        gsap.from('.lp-quiz-widget', {
-          opacity: 0,
-          scale: 0.96,
-          y: 30,
-          duration: 0.9,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.lp-quiz-demo-section',
-            start: 'top 80%'
-          }
-        });
-
         // Stats counter animation
         ScrollTrigger.create({
           trigger: '.lp-stats-section',
@@ -345,7 +459,12 @@ export default function LandingPage({ onNavigateToAuth }) {
     setQuizSubmitted(true);
   };
 
-  const currentFiliereData = FILIERES_DATA[activeFiliere] || FILIERES_DATA.sm;
+  const partnerLogos = [
+    { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
+    { src: logoFmpcImg, alt: 'Faculté de médecine et de pharmacie' },
+    { src: logoEncgImg, alt: 'ENCG' },
+    { src: logoEnsamiImg, alt: 'ENSAM' }
+  ];
 
   return (
     <div className="landing-root" ref={rootRef}>
@@ -359,33 +478,25 @@ export default function LandingPage({ onNavigateToAuth }) {
       <div className="lp-grain" aria-hidden="true" />
 
       {/* ====================================================================
-          1. TOP TEASER STRIP (INSPIRED BY KRESCO.MA BANNER)
+          1. NAVIGATION HEADER
       ==================================================================== */}
-      <div className="lp-teaser-strip">
-        <div className="lp-teaser-content">
-          <span className="lp-teaser-kicker">
-            <span className="pulse-dot" /> Concours 2026
-          </span>
-          <span className="lp-teaser-text">
-            Entraînez-vous dès maintenant aux épreuves ENSA, ENSAM, Médecine & Bac avec corrigés pas-à-pas.
-          </span>
-          <span
-            className="lp-teaser-link"
-            onClick={() => handleNav('register')}
-            role="button"
-            tabIndex={0}
-          >
-            Rejoindre l'élite →
-          </span>
-        </div>
-      </div>
+      <button
+        ref={mascotRef}
+        className={`lp-scroll-mascot is-${mascotNavigation.side}`}
+        type="button"
+        aria-label="Faire bouger la mascotte"
+        onClick={() => setMascotClickCount((count) => count + 1)}
+      >
+        <span key={mascotNavigation.speech} className="lp-mascot-speech" aria-live="polite">{mascotNavigation.speech}</span>
+        <span className={`lp-scroll-mascot-action ${mascotClickCount ? 'is-clicked' : ''}`} key={mascotClickCount}>
+          <LandingMascot className="lp-scroll-mascot-art" />
+        </span>
+      </button>
 
-      {/* ====================================================================
-          2. NAVIGATION HEADER
-      ==================================================================== */}
       <nav className={`lp-nav ${isNavScrolled ? 'is-scrolled' : ''}`} id="nav">
         <div className="lp-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src={logoImg} alt="ECONCOURS" />
+          <span className="lp-nav-mascot"><LandingMascot className="lp-mascot-art" /></span>
+          <span className="lp-wordmark">ÉCONCOURS</span>
         </div>
 
         <ul className="lp-nav-links">
@@ -395,18 +506,8 @@ export default function LandingPage({ onNavigateToAuth }) {
             </a>
           </li>
           <li>
-            <a href="#filieres" onClick={(e) => { e.preventDefault(); handleScrollTo('filieres'); }}>
-              Filières & Écoles
-            </a>
-          </li>
-          <li>
             <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
               Méthodologie
-            </a>
-          </li>
-          <li>
-            <a href="#demo-qcm" onClick={(e) => { e.preventDefault(); handleScrollTo('demo-qcm'); }}>
-              Démo Interactive
             </a>
           </li>
           <li>
@@ -426,10 +527,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             Se connecter
           </button>
           <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
-            <span>Commencer</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+            <span>Créer un compte</span>
           </button>
           <button
             className="lp-menu-toggle"
@@ -454,14 +552,8 @@ export default function LandingPage({ onNavigateToAuth }) {
           <a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>
             Fonctionnalités
           </a>
-          <a href="#filieres" onClick={(e) => { e.preventDefault(); handleScrollTo('filieres'); }}>
-            Filières & Écoles
-          </a>
           <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
             Méthodologie
-          </a>
-          <a href="#demo-qcm" onClick={(e) => { e.preventDefault(); handleScrollTo('demo-qcm'); }}>
-            Démo Interactive
           </a>
           <a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>
             Tarifs
@@ -474,17 +566,57 @@ export default function LandingPage({ onNavigateToAuth }) {
               Se connecter
             </button>
             <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')} style={{ width: '100%', justifyContent: 'center' }}>
-              Commencer maintenant
+              Créer un compte
             </button>
           </div>
         </div>
       )}
 
       {/* ====================================================================
-          3. HERO SECTION (STYLE KRESCO)
+          2. HERO SECTION
       ==================================================================== */}
       <section className="lp-hero-section" id="hero">
         <div className="lp-hero-ambient" aria-hidden="true" />
+        <div className="lp-hero-decor lp-hero-decor--books" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M8 12h31l-4 7H12l-4-7Z" fill="#fff" stroke="#d5aa7c" strokeWidth="1.5" />
+            <path d="M12 22h27l-4 7H16l-4-7Z" fill="#edf3ff" stroke="#7994bd" strokeWidth="1.5" />
+            <path d="M9 32h29l-4 7H13l-4-7Z" fill="#fff" stroke="#d5aa7c" strokeWidth="1.5" />
+            <circle cx="42" cy="9" r="2.5" fill="#9bb2d3" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--cap-center" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#e5efff" stroke="#8eaad2" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#f7ead8" stroke="#c7a47b" strokeWidth="1.5" />
+            <path d="M42 20v13" stroke="#dda85d" strokeWidth="1.5" />
+            <circle cx="42" cy="35" r="2" fill="#dda85d" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--cap-right" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#6f9ff1" stroke="#5685d5" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#bcd2fb" stroke="#85a6d8" strokeWidth="1.5" />
+            <path d="M42 20v13" stroke="#e0a340" strokeWidth="1.5" />
+            <circle cx="42" cy="35" r="2" fill="#e0a340" />
+          </svg>
+        </div>
+        <div className="lp-partner-strip" aria-label="Nos partenaires et objectifs écoles">
+          <div className="lp-partner-heading">Nos partenaires et objectifs écoles</div>
+          <div className="lp-partner-logos">
+            <div className="lp-partner-track">
+              {[0, 1].map((copy) => (
+                <div className="lp-partner-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+                  {partnerLogos.map((logo) => (
+                    <div className="lp-partner-logo-item" key={logo.alt}>
+                      <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <div className="lp-hero-badge">
           <span className="badge-icon">🇲🇦</span>
@@ -492,8 +624,8 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
 
         <h1 className="lp-hero-title">
-          Préparez vos Concours,<br />
-          <span className="lp-hero-gradient-text">Réussissez votre Avenir.</span>
+          ECONCOURS: Your Path to <span className="lp-hero-gradient-text">Excellence</span>
+          <span className="lp-hero-arabic" lang="ar" dir="rtl">منصة الإعداد للامتحانات والكونكور</span>
         </h1>
 
         <p className="lp-hero-desc">
@@ -502,10 +634,9 @@ export default function LandingPage({ onNavigateToAuth }) {
 
         <div className="lp-hero-actions">
           <button className="lp-btn-hero-primary" type="button" onClick={() => handleNav('register')}>
-            <span>Commencer gratuitement</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+            <span className="lp-cta-mascot" aria-hidden="true"><LandingMascot className="lp-mascot-art" /></span>
+            <span>Yallah, nkelmou!</span>
+            <span aria-hidden="true">↘</span>
           </button>
           <button className="lp-btn-hero-secondary" type="button" onClick={() => handleScrollTo('demo-qcm')}>
             <span>✨ Tester un QCM en direct</span>
@@ -555,100 +686,148 @@ export default function LandingPage({ onNavigateToAuth }) {
       </section>
 
       {/* ====================================================================
-          4. INFINITE MARQUEE OF PRESTIGIOUS SCHOOLS & CONCOURS
+          5b. FONCTIONNALITÉS CLÉS DE LA PLATEFORME
       ==================================================================== */}
-      <section className="lp-marquee-section" aria-label="Grandes Écoles partenaires et concours préparés">
-        <div className="lp-marquee-label">
-          Les concours et grandes écoles préparés sur ECONCOURS
-        </div>
-        <div className="lp-marquee-track">
-          {[...MARQUEE_SCHOOLS, ...MARQUEE_SCHOOLS].map((school, i) => (
-            <div className="lp-school-pill" key={i}>
-              <span className="pill-dot" />
-              <span>{school.name}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ====================================================================
-          5. INTERACTIVE FILIÈRES & ÉCOLES SELECTOR TABS (STYLE KRESCO)
-      ==================================================================== */}
-      <section className="lp-filieres-section" id="filieres">
+      <section className="lp-features-section" id="fonctionnalites-cles">
         <div className="lp-section-header">
-          <span className="lp-section-eyebrow">PARCOURS SUR MESURE</span>
+          <span className="lp-section-eyebrow">CE QU'ON OFFRE</span>
           <h2 className="lp-section-title">
-            Choisissez votre filière,<br />maîtrisez chaque épreuve.
+            Fonctionnalités Clés<br />de la Plateforme
           </h2>
           <p className="lp-section-desc">
-            Sélectionnez votre profil pour découvrir les ressources, annales corrigées et coefficients adaptés aux concours officiels.
+            Tout ce dont tu as besoin pour préparer ton Bac et réussir les concours des grandes écoles.
           </p>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="lp-tabs-nav">
-          {Object.values(FILIERES_DATA).map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`lp-tab-btn ${activeFiliere === tab.id ? 'is-active' : ''}`}
-              onClick={() => setActiveFiliere(tab.id)}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+        <div className="lp-features-categories">
+
+          {/* A — SUIVI DYNAMIQUE */}
+          <div className="lp-feat-category">
+            <div className="lp-feat-cat-label lp-feat-cat-label--a">
+              <span className="lp-feat-cat-letter">A</span>
+              <span>Suivi Dynamique</span>
+            </div>
+            <div className="lp-feat-cards-row">
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">👤</span>
+                <div>
+                  <strong>Profil Étudiant</strong>
+                  <p>Espace personnalisé avec ta photo, ton nom et ton historique de progression complet.</p>
+                </div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">📅</span>
+                <div>
+                  <strong>Calendrier Interactif</strong>
+                  <p>Événements officiels des concours et événements personnels de révision.</p>
+                </div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">📊</span>
+                <div>
+                  <strong>Dashboard Global</strong>
+                  <p>Vue d'ensemble interactive avec graphiques de progression en temps réel.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* B — CONTENUS PÉDAGOGIQUES */}
+          <div className="lp-feat-category">
+            <div className="lp-feat-cat-label lp-feat-cat-label--b">
+              <span className="lp-feat-cat-letter">B</span>
+              <span>Contenus Pédagogiques</span>
+            </div>
+            <div className="lp-feat-cards-row">
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">📚</span>
+                <div>
+                  <strong>Cours Complets Bac</strong>
+                  <p>Cours structurés et complets selon le programme officiel du Baccalauréat marocain.</p>
+                </div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">🔢</span>
+                <div>
+                  <strong>Résumés LaTeX</strong>
+                  <p>Fiches de synthèse formatées en LaTeX avec formules essentielles et condensés.</p>
+                </div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">📝</span>
+                <div>
+                  <strong>Annales Corrigées</strong>
+                  <p>Annales des concours officiels corrigées étape par étape pour chaque école.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* C — MOTEUR DE TEST */}
+          <div className="lp-feat-category">
+            <div className="lp-feat-cat-label lp-feat-cat-label--c">
+              <span className="lp-feat-cat-letter">C</span>
+              <span>Moteur de Test</span>
+            </div>
+            <div className="lp-feat-cards-row">
+              <div className="lp-feat-card lp-feat-card--timer">
+                <span className="lp-feat-card-icon">⏱️</span>
+                <div>
+                  <strong>Tests Chronométrés</strong>
+                  <p>Compte à rebours officiel pour simuler les conditions réelles des concours.</p>
+                </div>
+                <div className="lp-feat-timer-badge">00 : 00 : 39</div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">🧮</span>
+                <div>
+                  <strong>QCM par Chapitre &amp; École</strong>
+                  <p>Questions organisées par matière, chapitre et institution (ENSA, Médecine…).</p>
+                </div>
+              </div>
+              <div className="lp-feat-card">
+                <span className="lp-feat-card-icon">💾</span>
+                <div>
+                  <strong>Sauvegarde Automatique des Erreurs</strong>
+                  <p>Toutes tes fautes sont enregistrées automatiquement pour révision ciblée.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* D — CIBLAGE DES ERREURS */}
+          <div className="lp-feat-category">
+            <div className="lp-feat-cat-label lp-feat-cat-label--d">
+              <span className="lp-feat-cat-letter">D</span>
+              <span>Ciblage des Erreurs</span>
+            </div>
+            <div className="lp-feat-cards-row lp-feat-cards-row--duo">
+              <div className="lp-feat-card lp-feat-card--duo">
+                <span className="lp-feat-card-icon">🔍</span>
+                <div>
+                  <strong>Correction Intelligente</strong>
+                  <p>Smart correction — analyse automatique de tes erreurs avec retour détaillé et conseils.</p>
+                </div>
+              </div>
+              <div className="lp-feat-card lp-feat-card--duo lp-feat-card--accent">
+                <span className="lp-feat-card-icon">🎯</span>
+                <div>
+                  <strong>Objectif Zéro Faute</strong>
+                  <p>Goal tracking — suivi de ton objectif jusqu'à la maîtrise totale de chaque chapitre.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        {/* Active Tab Card */}
-        <div className="lp-tab-card">
-          <div className="lp-tab-card-left">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '20px' }}>{currentFiliereData.icon}</span>
-              <span style={{ color: '#2563eb', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase' }}>
-                {currentFiliereData.badge}
-              </span>
-            </div>
-            <h3>{currentFiliereData.title}</h3>
-            <p>{currentFiliereData.desc}</p>
-
-            <div className="lp-tab-highlights">
-              {currentFiliereData.features.map((feat, idx) => (
-                <div className="lp-tab-highlight-item" key={idx}>
-                  <span className="item-icon">✓</span>
-                  <span>{feat}</span>
-                </div>
-              ))}
-            </div>
-
-            <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
-              <span>Accéder à ces cours & concours</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="lp-tab-card-right">
-            <span className="lp-tab-badge-top">📊 Statistiques de la filière</span>
-            <div className="lp-tab-stats-grid">
-              <div className="lp-tab-stat-box">
-                <strong>{currentFiliereData.stats.qcm}</strong>
-                <span>Questions résolues</span>
-              </div>
-              <div className="lp-tab-stat-box">
-                <strong>{currentFiliereData.stats.examens}</strong>
-                <span>Annales disponibles</span>
-              </div>
-              <div className="lp-tab-stat-box" style={{ gridColumn: 'span 2' }}>
-                <strong style={{ fontSize: '18px' }}>{currentFiliereData.stats.coefficient}</strong>
-                <span>Format officiel des concours</span>
-              </div>
-            </div>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
-              Mise à jour hebdomadaire selon le cadre de référence du Ministère.
-            </p>
-          </div>
+        <div className="lp-features-cta">
+          <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
+            <span>Accéder à toutes les fonctionnalités</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </section>
 
@@ -659,52 +838,37 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="lp-section-header" id="fonctionnalites">
           <span className="lp-section-eyebrow">LA MÉTHODE DE L'EXCELLENCE</span>
           <h2 className="lp-section-title">
-            3 étapes pour passer de la révision<br />à l'admission garantie.
+            Le parcours ÉCONCOURS<br />de la révision à l'admission.
           </h2>
           <p className="lp-section-desc">
-            Inspirée des meilleures méthodes pédagogiques mondiales, adaptée aux exigences des concours marocains.
+            Sept étapes pour organiser tes révisions, t'entraîner efficacement et suivre ta progression jusqu'aux concours.
           </p>
         </div>
 
-        <div className="lp-method-grid">
-          {/* Step 1 */}
-          <div className="lp-method-card">
-            <span className="lp-method-step-number">01</span>
-            <div className="lp-method-icon-box">📐</div>
-            <h3>1. Visualiser & Assimiler</h3>
-            <p>
-              Des synthèses de cours épurées sans blabla superflu. Toutes les formules mathématiques et scientifiques sont rédigées avec une netteté absolue en LaTeX et MathJax.
-            </p>
-            <div className="lp-method-badge">
-              <span>✦</span> Fiches mémo téléchargeables
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="lp-method-card">
-            <span className="lp-method-step-number">02</span>
-            <div className="lp-method-icon-box">⏱️</div>
-            <h3>2. Manipuler & S'entraîner</h3>
-            <p>
-              Plongez dans des concours blancs chronométrés des 15 dernières années. Gérez votre temps avec le barème officiel (+1 / -0.25) pour éviter les pièges le jour de l’examen.
-            </p>
-            <div className="lp-method-badge">
-              <span>✦</span> Timer et conditions réelles
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="lp-method-card">
-            <span className="lp-method-step-number">03</span>
-            <div className="lp-method-icon-box">📊</div>
-            <h3>3. Corriger & Progresser</h3>
-            <p>
-              Chaque réponse est détaillée pas-à-pas. La plateforme enregistre automatiquement vos erreurs dans votre tableau de bord « Mes erreurs » pour ne plus jamais trébucher.
-            </p>
-            <div className="lp-method-badge">
-              <span>✦</span> Analyse prédictive des lacunes
-            </div>
-          </div>
+        <div className="lp-method-timeline">
+          <div className="lp-method-track" aria-hidden="true"><span className="lp-method-track-fill" /></div>
+          {[
+            { icon: '📅', label: 'PLANIFIER', title: 'Calendrier des concours & agenda personnel', text: "Suis les dates d'inscription et les épreuves officielles des concours ENSA, ENSAM, Médecine et ENCG. Organise aussi tes séances de révision avec ton agenda personnel.", preview: 'Agenda concours', tag: 'Concours 2027', speech: 'Nbdaw b planning! 📅', lines: ['ENSA · Inscription ouverte', 'ENSAM · Épreuve à venir', 'Révision personnelle · 18:00'] },
+            { icon: '📚', label: 'COMPRENDRE', title: 'Cours Bac & examens nationaux', text: 'Retrouve des cours complets et structurés selon le programme du Baccalauréat marocain, avec les annales des examens nationaux et leurs corrigés.', preview: 'Cours du Baccalauréat', tag: 'Mathématiques', speech: 'Fhem dars mzyan! 📚', lines: ['Limites et continuité', 'Dérivation · cours complet', 'Examen national corrigé'] },
+            { icon: '📝', label: 'SYNTHÉTISER', title: 'Résumés express', text: 'Révise rapidement avec des fiches condensées et des synthèses LaTeX qui regroupent les formules et les concepts clés de chaque chapitre.', preview: 'Fiche de révision', tag: 'Formules clés', speech: 'Wjjed résumé dyalk! 📝', lines: ['Limite remarquable', 'Dérivée · fonctions usuelles', 'Synthèse prête à réviser'] },
+            { icon: '⏱️', label: 'S’ENTRAÎNER', title: 'Concours blancs par chapitre', text: 'Valide tes acquis au fil des révisions avec des QCM chronométrés par matière et par chapitre : Mathématiques, Physique, SVT et plus.', preview: 'Test par chapitre', tag: '12 questions', speech: 'Dreb QCM b chrono! ⏱️', lines: ['Mathématiques · Suites', 'Temps restant · 08:42', 'Progression · 4 / 12'] },
+            { icon: '🏛️', label: 'SE PRÉPARER', title: 'Annales concours par école', text: 'Entraîne-toi sur les vrais sujets des grandes écoles sous forme de QCM interactifs pour maîtriser le format des épreuves officielles.', preview: 'Annales de concours', tag: 'ENSA · 2025', speech: 'Jarrab annales l’école! 🏛️', lines: ['Sujet officiel · Mathématiques', 'Format QCM interactif', 'Barème de l’épreuve'] },
+            { icon: '🔄', label: 'PROGRESSER', title: 'Réviser mes erreurs', text: 'Les questions manquées dans tes QCM sont sauvegardées automatiquement. Reprends-les de façon ciblée pour renforcer tes points faibles jusqu’à maîtriser chaque notion.', preview: 'Révision ciblée', tag: 'Mes erreurs', speech: 'Raja3 les erreurs dyalk! 🔄', lines: ['Question à revoir · Suites', 'Correction détaillée disponible', 'Objectif · zéro faute'] },
+            { icon: '🚀', label: 'ATTEINDRE SON OBJECTIF', title: 'Dashboard & objectif admissibilité', text: 'Visualise tes statistiques, ta précision et ta progression dans un tableau de bord dynamique qui t’accompagne jusqu’à la réussite aux concours.', preview: 'Mon tableau de bord', tag: 'Progression', speech: 'Qrebti l’admissibilité! 🚀', lines: ['Précision moyenne · 86 %', 'Chapitres maîtrisés · 18 / 24', 'Objectif · admissibilité'] }
+          ].map((step, index) => (
+            <article className={`lp-method-row ${index % 2 === 0 ? 'is-left' : 'is-right'}`} data-mascot-speech={step.speech} key={step.title}>
+              <div className="lp-method-copy">
+                <span className="lp-method-node" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                <div className="lp-method-kicker"><span>{String(index + 1).padStart(2, '0')}</span>{step.icon} {step.label}</div>
+                <h3>Étape {String(index + 1).padStart(2, '0')} : {step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+              <div className="lp-method-preview" aria-label={`Aperçu : ${step.preview}`}>
+                <div className="lp-preview-top"><span className="lp-preview-brand"><i>{String(index + 1).padStart(2, '0')}</i> ÉCONCOURS</span><span className="lp-preview-tag">{step.tag}</span></div>
+                <div className="lp-preview-panel"><strong>{step.preview}</strong><ul>{step.lines.map((line, lineIndex) => <li key={line}><i className={`lp-preview-dot dot-${lineIndex}`} />{line}</li>)}</ul><div className="lp-preview-progress"><span style={{ width: `${32 + index * 9}%` }} /></div></div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -1049,16 +1213,21 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <section className="lp-bottom-cta-section">
         <div className="lp-bottom-cta-card">
-          <h2>Prêt à intégrer la Grande École de vos rêves ?</h2>
-          <p>
-            Rejoignez dès aujourd'hui la communauté des bacheliers et préparationnaires qui visent le sommet.
-          </p>
-          <button className="lp-bottom-cta-btn" type="button" onClick={() => handleNav('register')}>
-            <span>Créer mon compte gratuit</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
+          <div className="lp-bottom-cta-content">
+            <span className="lp-bottom-cta-kicker"><i aria-hidden="true">✦</i> TON PROCHAIN CHAPITRE COMMENCE ICI</span>
+            <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves&nbsp;?</h2>
+            <p>Rejoins les bacheliers qui préparent leur réussite avec un parcours clair, des annales et des QCM ciblés.</p>
+            <div className="lp-bottom-cta-benefits">
+              <span><i aria-hidden="true">✓</i> Inscription gratuite</span>
+              <span><i aria-hidden="true">✓</i> Tu commences tout de suite</span>
+            </div>
+            <button className="lp-bottom-cta-btn" type="button" onClick={() => handleNav('register')}>
+              <span>Créer mon compte gratuit</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -1068,12 +1237,24 @@ export default function LandingPage({ onNavigateToAuth }) {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <img src={logoImg} alt="ECONCOURS" />
             <p>
               La plateforme de référence pour réussir les concours des grandes écoles et examens nationaux au Maroc.
             </p>
-            <div style={{ fontSize: '13px', color: '#64748b' }}>
-              🇲🇦 Conçu avec passion pour la jeunesse marocaine.
+            <div className="lp-footer-made-in">
+              <span aria-hidden="true">✦</span> Conçu avec passion pour la jeunesse marocaine.
+            </div>
+            <div className="lp-footer-social-block">
+              <strong>Suivez-nous et contactez-nous</strong>
+              <div className="lp-footer-socials">
+                <span className="lp-footer-social-link" aria-label="Instagram ECONCOURS">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.8" r=".8" className="lp-social-dot" /></svg>
+                  Instagram
+                </span>
+                <span className="lp-footer-social-link" aria-label="WhatsApp ECONCOURS">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 11.7a8.1 8.1 0 0 1-11.9 7.1L4 20l1.2-4.1a8.1 8.1 0 1 1 15-4.2Z" /><path d="M9 8.4c.2-.4.4-.4.7-.4h.5l1 2.2-.8 1c.8 1.5 1.8 2.3 3.2 2.9l.9-.9 2.1 1c.2.1.3.3.2.6-.2.8-1.1 1.5-2 1.6-1.1.1-2.8-.6-4.5-2.1-1.8-1.6-2.7-3.5-2.6-4.5.1-.6.6-1.2 1.3-1.4Z" /></svg>
+                  WhatsApp
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1081,7 +1262,6 @@ export default function LandingPage({ onNavigateToAuth }) {
             <h4>Plateforme</h4>
             <ul>
               <li><a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>Fonctionnalités</a></li>
-              <li><a href="#filieres" onClick={(e) => { e.preventDefault(); handleScrollTo('filieres'); }}>Filières & Écoles</a></li>
               <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>Méthodologie</a></li>
               <li><a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>Tarifs & Packs</a></li>
             </ul>

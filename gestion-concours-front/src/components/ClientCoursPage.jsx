@@ -326,6 +326,11 @@ export default function ClientCoursPage() {
 
   const iframeRef = useRef(null);
 
+  useEffect(() => {
+    const stage = activeCours ? 'cours' : (step === 'cours' ? 'chapitres' : (selectedMatiere ? 'chapitres' : 'matieres'));
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage } }));
+  }, [step, selectedMatiere, activeCours]);
+
   // Réaction au changement de filière dans l'URL (via la Sidebar)
   useEffect(() => {
     const f = searchParams.get('filiere') || '';

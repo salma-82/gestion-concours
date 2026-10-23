@@ -133,6 +133,11 @@ export default function ClientResumesPage() {
   const iframeRef = useRef(null);
 
   useEffect(() => {
+    const stage = activeResume ? 'reader' : (selectedMatiere ? 'chapitres' : 'matieres');
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage } }));
+  }, [step, selectedMatiere, activeResume]);
+
+  useEffect(() => {
     const matiereParam = searchParams.get('matiere') || '';
     const matiere = MATIERES.find(m =>
       m.id.toLowerCase() === matiereParam.toLowerCase()
