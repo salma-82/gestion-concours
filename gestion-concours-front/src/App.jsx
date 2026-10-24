@@ -29,10 +29,12 @@ import CompetitionCalendar from './components/CompetitionCalendar';
 
 // PDF → HTML
 import PdfToHtml from './components/PdfToHtml';
+import WhatsAppButton from './components/WhatsAppButton';
 
 function App() {
   return (
     <Router>
+      <WhatsAppButton />
       <Routes>
 
         {/* =========================

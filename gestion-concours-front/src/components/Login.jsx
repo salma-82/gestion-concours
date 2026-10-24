@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import logoImg from '../assets/logo.png';
+import { LandingMascot } from './LandingPage';
+import './Auth.css';
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
 
@@ -114,7 +115,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{
+    <div className="auth-page auth-page--login" style={{
       minHeight: '100vh',
       width: '100vw',
       display: 'flex',
@@ -127,7 +128,7 @@ export default function Login() {
       {/* ========================================================
           PANNEAU DE GAUCHE : VIOLET AVEC LOGO & BOUTON D'INSCRIPTION
       ======================================================== */}
-      <div style={{
+      <div className="auth-side" style={{
         flex: '1 1 50%',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)',
@@ -176,6 +177,7 @@ export default function Login() {
         {/* Bouton "← Accueil" en haut à gauche */}
         <Link
           to="/"
+          className="auth-home-link"
           style={{
             position: 'absolute',
             top: '32px',
@@ -242,20 +244,8 @@ export default function Login() {
           zIndex: 5
         }}>
           {/* Logo réel de la plateforme */}
-          <div style={{ marginBottom: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '24px',
-              padding: '16px 24px',
-              backdropFilter: 'blur(8px)',
-              marginBottom: '8px'
-            }}>
-              <img
-                src={logoImg}
-                alt="Logo"
-                style={{ height: '72px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-              />
-            </div>
+          <div className="auth-mascot-badge">
+            <LandingMascot className="auth-mascot-art lp-scroll-mascot-art" />
           </div>
 
           <h2 style={{
@@ -265,7 +255,7 @@ export default function Login() {
             letterSpacing: '-0.3px',
             color: '#ffffff'
           }}>
-            Nouveau sur la plateforme ?
+            Nouveau sur la <span className="auth-title-accent">plateforme ?</span>
           </h2>
 
           <p style={{
@@ -280,6 +270,7 @@ export default function Login() {
 
           <Link
             to="/register"
+            className="auth-switch-link"
             style={{
               padding: '12px 34px',
               borderRadius: '24px',
@@ -311,7 +302,7 @@ export default function Login() {
       {/* ========================================================
           PANNEAU DE DROITE : FORMULAIRE DE CONNEXION BLANC
       ======================================================== */}
-      <div style={{
+      <div className="auth-form-panel" style={{
         flex: '1 1 50%',
         minHeight: '100vh',
         backgroundColor: '#ffffff',

@@ -146,7 +146,7 @@ export default function AdminDashboard() {
           <ul style={{ listStyleType: 'none', padding: 0 }}>
             {concoursList.map((c) => (
               <li key={c.id} style={{ padding: '10px', borderBottom: '1px solid #ddd', marginBottom: '5px' }}>
-                <strong>{c.titre}</strong> - {c.matiere} ({c.chapitre}) &nbsp;|&nbsp; 
+                <strong>{c.titre}</strong> - {c.matiere} ({c.chapitre}) | 
                 <a href={c.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>Télécharger PDF</a>
               </li>
             ))}

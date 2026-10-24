@@ -3,19 +3,26 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
 import ClientMascot from './ClientMascot';
+import { LandingMascot } from './LandingPage';
+import './ClientNavbar.css';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  // Sous-menus accordéon pour Cours et Examens Nationaux
+  const [openMenu, setOpenMenu] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  // Kept for the hidden legacy sidebar markup while all visible navigation uses the top bar.
+  const [isSidebarOpen] = useState(false);
   const [coursOpen, setCoursOpen] = useState(location.pathname.startsWith('/client-cours'));
   const [examensOpen, setExamensOpen] = useState(location.pathname.startsWith('/client-examens'));
   const [resumesOpen, setResumesOpen] = useState(location.pathname.startsWith('/client-resumes'));
   const [concoursOpen, setConcoursOpen] = useState(location.pathname === '/client-concours');
   const [concoursBlancOpen, setConcoursBlancOpen] = useState(location.pathname === '/client-concours-blanc');
   const [mistakesOpen, setMistakesOpen] = useState(location.pathname === '/client-erreurs');
+
+  // Sous-menus accordéon pour Cours et Examens Nationaux
   const [coursFilieres, setCoursFilieres] = useState([]);
   const [examensFilieres, setExamensFilieres] = useState([]);
   const [concoursEcoles, setConcoursEcoles] = useState([]);
@@ -26,40 +33,23 @@ export default function ClientLayout() {
   const currentResumeMatiere = new URLSearchParams(location.search).get('matiere');
   const currentConcoursEcole = new URLSearchParams(location.search).get('ecole');
   const currentConcoursBlancMatiere = new URLSearchParams(location.search).get('matiere');
-  const isFullScreenResume = location.pathname === '/client-resumes' && Boolean(currentResumeMatiere);
-  const isFullScreenConcours = location.pathname === '/client-concours' && Boolean(currentConcoursEcole);
-  const isFullScreenConcoursBlanc = location.pathname === '/client-concours-blanc' && Boolean(currentConcoursBlancMatiere);
-  const isFullScreenLearningPage = isFullScreenResume || isFullScreenConcours || isFullScreenConcoursBlanc;
+  useEffect(() => {
+    setOpenMenu(location.state?.openSidebarMenu || null);
+    setIsMobileMenuOpen(false);
+    setIsAccountMenuOpen(false);
+  }, [location.pathname, location.search, location.state]);
 
   useEffect(() => {
-    if (location.pathname.startsWith('/client-cours')) {
-      setCoursOpen(true);
-    }
-    if (location.pathname.startsWith('/client-examens')) {
-      setExamensOpen(true);
-    }
-    if (location.pathname.startsWith('/client-resumes')) {
-      setResumesOpen(true);
-    }
-    if (location.pathname === '/client-concours') {
-      setConcoursOpen(true);
-    }
-    if (location.pathname === '/client-concours-blanc') {
-      setConcoursBlancOpen(true);
-    }
-    if (location.pathname === '/client-erreurs') setMistakesOpen(true);
-  }, [location.pathname]);
-
-  // Les raccourcis du dashboard demandent l'ouverture d'un sous-menu sans
-  // quitter le dashboard.
-  useEffect(() => {
-    const menu = location.state?.openSidebarMenu;
-    if (menu === 'cours') setCoursOpen(true);
-    if (menu === 'examens') setExamensOpen(true);
-    if (menu === 'resumes') setResumesOpen(true);
-    if (menu === 'concours') setConcoursOpen(true);
-    if (menu === 'concours-blanc') setConcoursBlancOpen(true);
-  }, [location.state]);
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setOpenMenu(null);
+        setIsMobileMenuOpen(false);
+        setIsAccountMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, []);
 
   // Chargement dynamique des filières depuis la base de données
   useEffect(() => {
@@ -254,6 +244,44 @@ export default function ClientLayout() {
     }
   ];
 
+  const navbarPaths = [
+    '/client-dashboard',
+    '/client-calendrier',
+    '/client-cours',
+    '/client-examens',
+    '/client-concours',
+    '/client-concours-blanc',
+    '/client-resumes',
+    '/client-erreurs'
+  ];
+  const navbarLabels = {
+    '/client-dashboard': 'Accueil',
+    '/client-calendrier': 'Calendrier',
+    '/client-cours': 'Cours',
+    '/client-examens': 'Examens',
+    '/client-concours': 'Concours',
+    '/client-concours-blanc': 'Concours Blancs',
+    '/client-resumes': 'Résumés',
+    '/client-erreurs': 'Mes erreurs'
+  };
+  const navbarItems = navbarPaths.map((path) => navItems.find((item) => item.path === path)).filter(Boolean);
+  const searchItems = [
+    ...navbarPaths.map((path) => ({ label: navbarLabels[path], path })),
+    ...coursFilieres.map((filiere) => ({ label: `Cours · ${filiere}`, path: `/client-cours?filiere=${encodeURIComponent(filiere)}` })),
+    ...examensFilieres.map((filiere) => ({ label: `Examens · ${filiere}`, path: `/client-examens?filiere=${encodeURIComponent(filiere)}` })),
+    ...resumesMatieres.map((matiere) => ({ label: `Résumés · ${matiere}`, path: `/client-resumes?matiere=${encodeURIComponent(matiere)}` })),
+    ...concoursEcoles.map((ecole) => ({ label: `Concours · ${ecole}`, path: `/client-concours?ecole=${encodeURIComponent(ecole)}` })),
+    ...concoursBlancMatieres.map((matiere) => ({ label: `Concours Blancs · ${matiere}`, path: `/client-concours-blanc?matiere=${encodeURIComponent(matiere)}` }))
+  ];
+  const searchMatches = searchQuery.trim()
+    ? searchItems.filter((item) => item.label.toLocaleLowerCase('fr').includes(searchQuery.trim().toLocaleLowerCase('fr'))).slice(0, 6)
+    : [];
+  const selectSearchItem = (path) => {
+    navigate(path);
+    setSearchQuery('');
+    setIsMobileMenuOpen(false);
+  };
+
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const userName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
@@ -275,13 +303,13 @@ export default function ClientLayout() {
       position: 'relative'
     }}>
       
-      {/* SIDEBAR AVEC LOGO & NAV */}
-      <aside style={{
+      {/* Ancien sidebar conservé temporairement hors rendu. */}
+      {false && <aside style={{
         width: '265px',
         minWidth: '265px',
         backgroundColor: '#ffffff',
         borderRight: isSidebarOpen ? '1px solid #edf2f7' : 'none',
-        display: isFullScreenLearningPage ? 'none' : 'flex',
+        display: 'none',
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: '24px 18px 20px 18px',
@@ -837,7 +865,7 @@ export default function ClientLayout() {
             <span style={{ fontSize: '14px', fontWeight: 750 }}>Déconnexion</span>
           </button>
         </div>
-      </aside>
+      </aside>}
 
       {/* ZONE CONTENU PRINCIPAL AVEC TOPBAR */}
       <div style={{
@@ -846,15 +874,15 @@ export default function ClientLayout() {
         flexDirection: 'column',
         minWidth: 0,
         height: '100vh',
-        overflow: 'hidden',
+        overflow: 'visible',
         backgroundColor: '#f3f6fb'
       }}>
         {/* TOPBAR MODERNE & IDENTIQUE AU DESIGN */}
-        <header style={{
+        <header className="client-header" style={{
           height: '68px',
           backgroundColor: '#ffffff',
           borderBottom: '1px solid #edf2f7',
-          display: isFullScreenLearningPage ? 'none' : 'flex',
+          display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 32px',
@@ -862,42 +890,59 @@ export default function ClientLayout() {
           zIndex: 40,
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.015)'
         }}>
-          {/* Gauche : Bouton Hamburger */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              title={isSidebarOpen ? "Masquer le menu" : "Afficher le menu"}
-              aria-label="Toggle menu"
-              style={{
-                width: '38px',
-                height: '38px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                outline: 'none',
-                padding: 0
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="2.2" strokeLinecap="round">
-                <line x1="3" y1="7" x2="21" y2="7" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="17" x2="21" y2="17" />
-              </svg>
-            </button>
+          <button className="client-brand" type="button" onClick={() => navigate('/client-dashboard')} aria-label="ECONCOURS, accueil">
+            <span className="client-brand-mascot"><LandingMascot className="client-boma-mascot" /></span>
+            <span className="client-brand-copy">
+              <span className="client-brand-name">ECONCOURS</span>
+              <span className="client-brand-tagline">Ton avenir, notre priorité</span>
+            </span>
+          </button>
 
-          </div>
+          <button className="client-nav-toggle" type="button" aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen((open) => !open)}>
+            <span /><span /><span />
+          </button>
+
+          <nav className={`client-nav-links ${isMobileMenuOpen ? 'is-open' : ''}`} aria-label="Navigation principale">
+            {navbarItems.map((item) => {
+              const path = item.path;
+              let links = [];
+              if (path === '/client-erreurs') links = [{ label: 'Mes erreurs', path: '/client-erreurs?view=all' }, { label: 'Erreurs sauvegardées', path: '/client-erreurs?view=saved' }];
+              if (path === '/client-examens') links = examensFilieres.map((f) => ({ label: f, path: `/client-examens?filiere=${encodeURIComponent(f)}` }));
+              if (path === '/client-cours') links = coursFilieres.map((f) => ({ label: f, path: `/client-cours?filiere=${encodeURIComponent(f)}` }));
+              if (path === '/client-resumes') links = resumesMatieres.map((m) => ({ label: m === 'Physique-Chimie' ? 'Physique - Chimie' : m, path: `/client-resumes?matiere=${encodeURIComponent(m)}` }));
+              if (path === '/client-concours') links = concoursEcoles.map((e) => ({ label: e, path: `/client-concours?ecole=${encodeURIComponent(e)}` }));
+              if (path === '/client-concours-blanc') links = concoursBlancMatieres.map((m) => ({ label: m, path: `/client-concours-blanc?matiere=${encodeURIComponent(m)}` }));
+              const hasDropdown = links.length > 0;
+              const active = location.pathname === path;
+              const menuId = path.replace('/client-', '');
+              return (
+                <div className="client-nav-item" key={path}>
+                  <button className={`client-nav-link ${active ? 'is-active' : ''}`} type="button" aria-expanded={hasDropdown ? openMenu === menuId : undefined} onClick={() => hasDropdown ? setOpenMenu((current) => current === menuId ? null : menuId) : (setOpenMenu(null), setIsMobileMenuOpen(false), navigate(path))}>
+                    <span className="client-nav-icon">{item.renderIcon(active)}</span><span>{navbarLabels[path]}</span>
+                    {hasDropdown && <svg className={`client-nav-chevron ${openMenu === menuId ? 'is-open' : ''}`} viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>}
+                  </button>
+                  {hasDropdown && openMenu === menuId && <div className="client-nav-dropdown">
+                    <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-cours' ? 'les cours' : path === '/client-examens' ? 'les examens' : path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>
+                    {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(link.path); }}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
+                  </div>}
+                </div>
+              );
+            })}
+            <button className="client-nav-logout client-mobile-logout" type="button" onClick={handleLogout}>Déconnexion</button>
+          </nav>
 
           {/* Droite : Notification Bell & Profil Étudiant avec Initiale SB */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="client-search">
+            <svg className="client-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+            <input aria-label="Rechercher dans ECONCOURS" placeholder="Rechercher..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && searchMatches[0]) selectSearchItem(searchMatches[0].path); if (event.key === 'Escape') setSearchQuery(''); }} />
+            {searchMatches.length > 0 && <div className="client-search-results">
+              {searchMatches.map((item) => <button type="button" key={item.path} onClick={() => selectSearchItem(item.path)}>{item.label}</button>)}
+            </div>}
+          </div>
+          <div className="client-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* Cloche Notification */}
             <div
+              className="client-notifications"
               title="Notifications"
               style={{
                 position: 'relative',
@@ -918,19 +963,12 @@ export default function ClientLayout() {
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
               {/* Notification dot */}
-              <span style={{
-                position: 'absolute',
-                top: '7px',
-                right: '8px',
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: '#2563eb'
-              }} />
+              <span className="client-notification-badge">3</span>
             </div>
 
             {/* Profile Avatar & Name */}
             <div
+              className="client-profile-button"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -945,7 +983,7 @@ export default function ClientLayout() {
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               {/* Circular Avatar SB */}
-              <div style={{
+              <div className="client-profile-avatar" style={{
                 width: '38px',
                 height: '38px',
                 borderRadius: '50%',
@@ -963,20 +1001,37 @@ export default function ClientLayout() {
               </div>
 
               {/* Name & Role */}
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '13.5px', fontWeight: 750, color: '#0f172a', lineHeight: 1.25 }}>
+              <div className="client-profile-copy" style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="client-profile-name" style={{ fontSize: '13.5px', fontWeight: 750, color: '#0f172a', lineHeight: 1.25 }}>
                   {userName}
                 </span>
-                <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
+                <span className="client-profile-role" style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
                   Étudiant
                 </span>
               </div>
 
               {/* Dropdown arrow */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '2px' }}>
+              <svg className="client-profile-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '2px' }}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </div>
+            <button className="client-nav-logout client-desktop-logout" type="button" onClick={handleLogout} aria-label="Déconnexion" title="Déconnexion">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+            </button>
+          </div>
+          <div className="client-account-menu">
+            <button className="client-settings-button" type="button" aria-label="Paramètres du compte" aria-expanded={isAccountMenuOpen} onClick={() => setIsAccountMenuOpen((open) => !open)}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 13.5 1.1.9-1.6 2.8-1.4-.5a7.5 7.5 0 0 1-1.4.8l-.2 1.5h-3.2l-.3-1.5a7.5 7.5 0 0 1-1.6 0l-.8 1.3-2.8-1.6.5-1.4a7.5 7.5 0 0 1-.8-1.4l-1.5-.2v-3.2l1.5-.3a7.5 7.5 0 0 1 0-1.6L5.6 8.3l1.6-2.8 1.4.5A7.5 7.5 0 0 1 10 5.2l.2-1.5h3.2l.3 1.5a7.5 7.5 0 0 1 1.6 0l.8-1.3 2.8 1.6-.5 1.4a7.5 7.5 0 0 1 .8 1.4l1.5.2v3.2l-1.5.3a7.5 7.5 0 0 1 0 1.6Z"/></svg>
+            </button>
+            {isAccountMenuOpen && <div className="client-account-dropdown">
+              <div className="client-account-heading">{userName}</div>
+              <button type="button" onClick={() => { setIsAccountMenuOpen(false); navigate('/client-profile'); }}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profil
+              </button>
+              <button type="button" onClick={handleLogout}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>Déconnexion
+              </button>
+            </div>}
           </div>
         </header>
 

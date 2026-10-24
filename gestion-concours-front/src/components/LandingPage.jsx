@@ -40,7 +40,7 @@ const CARDS_DATA = [
   { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'Réseau ENSA Maroc' },
 ];
 
-function LandingMascot({ className = '', showCap = true }) {
+export function LandingMascot({ className = '', showCap = true }) {
   const mascotId = useId().replace(/:/g, '');
   return (
     <svg className={className} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
@@ -116,7 +116,6 @@ export default function LandingPage({ onNavigateToAuth }) {
   const cardRefs = useRef([]);
 
   // States
-  const [pricingPeriod, setPricingPeriod] = useState('annual');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -1017,130 +1016,69 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="lp-section-header">
           <span className="lp-section-eyebrow">FORMULES D'ACCÈS TRANSPARENTES</span>
           <h2 className="lp-section-title">
-            Investissez dans votre réussite.
+            Un pack. Votre filière. Toute l'année.
           </h2>
           <p className="lp-section-desc">
-            Des tarifs adaptés pour démarrer à votre rythme, sans engagement caché.
+            Paiement unique par pack. Choisissez les concours que vous préparez.
           </p>
         </div>
 
-        {/* Pricing Toggle */}
-        <div className="lp-pricing-toggle-wrap">
-          <span className={pricingPeriod === 'monthly' ? 'is-active' : ''}>Mensuel</span>
-          <button
-            type="button"
-            className={`lp-pricing-toggle-btn ${pricingPeriod === 'annual' ? 'is-annual' : ''}`}
-            onClick={() => setPricingPeriod(pricingPeriod === 'annual' ? 'monthly' : 'annual')}
-            aria-label="Basculer période tarifaire"
-          >
-            <div className="toggle-knob" />
-          </button>
-          <span className={pricingPeriod === 'annual' ? 'is-active' : ''}>Annuel</span>
-          <span className="lp-discount-badge">🎁 2 mois offerts</span>
-        </div>
-
-        {/* Pricing Cards */}
         <div className="lp-pricing-grid">
-          {/* Card 1: Découverte */}
-          <div className="lp-plan-card">
-            <h3 className="lp-plan-name">Pack Découverte</h3>
-            <p className="lp-plan-sub">Pour explorer la plateforme et tester vos bases</p>
-            <div className="lp-plan-price">
-              0 <small>DH</small>
+          {[
+            {
+              name: 'Médecine',
+              description: 'Accès complet au concours de médecine',
+              price: '500',
+              features: ['Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'ENSAM',
+              description: 'Accès complet au concours ENSAM',
+              price: '400',
+              features: ['ENSAM', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'ENSA',
+              description: 'Accès complet ENSA — ENSCK inclus',
+              price: '300',
+              features: ['ENSA', 'ENSCK', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'Médecine + ENSA',
+              description: 'Les deux concours, un seul paiement',
+              price: '700',
+              saving: 'Économisez 100 DH vs les packs séparés',
+              features: ['ENSA', 'Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'Médecine + ENSA + ENSAM',
+              description: 'Les trois concours — ENSCK et ENCG offerts',
+              price: '1000',
+              featured: true,
+              features: ['Médecine', 'ENSA', 'ENSAM', 'ENSCK', 'ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+          ].map((plan) => (
+            <div className={`lp-plan-card${plan.featured ? ' is-featured' : ''}`} key={plan.name}>
+              {plan.featured && <div className="lp-featured-ribbon">⭐ LE PLUS CHOISI</div>}
+              <h3 className="lp-plan-name">{plan.name}</h3>
+              <p className="lp-plan-sub">{plan.description}</p>
+              <div className="lp-plan-price">
+                {plan.price} <small>DH · unique</small>
+              </div>
+              {plan.saving && <span className="lp-discount-badge">{plan.saving}</span>}
+              <ul className="lp-plan-features">
+                {plan.features.map((feature) => (
+                  <li key={feature}>
+                    <span className="check-icon">✓</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button className="lp-plan-btn" type="button" onClick={() => handleNav('register')}>
+                Souscrire <span aria-hidden="true">→</span>
+              </button>
             </div>
-            <ul className="lp-plan-features">
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Accès aux examens nationaux du Bac</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Résumés de cours fondamentaux</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>3 QCM de démonstration</span>
-              </li>
-              <li>
-                <span className="cross-icon">✕</span>
-                <span style={{ color: '#94a3b8' }}>Concours blancs interactifs complets</span>
-              </li>
-              <li>
-                <span className="cross-icon">✕</span>
-                <span style={{ color: '#94a3b8' }}>Corrigés détaillés pas-à-pas</span>
-              </li>
-            </ul>
-            <button className="lp-plan-btn" type="button" onClick={() => handleNav('register')}>
-              Créer un compte gratuit
-            </button>
-          </div>
-
-          {/* Card 2: Pro (Featured) */}
-          <div className="lp-plan-card is-featured">
-            <div className="lp-featured-ribbon">⭐ LE PLUS CHOISI</div>
-            <h3 className="lp-plan-name">Pack Concours Pro</h3>
-            <p className="lp-plan-sub">La préparation complète pour intégrer</p>
-            <div className="lp-plan-price">
-              {pricingPeriod === 'annual' ? '199' : '29'}
-              <small>{pricingPeriod === 'annual' ? 'DH / an' : 'DH / mois'}</small>
-            </div>
-            <ul className="lp-plan-features">
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Tous les résumés interactifs complets (LaTeX)</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Concours ENSA, ENSAM, Médecine & ENCG</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Corrigés détaillés étape par étape</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Mode examen chronométré avec barème officiel</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Tableau de bord « Mes erreurs » automatisé</span>
-              </li>
-            </ul>
-            <button className="lp-plan-btn" type="button" onClick={() => handleNav('register')}>
-              Commencer maintenant
-            </button>
-          </div>
-
-          {/* Card 3: VIP */}
-          <div className="lp-plan-card">
-            <h3 className="lp-plan-name">Accompagnement VIP</h3>
-            <p className="lp-plan-sub">Coaching personnalisé et suivi continu</p>
-            <div className="lp-plan-price">
-              {pricingPeriod === 'annual' ? '499' : '59'}
-              <small>{pricingPeriod === 'annual' ? 'DH / an' : 'DH / mois'}</small>
-            </div>
-            <ul className="lp-plan-features">
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Tout le contenu du Pack Concours Pro</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Sessions live mensuelles de Q&R avec enseignants</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Conseils d’orientation post-bac sur mesure</span>
-              </li>
-              <li>
-                <span className="check-icon">✓</span>
-                <span>Support prioritaire 7j/7 sur WhatsApp</span>
-              </li>
-            </ul>
-            <button className="lp-plan-btn" type="button" onClick={() => handleNav('register')}>
-              Rejoindre le programme VIP
-            </button>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -1162,7 +1100,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           {[
             {
               q: "Comment ECONCOURS m'aide-t-il à réussir les concours des grandes écoles ?",
-              a: "ECONCOURS réunit pour la première fois en un seul endroit tous les examens officiels des 15 dernières années (ENSA, ENSAM, Médecine, ENCG). Vous révisez avec des cours rédigés en LaTeX net, puis vous vous entraînez sur les vrais QCM avec un chronomètre et un barème de points conforme à la réalité du concours."
+              a: "ECONCOURS réunit pour la première fois en un seul endroit tous les examens officiels des 15 dernières années (ENSA, ENSAM, Médecine, ENCG). Vous révisez avec des cours clairs et structurés, puis vous vous entraînez sur les vrais QCM avec un chronomètre et un barème de points conforme à la réalité du concours."
             },
             {
               q: "Les épreuves et les corrigés sont-ils conformes aux concours officiels au Maroc ?",
@@ -1178,7 +1116,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             },
             {
               q: "Puis-je commencer gratuitement sans carte bancaire ?",
-              a: "Oui, l'inscription au Pack Découverte est 100% gratuite et sans engagement. Vous pouvez créer votre compte en 30 secondes pour explorer les résumés et tester vos premiers QCM."
+              a: "Oui, la création d'un compte est gratuite et sans engagement. Vous pouvez créer votre compte en 30 secondes pour découvrir la plateforme et choisir le pack adapté à vos concours."
             }
           ].map((faq, index) => {
             const isOpen = openFaqIndex === index;
@@ -1215,7 +1153,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="lp-bottom-cta-card">
           <div className="lp-bottom-cta-content">
             <span className="lp-bottom-cta-kicker"><i aria-hidden="true">✦</i> TON PROCHAIN CHAPITRE COMMENCE ICI</span>
-            <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves&nbsp;?</h2>
+            <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
             <p>Rejoins les bacheliers qui préparent leur réussite avec un parcours clair, des annales et des QCM ciblés.</p>
             <div className="lp-bottom-cta-benefits">
               <span><i aria-hidden="true">✓</i> Inscription gratuite</span>

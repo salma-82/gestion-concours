@@ -1,663 +1,343 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ClientCompetitions from './ClientCompetitions';
-
-import logoImg from '../assets/logo.png';
+import axios from 'axios';
 import './ClientDashboard.css';
 import {
+  readStudentMistakes,
   readStudentProgress,
   setStudentActivityCompleted
 } from '../studentProgress';
 
-const getSubjectStyle = (subject) => {
+const API_BASE = 'http://localhost:8081';
+const normalizeSchool = (name) => String(name || '').trim().toLocaleLowerCase();
+const scoresOf = (records) => records
+  .map((record) => record.score)
+  .filter((score) => score !== null && score !== undefined && score !== '')
+  .map(Number)
+  .filter(Number.isFinite);
+
+const subjectStyle = (subject) => {
   const normalized = String(subject || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  if (normalized.includes('math')) return { name: 'Mathématiques', icon: '📐', color: '#2563eb', bgColor: '#eaf2ff' };
-  if (normalized.includes('phys') || normalized.includes('chim') || normalized === 'pc') return { name: 'Physique-Chimie', icon: '⚡', color: '#7c3aed', bgColor: '#f3e8ff' };
-  if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return { name: 'SVT', icon: '🧬', color: '#059669', bgColor: '#dcfce7' };
-  if (normalized.includes('philo')) return { name: 'Philosophie', icon: '🏛️', color: '#d97706', bgColor: '#fef3c7' };
-  if (normalized.includes('ang') || normalized.includes('eng')) return { name: 'Anglais', icon: '🌐', color: '#0284c7', bgColor: '#e0f2fe' };
-  return { name: subject || 'Autres ressources', icon: '📚', color: '#475569', bgColor: '#f1f5f9' };
+  if (normalized.includes('math')) return { name: 'Math\u00e9matiques', icon: '\u2211', color: '#2563eb', tint: '#eff6ff' };
+  if (normalized.includes('phys') || normalized.includes('chim') || normalized === 'pc') return { name: 'Physique-Chimie', icon: '\u03A8', color: '#7c3aed', tint: '#f5f3ff' };
+  if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return { name: 'SVT', icon: '\u25C9', color: '#059669', tint: '#ecfdf5' };
+  if (normalized.includes('philo')) return { name: 'Philosophie', icon: '\u03A6', color: '#d97706', tint: '#fffbeb' };
+  if (normalized.includes('ang') || normalized.includes('eng')) return { name: 'Anglais', icon: 'A', color: '#0284c7', tint: '#f0f9ff' };
+  return { name: subject || 'Autres ressources', icon: '\u25A4', color: '#475569', tint: '#f1f5f9' };
+};
+
+const formatDate = (value) => {
+  if (!value) return 'Date inconnue';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Date inconnue';
+  return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
 };
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
   let user = {};
-  try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
-  const candidateName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant');
-  const currentYear = new Date().getFullYear();
+  try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch { user = {}; }
+  const firstName = user.prenom || user.nom || 'Etudiant';
 
   const [studentActivities, setStudentActivities] = useState(() => readStudentProgress());
+  const [mistakes, setMistakes] = useState(() => readStudentMistakes());
+  const [schoolCatalog, setSchoolCatalog] = useState([]);
+  const [schoolAttempts, setSchoolAttempts] = useState([]);
+  const [schoolDataLoading, setSchoolDataLoading] = useState(true);
+  const [schoolCatalogError, setSchoolCatalogError] = useState(false);
+  const [schoolHistoryError, setSchoolHistoryError] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState('');
+
   useEffect(() => {
-    const refreshProgress = () => {
+    const refreshData = () => {
       setStudentActivities(readStudentProgress());
+      setMistakes(readStudentMistakes());
     };
-    refreshProgress();
-    window.addEventListener('student-progress-updated', refreshProgress);
-    window.addEventListener('storage', refreshProgress);
+    refreshData();
+    window.addEventListener('student-progress-updated', refreshData);
+    window.addEventListener('student-mistakes-updated', refreshData);
+    window.addEventListener('storage', refreshData);
     return () => {
-      window.removeEventListener('student-progress-updated', refreshProgress);
-      window.removeEventListener('storage', refreshProgress);
+      window.removeEventListener('student-progress-updated', refreshData);
+      window.removeEventListener('student-mistakes-updated', refreshData);
+      window.removeEventListener('storage', refreshData);
     };
   }, []);
 
-  const progressBySubject = studentActivities.reduce((groups, activity) => {
-    const style = getSubjectStyle(activity.subject);
-    const group = groups[style.name] || { ...style, total: 0, completed: 0 };
-    group.total += 1;
-    if (activity.completed) group.completed += 1;
-    groups[style.name] = group;
-    return groups;
-  }, {});
-  const studentProgressByMatiere = Object.values(progressBySubject)
-    .map((group) => ({ ...group, percent: group.total ? Math.round((group.completed / group.total) * 100) : 0 }))
-    .sort((a, b) => b.total - a.total);
-  const trackedResourceCount = studentActivities.length;
-  const completedResourceCount = studentActivities.filter((activity) => activity.completed).length;
-  const overallProgress = trackedResourceCount ? Math.round((completedResourceCount / trackedResourceCount) * 100) : 0;
+  useEffect(() => {
+    let active = true;
+    const loadSchoolData = async () => {
+      let studentId = null;
+      try { studentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
+      const [catalogResult, attemptsResult] = await Promise.allSettled([
+        axios.get(`${API_BASE}/api/concours`),
+        studentId
+          ? axios.get(`${API_BASE}/api/qcm/mes-concours`, { params: { studentId } })
+          : Promise.resolve({ data: { attempts: [] } })
+      ]);
+      if (!active) return;
+      setSchoolCatalogError(catalogResult.status === 'rejected');
+      setSchoolHistoryError(attemptsResult.status === 'rejected');
+      setSchoolCatalog(catalogResult.status === 'fulfilled' && Array.isArray(catalogResult.value.data) ? catalogResult.value.data : []);
+      setSchoolAttempts(attemptsResult.status === 'fulfilled' && Array.isArray(attemptsResult.value.data?.attempts) ? attemptsResult.value.data.attempts : []);
+      setSchoolDataLoading(false);
+    };
+    loadSchoolData();
+    window.addEventListener('student-qcm-history-updated', loadSchoolData);
+    return () => {
+      active = false;
+      window.removeEventListener('student-qcm-history-updated', loadSchoolData);
+    };
+  }, []);
+
+  const completedCount = studentActivities.filter((activity) => activity.completed).length;
+  const resourceCount = studentActivities.length;
+  const overallProgress = resourceCount ? Math.round((completedCount / resourceCount) * 100) : 0;
+  const pendingMistakes = mistakes.filter((mistake) => !mistake.reviewed).length;
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const activitiesThisWeek = studentActivities.filter((activity) => new Date(activity.lastViewedAt).getTime() >= weekAgo).length;
-  const completionsThisWeek = studentActivities.filter((activity) => activity.completedAt && new Date(activity.completedAt).getTime() >= weekAgo).length;
-  const recentStudentActivities = [...studentActivities]
+  const activitiesThisWeek = studentActivities.filter((activity) => {
+    const timestamp = new Date(activity.lastViewedAt).getTime();
+    return Number.isFinite(timestamp) && timestamp >= weekAgo;
+  }).length;
+
+  const progressBySubject = useMemo(() => {
+    const groups = studentActivities.reduce((result, activity) => {
+      const style = subjectStyle(activity.subject);
+      const group = result[style.name] || { ...style, total: 0, completed: 0 };
+      group.total += 1;
+      if (activity.completed) group.completed += 1;
+      result[style.name] = group;
+      return result;
+    }, {});
+    return Object.values(groups)
+      .map((group) => ({ ...group, percent: group.total ? Math.round((group.completed / group.total) * 100) : 0 }))
+      .sort((a, b) => b.total - a.total);
+  }, [studentActivities]);
+
+  const schoolCards = useMemo(() => {
+    const grouped = new Map();
+    schoolCatalog.forEach((contest) => {
+      const name = String(contest.ecole || '').trim();
+      const key = normalizeSchool(name);
+      if (!key) return;
+      const current = grouped.get(key) || { name, contestCount: 0, subjects: new Set(), years: new Set() };
+      current.contestCount += 1;
+      if (String(contest.matiere || '').trim()) current.subjects.add(String(contest.matiere).trim());
+      if (contest.annee) current.years.add(String(contest.annee));
+      grouped.set(key, current);
+    });
+
+    return [...grouped.values()].map((school) => {
+      const attempts = schoolAttempts.filter((attempt) => normalizeSchool(attempt.school) === normalizeSchool(school.name));
+      const scored = scoresOf(attempts);
+      const subjects = [...new Set(attempts.map((attempt) => String(attempt.subject || '').trim()).filter(Boolean))]
+        .map((name) => {
+          const records = attempts.filter((attempt) => String(attempt.subject || '').trim() === name);
+          const scores = scoresOf(records);
+          return {
+            name,
+            attempts: records.length,
+            average: scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : null
+          };
+        })
+        .sort((a, b) => (b.average ?? -1) - (a.average ?? -1));
+      return {
+        ...school,
+        subjects: [...school.subjects],
+        years: [...school.years].sort((a, b) => Number(b) - Number(a)),
+        attemptCount: attempts.length,
+        attemptedContests: new Set(attempts.map((attempt) => `${attempt.resourceType || ''}:${attempt.resourceId}`)).size,
+        average: scored.length ? Math.round(scored.reduce((sum, score) => sum + score, 0) / scored.length) : null,
+        best: scored.length ? Math.max(...scored) : null,
+        successRate: scored.length ? Math.round((scored.filter((score) => score >= 50).length / scored.length) * 100) : null,
+        subjectStats: subjects
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }, [schoolCatalog, schoolAttempts]);
+  const selectedSchoolStats = schoolCards.find((school) => normalizeSchool(school.name) === normalizeSchool(selectedSchool));
+
+  const recentActivities = [...studentActivities]
     .sort((a, b) => new Date(b.lastViewedAt).getTime() - new Date(a.lastViewedAt).getTime())
     .slice(0, 5);
-  // ─── Progress Data (Matches the reference image exactly: 78%, 64%, 85%) ───
-  const progressByMatiere = [
-    {
-      nom: 'Mathématiques',
-      icon: '📐',
-      percent: 78,
-      color: '#2563eb',
-      bgColor: '#eaf2ff',
-      chapitresFait: 11,
-      totalChapitres: 14,
-      details: 'Limites, Dérivation, Complexes'
-    },
-    {
-      nom: 'Physique-Chimie',
-      icon: '⚡',
-      percent: 64,
-      color: '#7c3aed',
-      bgColor: '#f3e8ff',
-      chapitresFait: 9,
-      totalChapitres: 14,
-      details: 'Ondes, Nucléaire, RLC'
-    },
-    {
-      nom: 'SVT',
-      icon: '🧬',
-      percent: 85,
-      color: '#059669',
-      bgColor: '#dcfce7',
-      chapitresFait: 6,
-      totalChapitres: 7,
-      details: 'Génétique, Immunologie'
-    }
-  ];
 
-  const recentActivities = [
-    { type: 'QCM', title: 'Concours Blanc ENSA - Math', date: 'Aujourd\'hui 16:30', score: '17.5/20', status: 'Terminé', statusColor: '#059669', statusBg: '#dcfce7' },
-    { type: 'Examen', title: 'Bac 2023 - Physique-Chimie', date: 'Hier 20:15', score: 'Consulté', status: 'Révisé', statusColor: '#2563eb', statusBg: '#dbeafe' },
-    { type: 'Fiche', title: 'Nombres Complexes', date: 'Il y a 2 jours', score: '100% lu', status: 'Validé', statusColor: '#7c3aed', statusBg: '#f3e8ff' }
-  ];
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - (6 - index));
+    const count = studentActivities.filter((activity) => {
+      const viewed = new Date(activity.lastViewedAt);
+      return !Number.isNaN(viewed.getTime())
+        && viewed.getFullYear() === date.getFullYear()
+        && viewed.getMonth() === date.getMonth()
+        && viewed.getDate() === date.getDate();
+    }).length;
+    return { label: new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(date).replace('.', ''), count, key: date.toISOString() };
+  });
+  const maxDayCount = Math.max(1, ...weekDays.map((day) => day.count));
 
-  const adviceList = [
-    { icon: '⏱️', title: 'Simulez en temps réel', text: 'Chronométrez-vous pour maîtriser la gestion du temps.' },
-    { icon: '💡', title: 'Analysez les erreurs', text: 'Relisez toujours le corrigé détaillé après un test.' },
-    { icon: '📅', title: 'Pratique quotidienne', text: 'Résolvez au moins 1 sujet ou QCM chaque jour.' }
-  ];
-
-  const friends = [
-    { name: 'Youssef M.', action: 'QCM Math', img: 12 },
-    { name: 'Amina K.', action: 'Résumé SVT', img: 32 },
-    { name: 'Omar R.', action: 'Classement #5', img: 25 },
-    { name: 'Lina S.', action: 'QCM PC', img: 44 },
-    { name: 'Karim B.', action: 'Streak 22j', img: 8 }
+  const stats = [
+    { label: 'Ressources consult\u00e9es', value: resourceCount, note: 'Cours, fiches et epreuves', icon: '\u25A4', tint: '#eff6ff', color: '#2563eb' },
+    { label: 'Ressources termin\u00e9es', value: completedCount, note: 'Marquees comme terminees', icon: '\u2713', tint: '#ecfdf5', color: '#059669' },
+    { label: 'Activite cette semaine', value: activitiesThisWeek, note: 'Ressources consultees', icon: '\u2197', tint: '#f5f3ff', color: '#7c3aed' },
+    { label: 'Erreurs a revoir', value: pendingMistakes, note: 'Questions a retravailler', icon: '!', tint: '#fff7ed', color: '#ea580c' }
   ];
 
   return (
-    <div style={{
-      minHeight: '100%',
-      backgroundColor: '#f3f6fb',
-      fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-      padding: '26px 32px 50px 32px',
-      color: '#0f172a'
-    }} className="client-dashboard">
-      <div style={{ maxWidth: '1560px', margin: '0 auto' }} className="client-dashboard-content">
-
-        {/* ══════════════════════════════════════════════════════════
-            1. HERO BANNER (IDENTIQUE AU DESIGN DE L'IMAGE)
-        ══════════════════════════════════════════════════════════ */}
-        <div className="client-dashboard-hero" style={{
-          position: 'relative',
-          backgroundColor: '#ffffff',
-          backgroundImage: 'linear-gradient(105deg, #ffffff 0%, #ffffff 52%, #edf6fe 78%, #dbedfe 100%)',
-          borderRadius: '26px',
-          border: '1px solid rgba(226, 232, 240, 0.8)',
-          boxShadow: '0 4px 20px -2px rgba(37, 99, 235, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)',
-          padding: '28px 36px',
-          marginBottom: '24px',
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          minHeight: '230px'
-        }}>
-          {/* Subtle Decorative Dots Pattern in Top-Right */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            right: '40px',
-            width: '120px',
-            height: '60px',
-            backgroundImage: 'radial-gradient(#93c5fd 1.2px, transparent 1.2px)',
-            backgroundSize: '14px 14px',
-            opacity: 0.55,
-            pointerEvents: 'none'
-          }} />
-
-          {/* Left Content */}
-          <div className="client-dashboard-hero-content" style={{ flex: 1, maxWidth: '640px', zIndex: 2 }}>
-            {/* Pill Tag */}
-            <div className="client-dashboard-hero-badge" style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              backgroundColor: '#e9f2fe',
-              color: '#1d68f2',
-              fontSize: '12px',
-              fontWeight: 700,
-              marginBottom: '14px'
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span>Préparation {currentYear} · Espace étudiant</span>
-            </div>
-
-            {/* Title */}
-            <h1 className="client-dashboard-hero-title" style={{
-              margin: '0 0 10px 0',
-              fontSize: '30px',
-              fontWeight: 800,
-              color: '#0f172a',
-              letterSpacing: '-0.5px',
-              lineHeight: 1.2
-            }}>
-              Bonjour, {candidateName} 👋
-            </h1>
-
-            {/* Description Subtitle */}
-            <p className="client-dashboard-hero-description" style={{
-              margin: '0 0 22px 0',
-              fontSize: '13.5px',
-              color: '#475569',
-              lineHeight: 1.55,
-              fontWeight: 450
-            }}>
-              Suivez votre progression en temps réel, préparez votre admission aux Grandes Écoles (ENSA, ENSAM, Médecine, ENCG) et perfectionnez pour le Baccalauréat.
-            </p>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => navigate('/client-erreurs')}
-                style={{
-                  background: 'linear-gradient(90deg, #1862ea 0%, #2979fb 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '12px 26px',
-                  borderRadius: '9999px',
-                  fontWeight: 750,
-                  fontSize: '13.5px',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  boxShadow: '0 6px 18px -2px rgba(24, 98, 234, 0.35)',
-                  transition: 'all 0.18s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 22px -2px rgba(24, 98, 234, 0.45)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 6px 18px -2px rgba(24, 98, 234, 0.35)';
-                }}
-              >
-                <span>→</span>
-                <span>Consulter mes erreurs</span>
-              </button>
+    <div className="client-dashboard">
+      <div className="client-dashboard-content">
+        <section className="dashboard-welcome">
+          <div className="dashboard-welcome-copy">
+            <span className="dashboard-eyebrow">VOTRE ESPACE DE R&Eacute;VISION</span>
+            <h1>Bonjour, {firstName}</h1>
+            <p>Retrouvez votre progression et reprenez vos r&eacute;visions l&agrave; o&ugrave; vous les avez laiss&eacute;es.</p>
+            <div className="dashboard-welcome-actions">
+              <button type="button" className="dashboard-primary-action" onClick={() => navigate('/client-cours')}>Continuer mes r&eacute;visions <span aria-hidden="true">{'\u2192'}</span></button>
+              <button type="button" className="dashboard-secondary-action" onClick={() => navigate('/client-examens')}>Voir les examens</button>
             </div>
           </div>
-
-          {/* Logo du site */}
-          <div className="client-dashboard-logo-stage" style={{
-            position: 'relative',
-            width: '280px',
-            height: '200px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            padding: '14px',
-            boxSizing: 'border-box',
-            borderRadius: '24px',
-            border: '1px solid rgba(191, 219, 254, 0.9)',
-            background: 'rgba(255, 255, 255, 0.72)',
-            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.08)'
-          }}>
-            <img
-              src={logoImg}
-              alt="Logo ECONCOURS"
-              className="client-dashboard-logo"
-              style={{
-                width: '100%',
-                height: '100%',
-                maxWidth: '250px',
-                maxHeight: '170px',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 5px 10px rgba(37, 99, 235, 0.12))'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
-            3. PROGRESSION DE MAÎTRISE PAR MATIÈRE
-        ══════════════════════════════════════════════════════════ */}
-        <div id="student-progress-section" style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          border: '1px solid #edf2f7',
-          padding: '24px 28px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
-          marginBottom: '26px'
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px',
-            flexWrap: 'wrap',
-            gap: '12px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                backgroundColor: '#eaf2ff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563eb">
-                  <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zM16.2 13h2.8v6h-2.8z" />
-                </svg>
-              </div>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: 800,
-                margin: 0,
-                color: '#0f172a',
-                letterSpacing: '-0.3px'
-              }}>
-                Ma progression par matière
-              </h2>
+          <div className="dashboard-overall-card">
+            <div className="dashboard-ring" style={{ '--progress': `${overallProgress}%` }}>
+              <div><strong>{overallProgress}%</strong><span>termin&eacute;</span></div>
             </div>
-
-            {/* Score Global Badge */}
-            <div style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              padding: '6px 18px',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '10px',
-                fontWeight: 800,
-                color: '#64748b',
-                textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                lineHeight: 1.2
-              }}>
-                AVANCEMENT SUIVI
-              </div>
-              <div style={{
-                fontSize: '17px',
-                fontWeight: 850,
-                color: '#0f172a',
-                lineHeight: 1.3
-              }}>
-                {overallProgress}% terminé
-              </div>
-              <div style={{ color: '#64748b', fontSize: '10px', marginTop: '2px' }}>
-                {completedResourceCount} sur {trackedResourceCount} ressources consultées
-              </div>
+            <div className="dashboard-overall-copy">
+              <strong>Progression g&eacute;n&eacute;rale</strong>
+              <span>{completedCount} sur {resourceCount} ressources consult&eacute;es</span>
             </div>
           </div>
+        </section>
 
-          {/* Progression calculée à partir des ressources réellement consultées */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-            gap: '18px'
-          }}>
-            {studentProgressByMatiere.map((mat) => (
-              <div
-                key={mat.name}
-                style={{
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #e8edf4',
-                  borderRadius: '16px',
-                  padding: '16px 18px',
-                  transition: 'all 0.18s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#ffffff';
-                  e.currentTarget.style.borderColor = mat.color;
-                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.03)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f8fafc';
-                  e.currentTarget.style.borderColor = '#e8edf4';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {/* Title + Percentage Pill */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '14px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      backgroundColor: mat.bgColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '16px'
-                    }}>
-                      {mat.icon}
-                    </div>
-                    <span style={{ fontSize: '14.5px', fontWeight: 750, color: '#0f172a' }}>
-                      {mat.nom}
-                    </span>
-                  </div>
+        <section className="dashboard-stats" aria-label="Statistiques de progression">
+          {stats.map((stat) => (
+            <article className="dashboard-stat-card" key={stat.label}>
+              <span className="dashboard-stat-icon" style={{ color: stat.color, background: stat.tint }}>{stat.icon}</span>
+              <div className="dashboard-stat-copy"><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.note}</small></div>
+            </article>
+          ))}
+        </section>
 
-                  <span style={{
-                    fontSize: '12px',
-                    fontWeight: 750,
-                    color: mat.color,
-                    backgroundColor: mat.bgColor,
-                    padding: '3px 9px',
-                    borderRadius: '10px'
-                  }}>
-                    {mat.percent}%
-                  </span>
-                </div>
-
-                {/* Progress Bar */}
-                <div style={{
-                  height: '8px',
-                  backgroundColor: '#e2e8f0',
-                  borderRadius: '999px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${mat.percent}%`,
-                    backgroundColor: mat.color,
-                    borderRadius: '999px',
-                    transition: 'width 0.8s ease'
-                  }} />
-                </div>
-                <div style={{ marginTop: '8px', color: '#64748b', fontSize: '11.5px' }}>
-                  {mat.completed} terminée{mat.completed > 1 ? 's' : ''} sur {mat.total} ressource{mat.total > 1 ? 's' : ''} consultée{mat.total > 1 ? 's' : ''}
-                </div>
-              </div>
-            ))}
+        <section className="dashboard-panel dashboard-school-section" aria-label="Statistiques par école">
+          <div className="dashboard-panel-heading">
+            <div><span className="dashboard-section-kicker">VOS OBJECTIFS</span><h2>Progression par &eacute;cole</h2></div>
+            <span className="dashboard-school-count">{schoolCards.length} &eacute;cole{schoolCards.length > 1 ? 's' : ''}</span>
           </div>
-          {studentProgressByMatiere.length === 0 && (
-            <div style={{ padding: '22px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '13px', textAlign: 'center' }}>
-              Votre progression apparaîtra ici après la consultation de vos cours, résumés ou épreuves.
-            </div>
-          )}
-          <p style={{ margin: '16px 0 0', color: '#64748b', fontSize: '12px' }}>
-            Marquez une ressource comme terminée dans « Activités récentes » pour suivre votre avancement.
-          </p>
-        </div>
-
-        {/*
-            5. DISCORD + AMIS + CLASSEMENT
-        ══════════════════════════════════════════════════════════ */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '22px', marginBottom: '28px' }}>
-          {/* Discord Card */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '22px',
-            border: '1px solid #edf2f7',
-            padding: '24px',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '160px',
-              height: '160px',
-              background: 'radial-gradient(circle, rgba(88,101,242,0.12) 0%, transparent 70%)',
-              borderRadius: '50%',
-              pointerEvents: 'none'
-            }} />
-            <div style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '52px',
-                  height: '52px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #5865F2 0%, #4752c4 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  boxShadow: '0 4px 14px rgba(88, 101, 242, 0.25)'
-                }}>
-                  💬
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, color: '#0f172a' }}>Discord Communauté</h3>
-                </div>
-              </div>
-              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px', lineHeight: 1.5 }}>
-                Rejoignez la communauté pour réviser ensemble, échanger des conseils et poser vos questions.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                {['Révisions en groupe', 'Questions & réponses', 'Entraide'].map((label) => (
-                  <div key={label} style={{ background: '#f5f6ff', border: '1px solid #e1e4ff', borderRadius: '999px', padding: '7px 10px', color: '#4752c4', fontSize: '10.5px', fontWeight: 700 }}>
-                    {label}
-                  </div>
+          <p className="dashboard-panel-description">Choisissez une &eacute;cole pour consulter vos r&eacute;sultats et votre progression.</p>
+          {schoolDataLoading ? <div className="dashboard-school-message">Chargement des &eacute;coles et des r&eacute;sultats...</div>
+            : schoolCatalogError ? <div className="dashboard-school-message">Impossible de charger la liste des &eacute;coles pour le moment.</div>
+            : schoolCards.length ? <>
+              <div className="dashboard-school-cards">
+                {schoolCards.map((school) => (
+                  <button type="button" key={school.name} className={`dashboard-school-card ${normalizeSchool(selectedSchool) === normalizeSchool(school.name) ? 'is-selected' : ''}`} onClick={() => setSelectedSchool(normalizeSchool(selectedSchool) === normalizeSchool(school.name) ? '' : school.name)} aria-pressed={normalizeSchool(selectedSchool) === normalizeSchool(school.name)}>
+                    <span className="dashboard-school-mark" aria-hidden="true">{school.name.slice(0, 1).toUpperCase()}</span>
+                    <span className="dashboard-school-card-copy"><strong>{school.name}</strong><small>{school.contestCount} concours &middot; {school.subjects.length} mati&egrave;re{school.subjects.length > 1 ? 's' : ''}</small></span>
+                    <span className="dashboard-school-average">{school.average === null ? '--' : `${school.average}%`}<small>moyenne</small></span>
+                  </button>
                 ))}
               </div>
-              <a
-                href="https://discord.gg/bacprep"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  background: 'linear-gradient(135deg, #5865F2 0%, #4752c4 100%)',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  padding: '11px',
-                  borderRadius: '12px',
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 12px rgba(88, 101, 242, 0.25)',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                🚀 Rejoindre le Discord
-              </a>
-            </div>
-          </div>
+              {selectedSchoolStats && <div className="dashboard-school-detail">
+                <div className="dashboard-school-detail-heading"><div><span>VOTRE DASHBOARD</span><h3>{selectedSchoolStats.name}</h3></div><button type="button" onClick={() => setSelectedSchool('')} aria-label="Fermer le dashboard de cette école">&times;</button></div>
+                <div className="dashboard-school-metrics">
+                  <article><span>Concours disponibles</span><strong>{selectedSchoolStats.contestCount}</strong></article>
+                  <article><span>Concours tent&eacute;s</span><strong>{selectedSchoolStats.attemptedContests}</strong><small>{selectedSchoolStats.attemptCount} tentative{selectedSchoolStats.attemptCount > 1 ? 's' : ''}</small></article>
+                  <article><span>Score moyen</span><strong>{selectedSchoolStats.average === null ? '--' : `${selectedSchoolStats.average}%`}</strong></article>
+                  <article><span>Meilleur score</span><strong>{selectedSchoolStats.best === null ? '--' : `${selectedSchoolStats.best}%`}</strong></article>
+                  <article><span>Scores &agrave; 50% ou plus</span><strong>{selectedSchoolStats.successRate === null ? '--' : `${selectedSchoolStats.successRate}%`}</strong></article>
+                </div>
+                {!!selectedSchoolStats.years.length && <div className="dashboard-school-years"><strong>Ann&eacute;es disponibles</strong>{selectedSchoolStats.years.map((year) => <span key={year}>{year}</span>)}</div>}
+                {schoolHistoryError ? <div className="dashboard-school-no-data">Impossible de charger vos r&eacute;sultats pour le moment.</div>
+                  : selectedSchoolStats.attemptCount ? <>
+                  <div className="dashboard-school-detail-title">R&eacute;sultats par mati&egrave;re</div>
+                  {selectedSchoolStats.subjectStats.length ? <div className="dashboard-school-subjects">
+                    {selectedSchoolStats.subjectStats.map((subject) => <div className="dashboard-school-subject-row" key={subject.name}><strong>{subject.name}</strong><span>{subject.attempts} tentative{subject.attempts > 1 ? 's' : ''}</span><b>{subject.average === null ? '--' : `${subject.average}%`}</b></div>)}
+                  </div> : <p className="dashboard-school-no-data">Les mati&egrave;res ne sont pas disponibles dans les r&eacute;sultats enregistr&eacute;s.</p>}
+                </> : <div className="dashboard-school-no-data">Aucune tentative enregistr&eacute;e pour cette &eacute;cole pour le moment. Vos r&eacute;sultats appara&icirc;tront ici apr&egrave;s un concours.</div>}
+              </div>}
+            </> : <div className="dashboard-school-message">Aucune &eacute;cole avec des concours publi&eacute;s pour le moment.</div>}
+        </section>
 
-          {/* Weekly progress from this student's actual activity */}
-          <div style={{
-            background: '#ffffff', borderRadius: '22px', border: '1px solid #edf2f7',
-            padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
-          }}>
-            <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: '0 0 6px', color: '#0f172a' }}>Cette semaine</h3>
-            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 18px' }}>Votre activité sur les 7 derniers jours.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '25px', fontWeight: 850, color: '#2563eb' }}>{activitiesThisWeek}</div>
-                <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700 }}>Ressources étudiées</div>
-              </div>
-              <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '25px', fontWeight: 850, color: '#059669' }}>{completionsThisWeek}</div>
-                <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700 }}>Terminées cette semaine</div>
-              </div>
+        <div className="dashboard-content-grid">
+          <section className="dashboard-panel dashboard-subject-panel">
+            <div className="dashboard-panel-heading">
+              <div><span className="dashboard-section-kicker">VOTRE APPRENTISSAGE</span><h2>Progression par mati&egrave;re</h2></div>
+              <button type="button" onClick={() => navigate('/client-cours')}>Parcourir les cours <span aria-hidden="true">{'\u2192'}</span></button>
             </div>
-            {activitiesThisWeek === 0 && (
-              <p style={{ margin: '14px 0 0', color: '#64748b', fontSize: '12px' }}>Consultez un cours ou un résumé pour commencer à suivre votre progression.</p>
+            {progressBySubject.length ? (
+              <div className="dashboard-subject-list">
+                {progressBySubject.map((subject) => (
+                  <article className="dashboard-subject-row" key={subject.name}>
+                    <span className="dashboard-subject-icon" style={{ color: subject.color, background: subject.tint }}>{subject.icon}</span>
+                    <div className="dashboard-subject-main">
+                      <div className="dashboard-subject-title"><strong>{subject.name}</strong><span>{subject.completed}/{subject.total} termin&eacute;es</span></div>
+                      <div className="dashboard-progress-track"><span style={{ width: `${subject.percent}%`, background: subject.color }} /></div>
+                    </div>
+                    <strong className="dashboard-subject-percent" style={{ color: subject.color }}>{subject.percent}%</strong>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="dashboard-empty-state">
+                <span>{'\u25CB'}</span><strong>Votre progression appara&icirc;tra ici</strong>
+                <p>Consultez un cours, un r&eacute;sum&eacute; ou un sujet pour commencer &agrave; suivre votre avanc&eacute;e.</p>
+                <button type="button" onClick={() => navigate('/client-cours')}>D&eacute;couvrir les cours</button>
+              </div>
             )}
-          </div>
+          </section>
 
-
-        {/* ══════════════════════════════════════════════════════════
-            6. ERREURS QCM ET ACTIVITÉS RÉCENTES
-        ══════════════════════════════════════════════════════════ */}
-        </div>
-        <ClientCompetitions />
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          border: '1px solid #edf2f7',
-          padding: '26px 30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.015)',
-          marginBottom: '26px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '20px' }}>⏱️</span>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.3px' }}>
-              Activités Récentes
-            </h2>
-          </div>
-          {recentStudentActivities.length === 0 ? (
-            <div style={{ padding: '24px', borderRadius: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#64748b', textAlign: 'center', fontSize: '13px' }}>
-              Vos cours, résumés et épreuves consultés apparaîtront ici.
+          <section className="dashboard-panel dashboard-week-panel">
+            <div className="dashboard-panel-heading">
+              <div><span className="dashboard-section-kicker">R&Eacute;GULARIT&Eacute;</span><h2>Cette semaine</h2></div>
+              <span className="dashboard-week-total">{activitiesThisWeek} ressource{activitiesThisWeek > 1 ? 's' : ''}</span>
             </div>
-          ) : recentStudentActivities.map((act) => (
-            <div
-              key={act.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '13px 18px',
-                background: '#f8fafc',
-                border: '1px solid #edf2f7',
-                borderRadius: '16px',
-                marginBottom: '10px',
-                flexWrap: 'wrap',
-                gap: '12px',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.03)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f8fafc';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '12px',
-                  background: act.completed ? '#dcfce7' : '#dbeafe',
-                  color: act.completed ? '#059669' : '#2563eb',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '11px',
-                  flexShrink: 0
-                }}>
-                  {act.type.slice(0, 3).toUpperCase()}
+            <p className="dashboard-panel-description">Ressources consult&eacute;es au cours des sept derniers jours.</p>
+            <div className="dashboard-week-chart" aria-label="Ressources consultees par jour">
+              {weekDays.map((day) => (
+                <div className="dashboard-week-day" key={day.key}>
+                  <span className="dashboard-week-count">{day.count || ''}</span>
+                  <div className="dashboard-week-bar-track"><span style={{ height: `${day.count ? Math.max(10, day.count / maxDayCount * 100) : 4}%` }} /></div>
+                  <span className="dashboard-week-label">{day.label}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>{act.title}</div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
-                    {[act.subject, act.chapter].filter(Boolean).join(' · ')}{act.lastViewedAt ? ` · ${new Date(act.lastViewedAt).toLocaleString('fr-FR')}` : ''}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 650 }}>Consulté {act.visits || 1} fois</span>
-                <button
-                  type="button"
-                  onClick={() => setStudentActivityCompleted(act.id, !act.completed)}
-                  style={{
-                    fontSize: '11px', fontWeight: 750, color: act.completed ? '#047857' : '#2563eb',
-                    background: act.completed ? '#ecfdf5' : '#eff6ff', border: `1px solid ${act.completed ? '#a7f3d0' : '#bfdbfe'}`,
-                    padding: '7px 10px', borderRadius: '10px', cursor: 'pointer'
-                  }}
-                >
-                  {act.completed ? '✓ Terminée · Réouvrir' : 'Marquer terminée'}
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
+            <div className="dashboard-week-footer"><span className="dashboard-week-dot" />Votre activit&eacute; est mise &agrave; jour automatiquement</div>
+          </section>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════
-            8. CONSEILS CLÉS POUR RÉUSSIR
-        ══════════════════════════════════════════════════════════ */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          border: '1px solid #edf2f7',
-          padding: '26px 30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.015)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '20px' }}>💡</span>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#0f172a' }}>Conseils Clés pour Réussir</h3>
+        <section className="dashboard-panel dashboard-activity-panel">
+          <div className="dashboard-panel-heading">
+            <div><span className="dashboard-section-kicker">REPRENDRE</span><h2>Activit&eacute;s r&eacute;centes</h2></div>
+            <button type="button" onClick={() => navigate('/client-erreurs?view=all')}>R&eacute;viser mes erreurs <span aria-hidden="true">{'\u2192'}</span></button>
           </div>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0' }}>
-            Habitudes éprouvées et recommandées par les lauréats des sessions précédentes :
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '18px' }}>
-            {adviceList.map((adv, i) => (
-              <div key={i} style={{ padding: '16px', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '16px' }}>
-                <div style={{ fontSize: '24px', marginBottom: '6px' }}>{adv.icon}</div>
-                <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{adv.title}</h4>
-                <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', lineHeight: 1.5 }}>{adv.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+          {recentActivities.length ? (
+            <div className="dashboard-activity-list">
+              {recentActivities.map((activity) => {
+                const subject = subjectStyle(activity.subject);
+                return (
+                  <article className="dashboard-activity-row" key={activity.id}>
+                    <span className="dashboard-activity-type" style={{ color: subject.color, background: subject.tint }}>{String(activity.type || 'Ressource').slice(0, 3).toUpperCase()}</span>
+                    <div className="dashboard-activity-copy"><strong>{activity.title}</strong><span>{[activity.subject, activity.chapter].filter(Boolean).join(' / ') || subject.name}</span></div>
+                    <time>{formatDate(activity.lastViewedAt)}</time>
+                    <button className={`dashboard-completion-button ${activity.completed ? 'is-complete' : ''}`} type="button" onClick={() => setStudentActivityCompleted(activity.id, !activity.completed)}>
+                      {activity.completed ? 'Termin&eacute;e \u2713' : 'Marquer termin&eacute;e'}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="dashboard-activity-empty">Vos ressources consult&eacute;es appara&icirc;tront ici. Commencez par choisir un cours ou un examen.</div>
+          )}
+        </section>
 
+        <section className="dashboard-quick-links" aria-label="Acces rapide">
+          <button type="button" onClick={() => navigate('/client-concours')}><span>{'\u25CE'}</span><strong>Concours</strong><small>&Eacute;coles et &eacute;preuves</small><b>{'\u2192'}</b></button>
+          <button type="button" onClick={() => navigate('/client-concours-blanc')}><span>{'\u2713'}</span><strong>Concours blancs</strong><small>Entra&icirc;nements disponibles</small><b>{'\u2192'}</b></button>
+          <button type="button" onClick={() => navigate('/client-resumes')}><span>{'\u25A4'}</span><strong>R&eacute;sum&eacute;s</strong><small>R&eacute;viser l'essentiel</small><b>{'\u2192'}</b></button>
+          <button type="button" onClick={() => navigate('/client-calendrier')}><span>{'\u25A6'}</span><strong>Calendrier</strong><small>Dates des concours</small><b>{'\u2192'}</b></button>
+          <a className="dashboard-discord-link" href="https://discord.com/app" target="_blank" rel="noreferrer" aria-label="Ouvrir Discord dans un nouvel onglet">
+            <span><svg viewBox="0 0 20 19" aria-hidden="true" focusable="false"><use href="/icons.svg#discord-icon" /></svg></span>
+            <strong>Discord</strong><small>Rejoindre la communaut&eacute;</small><b>{'\u2197'}</b>
+          </a>
+        </section>
       </div>
-
     </div>
   );
 }

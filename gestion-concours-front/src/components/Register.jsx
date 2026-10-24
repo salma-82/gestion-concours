@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import logoImg from '../assets/logo.png';
+import { LandingMascot } from './LandingPage';
+import './Auth.css';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -79,7 +80,7 @@ export default function Register() {
   };
 
   return (
-    <div style={{
+    <div className="auth-page auth-page--register" style={{
       minHeight: '100vh',
       width: '100vw',
       display: 'flex',
@@ -92,7 +93,7 @@ export default function Register() {
       {/* ========================================================
           PANNEAU DE GAUCHE : VIOLET AVEC LOGO & RETOUR CONNEXION
       ======================================================== */}
-      <div style={{
+      <div className="auth-side" style={{
         flex: '1 1 50%',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%)',
@@ -131,6 +132,7 @@ export default function Register() {
         {/* Bouton "← Accueil" */}
         <Link
           to="/"
+          className="auth-home-link"
           style={{
             position: 'absolute',
             top: '32px',
@@ -166,20 +168,8 @@ export default function Register() {
           zIndex: 5
         }}>
           {/* Logo réel de la plateforme */}
-          <div style={{ marginBottom: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '24px',
-              padding: '16px 24px',
-              backdropFilter: 'blur(8px)',
-              marginBottom: '8px'
-            }}>
-              <img
-                src={logoImg}
-                alt="Logo"
-                style={{ height: '72px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-              />
-            </div>
+          <div className="auth-mascot-badge">
+            <LandingMascot className="auth-mascot-art lp-scroll-mascot-art" />
           </div>
 
           <h2 style={{
@@ -189,7 +179,7 @@ export default function Register() {
             letterSpacing: '-0.3px',
             color: '#ffffff'
           }}>
-            Déjà inscrit ?
+            Déjà <span className="auth-title-accent">inscrit ?</span>
           </h2>
 
           <p style={{
@@ -204,6 +194,7 @@ export default function Register() {
 
           <Link
             to="/login"
+            className="auth-switch-link"
             style={{
               padding: '12px 34px',
               borderRadius: '24px',
@@ -235,7 +226,7 @@ export default function Register() {
       {/* ========================================================
           PANNEAU DE DROITE : FORMULAIRE D'INSCRIPTION BLANC
       ======================================================== */}
-      <div style={{
+      <div className="auth-form-panel" style={{
         flex: '1 1 50%',
         minHeight: '100vh',
         backgroundColor: '#ffffff',
@@ -265,7 +256,7 @@ export default function Register() {
               color: '#64748b',
               fontWeight: 500
             }}>
-              Rejoignez Quizy pour préparer vos concours
+              Rejoignez ECONCOURS pour préparer vos concours
             </p>
           </div>
 
