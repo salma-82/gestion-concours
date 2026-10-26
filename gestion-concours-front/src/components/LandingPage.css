@@ -2948,3 +2948,107 @@ body {
 }
 
 .lp-grain { opacity: 0; }
+
+/* Landing hero layout based on the requested academic-grid reference. */
+.landing-root {
+  background-color: #eef6ff;
+  background-image:
+    linear-gradient(rgba(105, 145, 195, .14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(105, 145, 195, .14) 1px, transparent 1px),
+    linear-gradient(135deg, #f5f9ff 0%, #eaf4ff 100%);
+  background-size: clamp(34px, 3.3vw, 64px) clamp(34px, 3.3vw, 64px), clamp(34px, 3.3vw, 64px) clamp(34px, 3.3vw, 64px), 100% 100%;
+}
+
+.lp-nav {
+  top: 5px;
+  width: min(1470px, calc(100% - 64px));
+  min-height: clamp(58px, 5.2vw, 100px);
+  margin-top: 5px;
+  padding: 8px clamp(16px, 1.8vw, 34px);
+  border-color: #dbe4f1;
+}
+
+.lp-nav.is-scrolled { padding: 8px clamp(16px, 1.8vw, 34px); }
+.lp-logo { gap: clamp(7px, .7vw, 14px); }
+.lp-nav-mascot { width: clamp(32px, 2.4vw, 46px); height: clamp(34px, 2.7vw, 52px); flex-basis: clamp(32px, 2.4vw, 46px); }
+.lp-wordmark { font-size: clamp(16px, 1.35vw, 26px); }
+.lp-nav-links { gap: clamp(12px, 2.2vw, 42px); }
+.lp-nav-links a { font-size: clamp(11px, .9vw, 17px); }
+.lp-nav-actions { gap: clamp(8px, 1vw, 18px); }
+.lp-nav-actions > button { min-height: clamp(40px, 4.2vw, 80px); padding: 7px clamp(10px, 1.4vw, 27px); font-size: clamp(11px, .95vw, 18px); }
+.lp-nav-actions > .lp-btn-primary { min-width: clamp(150px, 15.7vw, 300px); }
+
+.lp-hero-section {
+  min-height: calc(100vh - clamp(58px, 5.3vw, 105px));
+  min-height: calc(100svh - clamp(58px, 5.3vw, 105px));
+  padding: clamp(64px, 6.8vw, 130px) 24px 52px;
+  background: transparent;
+}
+
+.lp-partner-strip { width: min(1140px, 60vw, 100%); margin-bottom: clamp(18px, 1.8vw, 34px); }
+.lp-partner-heading { margin-bottom: clamp(10px, 1vw, 19px); font-size: clamp(9px, .68vw, 13px); }
+.lp-partner-logos { display: block; min-height: clamp(66px, 6.5vw, 125px); padding: 0; }
+.lp-partner-track { width: 200%; min-height: clamp(66px, 6.5vw, 125px); animation: lp-partners-scroll 24s linear infinite; }
+.lp-partner-group { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex: 0 0 50%; }
+.lp-partner-logo-item { height: clamp(66px, 6.5vw, 125px); padding: 7px clamp(12px, 1.6vw, 30px); }
+.lp-partner-logo-item img { max-width: 190px; height: clamp(48px, 4.7vw, 90px); }
+.lp-hero-title { margin-top: clamp(19px, 2vw, 38px); font-size: clamp(30px, 3vw, 58px); }
+.lp-hero-actions { margin-top: clamp(32px, 3vw, 58px); }
+.lp-hero-actions::before {
+  content: "يلا تكلمو!";
+  position: absolute;
+  top: clamp(-39px, -2vw, -27px);
+  left: calc(50% - clamp(170px, 16.5vw, 316px));
+  z-index: 2;
+  padding: clamp(6px, .55vw, 10px) clamp(11px, .8vw, 16px);
+  border: 1px solid #dce3ef;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 3px 9px rgba(30, 49, 83, .13);
+  color: #263650;
+  direction: rtl;
+  font-size: clamp(11px, .8vw, 15px);
+  line-height: 1.3;
+}
+.lp-btn-hero-primary {
+  min-width: clamp(192px, 20vw, 380px);
+  min-height: clamp(42px, 4vw, 76px);
+  justify-content: center;
+  padding: 7px clamp(18px, 1.8vw, 34px);
+  border: 0;
+  background: #e5a044;
+  color: #14213d;
+  font-size: clamp(14px, 1.45vw, 28px);
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(121, 77, 19, .15);
+}
+.lp-btn-hero-primary:hover { background: #d89131; color: #14213d; }
+.lp-cta-mascot,
+.lp-btn-hero-primary > span[aria-hidden="true"] { display: none; }
+
+.lp-hero-decor { width: clamp(36px, 3vw, 58px); height: clamp(36px, 3vw, 58px); }
+.lp-hero-decor--books { top: clamp(78px, 8vw, 150px); left: 12%; }
+.lp-hero-decor--cap-center { top: clamp(70px, 8vw, 150px); }
+.lp-hero-decor--cap-left-low { top: clamp(315px, 32vw, 615px); left: 6%; }
+.lp-hero-decor--cap-right-low { top: clamp(305px, 31vw, 595px); right: 8%; }
+.lp-hero-decor--pencil-left { top: clamp(190px, 19vw, 365px); left: 9%; width: clamp(30px, 1.8vw, 40px); height: clamp(30px, 1.8vw, 40px); }
+.lp-hero-decor--pencil-right { top: clamp(245px, 25.5vw, 490px); right: 13%; width: clamp(30px, 1.8vw, 40px); height: clamp(30px, 1.8vw, 40px); }
+
+@media (max-width: 760px) {
+  .lp-nav { width: calc(100% - 20px); min-height: 48px; padding: 5px 10px; }
+  .lp-nav.is-scrolled { padding: 5px 10px; }
+  .lp-nav-links { display: none; }
+  .lp-nav-mascot { width: 27px; height: 29px; flex-basis: 27px; }
+  .lp-wordmark { font-size: 13px; }
+  .lp-nav-actions > .lp-btn-primary { min-width: 0; min-height: 34px; padding: 7px 10px; font-size: 10px; }
+  .lp-hero-section { min-height: calc(100vh - 58px); min-height: calc(100svh - 58px); padding: 58px 16px 44px; }
+  .lp-partner-strip { width: min(100%, 600px); }
+  .lp-partner-logos { min-height: 62px; }
+  .lp-partner-track, .lp-partner-logo-item { min-height: 62px; height: 62px; }
+  .lp-partner-logo-item { padding: 5px; }
+  .lp-partner-logo-item img { height: 42px; }
+  .lp-hero-decor--cap-left-low { top: 300px; left: 2%; }
+  .lp-hero-decor--cap-right-low { top: 300px; right: 2%; }
+  .lp-hero-decor--pencil-left { top: 205px; left: 3%; }
+  .lp-hero-decor--pencil-right { top: 245px; right: 4%; }
+}

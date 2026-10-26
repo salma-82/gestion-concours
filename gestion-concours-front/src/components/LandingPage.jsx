@@ -727,6 +727,32 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
         </div>
 
+        <div className="lp-hero-decor lp-hero-decor--cap-left-low" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#142b54" />
+            <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#243f71" />
+            <path d="M42 20v13" stroke="#d9a14c" strokeWidth="1.7" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--cap-right-low" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#dfa04c" />
+            <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#e8b566" />
+            <path d="M42 20v13" stroke="#b97a32" strokeWidth="1.7" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--pencil-left" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m12 33 20-20 5 5-20 20-7 2 2-7Z" fill="#fff2db" stroke="#c99253" strokeWidth="2" strokeLinejoin="round" />
+            <path d="m29 16 5 5M12 33l7 5" stroke="#c99253" strokeWidth="1.5" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--pencil-right" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m12 33 20-20 5 5-20 20-7 2 2-7Z" fill="#fff" stroke="#253e67" strokeWidth="2" strokeLinejoin="round" />
+            <path d="m29 16 5 5M12 33l7 5" stroke="#253e67" strokeWidth="1.5" />
+          </svg>
+        </div>
         <div className="lp-hero-badge">
           <span className="badge-icon">🇲🇦</span>
           <span>N°1 de la Préparation aux Grandes Écoles & au Bac au Maroc</span>
@@ -744,7 +770,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="lp-hero-actions">
           <button className="lp-btn-hero-primary" type="button" onClick={() => handleNav('register')}>
             <span className="lp-cta-mascot" aria-hidden="true"><LandingMascot className="lp-mascot-art" /></span>
-            <span>Yallah, nkelmou!</span>
+            <span>Start Your Preparation</span>
             <span aria-hidden="true">↘</span>
           </button>
           <button className="lp-btn-hero-secondary" type="button" onClick={() => handleScrollTo('demo-qcm')}>
