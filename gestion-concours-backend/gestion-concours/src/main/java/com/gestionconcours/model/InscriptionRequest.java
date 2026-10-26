@@ -1,5 +1,6 @@
 package com.gestionconcours.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +20,8 @@ public class InscriptionRequest {
     private String telephone;
     private String password; // Khas y-kon encrypted (BCrypt)
     private String role = "CLIENT";
+    @Column(name = "selected_pack", length = 40)
+    private String pack;
     
     // Getters and Setters
 }

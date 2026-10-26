@@ -92,17 +92,17 @@ const MATIERES = [
     ),
     renderIcon: () => (
       <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M18 78L18 24C18 20.69 20.69 18 24 18L78 78H24C20.69 78 18 75.31 18 78Z" fill="#93c5fd" opacity=".6"/>
-        <path d="M22 28V74H68L22 28Z" fill="#3b82f6" opacity=".2"/>
-        <path d="M30 46L30 70H54L30 46Z" fill="#eff6ff"/>
+        <path d="M18 78L18 24C18 20.69 20.69 18 24 18L78 78H24C20.69 78 18 75.31 18 78Z" fill="#93c5fd" opacity=".6" />
+        <path d="M22 28V74H68L22 28Z" fill="#3b82f6" opacity=".2" />
+        <path d="M30 46L30 70H54L30 46Z" fill="#eff6ff" />
         <text x="38" y="32" fill="#fff" fontSize="16" fontWeight="bold" fontFamily="sans-serif">π</text>
         <text x="56" y="44" fill="#fff" fontSize="14" fontWeight="bold" fontFamily="sans-serif">√x</text>
         <g transform="translate(42,42)">
-          <rect width="36" height="46" rx="8" fill="#1e40af" stroke="#fff" strokeWidth="2.5"/>
-          <rect x="5" y="6" width="26" height="10" rx="3" fill="#93c5fd"/>
-          <circle cx="10" cy="23" r="2.5" fill="#fff"/><circle cx="18" cy="23" r="2.5" fill="#fff"/><circle cx="26" cy="23" r="2.5" fill="#fff"/>
-          <circle cx="10" cy="31" r="2.5" fill="#fff"/><circle cx="18" cy="31" r="2.5" fill="#fff"/><circle cx="26" cy="31" r="2.5" fill="#fff"/>
-          <circle cx="10" cy="39" r="2.5" fill="#fff"/><circle cx="18" cy="39" r="2.5" fill="#fff"/><circle cx="26" cy="39" r="2.5" fill="#38bdf8"/>
+          <rect width="36" height="46" rx="8" fill="#1e40af" stroke="#fff" strokeWidth="2.5" />
+          <rect x="5" y="6" width="26" height="10" rx="3" fill="#93c5fd" />
+          <circle cx="10" cy="23" r="2.5" fill="#fff" /><circle cx="18" cy="23" r="2.5" fill="#fff" /><circle cx="26" cy="23" r="2.5" fill="#fff" />
+          <circle cx="10" cy="31" r="2.5" fill="#fff" /><circle cx="18" cy="31" r="2.5" fill="#fff" /><circle cx="26" cy="31" r="2.5" fill="#fff" />
+          <circle cx="10" cy="39" r="2.5" fill="#fff" /><circle cx="18" cy="39" r="2.5" fill="#fff" /><circle cx="26" cy="39" r="2.5" fill="#38bdf8" />
         </g>
       </svg>
     )
@@ -127,18 +127,18 @@ const MATIERES = [
     ),
     renderIcon: () => (
       <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M42 22H58V34L74 68C76 72 73 78 68 78H32C27 78 24 72 26 68L42 34V22Z" fill="#c4b5fd" opacity=".5"/>
-        <path d="M30 64L38 48H62L70 64C72 68 69 74 64 74H36C31 74 28 68 30 64Z" fill="#a78bfa"/>
-        <path d="M32 68C42 62 58 72 68 68V74H32V68Z" fill="#7c3aed"/>
-        <circle cx="44" cy="56" r="3" fill="#fff" opacity=".8"/>
-        <circle cx="54" cy="62" r="2" fill="#fff" opacity=".8"/>
-        <circle cx="48" cy="66" r="4" fill="#fff" opacity=".8"/>
+        <path d="M42 22H58V34L74 68C76 72 73 78 68 78H32C27 78 24 72 26 68L42 34V22Z" fill="#c4b5fd" opacity=".5" />
+        <path d="M30 64L38 48H62L70 64C72 68 69 74 64 74H36C31 74 28 68 30 64Z" fill="#a78bfa" />
+        <path d="M32 68C42 62 58 72 68 68V74H32V68Z" fill="#7c3aed" />
+        <circle cx="44" cy="56" r="3" fill="#fff" opacity=".8" />
+        <circle cx="54" cy="62" r="2" fill="#fff" opacity=".8" />
+        <circle cx="48" cy="66" r="4" fill="#fff" opacity=".8" />
         <g transform="translate(56,32)">
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(30 16 16)" stroke="#fff" strokeWidth="2" strokeDasharray="3 1" fill="none"/>
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(-30 16 16)" stroke="#fff" strokeWidth="2" fill="none"/>
-          <circle cx="16" cy="16" r="5" fill="#facc15"/>
-          <circle cx="30" cy="12" r="2.5" fill="#fff"/>
-          <circle cx="6" cy="24" r="2.5" fill="#fff"/>
+          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(30 16 16)" stroke="#fff" strokeWidth="2" strokeDasharray="3 1" fill="none" />
+          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(-30 16 16)" stroke="#fff" strokeWidth="2" fill="none" />
+          <circle cx="16" cy="16" r="5" fill="#facc15" />
+          <circle cx="30" cy="12" r="2.5" fill="#fff" />
+          <circle cx="6" cy="24" r="2.5" fill="#fff" />
         </g>
       </svg>
     )
@@ -162,16 +162,16 @@ const MATIERES = [
     ),
     renderIcon: () => (
       <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M52 48C52 48 64 36 76 40C88 44 88 60 76 66C64 72 56 64 52 48Z" fill="#34d399"/>
-        <path d="M54 50C62 60 70 66 78 68" stroke="#065f46" strokeWidth="1.5"/>
-        <path d="M46 56C46 56 50 68 44 76C38 84 26 80 26 68C26 56 38 52 46 56Z" fill="#10b981" opacity=".9"/>
+        <path d="M52 48C52 48 64 36 76 40C88 44 88 60 76 66C64 72 56 64 52 48Z" fill="#34d399" />
+        <path d="M54 50C62 60 70 66 78 68" stroke="#065f46" strokeWidth="1.5" />
+        <path d="M46 56C46 56 50 68 44 76C38 84 26 80 26 68C26 56 38 52 46 56Z" fill="#10b981" opacity=".9" />
         <g transform="translate(18,20)">
-          <path d="M12 10C24 20 24 35 12 45C0 55 0 70 12 80" stroke="#38bdf8" strokeWidth="4.5" strokeLinecap="round" fill="none"/>
-          <path d="M26 10C14 20 14 35 26 45C38 55 38 70 26 80" stroke="#f43f5e" strokeWidth="4.5" strokeLinecap="round" fill="none"/>
-          <line x1="16" y1="18" x2="22" y2="18" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
-          <line x1="14" y1="38" x2="24" y2="38" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
-          <line x1="14" y1="52" x2="24" y2="52" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
-          <line x1="16" y1="72" x2="22" y2="72" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M12 10C24 20 24 35 12 45C0 55 0 70 12 80" stroke="#38bdf8" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+          <path d="M26 10C14 20 14 35 26 45C38 55 38 70 26 80" stroke="#f43f5e" strokeWidth="4.5" strokeLinecap="round" fill="none" />
+          <line x1="16" y1="18" x2="22" y2="18" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="14" y1="38" x2="24" y2="38" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="14" y1="52" x2="24" y2="52" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="16" y1="72" x2="22" y2="72" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
         </g>
       </svg>
     )
@@ -201,17 +201,17 @@ const MATIERES = [
     ),
     renderIcon: () => (
       <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <rect x="22" y="78" width="56" height="6" rx="2" fill="#fff" opacity=".95"/>
-        <rect x="26" y="74" width="48" height="4" rx="1.5" fill="#fde68a"/>
-        <path d="M22 28L50 16L78 28V32H22V28Z" fill="#fff" opacity=".95"/>
-        <rect x="25" y="32" width="50" height="4" rx="1" fill="#fde68a"/>
-        <rect x="29" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9"/>
-        <line x1="33" y1="39" x2="33" y2="71" stroke="#d97706" strokeWidth="1.5"/>
-        <rect x="46" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9"/>
-        <line x1="50" y1="39" x2="50" y2="71" stroke="#d97706" strokeWidth="1.5"/>
-        <rect x="63" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9"/>
-        <line x1="67" y1="39" x2="67" y2="71" stroke="#d97706" strokeWidth="1.5"/>
-        <circle cx="50" cy="24" r="3.5" fill="#f59e0b"/>
+        <rect x="22" y="78" width="56" height="6" rx="2" fill="#fff" opacity=".95" />
+        <rect x="26" y="74" width="48" height="4" rx="1.5" fill="#fde68a" />
+        <path d="M22 28L50 16L78 28V32H22V28Z" fill="#fff" opacity=".95" />
+        <rect x="25" y="32" width="50" height="4" rx="1" fill="#fde68a" />
+        <rect x="29" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9" />
+        <line x1="33" y1="39" x2="33" y2="71" stroke="#d97706" strokeWidth="1.5" />
+        <rect x="46" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9" />
+        <line x1="50" y1="39" x2="50" y2="71" stroke="#d97706" strokeWidth="1.5" />
+        <rect x="63" y="36" width="8" height="38" rx="2" fill="#fff" opacity=".9" />
+        <line x1="67" y1="39" x2="67" y2="71" stroke="#d97706" strokeWidth="1.5" />
+        <circle cx="50" cy="24" r="3.5" fill="#f59e0b" />
       </svg>
     )
   },
@@ -235,20 +235,28 @@ const MATIERES = [
     ),
     renderIcon: () => (
       <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="28" fill="#bae6fd" opacity=".6"/>
-        <circle cx="50" cy="50" r="28" stroke="#fff" strokeWidth="3"/>
-        <ellipse cx="50" cy="50" rx="14" ry="28" stroke="#fff" strokeWidth="2.5" fill="none"/>
-        <line x1="22" y1="50" x2="78" y2="50" stroke="#fff" strokeWidth="2.5"/>
-        <line x1="26" y1="36" x2="74" y2="36" stroke="#fff" strokeWidth="1.8" opacity=".8"/>
-        <line x1="26" y1="64" x2="74" y2="64" stroke="#fff" strokeWidth="1.8" opacity=".8"/>
+        <circle cx="50" cy="50" r="28" fill="#bae6fd" opacity=".6" />
+        <circle cx="50" cy="50" r="28" stroke="#fff" strokeWidth="3" />
+        <ellipse cx="50" cy="50" rx="14" ry="28" stroke="#fff" strokeWidth="2.5" fill="none" />
+        <line x1="22" y1="50" x2="78" y2="50" stroke="#fff" strokeWidth="2.5" />
+        <line x1="26" y1="36" x2="74" y2="36" stroke="#fff" strokeWidth="1.8" opacity=".8" />
+        <line x1="26" y1="64" x2="74" y2="64" stroke="#fff" strokeWidth="1.8" opacity=".8" />
         <g transform="translate(52,22)">
-          <rect width="30" height="22" rx="7" fill="#0284c7" stroke="#fff" strokeWidth="2"/>
-          <path d="M6 22L12 28V22H6Z" fill="#0284c7"/>
+          <rect width="30" height="22" rx="7" fill="#0284c7" stroke="#fff" strokeWidth="2" />
+          <path d="M6 22L12 28V22H6Z" fill="#0284c7" />
           <text x="15" y="16" fill="#fff" fontSize="11" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">EN</text>
         </g>
       </svg>
     )
   }
+];
+
+export const AVAILABLE_FILIERES = [
+  'Sciences Mathématiques A',
+  'Sciences Mathématiques B',
+  'Sciences Physiques (PC)',
+  'Sciences de la Vie et de la Terre (SVT)',
+  'Sciences Économiques & Gestion'
 ];
 
 /* ─────────────────────────────────────────────
@@ -303,13 +311,15 @@ export default function ClientCoursPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filiereFromUrl = searchParams.get('filiere') || '';
-  const [selectedFiliere, setSelectedFiliere] = useState(filiereFromUrl);
+  const [selectedFiliere, setSelectedFiliere] = useState(filiereFromUrl || 'Sciences Mathématiques A');
 
   // Navigation: 'matieres' → 'chapitres' → 'cours' → 'reader'
   const [step, setStep] = useState('matieres');
   const [selectedMatiere, setSelectedMatiere] = useState(null);
   const [selectedChapitre, setSelectedChapitre] = useState(null);
   const [activeCours, setActiveCours] = useState(null);
+  const [isCoursMenuOpen, setIsCoursMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Données de la table cours_bac
   const [coursBacList, setCoursBacList] = useState([]);
@@ -325,21 +335,58 @@ export default function ClientCoursPage() {
   const [iframeLoading, setIframeLoading] = useState(true);
 
   const iframeRef = useRef(null);
+  const [courseHtml, setCourseHtml] = useState('');
+  const [courseFrameHeight, setCourseFrameHeight] = useState(800);
+
+  useEffect(() => {
+    if (!activeCours?.htmlUrl) {
+      setCourseHtml('');
+      setCourseFrameHeight(800);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setIframeLoading(true);
+    axios.get(getFullUrl(activeCours.htmlUrl), { responseType: 'text' })
+      .then(({ data }) => {
+        if (cancelled) return;
+        const base = `<base href="${getFullUrl(activeCours.htmlUrl)}">`;
+        const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'course-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()<\/script>`;
+        let html = String(data || '');
+        if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
+        else html = `${base}${html}`;
+        if (/<\/body>/i.test(html)) html = html.replace(/<\/body>/i, `${resizeScript}</body>`);
+        else html += resizeScript;
+        setCourseHtml(html);
+      })
+      .catch(() => { if (!cancelled) setCourseHtml(''); })
+      .finally(() => { if (!cancelled) setIframeLoading(false); });
+    return () => { cancelled = true; };
+  }, [activeCours?.htmlUrl]);
+
+  useEffect(() => {
+    const handleCourseFrameMessage = (event) => {
+      if (event.source !== iframeRef.current?.contentWindow || event.data?.type !== 'course-html-height') return;
+      const height = Number(event.data.height);
+      if (Number.isFinite(height) && height > 0) setCourseFrameHeight(Math.min(Math.max(height, 320), 100000));
+    };
+    window.addEventListener('message', handleCourseFrameMessage);
+    return () => window.removeEventListener('message', handleCourseFrameMessage);
+  }, []);
 
   useEffect(() => {
     const stage = activeCours ? 'cours' : (step === 'cours' ? 'chapitres' : (selectedMatiere ? 'chapitres' : 'matieres'));
     window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage } }));
   }, [step, selectedMatiere, activeCours]);
 
-  // Réaction au changement de filière dans l'URL (via la Sidebar)
+  // Réaction au changement de filière dans l'URL
   useEffect(() => {
-    const f = searchParams.get('filiere') || '';
-    setSelectedFiliere(f);
-    setStep('matieres');
-    setSelectedMatiere(null);
-    setSelectedChapitre(null);
-    setActiveCours(null);
-    setSearchQuery('');
+    const f = searchParams.get('filiere');
+    if (f) {
+      setSelectedFiliere(f);
+      setSelectedChapitre(null);
+      setActiveCours(null);
+    }
   }, [searchParams]);
 
   /* ─── Fetch des cours uniquement depuis la table 'cours_bac' ─── */
@@ -436,6 +483,7 @@ export default function ClientCoursPage() {
 
   /* ─── Navigation ─── */
   const goMatieres = () => {
+    setIsSidebarCollapsed(false);
     setStep('matieres');
     setSelectedMatiere(null);
     setSelectedChapitre(null);
@@ -444,6 +492,7 @@ export default function ClientCoursPage() {
   };
 
   const goChapitres = (mat) => {
+    setIsSidebarCollapsed(false);
     setSelectedMatiere(mat);
     setSelectedChapitre(null);
     setActiveCours(null);
@@ -461,6 +510,8 @@ export default function ClientCoursPage() {
   };
 
   const openReader = (chapNom, specificCours = null) => {
+    setIsCoursMenuOpen(false);
+    setIsSidebarCollapsed(true);
     setSelectedChapitre(chapNom);
     const list = coursForChapitre(selectedMatiere, chapNom);
     if (specificCours) {
@@ -508,17 +559,12 @@ export default function ClientCoursPage() {
   });
 
   const pageStyle = {
-    position: selectedFiliere ? 'fixed' : 'relative',
-    top: selectedFiliere ? 0 : 'auto',
-    left: selectedFiliere ? 0 : 'auto',
-    right: selectedFiliere ? 0 : 'auto',
-    bottom: selectedFiliere ? 0 : 'auto',
-    width: selectedFiliere ? '100vw' : '100%',
-    height: selectedFiliere ? '100vh' : 'auto',
-    zIndex: selectedFiliere ? 9999 : 'auto',
-    backgroundColor: '#f8fafc',
-    overflowY: 'auto',
-    padding: selectedFiliere ? '24px 24px 40px' : '32px 36px',
+    position: 'relative',
+    width: '100%',
+    minHeight: '100%',
+    backgroundColor: '#f3f6fb',
+    overflowY: 'visible',
+    padding: activeCours ? '12px 20px 20px' : '28px 32px 48px',
     boxSizing: 'border-box',
     fontFamily: "'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
     color: '#0f172a'
@@ -527,247 +573,47 @@ export default function ClientCoursPage() {
   return (
     <div style={pageStyle}>
 
-            {step === 'matieres' && !selectedFiliere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          {!selectedFiliere ? (
-            <div style={{
-              minHeight: '240px',
-              padding: '40px 24px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '24px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.04)'
-            }}>
-              <div style={{ fontSize: '42px', marginBottom: '12px' }}>🎓</div>
-              <h1 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '24px', fontWeight: 800 }}>
-                Choisissez une filière
-              </h1>
-              <p style={{ maxWidth: '520px', margin: 0, color: '#64748b', fontSize: '15px', lineHeight: 1.6 }}>
-                Sélectionnez une filière dans le menu « Cours Bac » à gauche pour afficher ses matières et ses cours.
-              </p>
-            </div>
-          ) : (
-            <>
-          {selectedFiliere && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '16px',
-              marginBottom: '22px',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                type="button"
-                onClick={() => navigate('/client-dashboard')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 16px',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '12px',
-                  background: '#ffffff',
-                  color: '#2563eb',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                <span aria-hidden="true">←</span>
-                Retour aux filières
-              </button>
-              <span style={{ color: '#64748b', fontSize: '14px', fontWeight: 600 }}>
-                Filière : {selectedFiliere}
-              </span>
-            </div>
-          )}
-
-
-          {/* État de chargement / Erreur */}
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px 0' }}>
-              <div style={{
-                width: '56px', height: '56px', border: '4px solid #e2e8f0', borderTopColor: '#2563eb',
-                borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite'
-              }} />
-              <p style={{ fontWeight: 700, color: '#64748b', fontSize: '16px' }}>Chargement des cours du BAC…</p>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            </div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: '50px', background: '#fff', borderRadius: '20px', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
-              <p style={{ color: '#dc2626', fontWeight: 700 }}>{error}</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {matieresWithCount.map((mat) => (
-                <div
-                  key={mat.id}
-                  onClick={() => goChapitres(mat)}
-                  style={{
-                    background: '#ffffff',
-                    borderRadius: '18px',
-                    border: '1px solid #e4ecf8',
-                    boxShadow: '0 3px 14px rgba(15, 23, 42, 0.035)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    minHeight: '94px',
-                    padding: '14px 20px',
-                    flexWrap: 'wrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 22px rgba(37, 99, 235, 0.08)';
-                    e.currentTarget.style.borderColor = '#bfdbfe';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 3px 14px rgba(15, 23, 42, 0.035)';
-                    e.currentTarget.style.borderColor = '#e4ecf8';
-                  }}
-                >
-                  {/* Illustration à gauche */}
-                  <div style={{
-                    width: '54px',
-                    height: '54px',
-                    minWidth: '54px',
-                    borderRadius: '14px',
-                    background: mat.squareBg || mat.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {mat.renderSquareIcon ? mat.renderSquareIcon() : (
-                      <span style={{ color: '#fff', fontSize: '23px', fontWeight: 800 }}>
-                        {mat.nom.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Contenu textuel */}
-                  <div style={{ flex: '1 1 320px', minWidth: 0 }}>
-                    <h2 style={{ margin: '0 0 5px', fontSize: '17px', fontWeight: 800, color: '#12366d', letterSpacing: '-0.2px' }}>
-                      {mat.nom}
-                    </h2>
-                    <p style={{
-                      margin: 0,
-                      color: '#7186a8',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      lineHeight: 1.45,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {mat.desc}
-                    </p>
-                  </div>
-
-                  {/* Bouton et compteur */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      background: '#f3f7ff', color: '#2563eb',
-                      padding: '7px 12px', borderRadius: '18px',
-                      fontSize: '12px', fontWeight: 700, border: '1px solid #e4edff',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="8" y1="13" x2="16" y2="13" />
-                        <line x1="8" y1="17" x2="14" y2="17" />
-                      </svg>
-                      {mat.count} cours
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Voir les chapitres de ${mat.nom}`}
-                      onClick={(e) => { e.stopPropagation(); goChapitres(mat); }}
-                      style={{
-                        background: '#ffffff', color: '#2563eb', border: '1px solid #3b82f6',
-                        padding: '10px 18px', borderRadius: '13px',
-                        fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '9px',
-                        whiteSpace: 'nowrap', transition: 'background 0.15s ease, box-shadow 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f3f7ff';
-                        e.currentTarget.style.boxShadow = '0 3px 10px rgba(37, 99, 235, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#ffffff';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <span>Voir les chapitres</span>
-                      <span>→</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-            </>
-          )}
-        </div>
-      )}
-
       {step === 'matieres' && selectedFiliere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
-          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
-            <button type="button" onClick={() => navigate('/client-dashboard')} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Retour aux filières</button>
-            <div style={{ padding: '4px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Filière : {selectedFiliere}</div>
-            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des matières…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <div style={{ padding: '4px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Fili&egrave;re : {selectedFiliere}</div>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere?.id === matiere.id;
-                return <button key={matiere.id} type="button" onClick={() => goChapitres(matiere)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: active ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: active ? '#eff6ff' : '#ffffff', color: active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>;
+                const expanded = active;
+                const adminChapitres = chapitresForMatiere(matiere).filter(chapitre => chapitre.count > 0);
+                const filteredChapitres = adminChapitres.filter(chapitre => chapitre.nom.toLowerCase().includes(searchQuery.trim().toLowerCase()));
+                return <div key={matiere.id}>
+                  <button type="button" onClick={() => expanded ? goMatieres() : goChapitres(matiere)} aria-expanded={expanded} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: expanded ? '#93c5fd' : active ? '#bfdbfe' : '#e2e8f0', borderRadius: '10px', background: expanded || active ? '#eff6ff' : '#ffffff', color: expanded || active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>
+                    <span>{matiere.nom}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease' }} aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </span>
+                  </button>
+                  {expanded && !loading && !error && <div style={{ margin: '6px 0 5px', padding: '7px 0 8px 10px', borderLeft: `2px solid ${matiere.color || '#93c5fd'}` }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {filteredChapitres.map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? matiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? matiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? matiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '10px', fontWeight: 500 }}>{chapitre.count} cours</span></button>)}
+                    </div>
+                  </div>}
+                </div>;
               })}
             </div>}
-            {selectedMatiere && !loading && !error && <div style={{ marginTop: '17px', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
-              <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres · {selectedMatiere.nom}</h2>
-              <input type="search" placeholder="Rechercher un chapitre…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} style={{ width: '100%', boxSizing: 'border-box', marginBottom: '9px', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '9px', fontSize: '12px', outline: 'none' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.nom.toLowerCase().includes(searchQuery.trim().toLowerCase())).map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? selectedMatiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? selectedMatiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '10px', fontWeight: 500 }}>{chapitre.count ? `${chapitre.count} cours` : 'Bientôt disponible'}</span></button>)}
-              </div>
-            </div>}
           </aside>
-
-          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
-            <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
-            {selectedMatiere ? (
-              <div style={{ display: 'none', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                  <div><div style={{ color: selectedMatiere.badgeColor, fontSize: '12px', fontWeight: 800 }}>{selectedFiliere}</div><h1 style={{ margin: '4px 0 0', color: '#0f172a', fontSize: '22px', fontWeight: 850 }}>{selectedMatiere.nom} — Chapitres</h1></div>
-                  <input type="search" placeholder="Rechercher un chapitre…" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} style={{ width: 'min(100%, 260px)', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '10px', fontSize: '13px', outline: 'none' }} />
-                </div>
-                {loading ? <div style={{ padding: '40px 12px', color: '#64748b', textAlign: 'center' }}>Chargement des chapitres…</div> : error ? <div style={{ padding: '40px 12px', color: '#dc2626', textAlign: 'center' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '10px' }}>
-                  {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.nom.toLowerCase().includes(searchQuery.trim().toLowerCase())).map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ minHeight: '74px', padding: '12px 14px', border: '1px solid #e2e8f0', borderRadius: '11px', background: '#ffffff', color: '#1e293b', textAlign: 'left', cursor: 'pointer', fontWeight: 750, fontSize: '13px' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '6px', color: '#64748b', fontSize: '11px', fontWeight: 550 }}>{chapitre.count ? `${chapitre.count} cours disponibles` : 'Cours bientôt disponible'}</span></button>)}
-                </div>}
-              </div>
-            ) : (
-              <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez une matière dans le menu de gauche pour afficher ses chapitres.</div>
-            )}
-          </main>
         </div>
       )}
-
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
-          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
-            <button type="button" onClick={() => navigate('/client-dashboard')} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Filières</button>
-            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: isSidebarCollapsed ? '12px' : '18px', minHeight: 'calc(100vh - 140px)' }}>
+          {isSidebarCollapsed ? (
+            <button type="button" aria-label="Rouvrir le menu des matières et chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+          ) : (
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+            <div style={{ padding: '3px 5px 10px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Fili&egrave;re : {selectedFiliere}</div>
+            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere.id === matiere.id;
@@ -776,26 +622,31 @@ export default function ClientCoursPage() {
             </div>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+              {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.count > 0).map((chapitre) => {
                 const active = selectedChapitre === chapitre.nom;
-                return <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: active ? selectedMatiere.color : '#e2e8f0', borderRadius: '10px', background: active ? selectedMatiere.lightBg : '#ffffff', color: active ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '11px', fontWeight: 500 }}>{chapitre.count ? `${chapitre.count} cours` : 'Cours bientôt disponible'}</span></button>;
+                return <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: active ? selectedMatiere.color : '#e2e8f0', borderRadius: '10px', background: active ? selectedMatiere.lightBg : '#ffffff', color: active ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '11px', fontWeight: 500 }}>{chapitre.count} cours</span></button>;
               })}
             </div>
           </aside>
-
-          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+          )}
+          <main style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
             {activeCours ? (
-              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <div className="course-reader-header" style={{ position: 'absolute', zIndex: 20, top: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   <div>
                     <div style={{ color: selectedMatiere.badgeColor, fontSize: '11px', fontWeight: 800 }}>{selectedMatiere.nom}{selectedFiliere ? ` · ${selectedFiliere}` : ''}</div>
                     <div style={{ color: '#1e293b', fontSize: '16px', fontWeight: 750, marginTop: '3px' }}>{activeCours.titre || selectedChapitre}</div>
                   </div>
-                  {coursForChapitre(selectedMatiere, selectedChapitre).length > 1 && <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {coursForChapitre(selectedMatiere, selectedChapitre).map((cours, index) => <button key={cours.id || index} type="button" onClick={() => openReader(selectedChapitre, cours)} style={{ border: '1px solid #cbd5e1', borderRadius: '7px', padding: '5px 9px', background: String(activeCours.id) === String(cours.id) ? selectedMatiere.color : '#fff', color: String(activeCours.id) === String(cours.id) ? '#fff' : '#334155', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}>{cours.titre || `Cours ${index + 1}`}</button>)}
+                  {coursForChapitre(selectedMatiere, selectedChapitre).length > 1 && <div style={{ position: 'relative' }}>
+                    <button type="button" aria-label="Changer de cours" aria-haspopup="menu" aria-expanded={isCoursMenuOpen} onClick={() => setIsCoursMenuOpen(open => !open)} style={{ width: '34px', height: '34px', display: 'grid', placeItems: 'center', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#ffffff', color: '#334155', cursor: 'pointer' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+                    </button>
+                    {isCoursMenuOpen && <div role="menu" style={{ position: 'absolute', zIndex: 20, top: 'calc(100% + 6px)', right: 0, minWidth: '220px', maxWidth: 'min(320px, 80vw)', padding: '6px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.14)' }}>
+                      {coursForChapitre(selectedMatiere, selectedChapitre).map((cours, index) => <button key={cours.id || index} type="button" role="menuitem" onClick={() => openReader(selectedChapitre, cours)} style={{ width: '100%', display: 'block', padding: '9px 10px', border: 0, borderRadius: '7px', background: String(activeCours.id) === String(cours.id) ? '#eff6ff' : '#ffffff', color: String(activeCours.id) === String(cours.id) ? '#1d4ed8' : '#334155', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 700 }}>{cours.titre || `Cours ${index + 1}`}</button>)}
+                    </div>}
                   </div>}
                 </div>
-                {activeCours.htmlUrl ? <iframe key={activeCours.id || activeCours.htmlUrl} src={getFullUrl(activeCours.htmlUrl)} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: 'calc(100vh - 120px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
+                {activeCours.htmlUrl ? <iframe ref={iframeRef} key={activeCours.id || activeCours.htmlUrl} srcDoc={courseHtml} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', background: '#ffffff', overflow: 'hidden' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
               </div>
             ) : (
               <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
@@ -804,298 +655,14 @@ export default function ClientCoursPage() {
         </div>
       )}
 
-      {false && step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          
-          {/* Fil d'Ariane harmonisé : 🏠 Cours Bac > {selectedFiliere} > {selectedMatiere.nom} */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '20px',
-            fontSize: '13.5px'
-          }}>
-            <div
-              onClick={() => navigate('/client-dashboard')}
-              style={{
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#2563eb'
-              }}
-              title="Retour aux filières"
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            </div>
 
-            <span
-              onClick={() => navigate('/client-dashboard')}
-              style={{
-                color: '#2563eb',
-                fontWeight: 650,
-                cursor: 'pointer'
-              }}
-            >
-              Cours Bac
-            </span>
-
-            {selectedFiliere && (
-              <>
-                <span style={{ color: '#94a3b8', fontSize: '13px', margin: '0 2px' }}>&gt;</span>
-                <span
-                  onClick={goMatieres}
-                  style={{
-                    color: '#2563eb',
-                    fontWeight: 650,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {selectedFiliere}
-                </span>
-              </>
-            )}
-
-            <span style={{ color: '#94a3b8', fontSize: '13px', margin: '0 2px' }}>&gt;</span>
-            <span style={{ color: '#1e293b', fontWeight: 600 }}>
-              {selectedMatiere.nom}
-            </span>
-          </div>
-
-          {/* Header section chapitres */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: '26px', flexWrap: 'wrap', gap: '16px'
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '28px' }}>{selectedMatiere.emoji}</span>
-                <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: '#0f172a' }}>
-                  Chapitres — {selectedMatiere.nom}
-                </h1>
-              </div>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14.5px' }}>
-                Cliquez sur un chapitre pour ouvrir son cours HTML complet avec affichage adapté à la lecture.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {/* Barre de recherche dans les chapitres */}
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
-                  placeholder="Rechercher un chapitre..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    padding: '9px 16px 9px 36px',
-                    borderRadius: '12px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '13.5px',
-                    background: '#fff',
-                    outline: 'none',
-                    width: '230px'
-                  }}
-                />
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '14px' }}>
-                  🔍
-                </span>
-              </div>
-
-              <button
-                onClick={goMatieres}
-                style={{
-                  background: '#fff', border: '1.5px solid #cbd5e1',
-                  padding: '9px 18px', borderRadius: '12px',
-                  cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: '#334155',
-                  transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
-              >
-                ← Changer de matière
-              </button>
-            </div>
-          </div>
-
-          {/* Bannière récapitulative */}
-          <div style={{
-            background: '#fff', borderRadius: '18px', border: '1px solid #e2e8f0',
-            padding: '14px 22px', marginBottom: '24px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>💡</span>
-              <span style={{ fontSize: '13.5px', color: '#475569', fontWeight: 600 }}>
-                Sélectionnez un chapitre ci-dessous pour charger immédiatement la fiche de cours ajoutée par l'admin.
-              </span>
-            </div>
-            <span style={{
-              background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-              padding: '5px 14px', borderRadius: '10px', fontSize: '12.5px', fontWeight: 800
-            }}>
-              {coursForMatiere(selectedMatiere).length} Cours HTML au total
-            </span>
-          </div>
-
-          {/* Liste des chapitres */}
-          {(() => {
-            const rawChapitres = chapitresForMatiere(selectedMatiere);
-            const filteredChapitres = searchQuery.trim()
-              ? rawChapitres.filter(ch => ch.nom.toLowerCase().includes(searchQuery.toLowerCase().trim()))
-              : rawChapitres;
-
-            if (filteredChapitres.length === 0) {
-              return (
-                <div style={{ textAlign: 'center', padding: '60px', background: '#fff', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
-                  <div style={{ fontSize: '46px', marginBottom: '12px' }}>📂</div>
-                  <h3 style={{ margin: '0 0 6px', color: '#0f172a', fontWeight: 800, fontSize: '18px' }}>Aucun chapitre trouvé</h3>
-                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Aucun chapitre ne correspond à votre recherche "{searchQuery}".</p>
-                </div>
-              );
-            }
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {filteredChapitres.map((chap, idx) => {
-                  const hasCours = chap.count > 0;
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => openReader(chap.nom)}
-                      style={{
-                        background: '#fff',
-                        borderRadius: '22px',
-                        border: hasCours ? `1.5px solid ${selectedMatiere.color}40` : '1.5px solid #e2e8f0',
-                        boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        minHeight: '115px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-3px)';
-                        e.currentTarget.style.boxShadow = `0 14px 32px ${selectedMatiere.color}18`;
-                        e.currentTarget.style.borderColor = selectedMatiere.color;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.03)';
-                        e.currentTarget.style.borderColor = hasCours ? `${selectedMatiere.color}40` : '#e2e8f0';
-                      }}
-                    >
-                      {/* Vignette chapitre */}
-                      <div style={{
-                        width: '150px', minWidth: '150px', height: '100%', minHeight: '115px',
-                        background: selectedMatiere.gradient,
-                        borderRadius: '20px 50px 50px 20px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.2)'
-                      }}>
-                        <svg width="56" height="56" viewBox="0 0 100 100" fill="none">
-                          <path d="M50 32C42 26 28 26 18 30V74C28 70 42 70 50 76C58 70 72 70 82 74V30C72 26 58 26 50 32Z" fill="#fff" opacity=".95"/>
-                          <path d="M50 32V76" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round"/>
-                          <line x1="26" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <line x1="26" y1="50" x2="40" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <line x1="26" y1="58" x2="36" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <line x1="58" y1="42" x2="74" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <line x1="58" y1="50" x2="72" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <line x1="58" y1="58" x2="68" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7"/>
-                          <path d="M47 22H53V38L50 35L47 38V22Z" fill="#facc15"/>
-                        </svg>
-                      </div>
-
-                      {/* Détails du chapitre */}
-                      <div style={{ flex: 1, padding: '14px 28px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                          <span style={{
-                            background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-                            padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 800
-                          }}>
-                            {selectedMatiere.nom}
-                          </span>
-                          <span style={{ color: '#94a3b8', fontSize: '13px' }}>•</span>
-                          <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Chapitre {idx + 1}</span>
-                        </div>
-                        <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
-                          {chap.nom}
-                        </h2>
-                        <p style={{ margin: 0, color: '#64748b', fontSize: '13.5px', fontWeight: 500 }}>
-                          {hasCours
-                            ? `${chap.count} cours interactif${chap.count > 1 ? 's' : ''} disponible${chap.count > 1 ? 's' : ''} (HTML)`
-                            : 'Fiche pédagogique en cours de préparation par l’administrateur'}
-                        </p>
-                      </div>
-
-                      {/* Badge et bouton d'action */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', paddingRight: '28px' }}>
-                        {hasCours ? (
-                          <span style={{
-                            background: '#dcfce7', color: '#15803d',
-                            padding: '4px 14px', borderRadius: '18px', fontSize: '12.5px', fontWeight: 800,
-                            display: 'inline-flex', alignItems: 'center', gap: '5px'
-                          }}>
-                            <span>●</span> {chap.count} Cours HTML
-                          </span>
-                        ) : (
-                          <span style={{
-                            background: '#f1f5f9', color: '#64748b',
-                            padding: '4px 12px', borderRadius: '18px', fontSize: '12px', fontWeight: 700
-                          }}>
-                            Bientôt disponible
-                          </span>
-                        )}
-
-                        <button
-                          onClick={(e) => { e.stopPropagation(); openReader(chap.nom); }}
-                          style={{
-                            background: hasCours ? selectedMatiere.gradient : '#e2e8f0',
-                            color: hasCours ? '#fff' : '#64748b',
-                            border: 'none',
-                            padding: '10px 20px', borderRadius: '18px',
-                            fontSize: '13.5px', fontWeight: 700, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '6px',
-                            boxShadow: hasCours ? '0 4px 14px rgba(0,0,0,0.1)' : 'none',
-                            transition: 'opacity 0.2s, transform 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (hasCours) {
-                              e.currentTarget.style.opacity = '0.9';
-                              e.currentTarget.style.transform = 'scale(1.03)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (hasCours) {
-                              e.currentTarget.style.opacity = '1';
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }
-                          }}
-                        >
-                          <span>{hasCours ? 'Ouvrir le cours' : 'Consulter'}</span>
-                          <span>→</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {/* ═════════════════════════════════════════
           STEP 3 : LISTE DES COURS CORRESPONDANTS (CARTES)
           ═════════════════════════════════════════ */}
       {step === 'cours' && selectedMatiere && selectedChapitre && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          
+
           {/* Breadcrumb */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px', fontSize: '14px', flexWrap: 'wrap' }}>
             <button
@@ -1280,25 +847,21 @@ export default function ClientCoursPage() {
           ═════════════════════════════════════════ */}
       {step === 'reader' && activeCours && selectedMatiere && (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 99999,
+          position: 'relative',
+          width: '100%',
+          minHeight: 'calc(100vh - 76px)',
           backgroundColor: '#f8fafc',
           display: 'flex',
-          overflow: 'hidden',
+          overflow: 'visible',
           margin: 0,
-          padding: 0
+          padding: '20px 16px',
+          boxSizing: 'border-box'
         }}>
-          <div style={{ width: '100%', minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'flex-start', gap: '18px', overflow: 'auto', padding: '20px 16px', boxSizing: 'border-box' }}>
-            <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: 0 }}>
+          <div style={{ width: '100%', minHeight: 'calc(100vh - 116px)', background: '#f1f5f9', display: 'flex', alignItems: 'flex-start', gap: '18px', padding: '0', boxSizing: 'border-box' }}>
+            <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 118px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
               <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et cours</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {chapitresForMatiere(selectedMatiere).map((chapitre) => {
+                {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.count > 0).map((chapitre) => {
                   const cours = coursForChapitre(selectedMatiere, chapitre.nom);
                   const isActive = selectedChapitre === chapitre.nom;
                   return <div key={chapitre.nom}>
@@ -1315,147 +878,13 @@ export default function ClientCoursPage() {
                 <button type="button" onClick={() => { setStep('chapitres'); setActiveCours(null); setSelectedChapitre(null); }} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>← Retour</button>
               </div>
               {activeCours.htmlUrl ? <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-                <iframe src={getFullUrl(activeCours.htmlUrl)} title={activeCours.titre || activeCours.chapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: '84vh', border: 'none', display: 'block', backgroundColor: '#ffffff' }} />
+                <iframe ref={iframeRef} srcDoc={courseHtml} title={activeCours.titre || activeCours.chapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', backgroundColor: '#ffffff', overflow: 'hidden' }} />
               </div> : <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1', padding: '40px 20px', textAlign: 'center' }}>
                 <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div><h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>Aucun fichier HTML rattaché</h2><p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML pour ce cours.</p>
               </div>}
             </div>
           </div>
-          <div style={{ display: 'none' }}>
-          {/* Fil d'Ariane cliquable : Matières / Matière / Cours */}
-          <div style={{
-            height: '48px',
-            minHeight: '48px',
-            maxHeight: '48px',
-            backgroundColor: '#ffffff',
-            borderBottom: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 24px',
-            gap: '8px',
-            fontSize: '13.5px',
-            fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
-            userSelect: 'none',
-            flexShrink: 0,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
-          }}>
-            <button
-              onClick={() => {
-                setStep('matieres');
-                setActiveCours(null);
-                setSelectedMatiere(null);
-                setSelectedChapitre(null);
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#2563eb',
-                cursor: 'pointer',
-                fontWeight: 650,
-                fontSize: '13.5px',
-                padding: '4px 6px',
-                borderRadius: '6px',
-                transition: 'background 0.15s, color 0.15s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            >
-              Matières
-            </button>
 
-            <span style={{ color: '#94a3b8', fontSize: '13px' }}>/</span>
-
-            <button
-              onClick={() => {
-                setStep('chapitres');
-                setActiveCours(null);
-                setSelectedChapitre(null);
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#2563eb',
-                cursor: 'pointer',
-                fontWeight: 650,
-                fontSize: '13.5px',
-                padding: '4px 6px',
-                borderRadius: '6px',
-                transition: 'background 0.15s, color 0.15s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            >
-              {selectedMatiere?.nom || activeCours?.matiere || 'Matière'}
-            </button>
-
-            <span style={{ color: '#94a3b8', fontSize: '13px' }}>/</span>
-
-            <span style={{
-              color: '#0f172a',
-              fontWeight: 700,
-              fontSize: '13.5px',
-              padding: '4px 6px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}>
-              {selectedChapitre || activeCours.chapitre || activeCours.titre}
-            </span>
-          </div>
-
-          {/* Iframe occupant tout le reste de l'écran */}
-          {activeCours.htmlUrl ? (
-            <iframe
-              ref={iframeRef}
-              src={getFullUrl(activeCours.htmlUrl)}
-              title={activeCours.titre || activeCours.chapitre}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              style={{
-                width: '100%',
-                height: 'calc(100vh - 48px)',
-                border: 'none',
-                display: 'block',
-                backgroundColor: '#ffffff',
-                overflow: 'auto'
-              }}
-            />
-          ) : (
-            <div style={{
-              flex: 1,
-              height: 'calc(100vh - 48px)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#f8fafc',
-              padding: '40px 20px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div>
-              <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
-                Aucun fichier HTML rattaché
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', marginBottom: '24px' }}>
-                L'administrateur n'a pas encore ajouté de fichier HTML pour ce cours.
-              </p>
-              <button
-                onClick={() => { setStep('chapitres'); setActiveCours(null); }}
-                style={{
-                  background: '#2563eb',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '11px 24px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                ← Revenir aux chapitres
-              </button>
-            </div>
-          )}
-          </div>
         </div>
       )}
 

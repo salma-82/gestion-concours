@@ -83,6 +83,7 @@ public class ResumeController {
             @RequestParam("matiere") String matiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam("titre") String titre,
+            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam("file") MultipartFile file) {
 
         try {
@@ -107,6 +108,7 @@ public class ResumeController {
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
+            resume.setEcole(ecole == null || ecole.isBlank() ? null : ecole.trim());
             resume.setContenu("");
 
             // Cas fichier HTML (MathJax, styles W3Schools...)
@@ -168,6 +170,7 @@ public class ResumeController {
             @RequestParam("matiere") String matiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam("titre") String titre,
+            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
             Optional<Resume> optionalResume = resumeRepository.findById(id);
@@ -179,6 +182,7 @@ public class ResumeController {
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
+            resume.setEcole(ecole == null || ecole.isBlank() ? null : ecole.trim());
 
             if (file != null && !file.isEmpty()) {
                 File dir = new File(UPLOAD_DIR);

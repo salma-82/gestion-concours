@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physique - Les Ondes (2ème BAC)</title>
+    <!-- MathJax for rendering physics formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 55px 15px 15px 65px;
+            max-width: 100%;
+            margin: 0;
+        }
+
+        /* Section Title Bar */
+        .section-header {
+            background-color: #f0f0f4;
+            border-left: 4px solid #000000;
+            padding: 8px 12px;
+            margin-top: 15px;
+            margin-bottom: 14px;
+        }
+
+        .section-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #000000;
+        }
+
+        /* Subtitles */
+        h3 {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 14px;
+            margin-bottom: 8px;
+        }
+
+        /* Lists & Bullet points */
+        ul {
+            list-style-type: disc;
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #222222;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 20px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #000000;
+            padding: 10px 14px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        .formula-subtext {
+            font-style: italic;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        /* Print adjustments */
+        @media print {
+            body {
+                padding: 10mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ONDES MÉCANIQUES PROGRESSIVES -->
+    <div class="section-header">
+        <h2>1. ONDES MÉCANIQUES PROGRESSIVES</h2>
+    </div>
+
+    <h3>1.1. Définitions fondamentales</h3>
+    <ul>
+        <li><strong>Onde mécanique progressive :</strong> Phénomène de propagation d'une perturbation dans un milieu matériel matériellement continu et élastique, sans transport de matière mais avec transport d'énergie.</li>
+        <li><strong>Onde transversale :</strong> La direction de la perturbation est perpendiculaire à la direction de propagation (ex : onde le long d'une corde, onde à la surface de l'eau).</li>
+        <li><strong>Onde longitudinale :</strong> La direction de la perturbation est parallèle à la direction de propagation (ex : onde le long d'un ressort, onde sonore).</li>
+    </ul>
+
+    <h3>1.2. Vitesse de propagation (Célérité)</h3>
+    <ul>
+        <li>La vitesse de propagation d'une onde est donnée par : \(v = \frac{d}{\Delta t}\)
+            <br><span class="formula-subtext">où \(d\) est la distance parcourue pendant la durée \(\Delta t\). (Unités : \(v\) en \(\text{m}\cdot\text{s}^{-1}\), \(d\) en \(\text{m}\), \(\Delta t\) en \(\text{s}\)).</span>
+        </li>
+        <li>Facteurs influençant la vitesse : la rigidité du milieu, sa masse volumique et sa température. La vitesse ne dépend pas de l'amplitude de l'onde.</li>
+    </ul>
+
+    <h3>1.3. Retard temporel</h3>
+    <ul>
+        <li>Le retard temporel \(\tau\) du mouvement d'un point \(M'\) par rapport au mouvement du point \(M\) est : \(\tau = \frac{MM'}{v}\).</li>
+        <li>Relation entre les élongations : \(y_{M'}(t) = y_M(t - \tau)\).</li>
+    </ul>
+
+    <!-- 2. ONDES MÉCANIQUES PROGRESSIVES PÉRIODIQUES -->
+    <div class="section-header">
+        <h2>2. ONDES MÉCANIQUES PROGRESSIVES PÉRIODIQUES</h2>
+    </div>
+
+    <h3>2.1. Double périodicité</h3>
+    <ul>
+        <li><strong>Périodicité temporelle \(T\) :</strong> La plus petite durée au bout de laquelle un point du milieu reprenne le même état de vibration. Sa fréquence est \(N = \frac{1}{T}\) (en Hertz \(\text{Hz}\)).</li>
+        <li><strong>Périodicité spatiale \(\lambda\) (Longueur d'onde) :</strong> La distance parcourue par l'onde pendant une période temporelle \(T\). C'est aussi la plus courte distance séparant deux points qui vibrent en phase.</li>
+    </ul>
+
+    <h3>2.2. Relation fondamentale</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Grandeur</th>
+                <th>Formule</th>
+                <th>Unités S.I.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Longueur d'onde \(\lambda\)</strong></td>
+                <td>\(\lambda = v \cdot T = \frac{v}{N}\)</td>
+                <td>\(\lambda\) en \(\text{m}\), \(v\) en \(\text{m}\cdot\text{s}^{-1}\), \(T\) en \(\text{s}\), \(N\) en \(\text{Hz}\)</td>
+            </tr>
+            <tr>
+                <td><strong>État de vibration (En phase)</strong></td>
+                <td>\(d = k \cdot \lambda \quad (k \in \mathbb{N}^*)\)</td>
+                <td>Les points ont le même état vibratoire à chaque instant.</td>
+            </tr>
+            <tr>
+                <td><strong>État de vibration (Opposition de phase)</strong></td>
+                <td>\(d = (2k + 1) \frac{\lambda}{2} \quad (k \in \mathbb{N})\)</td>
+                <td>Les points vibrent dans des sens opposés.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 3. DIFFRACTION ET DISPERSION -->
+    <div class="section-header">
+        <h2>3. PHÉNOMÈNE DE DIFFRACTION ET DISPERSION</h2>
+    </div>
+
+    <h3>3.1. Phénomène de diffraction</h3>
+    <ul>
+        <li><strong>Condition de diffraction :</strong> Se produit lorsqu'une onde rencontre un obstacle ou une ouverture de largeur \(a\) du même ordre de grandeur ou inférieure à la longueur d'onde : \(a \le \lambda\).</li>
+        <li><strong>Propriété :</strong> L'onde diffractée conserve la même fréquence \(N\), la même vitesse \(v\) et la même longueur d'onde \(\lambda\) que l'onde incidente (seule sa forme change).</li>
+        <li><strong>Écart angulaire (pour une onde lumineuse ou monochromatique) :</strong> 
+            $$\theta = \frac{\lambda}{a}$$
+            <span class="formula-subtext">Avec \(\theta\) en radians (\(\text{rad}\)), \(\lambda\) en mètres (\(\text{m}\)) et \(a\) la largeur de la fente en mètres (\(\text{m}\)).</span>
+        </li>
+        <li><strong>Relation expérimentale (avec un écran à distance \(D\)) :</strong> \(\tan(\theta) \approx \theta = \frac{L}{2D} \implies \frac{\lambda}{a} = \frac{L}{2D}\) (où \(L\) est la largeur de la tache centrale).</li>
+    </ul>
+
+    <h3>3.2. Milieu dispersif</h3>
+    <ul>
+        <li><strong>Définition :</strong> Un milieu est dit <strong>dispersif</strong> si la vitesse de propagation de l'onde dans ce milieu dépend de sa fréquence \(N\).</li>
+        <li><em>Exemple :</em> La surface de l'eau est un milieu dispersif. En revanche, l'air n'est pas un milieu dispersif pour les ondes sonores.</li>
+    </ul>
+
+</body>
+</html>

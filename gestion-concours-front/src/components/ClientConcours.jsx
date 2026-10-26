@@ -3,6 +3,7 @@ import axios from 'axios';
 import { recordStudentActivity } from '../studentProgress';
 import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { filterByStudentPack } from '../packAccess';
 
 const API_BASE = 'http://localhost:8081';
 
@@ -158,6 +159,7 @@ export default function ClientConcours() {
     concours: null,
     activeTab: 'sujet' // 'sujet' | 'correction'
   });
+  const [isViewerSidebarCollapsed, setIsViewerSidebarCollapsed] = useState(false);
 
   const returnToConcoursOptions = () => {
     navigate('/client-dashboard', { state: { openSidebarMenu: 'concours' } });
@@ -170,7 +172,7 @@ export default function ClientConcours() {
     try {
       const res = await axios.get(`${API_BASE}/api/concours`);
       const data = Array.isArray(res.data) ? res.data : [];
-      setConcoursList(data);
+      setConcoursList(filterByStudentPack(data));
     } catch (err) {
       console.error("Erreur chargement concours:", err);
       setError("Impossible de charger les concours pour le moment. Veuillez vérifier la connexion au serveur.");
@@ -336,6 +338,7 @@ export default function ClientConcours() {
 
   // Gestion de l'ouverture du visualiseur
   const handleOpenViewer = (concours, tab = 'sujet') => {
+    setIsViewerSidebarCollapsed(true);
     let finalTab = tab;
     if (tab === 'sujet' && !concours.htmlUrl && (concours.htmlCorrectionUrl || concours.pdfCorrectionUrl)) {
       finalTab = 'correction';
@@ -374,6 +377,7 @@ export default function ClientConcours() {
   };
 
   const closeViewerAndReturnToDashboard = () => {
+    setIsViewerSidebarCollapsed(false);
     setViewerModal({ isOpen: false, concours: null, activeTab: 'sujet' });
     setSelectedEcole(null);
     setSelectedMatiere(null);
@@ -391,7 +395,9 @@ export default function ClientConcours() {
   }, [viewerModal]);
 
   return (
-    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: '#0f172a' }}>
+    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: viewerModal.isOpen ? '0' : requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: '#0f172a' }}>
+      {!viewerModal.isOpen && (
+      <>
 
       {/* =========================================================================
           FIL D'ARIANE / NAVIGATION HIÉRARCHIQUE (ÉCOLES -> MATIÈRES -> CONCOURS)
@@ -1490,36 +1496,41 @@ export default function ClientConcours() {
       {/* =========================================================================
           MODAL DE CONSULTATION DU FICHIER CONCOURS (SUJET / CORRIGÉ)
       ========================================================================= */}
+      </>
+      )}
+
       {viewerModal.isOpen && viewerModal.concours && (
         <div style={{
-          position: 'fixed',
-          inset: 0,
+          position: 'relative',
+          width: '100%',
+          minHeight: 'calc(100vh - 76px)',
           backgroundColor: '#f8fafc',
           display: 'flex',
-          zIndex: 9999,
-          padding: 0
+          flexDirection: 'column',
+          padding: 0,
+          boxSizing: 'border-box'
         }}>
           <div style={{
             backgroundColor: '#f8fafc',
             width: '100%',
-            height: '100dvh',
-            minHeight: '100vh',
+            minHeight: 'calc(100vh - 76px)',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden'
+            overflow: 'visible'
           }}>
             {/* Contenu du Document (Iframe) */}
             <div style={{
               flex: 1,
-              minHeight: 0,
+              minHeight: 'calc(100vh - 116px)',
               backgroundColor: '#f1f5f9',
               padding: '20px 16px',
               display: 'flex',
+              flexDirection: isViewerSidebarCollapsed ? 'column' : 'row',
               gap: '18px',
-              overflow: 'auto',
-              alignItems: 'flex-start'
+              overflow: 'visible',
+              alignItems: isViewerSidebarCollapsed ? 'stretch' : 'flex-start'
             }}>
-              <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', padding: '14px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: 0 }}>
+              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', padding: '14px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
                 <h2 style={{ margin: '2px 4px 12px', color: '#1e3a8a', fontSize: '15px', fontWeight: 750 }}>Concours et QCM</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
                   {availableYearsForSelectedMatiere.map((year) => {
@@ -1593,17 +1604,8 @@ export default function ClientConcours() {
                     );
                   })}
                 </div>
-              </aside>
-              <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
-                  <button
-                    type="button"
-                    onClick={closeViewerAndReturnToDashboard}
-                    style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}
-                  >
-                    ← Retour
-                  </button>
-                </div>
+              </aside>}
+              <div style={{ flex: isViewerSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isViewerSidebarCollapsed ? '100%' : undefined, minWidth: isViewerSidebarCollapsed ? 0 : 'min(100%, 320px)', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
               {currentViewerUrl ? (
                 viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (

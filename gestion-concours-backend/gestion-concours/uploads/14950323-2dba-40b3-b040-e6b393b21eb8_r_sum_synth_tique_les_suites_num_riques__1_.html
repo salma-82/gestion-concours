@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Suites Numériques</title>
+    <!-- MathJax for rendering LaTeX math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 30px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Section Title Bar */
+        .section-header {
+            background-color: #f0f0f4;
+            border-left: 5px solid #000000;
+            padding: 8px 12px;
+            margin-top: 25px;
+            margin-bottom: 18px;
+        }
+
+        .section-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #000000;
+        }
+
+        /* Subtitles */
+        h3 {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 14px;
+            margin-bottom: 8px;
+        }
+
+        /* Lists & Bullet points */
+        ul {
+            list-style-type: disc;
+            padding-left: 22px;
+            margin-bottom: 12px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #222222;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 20px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #000000;
+            padding: 10px 14px;
+            text-align: left;
+            vertical-align: top;
+            width: 50%;
+        }
+
+        th {
+            background-color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        td strong {
+            font-weight: 700;
+        }
+
+        .formula-subtext {
+            font-style: italic;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        /* Print adjustments */
+        @media print {
+            body {
+                padding: 10mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. MONOTONIE ET MAJORATIONS -->
+    <div class="section-header">
+        <h2>1. MONOTONIE ET MAJORATIONS</h2>
+    </div>
+
+    <h3>1.1. Suite majorée, minorée, bornée</h3>
+    <ul>
+        <li>Une suite \((u_n)_{n \in I}\) est dite <strong>majorée</strong> s'il existe un réel \(M\) tel que : \(\forall n \in I, \quad u_n \le M\).</li>
+        <li>Une suite \((u_n)_{n \in I}\) est dite <strong>minorée</strong> s'il existe un réel \(m\) tel que : \(\forall n \in I, \quad u_n \ge m\).</li>
+        <li>Une suite \((u_n)_{n \in I}\) est dite <strong>bornée</strong> si elle est à la fois majorée et minorée (\(m \le u_n \le M\)), ce qui équivaut à : \(\exists M \ge 0, \quad |u_n| \le M\).</li>
+    </ul>
+
+    <h3>1.2. Monotonie d'une suite</h3>
+    <ul>
+        <li><strong>Suite croissante :</strong> \(\forall n \in I, \quad u_{n+1} - u_n \ge 0 \iff u_{n+1} \ge u_n\).</li>
+        <li><strong>Suite décroissante :</strong> \(\forall n \in I, \quad u_{n+1} - u_n \le 0 \iff u_{n+1} \le u_n\).</li>
+        <li><strong>Suite constante :</strong> \(\forall n \in I, \quad u_{n+1} = u_n\).</li>
+    </ul>
+
+    <!-- 2. SUITES ARITHMÉTIQUES ET GÉOMÉTRIQUES -->
+    <div class="section-header">
+        <h2>2. SUITES ARITHMÉTIQUES ET GÉOMÉTRIQUES</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Suite Arithmétique</th>
+                <th>Suite Géométrique</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>Définition :</strong><br>
+                    \(u_{n+1} = u_n + r \quad (r \in \mathbb{R})\)
+                </td>
+                <td>
+                    <strong>Définition :</strong><br>
+                    \(u_{n+1} = q \times u_n \quad (q \in \mathbb{R})\)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Terme général :</strong><br>
+                    \(u_n = u_p + (n - p)r\)<br>
+                    <span class="formula-subtext">(Si \(p = 0\) : \(u_n = u_0 + nr\))</span>
+                </td>
+                <td>
+                    <strong>Terme général :</strong><br>
+                    \(u_n = u_p \times q^{n-p}\)<br>
+                    <span class="formula-subtext">(Si \(p = 0\) : \(u_n = u_0 \times q^n\))</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Somme des termes :</strong><br>
+                    \(S_n = u_p + u_{p+1} + \dots + u_n\)<br>
+                    \(S_n = \frac{(n - p + 1)(u_p + u_n)}{2}\)
+                </td>
+                <td>
+                    <strong>Somme des termes \((q \neq 1)\) :</strong><br>
+                    \(S_n = u_p + u_{p+1} + \dots + u_n\)<br>
+                    \(S_n = u_p \times \frac{1 - q^{n - p + 1}}{1 - q}\)
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Limite de la suite géométrique \(q^n\)</h3>
+    <ul>
+        <li>Si \(q > 1\), alors \(\lim_{n \to +\infty} q^n = +\infty\)</li>
+        <li>Si \(-1 < q < 1\), alors \(\lim_{n \to +\infty} q^n = 0\)</li>
+    </ul>
+
+</body>
+</html>

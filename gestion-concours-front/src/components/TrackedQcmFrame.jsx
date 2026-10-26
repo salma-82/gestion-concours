@@ -31,6 +31,8 @@ export default function TrackedQcmFrame({
   const iframeRef = useRef(null);
   const trackedSrc = useMemo(() => getTrackedQcmUrl(src), [src]);
   const [verifiedTrackedSrc, setVerifiedTrackedSrc] = useState('');
+  const [htmlDocument, setHtmlDocument] = useState(null);
+  const [htmlFrameHeight, setHtmlFrameHeight] = useState(800);
   const [sessionMistakes, setSessionMistakes] = useState([]);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'none'
   const [saveMessage, setSaveMessage] = useState('');
@@ -51,6 +53,31 @@ export default function TrackedQcmFrame({
 
     return () => { active = false; };
   }, [src, trackedSrc]);
+
+  const activeSrc = trackedSrc !== src && verifiedTrackedSrc === trackedSrc ? trackedSrc : src;
+
+  useEffect(() => {
+    let cancelled = false;
+    setHtmlDocument(null);
+    setHtmlFrameHeight(800);
+    if (!/\.html?(?:$|[?#])/i.test(activeSrc || '')) return () => { cancelled = true; };
+
+    axios.get(activeSrc, { responseType: 'text' }).then(({ data }) => {
+      if (cancelled) return;
+      const baseUrl = new URL(activeSrc, window.location.origin).href;
+      const base = `<base href="${baseUrl}"><style>html,body{height:auto!important;min-height:0!important;overflow:visible!important}</style>`;
+      const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'tracked-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()</script>`;
+      let html = String(data || '');
+      if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
+      else html = `${base}${html}`;
+      const bodyClose = html.toLowerCase().lastIndexOf('</body>');
+      if (bodyClose >= 0) html = `${html.slice(0, bodyClose)}${resizeScript}${html.slice(bodyClose)}`;
+      else html += resizeScript;
+      setHtmlDocument(html);
+    }).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [activeSrc]);
 
   // Sauvegarde des erreurs sur le backend (base de données) et en local
   const handleSaveMistakes = useCallback(async (mistakesToSave = null, actionAttemptId = null) => {
@@ -123,6 +150,12 @@ export default function TrackedQcmFrame({
   useEffect(() => {
     const handleQcmMessage = (event) => {
       if (event.source !== iframeRef.current?.contentWindow) return;
+
+      if (event.data?.type === 'tracked-html-height') {
+        const height = Number(event.data.height);
+        if (Number.isFinite(height) && height > 0) setHtmlFrameHeight(Math.min(Math.max(height, 320), 100000));
+        return;
+      }
 
       // 1. Détection d'une réponse incorrecte
       if (event.data?.type === 'econcourse-qcm-mistake' && event.data?.mistake) {
@@ -249,7 +282,7 @@ export default function TrackedQcmFrame({
   }, [chapter, handleSaveMistakes, resourceId, resourceTitle, school, sourceType, src, subject, title, year]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'auto' }}>
       <div style={{
         padding: '8px 12px',
         display: 'flex',
@@ -310,10 +343,12 @@ export default function TrackedQcmFrame({
 
       <iframe
         ref={iframeRef}
-        src={trackedSrc === src || verifiedTrackedSrc !== trackedSrc ? src : trackedSrc}
+        src={htmlDocument === null ? activeSrc : undefined}
+        srcDoc={htmlDocument === null ? undefined : htmlDocument}
         title={title || 'QCM interactif'}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        style={style}
+        scrolling={htmlDocument === null ? undefined : 'no'}
+        style={htmlDocument === null ? style : { ...style, height: `${htmlFrameHeight}px`, overflow: 'hidden' }}
       />
     </div>
   );

@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
-import ClientMascot from './ClientMascot';
 import { LandingMascot } from './LandingPage';
+import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState(null);
+  const pageRegionRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +39,10 @@ export default function ClientLayout() {
     setIsMobileMenuOpen(false);
     setIsAccountMenuOpen(false);
   }, [location.pathname, location.search, location.state]);
+
+  useEffect(() => {
+    pageRegionRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     const closeOnEscape = (event) => {
@@ -104,7 +109,7 @@ export default function ClientLayout() {
         // dans les épreuves publiées par l'administration.
         if (resConcours.status === 'fulfilled' && Array.isArray(resConcours.value.data)) {
           const ecolesSet = new Set(
-            resConcours.value.data
+            filterByStudentPack(resConcours.value.data)
               .map(concours => typeof concours.ecole === 'string' ? concours.ecole.trim() : '')
               .filter(Boolean)
           );
@@ -282,10 +287,19 @@ export default function ClientLayout() {
     setIsMobileMenuOpen(false);
   };
 
+  const selectNavbarOption = (sectionPath, link) => {
+    setOpenMenu(null);
+    setIsMobileMenuOpen(false);
+    const destination = sectionPath === '/client-cours'
+      ? `/client-cours?filiere=${encodeURIComponent(link.label)}`
+      : link.path;
+    navigate(destination);
+  };
+
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const userName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
-  
+
   // Calculate user initials (default to "SB" if user is Salma or default)
   let userInitials = 'SB';
   if (user.prenom || user.nom) {
@@ -302,7 +316,7 @@ export default function ClientLayout() {
       overflow: 'hidden',
       position: 'relative'
     }}>
-      
+
       {/* Ancien sidebar conservé temporairement hors rendu. */}
       {false && <aside style={{
         width: '265px',
@@ -923,7 +937,7 @@ export default function ClientLayout() {
                   </button>
                   {hasDropdown && openMenu === menuId && <div className="client-nav-dropdown">
                     <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-cours' ? 'les cours' : path === '/client-examens' ? 'les examens' : path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>
-                    {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(link.path); }}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
+                    {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => selectNavbarOption(path, link)}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
                   </div>}
                 </div>
               );
@@ -933,7 +947,7 @@ export default function ClientLayout() {
 
           {/* Droite : Notification Bell & Profil Étudiant avec Initiale SB */}
           <div className="client-search">
-            <svg className="client-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+            <svg className="client-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
             <input aria-label="Rechercher dans ECONCOURS" placeholder="Rechercher..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && searchMatches[0]) selectSearchItem(searchMatches[0].path); if (event.key === 'Escape') setSearchQuery(''); }} />
             {searchMatches.length > 0 && <div className="client-search-results">
               {searchMatches.map((item) => <button type="button" key={item.path} onClick={() => selectSearchItem(item.path)}>{item.label}</button>)}
@@ -1016,20 +1030,20 @@ export default function ClientLayout() {
               </svg>
             </div>
             <button className="client-nav-logout client-desktop-logout" type="button" onClick={handleLogout} aria-label="Déconnexion" title="Déconnexion">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></svg>
             </button>
           </div>
           <div className="client-account-menu">
             <button className="client-settings-button" type="button" aria-label="Paramètres du compte" aria-expanded={isAccountMenuOpen} onClick={() => setIsAccountMenuOpen((open) => !open)}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 13.5 1.1.9-1.6 2.8-1.4-.5a7.5 7.5 0 0 1-1.4.8l-.2 1.5h-3.2l-.3-1.5a7.5 7.5 0 0 1-1.6 0l-.8 1.3-2.8-1.6.5-1.4a7.5 7.5 0 0 1-.8-1.4l-1.5-.2v-3.2l1.5-.3a7.5 7.5 0 0 1 0-1.6L5.6 8.3l1.6-2.8 1.4.5A7.5 7.5 0 0 1 10 5.2l.2-1.5h3.2l.3 1.5a7.5 7.5 0 0 1 1.6 0l.8-1.3 2.8 1.6-.5 1.4a7.5 7.5 0 0 1 .8 1.4l1.5.2v3.2l-1.5.3a7.5 7.5 0 0 1 0 1.6Z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /><path d="m19.4 13.5 1.1.9-1.6 2.8-1.4-.5a7.5 7.5 0 0 1-1.4.8l-.2 1.5h-3.2l-.3-1.5a7.5 7.5 0 0 1-1.6 0l-.8 1.3-2.8-1.6.5-1.4a7.5 7.5 0 0 1-.8-1.4l-1.5-.2v-3.2l1.5-.3a7.5 7.5 0 0 1 0-1.6L5.6 8.3l1.6-2.8 1.4.5A7.5 7.5 0 0 1 10 5.2l.2-1.5h3.2l.3 1.5a7.5 7.5 0 0 1 1.6 0l.8-1.3 2.8 1.6-.5 1.4a7.5 7.5 0 0 1 .8 1.4l1.5.2v3.2l-1.5.3a7.5 7.5 0 0 1 0 1.6Z" /></svg>
             </button>
             {isAccountMenuOpen && <div className="client-account-dropdown">
               <div className="client-account-heading">{userName}</div>
               <button type="button" onClick={() => { setIsAccountMenuOpen(false); navigate('/client-profile'); }}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profil
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>Profil
               </button>
               <button type="button" onClick={handleLogout}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>Déconnexion
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></svg>Déconnexion
               </button>
             </div>}
           </div>
@@ -1041,11 +1055,10 @@ export default function ClientLayout() {
           overflowY: 'auto',
           backgroundColor: '#f3f6fb',
           position: 'relative'
-        }}>
+        }} ref={pageRegionRef}>
           <Outlet />
         </main>
       </div>
-      <ClientMascot />
     </div>
   );
 }

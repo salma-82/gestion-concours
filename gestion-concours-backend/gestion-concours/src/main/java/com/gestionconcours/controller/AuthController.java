@@ -100,6 +100,7 @@ public class AuthController {
                         .email(email)
                         .motDePasse(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .role("CLIENT")
+                        .pack("PACK_COMPLET")
                         .active(1)
                         .createdAt(LocalDateTime.now())
                         .build());
@@ -116,6 +117,7 @@ public class AuthController {
             safeUser.put("nom", user.getNom());
             safeUser.put("prenom", user.getPrenom());
             safeUser.put("role", user.getRole());
+            safeUser.put("pack", user.getPack());
             safeUser.put("active", user.getActive());
             return ResponseEntity.ok(safeUser);
         } catch (InterruptedException exception) {
@@ -130,6 +132,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody InscriptionRequest request) {
+        if (request.getPack() == null || !java.util.Set.of(
+                "MEDECINE", "ENSAM", "ENSA", "MEDECINE_ENSA", "PACK_COMPLET"
+        ).contains(request.getPack())) {
+            return ResponseEntity.badRequest().body("Veuillez choisir un pack valide.");
+        }
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.status(400).body("Cet email existe déjà !");
         }

@@ -40,10 +40,29 @@ const CARDS_DATA = [
   { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'Réseau ENSA Maroc' },
 ];
 
-export function LandingMascot({ className = '', showCap = true }) {
+const FEATURE_ICONS = {
+  profile: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.5-3.3 3.1-5.5 7-5.5s6.5 2.2 7 5.5" /></>,
+  calendar: <><rect x="3.5" y="5" width="17" height="16" rx="2.5" /><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01" /></>,
+  dashboard: <><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="4" rx="1.5" /><rect x="13.5" y="10.5" width="7" height="10" rx="1.5" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" /></>,
+  course: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z" /><path d="M4 5.5v15M8 7h8M8 11h8" /></>,
+  summary: <><path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20z" /><path d="M14 3.5V8h4M9 12h6M9 16h6" /></>,
+  papers: <><path d="M6 3.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20z" /><path d="M14 3.5V8h4m-9 5 2 2 4-4" /></>,
+  timer: <><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5M9 2.5h6M12 2.5v2M18 6l1.5-1.5" /></>,
+  quiz: <><path d="M5 5.5h14M5 12h14M5 18.5h14" /><path d="m2.5 5.5 1 1 2-2m-3 7.5 1 1 2-2m-3 7.5 1 1 2-2" /></>,
+  save: <><path d="M5 3.5h12l2 2V20a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M8 3.5v5h7v-5M8 21v-7h8v7" /></>,
+  correction: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5m-12-10 1.5 1.5 3-3" /></>,
+  target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5.5" /><circle cx="12" cy="12" r="1.8" /><path d="m15.5 8.5 5-5m-4 0h4v4" /></>,
+};
+
+function FeatureIcon({ name }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{FEATURE_ICONS[name]}</svg>;
+}
+
+export function LandingMascot({ className = '', showCap = true, wave = false }) {
   const mascotId = useId().replace(/:/g, '');
+  const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}`.trim();
   return (
-    <svg className={className} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
+    <svg className={mascotClassName} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
       <defs>
         <linearGradient id={`${mascotId}-owlBrown`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#8c4b28" />
@@ -73,8 +92,15 @@ export function LandingMascot({ className = '', showCap = true }) {
       <g className="lp-mascot-wing lp-mascot-wing-left">
         <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
       </g>
-      <g className="lp-mascot-wing lp-mascot-wing-right">
-        <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
+      <g className={`lp-mascot-wing lp-mascot-wing-right${wave ? ' lp-mascot-wing-right--raised' : ''}`}>
+        {wave ? (
+          <>
+            <path d="M174 143C190 128 199 103 207 77C211 64 219 59 225 64C231 69 226 82 223 92C230 81 237 82 239 89C241 96 234 105 230 111C223 130 212 153 190 169Z" fill="#5e2e15" />
+            <path d="M189 145C203 125 211 102 219 76" stroke="#87502e" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity=".7" />
+          </>
+        ) : (
+          <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
+        )}
       </g>
       <g className="lp-mascot-head">
         <ellipse cx="120" cy="95" rx="60" ry="52" fill={`url(#${mascotId}-owlBrown)`} />
@@ -109,6 +135,82 @@ export function LandingMascot({ className = '', showCap = true }) {
   );
 }
 
+function FeatureMascot({ className = '' }) {
+  const id = useId().replace(/:/g, '');
+  return (
+    <svg className={className} viewBox="0 0 360 460" role="img" aria-label="Bibi, hibou diplômé qui salue">
+      <defs>
+        <radialGradient id={`${id}-body`} cx="34%" cy="23%" r="78%">
+          <stop offset="0" stopColor="#b96332" /><stop offset=".52" stopColor="#87421f" /><stop offset="1" stopColor="#54270f" />
+        </radialGradient>
+        <radialGradient id={`${id}-face`} cx="35%" cy="22%" r="82%">
+          <stop offset="0" stopColor="#c8753e" /><stop offset=".58" stopColor="#99502a" /><stop offset="1" stopColor="#693317" />
+        </radialGradient>
+        <radialGradient id={`${id}-belly`} cx="38%" cy="25%" r="82%">
+          <stop offset="0" stopColor="#fff9e9" /><stop offset="1" stopColor="#f0d9b7" />
+        </radialGradient>
+        <radialGradient id={`${id}-gold`} cx="35%" cy="28%" r="72%">
+          <stop offset="0" stopColor="#fff36b" /><stop offset=".45" stopColor="#ffc21b" /><stop offset=".82" stopColor="#f39800" /><stop offset="1" stopColor="#d46b00" />
+        </radialGradient>
+        <linearGradient id={`${id}-cap`} x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#253c5c" /><stop offset=".55" stopColor="#142842" /><stop offset="1" stopColor="#09182b" />
+        </linearGradient>
+        <linearGradient id={`${id}-foot`} x1="0" y1="0" x2="0" y2="1">
+          <stop stopColor="#ffb000" /><stop offset="1" stopColor="#f36b00" />
+        </linearGradient>
+        <filter id={`${id}-shadow`} x="-30%" y="-25%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="9" stdDeviation="8" floodColor="#29170f" floodOpacity=".24" />
+        </filter>
+        <filter id={`${id}-capShadow`} x="-20%" y="-40%" width="140%" height="180%">
+          <feDropShadow dx="0" dy="5" stdDeviation="4" floodColor="#081425" floodOpacity=".32" />
+        </filter>
+      </defs>
+      <ellipse cx="172" cy="438" rx="94" ry="14" fill="#1b2d42" opacity=".13" />
+      <g filter={`url(#${id}-shadow)`}>
+        <g fill={`url(#${id}-foot)`} stroke="#f57900" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M132 405v25m0-6-18 22m18-18 1 21m1-21 17 18" fill="none" />
+          <path d="M218 405v25m0-6-18 22m18-18 1 21m1-21 17 18" fill="none" />
+        </g>
+        <ellipse cx="174" cy="319" rx="112" ry="123" fill={`url(#${id}-body)`} />
+        <ellipse cx="174" cy="324" rx="73" ry="91" fill={`url(#${id}-belly)`} />
+        <path d="M147 278q15 12 29 0m5 0q15 12 29 0M142 306q18 12 36 0m4 0q17 12 35 0" fill="none" stroke="#d2b58e" strokeWidth="6" strokeLinecap="round" opacity=".82" />
+        <path d="M104 302c-34 19-43 66-24 98 27-7 41-30 39-67Z" fill={`url(#${id}-body)`} />
+        <g className="lp-feature-wing">
+          <path d="M236 293c36-20 50-65 70-120 8-22 19-25 28-18 11 9 1 31-7 51 14-18 27-12 28 1 1 13-13 31-24 47-16 30-33 57-67 78Z" fill={`url(#${id}-body)`} />
+          <path d="M264 294c25-35 43-76 59-119" fill="none" stroke="#d28a57" strokeWidth="5" strokeLinecap="round" opacity=".35" />
+          <path d="M309 206c7-13 13-27 18-40" fill="none" stroke="#e0a274" strokeWidth="3" strokeLinecap="round" opacity=".28" />
+        </g>
+        <g>
+          <path d="M116 165 91 123q-7-13 2-16 8-3 18 5l20 17m105 36 26-42q8-13 17-9 8 4 3 17l-13 43" fill={`url(#${id}-body)`} />
+          <ellipse cx="174" cy="191" rx="113" ry="108" fill={`url(#${id}-face)`} />
+          <ellipse cx="127" cy="197" rx="53" ry="56" fill="#fff7e9" />
+          <ellipse cx="220" cy="197" rx="53" ry="56" fill="#fff7e9" />
+          <circle cx="127" cy="197" r="42" fill={`url(#${id}-gold)`} />
+          <circle cx="220" cy="197" r="42" fill={`url(#${id}-gold)`} />
+          <circle cx="129" cy="198" r="24" fill="#100d0b" />
+          <circle cx="218" cy="198" r="24" fill="#100d0b" />
+          <circle cx="137" cy="188" r="8" fill="white" />
+          <circle cx="120" cy="207" r="4" fill="white" />
+          <circle cx="226" cy="188" r="8" fill="white" />
+          <circle cx="210" cy="207" r="4" fill="white" />
+          <path d="M167 204q7-13 15 0l-7 30Z" fill="#ff9400" />
+          <path d="M101 176q8-18 24-19m82 19q12-19 29-17" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" opacity=".2" />
+        </g>
+        <g filter={`url(#${id}-capShadow)`}>
+          <path d="M112 124v-34q0-31 62-36 62 5 62 36v34q-62 25-124 0Z" fill={`url(#${id}-cap)`} />
+          <path d="m49 79 125-54 137 54-137 49Z" fill="#10243d" />
+          <path d="m49 79 125-54 137 54-137 24Z" fill="#213b5b" />
+          <path d="M174 29c50 0 89 16 96 52" fill="none" stroke="#ffb000" strokeWidth="7" strokeLinecap="round" />
+          <circle cx="174" cy="29" r="10" fill="#ffb000" />
+          <circle cx="270" cy="83" r="8" fill="#f39a00" />
+          <path d="M264 86q-8 21-1 36l13 3q11-15 1-37Z" fill="#ffb000" />
+          <path d="M269 91q-4 18 1 28" fill="none" stroke="#ffd43b" strokeWidth="3" strokeLinecap="round" opacity=".7" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 export default function LandingPage({ onNavigateToAuth }) {
   const navigate = useNavigate();
   const rootRef = useRef(null);
@@ -118,6 +220,7 @@ export default function LandingPage({ onNavigateToAuth }) {
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
+  const [scrollMascotVisible, setScrollMascotVisible] = useState(true);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   // Mini-Quiz interactive demo state
@@ -186,6 +289,9 @@ export default function LandingPage({ onNavigateToAuth }) {
       mascotProgressRef.current = progress;
 
       const anchorY = window.innerHeight * 0.42;
+      const featuresSection = document.querySelector('.lp-features-section');
+      const featuresRect = featuresSection?.getBoundingClientRect();
+      const insideFeatures = featuresRect && featuresRect.top <= anchorY && featuresRect.bottom >= anchorY;
       const methodSection = document.querySelector('.lp-methodology-section');
       const methodRows = Array.from(document.querySelectorAll('.lp-method-row'));
       const activeRow = methodRows.find((row) => {
@@ -194,6 +300,8 @@ export default function LandingPage({ onNavigateToAuth }) {
       });
       const methodRect = methodSection?.getBoundingClientRect();
       const insideMethod = methodRect && methodRect.top <= anchorY && methodRect.bottom >= anchorY;
+      const shouldShowScrollMascot = Boolean(insideMethod);
+      setScrollMascotVisible((visible) => visible === shouldShowScrollMascot ? visible : shouldShowScrollMascot);
 
       if (activeRow || (insideMethod && methodRows.length)) {
         const row = activeRow || methodRows.reduce((closest, candidate) => {
@@ -205,6 +313,8 @@ export default function LandingPage({ onNavigateToAuth }) {
         setZone(`step-${stepIndex}`, stepIndex % 2 === 0 ? 'left' : 'right', row.dataset.mascotSpeech || 'Yallah nkemlo!');
       } else if (window.scrollY <= 1) {
         setZone('start', 'right', 'Marhaba! 👋');
+      } else if (insideFeatures) {
+        setZone('features', 'right', 'Chouf les fonctionnalités! ✨');
       } else if (methodSection && anchorY < methodSection.getBoundingClientRect().top) {
         setZone('approach', 'left', 'Nbdaw b planning! 📅');
       } else {
@@ -319,7 +429,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           });
         });
 
-        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-feat-cat-label, .lp-feat-card, .lp-features-cta');
+        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-features-mascot-panel, .lp-feature-story-card, .lp-features-cta');
         revealGroup('.lp-methodology-section', '.lp-section-header > *, .lp-method-copy, .lp-method-preview');
         revealGroup('.lp-quiz-demo-section', '.lp-section-header > *, .lp-quiz-widget');
         revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
@@ -481,7 +591,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <button
         ref={mascotRef}
-        className={`lp-scroll-mascot is-${mascotNavigation.side}`}
+        className={`lp-scroll-mascot is-${mascotNavigation.side}${scrollMascotVisible ? '' : ' is-hidden'}`}
         type="button"
         aria-label="Faire bouger la mascotte"
         onClick={() => setMascotClickCount((count) => count + 1)}
@@ -628,7 +738,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         </h1>
 
         <p className="lp-hero-desc">
-          La plateforme d'excellence pour les bacheliers et préparationnaires marocains : résumés de cours en LaTeX, QCM chronométrés des 15 dernières années et suivi statistique en direct pour intégrer l'ENSA, l'ENSAM, la Médecine et l'ENCG.
+          La plateforme d'excellence pour les bacheliers et préparationnaires marocains : résumés de cours clairs, QCM chronométrés des 15 dernières années et suivi statistique en direct pour intégrer l'ENSA, l'ENSAM, la Médecine et l'ENCG.
         </p>
 
         <div className="lp-hero-actions">
@@ -658,7 +768,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         {/* 3D Orbit Carousel Showcase */}
         <div className="lp-carousel-stage-wrapper">
           <div className="lp-hero-floater pos-left">
-            <span>📐</span> Formules LaTeX & MathJax nettes
+            <span>📐</span> Formules claires et lisibles
           </div>
           <div className="lp-hero-floater pos-right">
             <span>⏱️</span> Mode chronomètre officiel
@@ -687,146 +797,121 @@ export default function LandingPage({ onNavigateToAuth }) {
       {/* ====================================================================
           5b. FONCTIONNALITÉS CLÉS DE LA PLATEFORME
       ==================================================================== */}
-      <section className="lp-features-section" id="fonctionnalites-cles">
-        <div className="lp-section-header">
-          <span className="lp-section-eyebrow">CE QU'ON OFFRE</span>
-          <h2 className="lp-section-title">
-            Fonctionnalités Clés<br />de la Plateforme
-          </h2>
-          <p className="lp-section-desc">
-            Tout ce dont tu as besoin pour préparer ton Bac et réussir les concours des grandes écoles.
-          </p>
-        </div>
-
-        <div className="lp-features-categories">
-
-          {/* A — SUIVI DYNAMIQUE */}
-          <div className="lp-feat-category">
-            <div className="lp-feat-cat-label lp-feat-cat-label--a">
-              <span className="lp-feat-cat-letter">A</span>
-              <span>Suivi Dynamique</span>
+      <section className="lp-features-section" id="fonctionnalites">
+        <div className="lp-features-layout">
+          <aside className="lp-features-mascot-panel" aria-label="Bibi, mascotte ECONCOURS">
+            <div className="lp-features-mascot-stage">
+              <div className="lp-features-mascot-glow" aria-hidden="true" />
+              <FeatureMascot className="lp-mascot-art lp-feature-mascot-art" />
+              <span className="lp-features-spark lp-features-spark--one" aria-hidden="true">✦</span>
+              <span className="lp-features-spark lp-features-spark--two" aria-hidden="true">✧</span>
             </div>
-            <div className="lp-feat-cards-row">
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">👤</span>
-                <div>
-                  <strong>Profil Étudiant</strong>
-                  <p>Espace personnalisé avec ta photo, ton nom et ton historique de progression complet.</p>
+            <div className="lp-features-mascot-badge">
+              <span className="lp-features-status-dot" aria-hidden="true" />
+              <span>Bibi, ton guide vers la réussite !</span>
+              <span aria-hidden="true">✦</span>
+            </div>
+          </aside>
+
+          <div className="lp-features-content">
+            <div className="lp-section-header">
+              <span className="lp-section-eyebrow">CE QU'ON OFFRE</span>
+              <h2 className="lp-section-title">
+                Fonctionnalités Clés<br /><span>de la Plateforme</span>
+              </h2>
+              <p className="lp-section-desc">
+                Tout ce dont tu as besoin pour préparer ton Bac et réussir les concours des grandes écoles.
+              </p>
+            </div>
+
+            <div className="lp-features-categories">
+              <div className="lp-feat-category">
+                <div className="lp-feat-cat-label lp-feat-cat-label--a">
+                  <span className="lp-feat-cat-letter">A</span><span>Suivi Dynamique</span>
+                </div>
+                <div className="lp-feat-cards-row">
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="profile" /></span>
+                    <div><strong>Profil Étudiant</strong><p>Espace personnalisé avec ta photo, ton nom et ton historique de progression complet.</p></div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="calendar" /></span>
+                    <div><strong>Calendrier Interactif</strong><p>Événements officiels des concours et événements personnels de révision.</p></div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="dashboard" /></span>
+                    <div><strong>Dashboard Global</strong><p>Vue d'ensemble interactive avec graphiques de progression en temps réel.</p></div>
+                  </div>
                 </div>
               </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">📅</span>
-                <div>
-                  <strong>Calendrier Interactif</strong>
-                  <p>Événements officiels des concours et événements personnels de révision.</p>
+
+              <div className="lp-feat-category">
+                <div className="lp-feat-cat-label lp-feat-cat-label--b">
+                  <span className="lp-feat-cat-letter">B</span><span>Contenus Pédagogiques</span>
+                </div>
+                <div className="lp-feat-cards-row">
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="course" /></span>
+                    <div><strong>Cours Complets Bac</strong><p>Cours structurés et complets selon le programme officiel du Baccalauréat marocain.</p></div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="summary" /></span>
+                    <div><strong>Résumés LaTeX</strong><p>Fiches de synthèse formatées en LaTeX avec formules essentielles et condensés.</p></div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="papers" /></span>
+                    <div><strong>Annales Corrigées</strong><p>Annales des concours officiels corrigées étape par étape pour chaque école.</p></div>
+                  </div>
                 </div>
               </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">📊</span>
-                <div>
-                  <strong>Dashboard Global</strong>
-                  <p>Vue d'ensemble interactive avec graphiques de progression en temps réel.</p>
+
+              <div className="lp-feat-category">
+                <div className="lp-feat-cat-label lp-feat-cat-label--c">
+                  <span className="lp-feat-cat-letter">C</span><span>Moteur de Test</span>
+                </div>
+                <div className="lp-feat-cards-row">
+                  <div className="lp-feat-card lp-feat-card--timer">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="timer" /></span>
+                    <div><strong>Tests Chronométrés</strong><p>Compte à rebours officiel pour simuler les conditions réelles des concours.</p></div>
+                    <div className="lp-feat-timer-badge">00 : 00 : 39</div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="quiz" /></span>
+                    <div><strong>QCM par Chapitre &amp; École</strong><p>Questions organisées par matière, chapitre et institution (ENSA, Médecine…).</p></div>
+                  </div>
+                  <div className="lp-feat-card">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="save" /></span>
+                    <div><strong>Sauvegarde Automatique des Erreurs</strong><p>Toutes tes fautes sont enregistrées automatiquement pour révision ciblée.</p></div>
+                  </div>
                 </div>
               </div>
+
+              <div className="lp-feat-category">
+                <div className="lp-feat-cat-label lp-feat-cat-label--d">
+                  <span className="lp-feat-cat-letter">D</span><span>Ciblage des Erreurs</span>
+                </div>
+                <div className="lp-feat-cards-row lp-feat-cards-row--duo">
+                  <div className="lp-feat-card lp-feat-card--duo">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="correction" /></span>
+                    <div><strong>Correction Intelligente</strong><p>Smart correction — analyse automatique de tes erreurs avec retour détaillé et conseils.</p></div>
+                  </div>
+                  <div className="lp-feat-card lp-feat-card--duo lp-feat-card--accent">
+                    <span className="lp-feat-card-icon"><FeatureIcon name="target" /></span>
+                    <div><strong>Objectif Zéro Faute</strong><p>Goal tracking — suivi de ton objectif jusqu'à la maîtrise totale de chaque chapitre.</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lp-features-cta">
+              <button className="lp-btn-primary lp-features-start-btn" type="button" onClick={() => handleNav('register')}>
+                <span>Accéder à toutes les fonctionnalités</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
-
-          {/* B — CONTENUS PÉDAGOGIQUES */}
-          <div className="lp-feat-category">
-            <div className="lp-feat-cat-label lp-feat-cat-label--b">
-              <span className="lp-feat-cat-letter">B</span>
-              <span>Contenus Pédagogiques</span>
-            </div>
-            <div className="lp-feat-cards-row">
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">📚</span>
-                <div>
-                  <strong>Cours Complets Bac</strong>
-                  <p>Cours structurés et complets selon le programme officiel du Baccalauréat marocain.</p>
-                </div>
-              </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">🔢</span>
-                <div>
-                  <strong>Résumés LaTeX</strong>
-                  <p>Fiches de synthèse formatées en LaTeX avec formules essentielles et condensés.</p>
-                </div>
-              </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">📝</span>
-                <div>
-                  <strong>Annales Corrigées</strong>
-                  <p>Annales des concours officiels corrigées étape par étape pour chaque école.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* C — MOTEUR DE TEST */}
-          <div className="lp-feat-category">
-            <div className="lp-feat-cat-label lp-feat-cat-label--c">
-              <span className="lp-feat-cat-letter">C</span>
-              <span>Moteur de Test</span>
-            </div>
-            <div className="lp-feat-cards-row">
-              <div className="lp-feat-card lp-feat-card--timer">
-                <span className="lp-feat-card-icon">⏱️</span>
-                <div>
-                  <strong>Tests Chronométrés</strong>
-                  <p>Compte à rebours officiel pour simuler les conditions réelles des concours.</p>
-                </div>
-                <div className="lp-feat-timer-badge">00 : 00 : 39</div>
-              </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">🧮</span>
-                <div>
-                  <strong>QCM par Chapitre &amp; École</strong>
-                  <p>Questions organisées par matière, chapitre et institution (ENSA, Médecine…).</p>
-                </div>
-              </div>
-              <div className="lp-feat-card">
-                <span className="lp-feat-card-icon">💾</span>
-                <div>
-                  <strong>Sauvegarde Automatique des Erreurs</strong>
-                  <p>Toutes tes fautes sont enregistrées automatiquement pour révision ciblée.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* D — CIBLAGE DES ERREURS */}
-          <div className="lp-feat-category">
-            <div className="lp-feat-cat-label lp-feat-cat-label--d">
-              <span className="lp-feat-cat-letter">D</span>
-              <span>Ciblage des Erreurs</span>
-            </div>
-            <div className="lp-feat-cards-row lp-feat-cards-row--duo">
-              <div className="lp-feat-card lp-feat-card--duo">
-                <span className="lp-feat-card-icon">🔍</span>
-                <div>
-                  <strong>Correction Intelligente</strong>
-                  <p>Smart correction — analyse automatique de tes erreurs avec retour détaillé et conseils.</p>
-                </div>
-              </div>
-              <div className="lp-feat-card lp-feat-card--duo lp-feat-card--accent">
-                <span className="lp-feat-card-icon">🎯</span>
-                <div>
-                  <strong>Objectif Zéro Faute</strong>
-                  <p>Goal tracking — suivi de ton objectif jusqu'à la maîtrise totale de chaque chapitre.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div className="lp-features-cta">
-          <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
-            <span>Accéder à toutes les fonctionnalités</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
         </div>
       </section>
 
@@ -834,7 +919,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           6. 3-STEP METHODOLOGY SECTION (STYLE KRESCO)
       ==================================================================== */}
       <section className="lp-methodology-section" id="methodologie">
-        <div className="lp-section-header" id="fonctionnalites">
+        <div className="lp-section-header">
           <span className="lp-section-eyebrow">LA MÉTHODE DE L'EXCELLENCE</span>
           <h2 className="lp-section-title">
             Le parcours ÉCONCOURS<br />de la révision à l'admission.
@@ -849,7 +934,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           {[
             { icon: '📅', label: 'PLANIFIER', title: 'Calendrier des concours & agenda personnel', text: "Suis les dates d'inscription et les épreuves officielles des concours ENSA, ENSAM, Médecine et ENCG. Organise aussi tes séances de révision avec ton agenda personnel.", preview: 'Agenda concours', tag: 'Concours 2027', speech: 'Nbdaw b planning! 📅', lines: ['ENSA · Inscription ouverte', 'ENSAM · Épreuve à venir', 'Révision personnelle · 18:00'] },
             { icon: '📚', label: 'COMPRENDRE', title: 'Cours Bac & examens nationaux', text: 'Retrouve des cours complets et structurés selon le programme du Baccalauréat marocain, avec les annales des examens nationaux et leurs corrigés.', preview: 'Cours du Baccalauréat', tag: 'Mathématiques', speech: 'Fhem dars mzyan! 📚', lines: ['Limites et continuité', 'Dérivation · cours complet', 'Examen national corrigé'] },
-            { icon: '📝', label: 'SYNTHÉTISER', title: 'Résumés express', text: 'Révise rapidement avec des fiches condensées et des synthèses LaTeX qui regroupent les formules et les concepts clés de chaque chapitre.', preview: 'Fiche de révision', tag: 'Formules clés', speech: 'Wjjed résumé dyalk! 📝', lines: ['Limite remarquable', 'Dérivée · fonctions usuelles', 'Synthèse prête à réviser'] },
+            { icon: '📝', label: 'SYNTHÉTISER', title: 'Résumés express', text: 'Révise rapidement avec des fiches condensées qui regroupent les formules et les notions clés de chaque chapitre.', preview: 'Fiche de révision', tag: 'Formules clés', speech: 'Wjjed résumé dyalk! 📝', lines: ['Limite remarquable', 'Dérivée · fonctions usuelles', 'Synthèse prête à réviser'] },
             { icon: '⏱️', label: 'S’ENTRAÎNER', title: 'Concours blancs par chapitre', text: 'Valide tes acquis au fil des révisions avec des QCM chronométrés par matière et par chapitre : Mathématiques, Physique, SVT et plus.', preview: 'Test par chapitre', tag: '12 questions', speech: 'Dreb QCM b chrono! ⏱️', lines: ['Mathématiques · Suites', 'Temps restant · 08:42', 'Progression · 4 / 12'] },
             { icon: '🏛️', label: 'SE PRÉPARER', title: 'Annales concours par école', text: 'Entraîne-toi sur les vrais sujets des grandes écoles sous forme de QCM interactifs pour maîtriser le format des épreuves officielles.', preview: 'Annales de concours', tag: 'ENSA · 2025', speech: 'Jarrab annales l’école! 🏛️', lines: ['Sujet officiel · Mathématiques', 'Format QCM interactif', 'Barème de l’épreuve'] },
             { icon: '🔄', label: 'PROGRESSER', title: 'Réviser mes erreurs', text: 'Les questions manquées dans tes QCM sont sauvegardées automatiquement. Reprends-les de façon ciblée pour renforcer tes points faibles jusqu’à maîtriser chaque notion.', preview: 'Révision ciblée', tag: 'Mes erreurs', speech: 'Raja3 les erreurs dyalk! 🔄', lines: ['Question à revoir · Suites', 'Correction détaillée disponible', 'Objectif · zéro faute'] },

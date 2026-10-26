@@ -30,6 +30,9 @@ public class User {
 
     private String role;
 
+    @Column(name = "selected_pack", length = 40)
+    private String pack;
+
     private Integer active;
 
     @Column(name = "created_at")

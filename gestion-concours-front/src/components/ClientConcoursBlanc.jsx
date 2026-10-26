@@ -109,6 +109,7 @@ export default function ClientConcoursBlanc() {
   const [selectedMatiere, setSelectedMatiere] = useState(null);
   const [selectedChapitre, setSelectedChapitre] = useState(null);
   const [activeConcours, setActiveConcours] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [concoursList, setConcoursList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,6 +197,7 @@ export default function ClientConcoursBlanc() {
       const chapitre = firstQcm.chapitre || 'Général / Sans Chapitre';
       setSelectedChapitre(chapitre);
       setActiveConcours(firstQcm);
+      setIsSidebarCollapsed(true);
       setCurrentStep('player');
       recordStudentActivity({
         type: 'Concours blanc',
@@ -289,6 +291,7 @@ export default function ClientConcoursBlanc() {
 
   const handleOpenQcm = (concours, chapterOverride = selectedChapitre, matiereOverride = selectedMatiere) => {
     setActiveConcours(concours);
+    setIsSidebarCollapsed(true);
     setCurrentStep('player');
     recordStudentActivity({
       type: 'Concours blanc',
@@ -305,13 +308,14 @@ export default function ClientConcoursBlanc() {
   };
 
   const handleBackToChapitres = () => {
+    setIsSidebarCollapsed(false);
     setCurrentStep('chapitres');
     setSelectedChapitre(null);
     setActiveConcours(null);
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: 'calc(100vh - 76px)', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {currentStep === 'loading' && (
         <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
@@ -324,8 +328,8 @@ export default function ClientConcoursBlanc() {
           ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '18px', width: '100%', flexWrap: 'wrap' }}>
-          <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: '18px', width: '100%' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et QCM</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
@@ -361,19 +365,9 @@ export default function ClientConcoursBlanc() {
                 );
               })}
             </div>
-          </aside>
+          </aside>}
 
-          <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
-              <button
-                type="button"
-                onClick={handleBackToMatieres}
-                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}
-              >
-                ← Retour
-              </button>
-            </div>
-
+          <div style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
             {activeConcours.htmlUrl ? (
               <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
                 <TrackedQcmFrame

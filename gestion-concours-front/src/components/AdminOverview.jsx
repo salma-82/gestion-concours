@@ -1,5 +1,6 @@
 import React from 'react';
 import './AdminOverview.css';
+import { PACK_OPTIONS } from '../packAccess';
 
 const formatMeta = (item) => [item.matiere, item.ecole, item.annee].filter(Boolean).join(' · ');
 
@@ -25,6 +26,13 @@ export default function AdminOverview({
     { label: 'Résumés & astuces', value: resumes.length, color: '#d97706' }
   ];
   const maxDistribution = Math.max(1, ...distribution.map((item) => item.value));
+  const offerCounts = PACK_OPTIONS.map((offer) => ({
+    ...offer,
+    students: users.filter((user) => user.pack === offer.value).length,
+    pending: requests.filter((request) => request.pack === offer.value).length,
+  }));
+  const usersWithoutOffer = users.filter((user) => !user.pack).length;
+  const requestsWithoutOffer = requests.filter((request) => !request.pack).length;
 
   const recentItems = [
     ...contests.map((item) => ({ ...item, kind: 'Concours', icon: '🏆', tone: 'violet' })),
@@ -75,6 +83,24 @@ export default function AdminOverview({
                 <div className="admin-distribution-track"><span style={{ width: `${item.value ? Math.max(4, (item.value / maxDistribution) * 100) : 0}%`, background: item.color }} /></div>
               </div>
             ))}
+          </div>
+          <div className="admin-offer-breakdown">
+            <div className="admin-offer-heading">
+              <strong>Étudiants par offre</strong>
+              <span>Comptes actifs · demandes en attente</span>
+            </div>
+            {offerCounts.map((offer) => (
+              <div className="admin-offer-row" key={offer.value}>
+                <span>{offer.label}</span>
+                <strong>{offer.students}</strong>
+                <small>{offer.pending} en attente</small>
+              </div>
+            ))}
+            {(usersWithoutOffer > 0 || requestsWithoutOffer > 0) && (
+              <div className="admin-offer-unassigned">
+                Offres non renseignées : {usersWithoutOffer} compte(s) · {requestsWithoutOffer} demande(s)
+              </div>
+            )}
           </div>
         </article>
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { recordStudentActivity } from '../studentProgress';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
 
 const matchOption = (itemOption, targetFiliere) => {
   if (!targetFiliere) return true;
@@ -160,6 +161,7 @@ export default function ClientExamens() {
     setSelectedFiliereAnnee('');
     setSelectedMatiereCard(null);
     setActiveExam(null);
+    setIsSidebarCollapsed(false);
   }, [searchParams]);
 
   // Filtres
@@ -171,6 +173,7 @@ export default function ClientExamens() {
 
   // Mode Lecteur / Visionneuse
   const [activeExam, setActiveExam] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeDocType, setActiveDocType] = useState('sujet'); // 'sujet' ou 'correction'
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('scroll'); // 'scroll' ou 'single'
@@ -240,6 +243,7 @@ export default function ClientExamens() {
 
   const handleOpenReader = (exam, type = 'sujet') => {
     setActiveExam(exam);
+    setIsSidebarCollapsed(true);
     setActiveDocType(type);
     recordStudentActivity({
       type: 'Examen national',
@@ -293,18 +297,17 @@ export default function ClientExamens() {
     };
   });
 
+  if (!filiereParam) {
+    return <Navigate to="/client-dashboard" replace state={{ openSidebarMenu: 'examens' }} />;
+  }
+
   return (
     <div style={{
-      position: selectedFiliere ? 'fixed' : 'relative',
-      top: selectedFiliere ? 0 : 'auto',
-      left: selectedFiliere ? 0 : 'auto',
-      right: selectedFiliere ? 0 : 'auto',
-      bottom: selectedFiliere ? 0 : 'auto',
-      width: selectedFiliere ? '100vw' : '100%',
-      height: selectedFiliere ? '100vh' : 'auto',
-      zIndex: selectedFiliere ? 9999 : 'auto',
+      position: 'relative',
+      width: '100%',
+      minHeight: '100%',
       backgroundColor: '#f8fafc',
-      overflowY: 'auto',
+      overflowY: 'visible',
       padding: selectedFiliere ? '24px 24px 40px' : '0',
       boxSizing: 'border-box',
       fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif"
@@ -313,9 +316,8 @@ export default function ClientExamens() {
 
       {/* ==================== VUE 1 : VISIONNEUSE DU DOCUMENT (PLEINE PAGE) ==================== */}
       {selectedFiliere ? (
-        <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 48px)' }}>
-          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
-            <button type="button" onClick={() => navigate('/client-dashboard', { replace: true, state: { openSidebarMenu: 'examens' } })} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', margin: '0 4px 12px' }}>← Retour aux filières</button>
+        <div style={{ width: '100%', display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des examens" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
             <div style={{ padding: '3px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Filière : {selectedFiliere}</div>
             <label style={{ display: 'block', margin: '0 2px 16px', color: '#475569', fontSize: '12px', fontWeight: 700 }}>Année
               <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#fff', color: '#334155', fontSize: '12px' }}>
@@ -336,8 +338,8 @@ export default function ClientExamens() {
                 </React.Fragment>;
               })}
             </div>}
-          </aside>
-          <main style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+          </aside>}
+          <main style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
             {activeExam ? (
               <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                 <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
@@ -350,8 +352,8 @@ export default function ClientExamens() {
                 {(() => {
                   const documentUrl = activeDocType === 'correction' ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl) : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
                   const pages = getActivePages(activeExam, activeDocType);
-                  if (documentUrl) return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: 'calc(100vh - 135px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} />;
-                  if (pages.length) return <div style={{ height: 'calc(100vh - 135px)', minHeight: '520px', overflowY: 'auto', background: '#525659', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: '16px' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} style={{ width: '92%', maxWidth: '900px', height: 'auto', background: '#fff', boxShadow: '0 4px 18px rgba(0,0,0,0.3)' }} />)}</div>;
+                  if (documentUrl) return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style={{ width: '100%', height: 'calc(100vh - 211px)', minHeight: '460px', border: 'none', display: 'block', background: '#ffffff' }} />;
+                  if (pages.length) return <div style={{ height: 'calc(100vh - 211px)', minHeight: '460px', overflowY: 'auto', background: '#525659', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: '16px' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} style={{ width: '92%', maxWidth: '900px', height: 'auto', background: '#fff', boxShadow: '0 4px 18px rgba(0,0,0,0.3)' }} />)}</div>;
                   return <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>Le document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} n’est pas encore disponible.</div>;
                 })()}
               </div>
@@ -364,20 +366,15 @@ export default function ClientExamens() {
         </div>
       ) : activeExam ? (
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 99999,
+          position: 'relative',
+          width: '100%',
+          minHeight: 'calc(100vh - 76px)',
           backgroundColor: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
+          overflow: 'visible',
           margin: 0,
-          padding: 0
+          padding: '0 0 24px'
         }}>
           {/* Fil d'Ariane cliquable : Matières / Matière / Épreuve */}
           <div style={{
@@ -514,9 +511,9 @@ export default function ClientExamens() {
 
             const pages = getActivePages(activeExam, activeDocType);
 
-            if (docUrl) {
+            if (docUrl && pages.length === 0) {
               return (
-                <iframe
+                <AutoHeightHtmlFrame
                   src={getFullUrl(docUrl)}
                   title={activeExam.titre || 'Examen National'}
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
@@ -536,9 +533,9 @@ export default function ClientExamens() {
               return (
                 <div style={{
                   width: '100%',
-                  height: 'calc(100vh - 48px)',
-                  overflowY: 'auto',
-                  backgroundColor: '#525659',
+                  height: 'auto',
+                  overflowY: 'visible',
+                  backgroundColor: '#f8fafc',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -598,29 +595,6 @@ export default function ClientExamens() {
              STEP 1 : CARTES DES MATIÈRES DE LA FILIÈRE
              ═════════════════════════════════════════ */
           <div style={{ width: '100%', maxWidth: 'none', margin: '30px auto', padding: 0 }}>
-            <div style={{ marginBottom: '28px' }}>
-              <button
-                type="button"
-                onClick={() => navigate('/client-dashboard', { replace: true, state: { openSidebarMenu: 'examens' } })}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 16px',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '12px',
-                  background: '#ffffff',
-                  color: '#2563eb',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                <span aria-hidden="true">←</span>
-                Retour aux filières
-              </button>
-            </div>
-
             <div style={{
               marginBottom: '24px',
               display: 'flex',

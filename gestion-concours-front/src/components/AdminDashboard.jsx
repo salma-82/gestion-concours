@@ -6,6 +6,7 @@ import ConcoursBlancStats from './ConcoursBlancStats';
 import AdminOverview from './AdminOverview';
 import CompetitionCalendar from './CompetitionCalendar';
 import MathContent from './MathContent';
+import { PACK_OPTIONS } from '../packAccess';
 
 const BAC_MATIERES_CONFIG = {
   'Mathématiques': [
@@ -164,6 +165,7 @@ export default function AdminDashboard() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [resTitre, setResTitre] = useState('');
   const [resMatiere, setResMatiere] = useState('Mathématiques');
+  const [resEcole, setResEcole] = useState('');
   const [resChapitre, setResChapitre] = useState('');
   const [resFile, setResFile] = useState(null);
   const [loadingRes, setLoadingRes] = useState(false);
@@ -175,6 +177,7 @@ export default function AdminDashboard() {
   const [editingResumeId, setEditingResumeId] = useState(null);
   const [editResTitre, setEditResTitre] = useState('');
   const [editResMatiere, setEditResMatiere] = useState('Mathématiques');
+  const [editResEcole, setEditResEcole] = useState('');
   const [editResChapitre, setEditResChapitre] = useState('');
   const [editResFile, setEditResFile] = useState(null);
   const [loadingEditRes, setLoadingEditRes] = useState(false);
@@ -759,6 +762,7 @@ export default function AdminDashboard() {
     formData.append('titre', resTitre);
     formData.append('matiere', resMatiere);
     formData.append('chapitre', resChapitre);
+    formData.append('ecole', resEcole);
     formData.append('file', resFile);
 
     try {
@@ -769,7 +773,7 @@ export default function AdminDashboard() {
       alert('Résumé / Astuce ajouté avec succès ! 🎉');
       setIsResumeModalOpen(false);
       fetchResumes();
-      setResTitre(''); setResMatiere('Mathématiques'); setResChapitre(''); setResFile(null);
+      setResTitre(''); setResMatiere('Mathématiques'); setResEcole(''); setResChapitre(''); setResFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du résumé !");
     } finally { setLoadingRes(false); }
@@ -779,6 +783,7 @@ export default function AdminDashboard() {
     setEditingResumeId(item.id);
     setEditResTitre(item.titre || '');
     setEditResMatiere(item.matiere || 'Mathématiques');
+    setEditResEcole(item.ecole || '');
     setEditResChapitre(item.chapitre || '');
     setEditResFile(null);
     setIsEditResumeModalOpen(true);
@@ -791,6 +796,7 @@ export default function AdminDashboard() {
     formData.append('titre', editResTitre);
     formData.append('matiere', editResMatiere);
     formData.append('chapitre', editResChapitre);
+    formData.append('ecole', editResEcole);
     if (editResFile) {
       formData.append('file', editResFile);
     }
@@ -1648,6 +1654,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>Nom d'utilisateur</th>
                   <th style={styles.th}>Email</th>
                   <th style={styles.th}>Téléphone</th>
+                  <th style={styles.th}>Offre</th>
                   <th style={styles.thCenter}>Actions</th>
                 </tr>
               </thead>
@@ -1659,6 +1666,7 @@ export default function AdminDashboard() {
                       <td style={styles.tdBold}>{item.username}</td>
                       <td style={styles.td}>{item.email}</td>
                       <td style={styles.td}>{item.telephone || '-'}</td>
+                      <td style={styles.td}>{PACK_OPTIONS.find((offer) => offer.value === item.pack)?.label || '—'}</td>
                       <td style={styles.tdCenter}>
                         <button style={styles.btnGreen} onClick={() => handleAccepter(item.id)}>
                           ✓ Accepter
@@ -1726,6 +1734,7 @@ export default function AdminDashboard() {
                   <th style={styles.th}>Email</th>
                   <th style={styles.th}>Téléphone</th>
                   <th style={styles.th}>Rôle</th>
+                  <th style={styles.th}>Offre</th>
                   <th style={styles.th}>Statut</th>
                   <th style={styles.th}>Création</th>
                 </tr>
@@ -1748,6 +1757,7 @@ export default function AdminDashboard() {
                       <td style={styles.td}>
                         <span style={styles.tagRole(item.role)}>{item.role || 'CLIENT'}</span>
                       </td>
+                      <td style={styles.td}>{PACK_OPTIONS.find((offer) => offer.value === item.pack)?.label || 'Non renseignée'}</td>
                       <td style={styles.td}>
                         <span style={styles.tagStatus(item.active === 1)}>{item.active === 1 ? 'Actif' : 'Inactif'}</span>
                       </td>
@@ -1755,7 +1765,7 @@ export default function AdminDashboard() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="7" style={styles.emptyRow}>Aucun utilisateur trouvé.</td></tr>
+                  <tr><td colSpan="8" style={styles.emptyRow}>Aucun utilisateur trouvé.</td></tr>
                 )}
               </tbody>
             </table>
@@ -3303,6 +3313,18 @@ export default function AdminDashboard() {
               </div>
 
               <div style={styles.formGroup}>
+                <label style={styles.formLabel}>École associée au résumé</label>
+                <select value={resEcole} onChange={(e) => setResEcole(e.target.value)} style={styles.formInput}>
+                  <option value="">Général — tous les packs</option>
+                  <option value="Médecine">Médecine</option>
+                  <option value="ENSAM">ENSAM</option>
+                  <option value="ENSA">ENSA</option>
+                  <option value="ENSCK">ENSCK</option>
+                  <option value="ENCG">ENCG</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
                 <input 
                   type="text" 
@@ -3390,6 +3412,18 @@ export default function AdminDashboard() {
                   <option value="Mathématiques">📐 Mathématiques</option>
                   <option value="Physique-Chimie">⚡ Physique-Chimie</option>
                   <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
+                </select>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>École associée au résumé</label>
+                <select value={editResEcole} onChange={(e) => setEditResEcole(e.target.value)} style={styles.formInput}>
+                  <option value="">Général — tous les packs</option>
+                  <option value="Médecine">Médecine</option>
+                  <option value="ENSAM">ENSAM</option>
+                  <option value="ENSA">ENSA</option>
+                  <option value="ENSCK">ENSCK</option>
+                  <option value="ENCG">ENCG</option>
                 </select>
               </div>
 

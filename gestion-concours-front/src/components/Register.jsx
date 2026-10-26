@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { LandingMascot } from './LandingPage';
+import { PACK_OPTIONS } from '../packAccess';
 import './Auth.css';
 
 export default function Register() {
@@ -11,6 +12,7 @@ export default function Register() {
     telephone: '',
     password: '',
     confirmPassword: '',
+    pack: '',
     role: 'CLIENT'
   });
 
@@ -47,6 +49,7 @@ export default function Register() {
         email: formData.email.trim(),
         telephone: formData.telephone.trim(),
         password: formData.password,
+        pack: formData.pack,
         role: 'CLIENT'
       });
 
@@ -62,6 +65,7 @@ export default function Register() {
         telephone: '',
         password: '',
         confirmPassword: '',
+        pack: '',
         role: 'CLIENT'
       });
       // Redirection automatique vers login après 2 secondes
@@ -358,6 +362,33 @@ export default function Register() {
                   boxSizing: 'border-box'
                 }}
               />
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label htmlFor="register-pack" style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                Offre de préparation
+              </label>
+              <select
+                id="register-pack"
+                name="pack"
+                value={formData.pack}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  minHeight: '46px',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1.5px solid #cbd5e1',
+                  outline: 'none',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                  backgroundColor: '#fff'
+                }}
+              >
+                <option value="" disabled>Choisissez votre pack</option>
+                {PACK_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '22px' }}>

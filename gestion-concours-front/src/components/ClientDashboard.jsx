@@ -7,6 +7,7 @@ import {
   readStudentProgress,
   setStudentActivityCompleted
 } from '../studentProgress';
+import { filterByStudentPack } from '../packAccess';
 
 const API_BASE = 'http://localhost:8081';
 const normalizeSchool = (name) => String(name || '').trim().toLocaleLowerCase();
@@ -78,8 +79,8 @@ export default function ClientDashboard() {
       if (!active) return;
       setSchoolCatalogError(catalogResult.status === 'rejected');
       setSchoolHistoryError(attemptsResult.status === 'rejected');
-      setSchoolCatalog(catalogResult.status === 'fulfilled' && Array.isArray(catalogResult.value.data) ? catalogResult.value.data : []);
-      setSchoolAttempts(attemptsResult.status === 'fulfilled' && Array.isArray(attemptsResult.value.data?.attempts) ? attemptsResult.value.data.attempts : []);
+      setSchoolCatalog(catalogResult.status === 'fulfilled' && Array.isArray(catalogResult.value.data) ? filterByStudentPack(catalogResult.value.data) : []);
+      setSchoolAttempts(attemptsResult.status === 'fulfilled' && Array.isArray(attemptsResult.value.data?.attempts) ? filterByStudentPack(attemptsResult.value.data.attempts, 'school') : []);
       setSchoolDataLoading(false);
     };
     loadSchoolData();

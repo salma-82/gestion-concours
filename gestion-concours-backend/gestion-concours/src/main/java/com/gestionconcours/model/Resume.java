@@ -18,6 +18,7 @@ public class Resume {
     private String matiere;    // MATH, PHYSIQUE, SVT
     private String chapitre;   // Ex: Calcul des limites, Suites...
     private String titre;      // Titre dyal le résumé
+    private String ecole;
     private String pdfUrl;     // Lien dyal fichier PDF (pour l'admin)
     private String htmlUrl;    // Lien dyal fichier HTML (avec MathJax, styles)
     private String fileType;   // "HTML" ou "PDF"

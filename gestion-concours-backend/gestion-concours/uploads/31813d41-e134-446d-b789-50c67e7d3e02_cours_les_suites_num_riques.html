@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours : Les Suites Numériques (2ème BAC)</title>
+    <!-- MathJax for rendering LaTeX math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            margin-top: 30px;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 10px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+        }
+
+        .box {
+            background-color: #eef7fc;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .property {
+            background-color: #fdf2e9;
+            border-left: 5px solid #e67e22;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .theorem {
+            background-color: #fcedee;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Résumé de Cours : Les Suites Numériques (2 BAC)</h1>
+
+    <!-- SECTION 1 -->
+    <h2>1. Généralités sur les Suites</h2>
+    
+    <h3>Suites majorées, minorées, bornées</h3>
+    <div class="box">
+        <ul>
+            <li>\((u_n)\) est <strong>majorée</strong> par \(M\) s'il existe \(M \in \mathbb{R}\) tel que : \(\forall n \ge n_0, \; u_n \le M\).</li>
+            <li>\((u_n)\) est <strong>minorée</strong> par \(m\) s'il existe \(m \in \mathbb{R}\) tel que : \(\forall n \ge n_0, \; u_n \ge m\).</li>
+            <li>\((u_n)\) est <strong>bornée</strong> si elle est à la fois majorée et minorée : \(\exists K > 0, \; |u_n| \le K\).</li>
+        </ul>
+    </div>
+
+    <h3>Monotonie d'une suite</h3>
+    <div class="box">
+        <ul>
+            <li><strong>Croissante :</strong> \(\forall n \ge n_0, \; u_{n+1} - u_n \ge 0\).</li>
+            <li><strong>Décroissante :</strong> \(\forall n \ge n_0, \; u_{n+1} - u_n \le 0\).</li>
+            <li><strong>Constante :</strong> \(\forall n \ge n_0, \; u_{n+1} = u_n\).</li>
+        </ul>
+    </div>
+
+    <!-- SECTION 2 -->
+    <h2>2. Suites Rappels : Arithmétiques et Géométriques</h2>
+    
+    <div class="property">
+        <h3>Suite Arithmétique</h3>
+        <p><strong>Définition :</strong> \(u_{n+1} = u_n + r\) (où \(r\) est la raison).</p>
+        <p><strong>Terme général :</strong> \(u_n = u_p + (n - p)r\). En particulier si \(p = 0\) : \(u_n = u_0 + nr\).</p>
+        <p><strong>Somme des termes :</strong> 
+            $$S_n = u_p + u_{p+1} + \dots + u_n = \frac{(n - p + 1)(u_p + u_n)}{2}$$
+        </p>
+    </div>
+
+    <div class="property">
+        <h3>Suite Géométrique</h3>
+        <p><strong>Définition :</strong> \(v_{n+1} = q \cdot v_n\) (où \(q\) est la raison).</p>
+        <p><strong>Terme général :</strong> \(v_n = v_p \cdot q^{n-p}\). En particulier si \(p = 0\) : \(v_n = v_0 \cdot q^n\).</p>
+        <p><strong>Somme des termes (\(q \neq 1\)) :</strong> 
+            $$S_n = v_p + v_{p+1} + \dots + v_n = v_p \cdot \frac{1 - q^{n - p + 1}}{1 - q}$$
+        </p>
+    </div>
+
+    <!-- SECTION 3 -->
+    <h2>3. Limite d'une Suite et Convergence</h2>
+    
+    <div class="theorem">
+        <h3>Théorème de convergence monotone</h3>
+        <ul>
+            <li>Toute suite <strong>croissante et majorée</strong> est <strong>convergente</strong>.</li>
+            <li>Toute suite <strong>décroissante et minorée</strong> est <strong>convergente</strong>.</li>
+            <li>Toute suite croissante non majorée tend vers \(+\infty\).</li>
+            <li>Toute suite décroissante non minorée tend vers \(-\infty\).</li>
+        </ul>
+    </div>
+
+    <h3>Limite de la suite géométrique \(q^n\)</h3>
+    <div class="box">
+        <ul>
+            <li>Si \(q > 1\), alors \(\lim_{n \to +\infty} q^n = +\infty\).</li>
+            <li>Si \(-1 < q < 1\), alors \(\lim_{n \to +\infty} q^n = 0\).</li>
+            <li>Si \(q = 1\), alors \(\lim_{n \to +\infty} q^n = 1\).</li>
+            <li>Si \(q \le -1\), la suite \((q^n)\) n'a pas de limite.</li>
+        </ul>
+    </div>
+
+    <!-- SECTION 4 -->
+    <h2>4. Critères d'Encadrement (Théorèmes des Gendarmes)</h2>
+    <div class="property">
+        <ul>
+            <li>Si \(v_n \le u_n \le w_n\) et \(\lim v_n = \lim w_n = l\), alors \(\lim u_n = l\).</li>
+            <li>Si \(u_n \ge v_n\) et \(\lim v_n = +\infty\), alors \(\lim u_n = +\infty\).</li>
+            <li>Si \(u_n \le v_n\) et \(\lim v_n = -\infty\), alors \(\lim u_n = -\infty\).</li>
+        </ul>
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2>5. Suite de la forme \(u_{n+1} = f(u_n)\)</h2>
+    <div class="theorem">
+        <p>Soit \(f\) une fonction continue sur un intervalle \(I\) et \((u_n)\) une suite définie par \(u_0 \in I\) et \(u_{n+1} = f(u_n)\).</p>
+        <p><strong>Propriétés :</strong></p>
+        <ul>
+            <li>Si \(f(I) \subset I\) et \((u_n)\) est convergente vers une limite \(l \in I\), alors \(l\) est solution de l'équation :
+                $$f(l) = l$$
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<footer>
+    Cours de Mathématiques - Niveau 2ème Année Baccalauréat
+</footer>
+
+</body>
+</html>

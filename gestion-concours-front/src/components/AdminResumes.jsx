@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { PACK_OPTIONS } from '../packAccess';
 import logoImg from '../assets/logo.png';
 
 export default function AdminDashboard() {
@@ -110,6 +111,7 @@ export default function AdminDashboard() {
                   <th>ID</th>
                   <th>Nom d'utilisateur</th>
                   <th>Email</th>
+                  <th>Offre choisie</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -119,6 +121,7 @@ export default function AdminDashboard() {
                     <td>{d.id}</td>
                     <td>{d.username}</td>
                     <td>{d.email}</td>
+                    <td>{PACK_OPTIONS.find((pack) => pack.value === d.pack)?.label || '—'}</td>
                     <td>
                       <button 
                         onClick={() => handleAccepter(d.id)} 

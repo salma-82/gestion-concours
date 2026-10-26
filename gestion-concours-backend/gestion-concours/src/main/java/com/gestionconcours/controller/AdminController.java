@@ -40,6 +40,7 @@ public class AdminController {
                 .email(demande.getEmail())
                 .telephone(demande.getTelephone())
                 .motDePasse(demande.getPassword()) // Déjà crypté
+                .pack(demande.getPack())
                 .role("CLIENT")
                 .active(1)
                 .createdAt(LocalDateTime.now())
