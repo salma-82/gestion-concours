@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { LandingMascot } from './LandingPage';
 import { PACK_OPTIONS } from '../packAccess';
 import './Auth.css';
 
+const BAC_FILIERES = [
+  'Sciences Mathématiques A',
+  'Sciences Mathématiques B',
+  'Sciences Physiques',
+  'Sciences de la Vie et de la Terre (SVT)',
+  'Sciences Économiques',
+];
+
 export default function Register() {
+  const [searchParams] = useSearchParams();
+  const requestedPack = searchParams.get('pack');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     telephone: '',
+    filiere: '',
     password: '',
     confirmPassword: '',
-    pack: '',
+    pack: PACK_OPTIONS.some((option) => option.value === requestedPack) ? requestedPack : '',
     role: 'CLIENT'
   });
 
@@ -48,6 +59,7 @@ export default function Register() {
         username: formData.username.trim(),
         email: formData.email.trim(),
         telephone: formData.telephone.trim(),
+        filiere: formData.filiere,
         password: formData.password,
         pack: formData.pack,
         role: 'CLIENT'
@@ -63,6 +75,7 @@ export default function Register() {
         username: '',
         email: '',
         telephone: '',
+        filiere: '',
         password: '',
         confirmPassword: '',
         pack: '',
@@ -388,6 +401,33 @@ export default function Register() {
               >
                 <option value="" disabled>Choisissez votre pack</option>
                 {PACK_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label htmlFor="register-filiere" style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                Choisir ma filière du baccalauréat
+              </label>
+              <select
+                id="register-filiere"
+                name="filiere"
+                value={formData.filiere}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  minHeight: '46px',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1.5px solid #cbd5e1',
+                  outline: 'none',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                  backgroundColor: '#fff'
+                }}
+              >
+                <option value="" disabled>Choisissez votre filière</option>
+                {BAC_FILIERES.map((filiere) => <option key={filiere} value={filiere}>{filiere}</option>)}
               </select>
             </div>
 

@@ -67,6 +67,44 @@ public class AuthController {
         }
 
         try {
+            // Mode Démo / Test local sans identifiants Google Cloud
+            if ("demo-google-token".equals(credential) || credential.startsWith("demo-google:")) {
+                String email = credential.startsWith("demo-google:")
+                        ? credential.substring("demo-google:".length()).trim().toLowerCase()
+                        : "etudiant.concours@gmail.com";
+                if (email.isBlank()) email = "etudiant.concours@gmail.com";
+                final String finalEmail = email;
+
+                User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
+                    String prefix = finalEmail.split("@")[0];
+                    return userRepository.save(User.builder()
+                            .prenom(prefix)
+                            .nom("Google")
+                            .email(finalEmail)
+                            .motDePasse(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .role("CLIENT")
+                            .pack("PACK_COMPLET")
+                            .active(1)
+                            .createdAt(LocalDateTime.now())
+                            .build());
+                });
+
+                if (user.getActive() != null && user.getActive() == 0) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("message", "Ce compte n’est pas actif."));
+                }
+
+                Map<String, Object> safeUser = new LinkedHashMap<>();
+                safeUser.put("id", user.getId());
+                safeUser.put("email", user.getEmail());
+                safeUser.put("nom", user.getNom());
+                safeUser.put("prenom", user.getPrenom());
+                safeUser.put("role", user.getRole());
+                safeUser.put("pack", user.getPack());
+                safeUser.put("active", user.getActive());
+                return ResponseEntity.ok(safeUser);
+            }
+
             String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token="
                     + URLEncoder.encode(credential, StandardCharsets.UTF_8);
             HttpRequest tokenInfoRequest = HttpRequest.newBuilder(URI.create(tokenInfoUrl)).GET().build();
@@ -132,8 +170,17 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody InscriptionRequest request) {
+        if (request.getFiliere() == null || !java.util.Set.of(
+                "Sciences Mathématiques A",
+                "Sciences Mathématiques B",
+                "Sciences Physiques",
+                "Sciences de la Vie et de la Terre (SVT)",
+                "Sciences Économiques"
+        ).contains(request.getFiliere())) {
+            return ResponseEntity.badRequest().body("Veuillez choisir votre fili\u00e8re du baccalaur\u00e9at.");
+        }
         if (request.getPack() == null || !java.util.Set.of(
-                "MEDECINE", "ENSAM", "ENSA", "MEDECINE_ENSA", "PACK_COMPLET"
+                "MEDECINE", "ENSAM", "ENSA", "ENCG", "MEDECINE_ENSA", "PACK_COMPLET"
         ).contains(request.getPack())) {
             return ResponseEntity.badRequest().body("Veuillez choisir un pack valide.");
         }

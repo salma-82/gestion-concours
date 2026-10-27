@@ -135,82 +135,6 @@ export function LandingMascot({ className = '', showCap = true, wave = false }) 
   );
 }
 
-function FeatureMascot({ className = '' }) {
-  const id = useId().replace(/:/g, '');
-  return (
-    <svg className={className} viewBox="0 0 360 460" role="img" aria-label="Bibi, hibou diplômé qui salue">
-      <defs>
-        <radialGradient id={`${id}-body`} cx="34%" cy="23%" r="78%">
-          <stop offset="0" stopColor="#b96332" /><stop offset=".52" stopColor="#87421f" /><stop offset="1" stopColor="#54270f" />
-        </radialGradient>
-        <radialGradient id={`${id}-face`} cx="35%" cy="22%" r="82%">
-          <stop offset="0" stopColor="#c8753e" /><stop offset=".58" stopColor="#99502a" /><stop offset="1" stopColor="#693317" />
-        </radialGradient>
-        <radialGradient id={`${id}-belly`} cx="38%" cy="25%" r="82%">
-          <stop offset="0" stopColor="#fff9e9" /><stop offset="1" stopColor="#f0d9b7" />
-        </radialGradient>
-        <radialGradient id={`${id}-gold`} cx="35%" cy="28%" r="72%">
-          <stop offset="0" stopColor="#fff36b" /><stop offset=".45" stopColor="#ffc21b" /><stop offset=".82" stopColor="#f39800" /><stop offset="1" stopColor="#d46b00" />
-        </radialGradient>
-        <linearGradient id={`${id}-cap`} x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#253c5c" /><stop offset=".55" stopColor="#142842" /><stop offset="1" stopColor="#09182b" />
-        </linearGradient>
-        <linearGradient id={`${id}-foot`} x1="0" y1="0" x2="0" y2="1">
-          <stop stopColor="#ffb000" /><stop offset="1" stopColor="#f36b00" />
-        </linearGradient>
-        <filter id={`${id}-shadow`} x="-30%" y="-25%" width="160%" height="170%">
-          <feDropShadow dx="0" dy="9" stdDeviation="8" floodColor="#29170f" floodOpacity=".24" />
-        </filter>
-        <filter id={`${id}-capShadow`} x="-20%" y="-40%" width="140%" height="180%">
-          <feDropShadow dx="0" dy="5" stdDeviation="4" floodColor="#081425" floodOpacity=".32" />
-        </filter>
-      </defs>
-      <ellipse cx="172" cy="438" rx="94" ry="14" fill="#1b2d42" opacity=".13" />
-      <g filter={`url(#${id}-shadow)`}>
-        <g fill={`url(#${id}-foot)`} stroke="#f57900" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M132 405v25m0-6-18 22m18-18 1 21m1-21 17 18" fill="none" />
-          <path d="M218 405v25m0-6-18 22m18-18 1 21m1-21 17 18" fill="none" />
-        </g>
-        <ellipse cx="174" cy="319" rx="112" ry="123" fill={`url(#${id}-body)`} />
-        <ellipse cx="174" cy="324" rx="73" ry="91" fill={`url(#${id}-belly)`} />
-        <path d="M147 278q15 12 29 0m5 0q15 12 29 0M142 306q18 12 36 0m4 0q17 12 35 0" fill="none" stroke="#d2b58e" strokeWidth="6" strokeLinecap="round" opacity=".82" />
-        <path d="M104 302c-34 19-43 66-24 98 27-7 41-30 39-67Z" fill={`url(#${id}-body)`} />
-        <g className="lp-feature-wing">
-          <path d="M236 293c36-20 50-65 70-120 8-22 19-25 28-18 11 9 1 31-7 51 14-18 27-12 28 1 1 13-13 31-24 47-16 30-33 57-67 78Z" fill={`url(#${id}-body)`} />
-          <path d="M264 294c25-35 43-76 59-119" fill="none" stroke="#d28a57" strokeWidth="5" strokeLinecap="round" opacity=".35" />
-          <path d="M309 206c7-13 13-27 18-40" fill="none" stroke="#e0a274" strokeWidth="3" strokeLinecap="round" opacity=".28" />
-        </g>
-        <g>
-          <path d="M116 165 91 123q-7-13 2-16 8-3 18 5l20 17m105 36 26-42q8-13 17-9 8 4 3 17l-13 43" fill={`url(#${id}-body)`} />
-          <ellipse cx="174" cy="191" rx="113" ry="108" fill={`url(#${id}-face)`} />
-          <ellipse cx="127" cy="197" rx="53" ry="56" fill="#fff7e9" />
-          <ellipse cx="220" cy="197" rx="53" ry="56" fill="#fff7e9" />
-          <circle cx="127" cy="197" r="42" fill={`url(#${id}-gold)`} />
-          <circle cx="220" cy="197" r="42" fill={`url(#${id}-gold)`} />
-          <circle cx="129" cy="198" r="24" fill="#100d0b" />
-          <circle cx="218" cy="198" r="24" fill="#100d0b" />
-          <circle cx="137" cy="188" r="8" fill="white" />
-          <circle cx="120" cy="207" r="4" fill="white" />
-          <circle cx="226" cy="188" r="8" fill="white" />
-          <circle cx="210" cy="207" r="4" fill="white" />
-          <path d="M167 204q7-13 15 0l-7 30Z" fill="#ff9400" />
-          <path d="M101 176q8-18 24-19m82 19q12-19 29-17" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" opacity=".2" />
-        </g>
-        <g filter={`url(#${id}-capShadow)`}>
-          <path d="M112 124v-34q0-31 62-36 62 5 62 36v34q-62 25-124 0Z" fill={`url(#${id}-cap)`} />
-          <path d="m49 79 125-54 137 54-137 49Z" fill="#10243d" />
-          <path d="m49 79 125-54 137 54-137 24Z" fill="#213b5b" />
-          <path d="M174 29c50 0 89 16 96 52" fill="none" stroke="#ffb000" strokeWidth="7" strokeLinecap="round" />
-          <circle cx="174" cy="29" r="10" fill="#ffb000" />
-          <circle cx="270" cy="83" r="8" fill="#f39a00" />
-          <path d="M264 86q-8 21-1 36l13 3q11-15 1-37Z" fill="#ffb000" />
-          <path d="M269 91q-4 18 1 28" fill="none" stroke="#ffd43b" strokeWidth="3" strokeLinecap="round" opacity=".7" />
-        </g>
-      </g>
-    </svg>
-  );
-}
-
 export default function LandingPage({ onNavigateToAuth }) {
   const navigate = useNavigate();
   const rootRef = useRef(null);
@@ -220,23 +144,22 @@ export default function LandingPage({ onNavigateToAuth }) {
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
-  const [scrollMascotVisible, setScrollMascotVisible] = useState(true);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   // Mini-Quiz interactive demo state
   const [quizAnswer, setQuizAnswer] = useState(null);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [mascotClickCount, setMascotClickCount] = useState(0);
-  const [mascotNavigation, setMascotNavigation] = useState({ side: 'right', speech: 'Marhaba! 👋' });
+  const [mascotNavigation, setMascotNavigation] = useState({ zone: 'start', side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
   const mascotRef = useRef(null);
   const mascotProgressRef = useRef(0);
   const mascotMouseXRef = useRef(window.innerWidth / 2);
 
-  const handleNav = (mode) => {
+  const handleNav = (mode, pack) => {
     if (onNavigateToAuth) {
-      onNavigateToAuth(mode);
+      onNavigateToAuth(mode, pack);
     } else {
-      navigate(mode === 'login' ? '/login' : '/register');
+      navigate(mode === 'login' ? '/login' : `/register${pack ? `?pack=${encodeURIComponent(pack)}` : ''}`);
     }
   };
 
@@ -261,14 +184,14 @@ export default function LandingPage({ onNavigateToAuth }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Follow the active methodology step and alternate Bibi beside each timeline row.
+  // Keep Bibi alongside the current landing-page section and give each section its own pose.
   useEffect(() => {
     let activeZone = '';
 
-    const setZone = (zoneId, side, speech) => {
+    const setZone = (zoneId, pose) => {
       if (activeZone === zoneId) return;
       activeZone = zoneId;
-      setMascotNavigation({ side, speech });
+      setMascotNavigation({ ...pose, zone: zoneId });
     };
 
     const updateOwlMotion = () => {
@@ -289,6 +212,9 @@ export default function LandingPage({ onNavigateToAuth }) {
       mascotProgressRef.current = progress;
 
       const anchorY = window.innerHeight * 0.42;
+      const heroSection = document.querySelector('#hero');
+      const heroRect = heroSection?.getBoundingClientRect();
+      const insideHero = heroRect && heroRect.top <= anchorY && heroRect.bottom >= anchorY;
       const featuresSection = document.querySelector('.lp-features-section');
       const featuresRect = featuresSection?.getBoundingClientRect();
       const insideFeatures = featuresRect && featuresRect.top <= anchorY && featuresRect.bottom >= anchorY;
@@ -300,31 +226,37 @@ export default function LandingPage({ onNavigateToAuth }) {
       });
       const methodRect = methodSection?.getBoundingClientRect();
       const insideMethod = methodRect && methodRect.top <= anchorY && methodRect.bottom >= anchorY;
-      const shouldShowScrollMascot = Boolean(insideMethod);
-      setScrollMascotVisible((visible) => visible === shouldShowScrollMascot ? visible : shouldShowScrollMascot);
 
-      if (activeRow || (insideMethod && methodRows.length)) {
+      if (window.scrollY <= 1) {
+        setZone('start', { side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
+      } else if (insideFeatures) {
+        setZone('features', { side: 'left', speech: 'Chouf les fonctionnalités! ✨', top: '24vh', scale: 1.05, rotate: '0deg' });
+      } else if (activeRow || (insideMethod && methodRows.length)) {
         const row = activeRow || methodRows.reduce((closest, candidate) => {
           const candidateRect = candidate.getBoundingClientRect();
           const closestRect = closest.getBoundingClientRect();
           return Math.abs(candidateRect.top + candidateRect.height / 2 - anchorY) < Math.abs(closestRect.top + closestRect.height / 2 - anchorY) ? candidate : closest;
         }, methodRows[0]);
         const stepIndex = methodRows.indexOf(row);
-        setZone(`step-${stepIndex}`, stepIndex % 2 === 0 ? 'left' : 'right', row.dataset.mascotSpeech || 'Yallah nkemlo!');
-      } else if (window.scrollY <= 1) {
-        setZone('start', 'right', 'Marhaba! 👋');
-      } else if (insideFeatures) {
-        setZone('features', 'right', 'Chouf les fonctionnalités! ✨');
+        setZone(`step-${stepIndex}`, {
+          side: stepIndex % 2 === 0 ? 'left' : 'right',
+          speech: row.dataset.mascotSpeech || 'Yallah nkemlo!',
+          top: `${24 + (stepIndex % 3) * 3}vh`,
+          scale: 1.15,
+          rotate: stepIndex % 2 === 0 ? '-6deg' : '6deg'
+        });
+      } else if (insideHero) {
+        setZone('hero', { side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
       } else if (methodSection && anchorY < methodSection.getBoundingClientRect().top) {
-        setZone('approach', 'left', 'Nbdaw b planning! 📅');
+        setZone('approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
       } else {
         const nextSection = [
-          { selector: '#demo-qcm', side: 'left', speech: 'Yallah, jarrab QCM! ✏️' },
-          { selector: '#apropos', side: 'right', speech: 'Chouf l-progress dyalk! 📊' },
-          { selector: '#tarifs', side: 'left', speech: 'Khtar l-formule li tnasbek! ⭐' },
-          { selector: '#faq', side: 'right', speech: '3endek chi sou2al? 💡' },
-          { selector: '.lp-bottom-cta-section', side: 'center', speech: 'Yallah, bda l-mouchwar! 🚀' },
-          { selector: '.lp-footer', side: 'center', speech: 'B tawfiq! 🎓' }
+          { selector: '#demo-qcm', pose: { side: 'left', speech: 'Yallah, jarrab QCM! ✏️', top: '25vh', scale: 1.18, rotate: '-5deg' } },
+          { selector: '#apropos', pose: { side: 'right', speech: 'Chouf l-progress dyalk! 📊', top: '28vh', scale: 1.1, rotate: '4deg' } },
+          { selector: '#tarifs', pose: { side: 'right', speech: 'Khtar l-formule li tnasbek! ⭐', top: '28vh', scale: 1.2, rotate: '5deg' } },
+          { selector: '#faq', pose: { side: 'left', speech: '3endek chi sou2al? 💡', top: '32vh', scale: 1.08, rotate: '-5deg' } },
+          { selector: '.lp-bottom-cta-section', pose: { side: 'center', speech: 'Yallah, bda l-mouchwar! 🚀', top: '24vh', scale: 1.18, rotate: '0deg' } },
+          { selector: '.lp-footer', pose: { side: 'center', speech: 'B tawfiq! 🎓', top: '30vh', scale: 1, rotate: '0deg' } }
         ].find(({ selector }) => {
           const section = document.querySelector(selector);
           if (!section) return false;
@@ -333,11 +265,11 @@ export default function LandingPage({ onNavigateToAuth }) {
         });
 
         if (nextSection) {
-          setZone(nextSection.selector, nextSection.side, nextSection.speech);
+          setZone(nextSection.selector, nextSection.pose);
         } else if (methodSection && anchorY >= methodSection.getBoundingClientRect().bottom) {
-          setZone('last-step', 'left', methodRows[methodRows.length - 1]?.dataset.mascotSpeech || 'Bravo! 🎓');
+          setZone('last-step', { side: 'left', speech: methodRows[methodRows.length - 1]?.dataset.mascotSpeech || 'Bravo! 🎓', top: '28vh', scale: 1.15, rotate: '-5deg' });
         } else {
-          setZone('approach', 'left', 'Nbdaw b planning! 📅');
+          setZone('approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
         }
       }
       updateOwlMotion();
@@ -429,7 +361,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           });
         });
 
-        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-features-mascot-panel, .lp-feature-story-card, .lp-features-cta');
+        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-feature-story-card, .lp-features-cta');
         revealGroup('.lp-methodology-section', '.lp-section-header > *, .lp-method-copy, .lp-method-preview');
         revealGroup('.lp-quiz-demo-section', '.lp-section-header > *, .lp-quiz-widget');
         revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
@@ -591,7 +523,8 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <button
         ref={mascotRef}
-        className={`lp-scroll-mascot is-${mascotNavigation.side}${scrollMascotVisible ? '' : ' is-hidden'}`}
+        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}`}
+        style={{ '--mascot-top': mascotNavigation.top, '--mascot-scale': mascotNavigation.scale, '--mascot-rotate': mascotNavigation.rotate }}
         type="button"
         aria-label="Faire bouger la mascotte"
         onClick={() => setMascotClickCount((count) => count + 1)}
@@ -825,20 +758,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <section className="lp-features-section" id="fonctionnalites">
         <div className="lp-features-layout">
-          <aside className="lp-features-mascot-panel" aria-label="Bibi, mascotte ECONCOURS">
-            <div className="lp-features-mascot-stage">
-              <div className="lp-features-mascot-glow" aria-hidden="true" />
-              <FeatureMascot className="lp-mascot-art lp-feature-mascot-art" />
-              <span className="lp-features-spark lp-features-spark--one" aria-hidden="true">✦</span>
-              <span className="lp-features-spark lp-features-spark--two" aria-hidden="true">✧</span>
-            </div>
-            <div className="lp-features-mascot-badge">
-              <span className="lp-features-status-dot" aria-hidden="true" />
-              <span>Bibi, ton guide vers la réussite !</span>
-              <span aria-hidden="true">✦</span>
-            </div>
-          </aside>
-
+          <div className="lp-features-mascot-space" aria-hidden="true" />
           <div className="lp-features-content">
             <div className="lp-section-header">
               <span className="lp-section-eyebrow">CE QU'ON OFFRE</span>
@@ -1138,31 +1058,43 @@ export default function LandingPage({ onNavigateToAuth }) {
           {[
             {
               name: 'Médecine',
+              pack: 'MEDECINE',
               description: 'Accès complet au concours de médecine',
               price: '500',
               features: ['Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'ENSAM',
+              pack: 'ENSAM',
               description: 'Accès complet au concours ENSAM',
               price: '400',
               features: ['ENSAM', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'ENSA',
+              pack: 'ENSA',
               description: 'Accès complet ENSA — ENSCK inclus',
               price: '300',
               features: ['ENSA', 'ENSCK', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'Médecine + ENSA',
+              pack: 'MEDECINE_ENSA',
               description: 'Les deux concours, un seul paiement',
               price: '700',
               saving: 'Économisez 100 DH vs les packs séparés',
               features: ['ENSA', 'Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
+              name: 'ENCG',
+              pack: 'ENCG',
+              description: 'Accès complet au concours ENCG',
+              price: '400',
+              features: ['ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
               name: 'Médecine + ENSA + ENSAM',
+              pack: 'PACK_COMPLET',
               description: 'Les trois concours — ENSCK et ENCG offerts',
               price: '1000',
               featured: true,
@@ -1174,7 +1106,7 @@ export default function LandingPage({ onNavigateToAuth }) {
               <h3 className="lp-plan-name">{plan.name}</h3>
               <p className="lp-plan-sub">{plan.description}</p>
               <div className="lp-plan-price">
-                {plan.price} <small>DH · unique</small>
+                {plan.price ? <>{plan.price} <small>DH · unique</small></> : 'Tarif à préciser'}
               </div>
               {plan.saving && <span className="lp-discount-badge">{plan.saving}</span>}
               <ul className="lp-plan-features">
@@ -1185,7 +1117,7 @@ export default function LandingPage({ onNavigateToAuth }) {
                   </li>
                 ))}
               </ul>
-              <button className="lp-plan-btn" type="button" onClick={() => handleNav('register')}>
+              <button className="lp-plan-btn" type="button" onClick={() => handleNav('register', plan.pack)}>
                 Souscrire <span aria-hidden="true">→</span>
               </button>
             </div>

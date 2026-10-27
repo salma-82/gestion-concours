@@ -22,6 +22,9 @@ public class InscriptionRequest {
     private String role = "CLIENT";
     @Column(name = "selected_pack", length = 40)
     private String pack;
+
+    @Column(name = "filiere_bac", length = 120, nullable = false)
+    private String filiere;
     
     // Getters and Setters
 }

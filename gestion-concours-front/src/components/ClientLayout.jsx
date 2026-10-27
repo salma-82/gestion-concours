@@ -904,10 +904,10 @@ export default function ClientLayout() {
           zIndex: 40,
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.015)'
         }}>
-          <button className="client-brand" type="button" onClick={() => navigate('/client-dashboard')} aria-label="ECONCOURS, accueil">
+          <button className="client-brand" type="button" onClick={() => navigate('/client-dashboard')} aria-label="E-CONCOURS, accueil">
             <span className="client-brand-mascot"><LandingMascot className="client-boma-mascot" /></span>
             <span className="client-brand-copy">
-              <span className="client-brand-name">ECONCOURS</span>
+              <span className="client-brand-name">E-<span className="client-brand-accent">CONCOURS</span></span>
               <span className="client-brand-tagline">Ton avenir, notre priorité</span>
             </span>
           </button>

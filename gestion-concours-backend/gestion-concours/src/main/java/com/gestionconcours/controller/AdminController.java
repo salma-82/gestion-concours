@@ -41,6 +41,7 @@ public class AdminController {
                 .telephone(demande.getTelephone())
                 .motDePasse(demande.getPassword()) // Déjà crypté
                 .pack(demande.getPack())
+                .filiere(demande.getFiliere())
                 .role("CLIENT")
                 .active(1)
                 .createdAt(LocalDateTime.now())

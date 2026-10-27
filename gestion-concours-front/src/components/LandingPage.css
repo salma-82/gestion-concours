@@ -2181,10 +2181,11 @@ body {
 .lp-method-kicker > span { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: #685aff; color: #fff; font-size: 8px; letter-spacing: 0; }
 .lp-method-copy h3 { max-width: 430px; margin: 0 0 10px; color: #172b4d; font-family: Poppins, Inter, sans-serif; font-size: clamp(19px, 2vw, 25px); font-weight: 850; line-height: 1.3; letter-spacing: -.035em; }
 .lp-method-copy p { max-width: 440px; margin: 0; color: #6c7b95; font-size: 13px; line-height: 1.8; }
-.lp-scroll-mascot { position: fixed; z-index: 24; top: 34vh; left: 50%; display: grid; width: 110px; height: 120px; place-items: center; padding: 0; border: 0; background: transparent; color: inherit; line-height: 0; transform: translateX(calc(-50% + var(--mascot-x, calc(50vw - 148px)))); transform-origin: 50% 75%; transition: transform .9s cubic-bezier(.22,.8,.24,1); pointer-events: auto; cursor: pointer; filter: drop-shadow(0 7px 6px rgba(33,52,88,.2)); animation: lp-owl-hover 3.4s ease-in-out infinite; }
+.lp-scroll-mascot { position: fixed; z-index: 24; top: var(--mascot-top, 34vh); left: 50%; display: grid; width: 110px; height: 120px; place-items: center; padding: 0; border: 0; background: transparent; color: inherit; line-height: 0; transform: translateX(calc(-50% + var(--mascot-x, calc(50vw - 148px)))) scale(var(--mascot-scale, 1)) rotate(var(--mascot-rotate, 0deg)); transform-origin: 50% 75%; transition: left .9s cubic-bezier(.22,.8,.24,1), top .9s cubic-bezier(.22,.8,.24,1), transform .9s cubic-bezier(.22,.8,.24,1); pointer-events: auto; cursor: pointer; filter: drop-shadow(0 7px 6px rgba(33,52,88,.2)); animation: lp-owl-hover 3.4s ease-in-out infinite; }
 .lp-scroll-mascot.is-right { --mascot-x: calc(50vw - 55px - clamp(14px, 2.6vw, 38px)); }
 .lp-scroll-mascot.is-left { --mascot-x: calc(-50vw + 55px + clamp(14px, 2.6vw, 38px)); }
 .lp-scroll-mascot.is-center { --mascot-x: 0px; }
+.lp-scroll-mascot.is-features { width: min(45vw, 520px); height: min(48.75vw, 563px); --mascot-x: calc(-26vw); }
 .lp-scroll-mascot-art { display: block; width: 100%; height: 100%; overflow: visible; }
 .lp-scroll-mascot-action { display: grid; width: 100%; height: 100%; place-items: center; }
 .lp-scroll-mascot-action.is-clicked { animation: lp-mascot-click .72s cubic-bezier(.2,.8,.2,1); }
@@ -2195,6 +2196,7 @@ body {
 .lp-scroll-mascot-art .lp-mascot-wing-right { transform-origin: 182px 140px; transform: rotate(var(--owl-wing-right, 0deg)); }
 .lp-scroll-mascot-art .lp-mascot-head { transform-box: view-box; transform-origin: 120px 95px; transform: rotate(var(--owl-head-tilt, 0deg)); transition: transform .16s ease-out; }
 .lp-mascot-speech { position: absolute; z-index: 2; top: -34px; left: 50%; width: max-content; max-width: 180px; padding: 8px 12px; border: 1px solid #e6a15f; border-radius: 16px; background: #fff; color: #263a58; font-size: 12px; font-weight: 800; line-height: 1.2; text-align: center; white-space: normal; box-shadow: 0 5px 16px rgba(33,52,88,.14); transform: translateX(-50%); animation: lp-mascot-speech-pop .24s ease-out both; }
+.lp-scroll-mascot.is-features .lp-mascot-speech { max-width: min(48vw, 420px); padding: 12px 16px; font-size: clamp(13px, 1.3vw, 18px); }
 .lp-scroll-mascot.is-left .lp-mascot-speech { left: 0; transform: none; }
 .lp-scroll-mascot.is-right .lp-mascot-speech { right: 0; left: auto; transform: none; }
 .lp-mascot-speech::after { position: absolute; bottom: -5px; left: calc(50% - 5px); width: 8px; height: 8px; border-right: 1px solid #e6a15f; border-bottom: 1px solid #e6a15f; background: #fff; content: ''; transform: rotate(45deg); }
@@ -2206,6 +2208,9 @@ body {
 @keyframes lp-mascot-blink { 0%, 44%, 46%, 82%, 84%, 100% { transform: scaleY(1); } 45%, 83% { transform: scaleY(.08); } }
 @keyframes lp-owl-wing-left { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-8deg); } }
 @keyframes lp-owl-wing-right { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .lp-scroll-mascot, .lp-scroll-mascot * { animation: none !important; transition: none !important; }
+}
 .lp-method-preview { width: 100%; max-width: 380px; padding: 16px; border: 1px solid #e3e9f4; border-radius: 16px; background: rgba(255,255,255,.96); box-shadow: 0 12px 34px rgba(31,57,103,.08); transition: transform .25s ease, box-shadow .25s ease; }
 .lp-method-row:hover .lp-method-preview { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(31,57,103,.12); }
 .lp-preview-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -2853,7 +2858,8 @@ body {
 @keyframes lp-features-sparkle { 0%, 100% { opacity: .58; transform: scale(.9) rotate(0); } 50% { opacity: 1; transform: scale(1.12) rotate(10deg); } }
 
 @media (max-width: 900px) {
-  .lp-features-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .lp-features-layout { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 16px; }
+  .lp-scroll-mascot.is-features { width: min(42vw, 380px); height: min(45.5vw, 412px); }
   .lp-features-mascot-panel { position: relative; top: auto; padding: 0; }
   .lp-features-mascot-stage { width: min(100%, 300px); min-height: 290px; }
   .lp-feature-mascot-art { width: min(100%, 260px); }
@@ -2865,7 +2871,9 @@ body {
 
 @media (max-width: 600px) {
   .lp-features-section { padding: 62px 16px 72px; }
-  .lp-features-layout { gap: 27px; }
+  .lp-features-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .lp-scroll-mascot.is-features { width: min(44vw, 220px); height: min(47.7vw, 238px); }
+  .lp-scroll-mascot.is-features .lp-mascot-speech { max-width: min(44vw, 190px); padding: 8px 10px; font-size: 12px; }
   .lp-features-mascot-stage { min-height: 235px; width: min(100%, 245px); }
   .lp-feature-mascot-art { width: min(100%, 220px); }
   .lp-features-mascot-glow { width: 220px; }
@@ -2890,7 +2898,7 @@ body {
   .lp-feature-story-card, .lp-feature-story-icon, .lp-features-start-btn, .lp-features-start-btn svg { transition: none; }
 }
 
-.lp-scroll-mascot { transition: transform .9s cubic-bezier(.22,.8,.24,1), opacity .3s ease, visibility .3s ease; }
+.lp-scroll-mascot { transition: left .9s cubic-bezier(.22,.8,.24,1), top .9s cubic-bezier(.22,.8,.24,1), width .9s cubic-bezier(.22,.8,.24,1), height .9s cubic-bezier(.22,.8,.24,1), transform .9s cubic-bezier(.22,.8,.24,1), opacity .3s ease, visibility .3s ease; }
 .lp-scroll-mascot.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
 
 /* Keep the original feature catalog and match the site's blue identity */
@@ -2907,9 +2915,9 @@ body {
 }
 
 .lp-features-layout {
-  grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(28px, 4.2vw, 58px);
-  width: min(1260px, 100%);
+  width: min(1200px, 100%);
 }
 
 .lp-features-content .lp-section-header { margin-bottom: 30px; text-align: left; }
@@ -2923,11 +2931,16 @@ body {
 .lp-features-content .lp-features-cta { justify-content: flex-start; margin: 31px 0 0; }
 .lp-features-start-btn { background: linear-gradient(115deg, #2563eb, #1e50c8); box-shadow: 0 9px 20px rgba(37, 99, 235, .2); }
 .lp-features-start-btn:hover { box-shadow: 0 13px 26px rgba(37, 99, 235, .28); }
-.lp-features-mascot-glow { background: radial-gradient(circle at 45% 42%, rgba(219,234,254,.98), rgba(224,238,255,.72) 52%, transparent 75%); }
-.lp-features-mascot-badge { border-color: rgba(37, 99, 235, .15); }
-
 @media (max-width: 900px) {
-  .lp-features-layout { grid-template-columns: minmax(0, 1fr); }
+  .lp-features-layout { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 16px; }
+  .lp-scroll-mascot.is-features { width: min(42vw, 380px); height: min(45.5vw, 412px); }
+}
+
+@media (max-width: 600px) {
+  .lp-features-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .lp-scroll-mascot.is-features { width: min(44vw, 220px); height: min(47.7vw, 238px); }
+  .lp-scroll-mascot.is-features .lp-mascot-speech { max-width: min(44vw, 190px); padding: 8px 10px; font-size: 12px; }
+  .lp-scroll-mascot.is-features .lp-mascot-speech { max-width: min(44vw, 190px); padding: 8px 10px; font-size: 12px; }
 }
 
 @media (max-width: 600px) {

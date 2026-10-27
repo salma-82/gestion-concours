@@ -146,7 +146,9 @@ export default function ClientExamens() {
   const [searchParams] = useSearchParams();
   const filiereParam = searchParams.get('filiere') || '';
 
-  const [selectedFiliere, setSelectedFiliere] = useState(filiereParam);
+  let profileFiliere = '';
+  try { profileFiliere = JSON.parse(localStorage.getItem('user') || '{}')?.filiere || ''; } catch {}
+  const [selectedFiliere, setSelectedFiliere] = useState(filiereParam || profileFiliere);
   const [selectedFiliereAnnee, setSelectedFiliereAnnee] = useState('');
   const [selectedMatiereCard, setSelectedMatiereCard] = useState(null);
 
@@ -157,12 +159,12 @@ export default function ClientExamens() {
   // Synchronisation avec les changements d'URL
   useEffect(() => {
     const f = searchParams.get('filiere') || '';
-    setSelectedFiliere(f);
+    setSelectedFiliere(f || profileFiliere);
     setSelectedFiliereAnnee('');
     setSelectedMatiereCard(null);
     setActiveExam(null);
     setIsSidebarCollapsed(false);
-  }, [searchParams]);
+  }, [searchParams, profileFiliere]);
 
   // Filtres
   const [searchQuery, setSearchQuery] = useState('');
@@ -297,7 +299,7 @@ export default function ClientExamens() {
     };
   });
 
-  if (!filiereParam) {
+  if (!selectedFiliere) {
     return <Navigate to="/client-dashboard" replace state={{ openSidebarMenu: 'examens' }} />;
   }
 

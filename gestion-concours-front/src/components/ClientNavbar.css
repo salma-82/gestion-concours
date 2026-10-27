@@ -714,6 +714,338 @@ button[aria-label="Ouvrir le menu des chapitres"] {
   align-self: flex-start;
 }
 
+/* Navbar capsule inspired by the supplied reference. */
+.client-header {
+  box-sizing: border-box;
+  width: auto;
+  min-height: 86px;
+  height: 86px !important;
+  flex: 0 0 86px;
+  margin: 18px clamp(14px, 2vw, 40px) 14px;
+  padding: 0 clamp(16px, 2.2vw, 38px) !important;
+  gap: clamp(10px, 1.3vw, 24px);
+  border: 1px solid rgba(154, 193, 255, .28) !important;
+  border-bottom: 1px solid rgba(154, 193, 255, .28) !important;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #2b5195 0%, #24478d 48%, #24478d 100%) !important;
+  box-shadow: 0 12px 30px rgba(36, 71, 141, .22), inset 0 1px 0 rgba(255, 255, 255, .1) !important;
+}
+
+.client-brand {
+  gap: 10px;
+}
+
+.client-brand-mascot,
+.client-brand-mascot .client-boma-mascot {
+  width: 58px;
+  height: 62px;
+  flex-basis: 58px;
+}
+
+.client-brand-name {
+  color: #f8fbff;
+  font-size: 21px;
+  letter-spacing: -.6px;
+}
+
+.client-brand-accent {
+  color: #10c6f2;
+}
+
+.client-brand-tagline {
+  color: #c6d8f4;
+  font-size: 10px;
+}
+
+.client-nav-links {
+  min-height: 68px;
+  padding: 5px 7px;
+  border: 1px solid rgba(207, 226, 255, .13);
+  border-radius: 999px;
+  background: linear-gradient(110deg, rgba(255, 255, 255, .105), rgba(255, 255, 255, .075));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 4px 14px rgba(5, 28, 69, .08);
+  justify-content: space-between;
+  gap: clamp(3px, .45vw, 9px);
+}
+
+.client-nav-link {
+  min-height: 50px;
+  gap: 8px;
+  padding: 0 clamp(10px, .9vw, 17px);
+  border-radius: 999px;
+  color: #e4edfc;
+  font-size: clamp(10px, .76vw, 14px);
+}
+
+.client-nav-link:hover,
+.client-nav-link:focus-visible {
+  background: rgba(255, 255, 255, .13);
+  color: #ffffff;
+}
+
+.client-nav-link.is-active {
+  background: linear-gradient(135deg, #3184ff, #1765e8);
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(4, 36, 94, .24), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+
+.client-nav-icon svg {
+  stroke: #e6efff !important;
+}
+
+.client-nav-link.is-active .client-nav-icon svg {
+  stroke: #ffffff !important;
+}
+
+.client-nav-chevron {
+  stroke: #d8e6fb;
+}
+
+.client-search {
+  width: clamp(150px, 11vw, 205px);
+  height: 50px;
+  flex-basis: clamp(150px, 11vw, 205px);
+  padding: 0 15px;
+  border-color: rgba(201, 221, 255, .1);
+  background: rgba(255, 255, 255, .1);
+}
+
+.client-search:focus-within {
+  border-color: rgba(205, 225, 255, .48);
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 0 0 0 3px rgba(147, 190, 255, .13);
+}
+
+.client-search-icon {
+  stroke: #d9e7fb;
+}
+
+.client-search input {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.client-search input::placeholder {
+  color: #aec4e6;
+}
+
+.client-nav-dropdown {
+  top: calc(100% + 10px);
+  border-color: rgba(190, 212, 246, .45);
+  box-shadow: 0 16px 38px rgba(8, 35, 78, .26);
+}
+
+.client-nav-actions {
+  gap: clamp(6px, .65vw, 12px) !important;
+}
+
+.client-notifications,
+.client-settings-button {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .09) !important;
+  transition: background-color .16s ease, transform .16s ease;
+}
+
+.client-notifications:hover,
+.client-settings-button:hover,
+.client-settings-button[aria-expanded="true"] {
+  background: rgba(255, 255, 255, .18) !important;
+  transform: translateY(-1px);
+}
+
+.client-notifications svg {
+  stroke: #e8f1ff !important;
+}
+
+.client-notification-badge {
+  top: 0;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  border: 0;
+  font-size: 9px;
+}
+
+.client-settings-button {
+  width: 48px;
+  height: 48px;
+  color: #e8f1ff;
+}
+
+.client-settings-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 1200px) {
+  .client-nav-links {
+    min-height: 0;
+    border-radius: 18px;
+  }
+
+  .client-header {
+    min-height: 76px;
+    height: 76px !important;
+    flex-basis: 76px;
+    margin: 12px 14px 10px;
+    padding: 0 18px !important;
+    border-radius: 24px;
+    gap: 12px;
+  }
+
+  .client-nav-links {
+    top: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    padding: 12px;
+    border: 1px solid rgba(190, 212, 246, .28);
+    border-radius: 18px;
+    background: #24478d;
+    box-shadow: 0 16px 30px rgba(8, 35, 78, .25);
+  }
+
+  .client-nav-link {
+    min-height: 44px;
+    border-radius: 13px;
+    font-size: 13px;
+  }
+
+  .client-search {
+    display: none;
+  }
+
+  .client-nav-toggle {
+    border-color: rgba(222, 235, 255, .24);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .1);
+  }
+
+  .client-nav-toggle span {
+    background: #edf4ff;
+  }
+}
+
+@media (max-width: 620px) {
+  .client-header {
+    min-height: 62px;
+    height: 62px !important;
+    flex-basis: 62px;
+    margin: 8px 8px 8px;
+    padding: 0 10px !important;
+    border-radius: 18px;
+    gap: 7px;
+  }
+
+  .client-brand-mascot,
+  .client-brand-mascot .client-boma-mascot {
+    width: 39px;
+    height: 44px;
+    flex-basis: 39px;
+  }
+
+  .client-brand-name {
+    font-size: 15px;
+  }
+
+  .client-brand-tagline {
+    font-size: 8px;
+  }
+
+  .client-nav-actions {
+    gap: 4px !important;
+  }
+
+  .client-notifications {
+    width: 34px;
+    height: 34px;
+  }
+
+  .client-settings-button {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Keep the complete desktop navigation inside its glass capsule. */
+@media (min-width: 1201px) {
+  .client-header {
+    gap: clamp(7px, .75vw, 14px);
+  }
+
+  .client-nav-links {
+    min-width: 0;
+    flex: 1 1 0;
+    gap: clamp(1px, .2vw, 4px);
+    padding-right: clamp(4px, .4vw, 8px);
+    padding-left: clamp(4px, .4vw, 8px);
+  }
+
+  .client-nav-item {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .client-nav-link {
+    width: 100%;
+    min-width: 0;
+    gap: clamp(3px, .35vw, 7px);
+    padding-right: clamp(3px, .4vw, 8px);
+    padding-left: clamp(3px, .4vw, 8px);
+    font-size: clamp(9px, .68vw, 13px);
+  }
+
+  .client-nav-link > span:last-of-type {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .client-nav-icon svg {
+    width: clamp(13px, .78vw, 15px);
+    height: clamp(13px, .78vw, 15px);
+  }
+
+  .client-search {
+    min-width: clamp(120px, 9vw, 175px);
+    width: clamp(120px, 9vw, 175px);
+    flex: 0 1 clamp(120px, 9vw, 175px);
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1500px) {
+  .client-brand {
+    gap: 6px;
+  }
+
+  .client-brand-mascot,
+  .client-brand-mascot .client-boma-mascot {
+    width: 48px;
+    height: 52px;
+    flex-basis: 48px;
+  }
+
+  .client-brand-name {
+    font-size: 18px;
+  }
+
+  .client-brand-tagline {
+    font-size: 9px;
+  }
+
+  .client-nav-link {
+    font-size: 10px;
+  }
+
+  .client-search {
+    min-width: 125px;
+    width: 145px;
+    flex-basis: 145px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+}
+
 .course-reader-header > div:first-child {
   display: none !important;
 }

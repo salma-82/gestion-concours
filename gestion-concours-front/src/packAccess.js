@@ -2,6 +2,7 @@ export const PACK_OPTIONS = [
   { value: 'MEDECINE', label: 'Médecine' },
   { value: 'ENSAM', label: 'ENSAM' },
   { value: 'ENSA', label: 'ENSA' },
+  { value: 'ENCG', label: 'ENCG' },
   { value: 'MEDECINE_ENSA', label: 'Médecine + ENSA' },
   { value: 'PACK_COMPLET', label: 'Pack Complet' },
 ];
@@ -10,6 +11,7 @@ const PACK_SCHOOLS = {
   MEDECINE: ['MEDECINE'],
   ENSAM: ['ENSAM'],
   ENSA: ['ENSA', 'ENSCK'],
+  ENCG: ['ENCG'],
   MEDECINE_ENSA: ['MEDECINE', 'ENSA', 'ENSCK'],
   PACK_COMPLET: ['MEDECINE', 'ENSAM', 'ENSA', 'ENSCK', 'ENCG'],
 };

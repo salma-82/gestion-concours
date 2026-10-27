@@ -33,6 +33,9 @@ public class User {
     @Column(name = "selected_pack", length = 40)
     private String pack;
 
+    @Column(name = "filiere_bac", length = 120)
+    private String filiere;
+
     private Integer active;
 
     @Column(name = "created_at")

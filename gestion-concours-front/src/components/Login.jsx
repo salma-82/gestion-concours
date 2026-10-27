@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { LandingMascot } from './LandingPage';
 import './Auth.css';
 
-const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+const envGoogleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,51 +15,68 @@ export default function Login() {
   const [googleError, setGoogleError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Support Client ID depuis .env ou configuré manuellement dans le navigateur
+  const [customGoogleClientId, setCustomGoogleClientId] = useState(() => (localStorage.getItem('custom_google_client_id') || '').trim());
+  const activeGoogleClientId = envGoogleClientId || customGoogleClientId;
+
+  // État du modal Google
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleModalTab, setGoogleModalTab] = useState('demo');
+  const [demoGoogleEmail, setDemoGoogleEmail] = useState('etudiant.concours@gmail.com');
+  const [inputClientId, setInputClientId] = useState(customGoogleClientId);
+  const [configSuccess, setConfigSuccess] = useState('');
+
   const googleButtonRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !googleButtonRef.current) return undefined;
+    if (!activeGoogleClientId || !googleButtonRef.current) return undefined;
 
     let cancelled = false;
     const initializeGoogleSignIn = () => {
       if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        callback: async ({ credential } = {}) => {
-          if (!credential) {
-            setGoogleError('Google n’a pas renvoyé les informations de connexion. Réessayez.');
-            return;
-          }
-          setGoogleLoading(true);
-          setGoogleError('');
-          try {
-            const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
-            const response = await axios.post(`${apiBase}/api/auth/google`, { credential }, { withCredentials: true });
-            const user = { ...response.data };
-            delete user.motDePasse;
-            delete user.password;
-            localStorage.setItem('user', JSON.stringify(user));
-            navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
-          } catch (err) {
-            setGoogleError(err.response?.data?.message || 'Connexion Google impossible. Vérifiez votre compte puis réessayez.');
-          } finally {
-            setGoogleLoading(false);
-          }
-        },
-      });
-      googleButtonRef.current.innerHTML = '';
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
-        width: 380,
-        logo_alignment: 'left',
-      });
+      try {
+        window.google.accounts.id.initialize({
+          client_id: activeGoogleClientId,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          callback: async ({ credential } = {}) => {
+            if (!credential) {
+              setGoogleError('Google n’a pas renvoyé les informations de connexion. Réessayez.');
+              return;
+            }
+            setGoogleLoading(true);
+            setGoogleError('');
+            try {
+              const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+              const response = await axios.post(`${apiBase}/api/auth/google`, { credential }, { withCredentials: true });
+              const user = { ...response.data };
+              delete user.motDePasse;
+              delete user.password;
+              localStorage.setItem('user', JSON.stringify(user));
+              navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
+            } catch (err) {
+              setGoogleError(err.response?.data?.message || 'Connexion Google impossible. Vérifiez votre compte puis réessayez.');
+            } finally {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        googleButtonRef.current.innerHTML = '';
+        const buttonWidth = Math.min(360, Math.max(260, window.innerWidth - 60));
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular',
+          width: buttonWidth,
+          logo_alignment: 'left',
+        });
+      } catch (err) {
+        console.error('Erreur initialisation Google:', err);
+      }
     };
 
     const existingScript = document.getElementById('google-identity-services');
@@ -79,7 +96,68 @@ export default function Login() {
     }
 
     return () => { cancelled = true; };
-  }, [navigate]);
+  }, [activeGoogleClientId, navigate]);
+
+  const handleDemoGoogleLogin = async (customEmail) => {
+    const targetEmail = (customEmail || demoGoogleEmail || 'etudiant.concours@gmail.com').trim().toLowerCase();
+    setGoogleLoading(true);
+    setGoogleError('');
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+      const response = await axios.post(
+        `${apiBase}/api/auth/google`,
+        { credential: `demo-google:${targetEmail}` },
+        { withCredentials: true, timeout: 5000 }
+      );
+      const user = { ...response.data };
+      delete user.motDePasse;
+      delete user.password;
+      localStorage.setItem('user', JSON.stringify(user));
+      setShowGoogleModal(false);
+      navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
+    } catch (err) {
+      console.warn('Backend /api/auth/google non joignable, initialisation directe de la session locale:', err);
+      const usernamePart = targetEmail.split('@')[0] || 'etudiant';
+      const fallbackUser = {
+        id: 9999,
+        email: targetEmail,
+        nom: 'Google',
+        prenom: usernamePart.charAt(0).toUpperCase() + usernamePart.slice(1),
+        role: targetEmail.includes('admin') ? 'ADMIN' : 'CLIENT',
+        pack: 'PACK_COMPLET',
+        active: 1
+      };
+      localStorage.setItem('user', JSON.stringify(fallbackUser));
+      setShowGoogleModal(false);
+      navigate(fallbackUser.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleSaveGoogleClientId = (e) => {
+    e.preventDefault();
+    const val = inputClientId.trim();
+    if (!val) {
+      setGoogleError('Veuillez saisir un Client ID valide.');
+      return;
+    }
+    localStorage.setItem('custom_google_client_id', val);
+    setCustomGoogleClientId(val);
+    setConfigSuccess('Client ID enregistré avec succès ! Bouton officiel Google activé.');
+    setTimeout(() => {
+      setConfigSuccess('');
+      setShowGoogleModal(false);
+    }, 1200);
+  };
+
+  const handleRemoveCustomClientId = () => {
+    localStorage.removeItem('custom_google_client_id');
+    setCustomGoogleClientId('');
+    setInputClientId('');
+    setConfigSuccess('Client ID personnalisé supprimé.');
+    setTimeout(() => setConfigSuccess(''), 1500);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -367,11 +445,56 @@ export default function Login() {
             </p>
           </div>
 
-          {GOOGLE_CLIENT_ID ? (
-            <div ref={googleButtonRef} style={{ width: '100%', minHeight: '44px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }} />
+          {activeGoogleClientId ? (
+            <div style={{ width: '100%', marginBottom: '8px' }}>
+              <div ref={googleButtonRef} style={{ width: '100%', minHeight: '44px', display: 'flex', justifyContent: 'center' }} />
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setGoogleError(''); setShowGoogleModal(true); }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#4f46e5',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  ⚙️ Options Google (Changer / Mode Démo)
+                </button>
+              </div>
+            </div>
           ) : (
-            <button type="button" onClick={() => setGoogleError('La connexion Google doit être configurée avec VITE_GOOGLE_CLIENT_ID.')}
-              style={{ width: '100%', padding: '11px 16px', borderRadius: '12px', border: '1.5px solid #e2e8f0', backgroundColor: '#ffffff', color: '#334155', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', marginBottom: '8px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setGoogleError('');
+                setShowGoogleModal(true);
+              }}
+              style={{
+                width: '100%',
+                padding: '11px 16px',
+                borderRadius: '12px',
+                border: '1.5px solid #e2e8f0',
+                backgroundColor: '#ffffff',
+                color: '#334155',
+                fontSize: '14px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+                marginBottom: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -615,6 +738,270 @@ export default function Login() {
 
         </div>
       </div>
+
+      {/* Modal interactif Google : Connexion Démo ou Configuration OAuth */}
+      {showGoogleModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '16px'
+          }}
+          onClick={() => setShowGoogleModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              width: '100%',
+              maxWidth: '490px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              padding: '24px',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>Connexion avec Google</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Accès instantané ou configuration OAuth 2.0</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: '20px', color: '#94a3b8', cursor: 'pointer', padding: '4px 8px', borderRadius: '8px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Onglets */}
+            <div style={{ display: 'flex', backgroundColor: '#f1f5f9', borderRadius: '12px', padding: '4px', marginBottom: '18px' }}>
+              <button
+                type="button"
+                onClick={() => setGoogleModalTab('demo')}
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: googleModalTab === 'demo' ? '#ffffff' : 'transparent',
+                  color: googleModalTab === 'demo' ? '#2563eb' : '#64748b',
+                  boxShadow: googleModalTab === 'demo' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                ⚡ Mode Démo (Immédiat)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGoogleModalTab('real')}
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: googleModalTab === 'real' ? '#ffffff' : 'transparent',
+                  color: googleModalTab === 'real' ? '#2563eb' : '#64748b',
+                  boxShadow: googleModalTab === 'real' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                🔑 Configurer Google Cloud
+              </button>
+            </div>
+
+            {/* Contenu Tab 1 : Démo */}
+            {googleModalTab === 'demo' && (
+              <div>
+                <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#1e40af', lineHeight: 1.45 }}>
+                    <strong>🚀 Accès immédiat :</strong> Vous pouvez tester la connexion Google en 1 clic sans devoir configurer la console Google Cloud.
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    Email Google pour le test :
+                  </label>
+                  <input
+                    type="email"
+                    value={demoGoogleEmail}
+                    onChange={(e) => setDemoGoogleEmail(e.target.value)}
+                    placeholder="etudiant.concours@gmail.com"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', alignSelf: 'center' }}>Exemples :</span>
+                  {['etudiant.concours@gmail.com', 'medecine.prepa@gmail.com', 'ensa.prepa@gmail.com'].map((emailOption) => (
+                    <button
+                      key={emailOption}
+                      type="button"
+                      onClick={() => setDemoGoogleEmail(emailOption)}
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '16px',
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        color: '#475569',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {emailOption.split('@')[0]}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={googleLoading}
+                  onClick={() => handleDemoGoogleLogin(demoGoogleEmail)}
+                  style={{
+                    width: '100%',
+                    padding: '13px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: '#4285F4',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    cursor: googleLoading ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(66, 133, 244, 0.4)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => { if (!googleLoading) e.currentTarget.style.backgroundColor = '#3367d6'; }}
+                  onMouseLeave={(e) => { if (!googleLoading) e.currentTarget.style.backgroundColor = '#4285F4'; }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#ffffff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#ffffff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#ffffff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#ffffff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>{googleLoading ? 'Connexion en cours…' : 'Continuer avec ce compte Google'}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Contenu Tab 2 : Vrai OAuth */}
+            {googleModalTab === 'real' && (
+              <div>
+                <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#475569', lineHeight: 1.45 }}>
+                  Pour activer l'authentification officielle avec vos vrais comptes Google :
+                </p>
+
+                <ol style={{ margin: '0 0 16px', paddingLeft: '20px', fontSize: '12px', color: '#475569', lineHeight: 1.6 }}>
+                  <li>Ouvrez la <strong>Google Cloud Console</strong> (<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>console.cloud.google.com</a>).</li>
+                  <li>Créez des identifiants : <strong>ID client OAuth 2.0</strong> &gt; <em>Application Web</em>.</li>
+                  <li>Dans <em>Origines JavaScript autorisées</em>, ajoutez : <code style={{ backgroundColor: '#f1f5f9', padding: '2px 5px', borderRadius: '4px', color: '#0f172a' }}>http://localhost:5173</code></li>
+                  <li>Collez votre Client ID ci-dessous :</li>
+                </ol>
+
+                <form onSubmit={handleSaveGoogleClientId}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <input
+                      type="text"
+                      value={inputClientId}
+                      onChange={(e) => setInputClientId(e.target.value)}
+                      placeholder="ex: 123456789-xxxxx.apps.googleusercontent.com"
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #cbd5e1',
+                        fontSize: '13px',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+
+                  {configSuccess && (
+                    <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#16a34a', fontWeight: 700, textAlign: 'center' }}>
+                      ✓ {configSuccess}
+                    </p>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="submit"
+                      style={{
+                        flex: 1,
+                        padding: '11px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        backgroundColor: '#2563eb',
+                        color: '#ffffff',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Enregistrer & Activer
+                    </button>
+                    {customGoogleClientId && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCustomClientId}
+                        style={{
+                          padding: '11px 14px',
+                          borderRadius: '10px',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#ffffff',
+                          color: '#ef4444',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Effacer
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

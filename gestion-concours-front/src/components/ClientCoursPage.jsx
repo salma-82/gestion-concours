@@ -311,7 +311,14 @@ export default function ClientCoursPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filiereFromUrl = searchParams.get('filiere') || '';
-  const [selectedFiliere, setSelectedFiliere] = useState(filiereFromUrl || 'Sciences Mathématiques A');
+  const [selectedFiliere, setSelectedFiliere] = useState(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return filiereFromUrl || user.filiere || 'Sciences Mathématiques A';
+    } catch {
+      return filiereFromUrl || 'Sciences Mathématiques A';
+    }
+  });
 
   // Navigation: 'matieres' → 'chapitres' → 'cours' → 'reader'
   const [step, setStep] = useState('matieres');
@@ -574,11 +581,11 @@ export default function ClientCoursPage() {
     <div style={pageStyle}>
 
       {step === 'matieres' && selectedFiliere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
-          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', minHeight: 'calc(100vh - 140px)' }}>
+          <aside style={{ width: '100%', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', boxSizing: 'border-box' }}>
             <div style={{ padding: '4px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Fili&egrave;re : {selectedFiliere}</div>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', alignItems: 'start', gap: '10px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere?.id === matiere.id;
                 const expanded = active;
@@ -588,12 +595,10 @@ export default function ClientCoursPage() {
                   <button type="button" onClick={() => expanded ? goMatieres() : goChapitres(matiere)} aria-expanded={expanded} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: expanded ? '#93c5fd' : active ? '#bfdbfe' : '#e2e8f0', borderRadius: '10px', background: expanded || active ? '#eff6ff' : '#ffffff', color: expanded || active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>
                     <span>{matiere.nom}</span>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease' }} aria-hidden="true">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease' }} aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                     </span>
                   </button>
-                  {expanded && !loading && !error && <div style={{ margin: '6px 0 5px', padding: '7px 0 8px 10px', borderLeft: `2px solid ${matiere.color || '#93c5fd'}` }}>
+                  {expanded && <div style={{ margin: '6px 0 5px', padding: '7px 0 8px 10px', borderLeft: `2px solid ${matiere.color || '#93c5fd'}` }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {filteredChapitres.map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? matiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? matiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? matiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '10px', fontWeight: 500 }}>{chapitre.count} cours</span></button>)}
                     </div>
