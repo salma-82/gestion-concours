@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QCM interactif — Calcul intégral</title>
+<style>
+:root{--navy:#102a43;--blue:#176b87;--teal:#18a6a6;--bg:#f3f7fb;--ink:#203040;--muted:#64748b;--line:#dbe5ef;--green:#16845b;--red:#c43d4b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(125deg,#102a43,#176b87);color:white;padding:32px 18px}
+.hero{max-width:940px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:800;color:#9ee7e5}
+h1{margin:6px 0 8px;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.2}.subtitle{margin:0;color:#e3f2f7}
+main{max-width:940px;margin:24px auto;padding:0 16px 50px}
+.panel,.question,.result{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 20px #17324d0a}
+.panel{padding:18px;margin-bottom:18px}.settings{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.timer-setting{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.timer-setting input[type=number]{width:85px;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit}
+button{border:0;border-radius:10px;padding:11px 16px;font:inherit;font-weight:750;cursor:pointer;transition:.15s}
+button:hover{transform:translateY(-1px)}.primary{background:var(--blue);color:white}.secondary{background:#e7f1f6;color:var(--navy)}.danger{background:#fff0f1;color:var(--red)}
+#clock{font-weight:850;font-variant-numeric:tabular-nums;color:var(--blue);font-size:1.1rem}
+.progress-line{height:8px;background:#e7edf3;border-radius:99px;overflow:hidden;margin-top:13px}.progress-fill{height:100%;width:0;background:var(--teal);transition:width .2s}
+.question{padding:22px;margin:16px 0;scroll-margin-top:12px}.qhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+.qnumber{font-size:.8rem;font-weight:850;letter-spacing:.08em;color:var(--blue);text-transform:uppercase}.answered{font-size:.8rem;color:var(--muted)}
+.prompt{font-size:1.07rem;font-weight:650;margin:8px 0 15px}.math{font-family:Cambria,"Times New Roman",serif;font-size:1.12em;white-space:normal}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.option{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:11px;cursor:pointer;background:#fff}
+.option:hover{border-color:#6ba5bb;background:#f7fcfd}.option input{margin-top:6px;accent-color:var(--blue);flex-shrink:0}
+.option.correct{border-color:#65b99a;background:#effaf4}.option.wrong{border-color:#e39aa2;background:#fff4f4}
+.explanation{display:none;margin-top:16px;padding:15px 16px;border-radius:11px;background:#f1f7fb;border-left:4px solid var(--blue)}
+.explanation.show{display:block}.ex-title{font-weight:850;margin-bottom:5px}.status{font-weight:800}.status.ok{color:var(--green)}.status.no{color:var(--red)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0}.hint{color:var(--muted);font-size:.9rem}
+.result{display:none;padding:24px;margin:22px 0}.result.show{display:block}.score{font-size:2.4rem;font-weight:900;color:var(--blue);line-height:1.2}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:18px 0}.stat{background:#f4f8fb;border-radius:12px;padding:12px}.stat strong{display:block;font-size:1.3rem}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 28px}
+@media(max-width:560px){header{padding:25px 16px}.question{padding:16px}.settings{align-items:flex-start}.options{grid-template-columns:1fr}}
+@media print{body{background:white}.actions,.settings button,.timer-setting,.progress-line{display:none!important}.question,.panel,.result{box-shadow:none;break-inside:avoid}.explanation{display:block!important}header{background:#fff;color:#102a43;border-bottom:2px solid #102a43}.subtitle{color:#334155}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div class="eyebrow">Entraînement concours · Médecine / ENSA / ENSAM</div><h1>QCM — Calcul intégral</h1><p class="subtitle">7 questions · Une seule réponse correcte par question · Correction et explications à la fin</p></div></header>
+<main>
+<section class="panel">
+ <div class="settings">
+  <div><strong>Mode examen</strong><div class="hint">Le chronomètre est facultatif. Sans minuterie, prends ton temps.</div></div>
+  <div class="timer-setting"><label for="minutes">Timer (minutes)</label><input id="minutes" type="number" min="1" max="180" value="20"><label><input id="useTimer" type="checkbox"> Activer</label><span id="clock" aria-live="polite">20:00</span><button id="startTimer" class="secondary" type="button">Démarrer</button></div>
+ </div>
+ <div class="progress-line"><div id="progressFill" class="progress-fill"></div></div>
+ <div id="progressText" class="hint">0 / 7 question répondue</div>
+</section>
+<div id="quiz"></div>
+<section id="result" class="result" aria-live="polite">
+ <div class="eyebrow" style="color:#176b87">Résultat final</div><h2>Ton score</h2><div id="score" class="score">0 / 7</div><p id="message"></p>
+ <div class="result-grid"><div class="stat"><strong id="correctCount">0</strong><span>Bonnes réponses</span></div><div class="stat"><strong id="wrongCount">0</strong><span>Réponses incorrectes</span></div><div class="stat"><strong id="unansweredCount">0</strong><span>Sans réponse</span></div></div>
+ <p class="hint">La correction détaillée est affichée sous chaque question. Tu peux imprimer cette page ou l’enregistrer en PDF.</p>
+ <button class="secondary" type="button" onclick="window.print()">Imprimer / PDF</button>
+ <button class="secondary" type="button" id="retry">Recommencer</button>
+</section>
+<div class="actions">
+ <button class="primary" id="submit" type="button">Terminer le QCM et afficher la correction</button>
+ <span class="hint">La correction et le score restent cachés jusqu’à la fin.</span>
+</div>
+</main>
+<footer>QCM préparé à partir des 7 premières questions du PDF fourni. Les explications sont retranscrites et mises en forme pour le web.</footer>
+<script>
+const questions = [
+{prompt:'Calculer <span class="math">∫<sub>π/6</sub><sup>π/4</sup> 1/(sin x · tan x) dx</span>.',options:['1/2 − √2/2','2 − √2','√2 − 2','√2/2 − 1/2','1 − √2'],answer:1,
+explanation:'On écrit 1/(sin x · tan x) = cos x / sin²x. Une primitive est −1/sin x. Donc [−1/sin x] de π/6 à π/4 = −√2 + 2 = 2 − √2.'},
+{prompt:'Calculer <span class="math">∫₀<sup>π/2</sup> sin(2x)/(1 + sin²x) dx</span>.',options:['0','ln(2) + 1','ln(2)','1','−ln(2)'],answer:2,
+explanation:'Comme sin(2x) = 2 sin x cos x = (1 + sin²x)′, l’intégrale devient ∫₀^(π/2) (1 + sin²x)′/(1 + sin²x) dx. Une primitive est ln(1 + sin²x). La valeur est ln 2 − ln 1 = ln 2.'},
+{prompt:'Soit α ∈ ℝ* et <span class="math">∫₀¹ e<sup>αx</sup>/(1 + e<sup>αx</sup>) dx = 1/α</span>. Déterminer α.',options:['ln(e − 1)','2e − 1','ln(2e + 1)','ln(2e − 1)','2e + 1'],answer:3,
+explanation:'On remarque que (ln(1 + e^(αx)))′ = αe^(αx)/(1 + e^(αx)). L’intégrale vaut donc (1/α)[ln(1 + e^α) − ln 2]. En l’égalant à 1/α, on obtient ln((1 + e^α)/2) = 1, donc e^α = 2e − 1 et α = ln(2e − 1).'},
+{prompt:'Calculer <span class="math">∫₀³ (x² + 2)/√(x³ + 6x + 4) dx</span>.',options:['1/3','8/3','10/3','14/3','Autre réponse'],answer:2,
+explanation:'Posons u = x³ + 6x + 4. Alors du = 3(x² + 2)dx. Une primitive est (2/3)√(x³ + 6x + 4). Aux bornes : (2/3)(√49 − √4) = (2/3)(7 − 2) = 10/3.'},
+{prompt:'On pose <span class="math">Iₙ = ∫₁ᵉ x(ln x)ⁿ dx</span>. Pour n ∈ ℕ*, calculer <span class="math">2Iₙ₊₁ + (n + 1)Iₙ</span>.',options:['e','e²','1','(e − 1)/2','(e + 1)/2'],answer:1,
+explanation:'Par intégration par parties sur Iₙ₊₁, avec u = (ln x)^(n+1) et dv = x dx : Iₙ₊₁ = [x²(ln x)^(n+1)/2]₁ᵉ − (n+1)/2 ∫₁ᵉ x(ln x)ⁿ dx. Le terme aux bornes vaut e²/2, donc Iₙ₊₁ = e²/2 − (n+1)Iₙ/2. Ainsi 2Iₙ₊₁ + (n+1)Iₙ = e².'},
+{prompt:'Calculer <span class="math">∫₀¹ x/(1 + e<sup>−x²</sup>) dx</span>.',options:['√(ln((1 + e)/2))','ln √(1 + e)','ln(1 + e)','ln √((1 + e)/2)','√(ln(1 + e))'],answer:3,
+explanation:'Multiplions numérateur et dénominateur par e^(x²) : l’intégrande devient xe^(x²)/(1 + e^(x²)). On reconnaît la dérivée de ln(1 + e^(x²)), à un facteur 1/2 près. L’intégrale vaut (1/2)[ln(1 + e) − ln 2] = (1/2)ln((1 + e)/2) = ln √((1 + e)/2).'},
+{prompt:'On sait que <span class="math">∫₁² f′(x)f″(x) dx = 8</span> et <span class="math">f′(2) − f′(1) = 2</span>. Calculer <span class="math">f′(2) + f′(1)</span>.',options:['4','6','8','10','12'],answer:2,
+explanation:'Comme (f′(x)²/2)′ = f′(x)f″(x), l’intégrale donne [f′(x)²/2]₁² = 8, donc f′(2)² − f′(1)² = 16. Factorisons : (f′(2) − f′(1))(f′(2) + f′(1)) = 16. Puisque f′(2) − f′(1) = 2, on obtient f′(2) + f′(1) = 8.'}
+];
+let submitted=false, timerId=null, remaining=1200, timerStarted=false;
+const quiz=document.getElementById('quiz');
+function render(){
+ quiz.innerHTML='';
+ questions.forEach((q,i)=>{
+  const card=document.createElement('section');card.className='question';card.id='q'+i;
+  card.innerHTML=`<div class="qhead"><span class="qnumber">QCM ${String(i+1).padStart(2,'0')}</span><span class="answered" id="answered${i}">Pas encore répondu</span></div><div class="prompt">${q.prompt}</div><div class="options">${q.options.map((o,j)=>`<label class="option" data-q="${i}" data-a="${j}"><input type="radio" name="q${i}" value="${j}"><span><strong>(${String.fromCharCode(65+j)})</strong> ${o}</span></label>`).join('')}</div><div class="explanation" id="ex${i}"></div>`;
+  quiz.appendChild(card);
+ });
+ quiz.querySelectorAll('input[type=radio]').forEach(el=>el.addEventListener('change',()=>{if(!submitted) updateProgress();}));
+ updateProgress();
+}
+function updateProgress(){
+ let count=questions.filter((q,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;
+ document.getElementById('progressText').textContent=`${count} / ${questions.length} questions répondues`;
+ document.getElementById('progressFill').style.width=(count/questions.length*100)+'%';
+ questions.forEach((q,i)=>{const picked=document.querySelector(`input[name="q${i}"]:checked`);document.getElementById('answered'+i).textContent=picked?'Réponse sélectionnée':'Pas encore répondu';});
+}
+function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function setClock(){document.getElementById('clock').textContent=formatTime(remaining)}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null}}
+document.getElementById('startTimer').addEventListener('click',()=>{
+ if(timerStarted){stopTimer();timerStarted=false;document.getElementById('startTimer').textContent='Reprendre';return}
+ if(!document.getElementById('useTimer').checked){document.getElementById('useTimer').checked=true}
+ if(!timerId){if(remaining===1200){const m=Math.max(1,Math.min(180,parseInt(document.getElementById('minutes').value,10)||20));remaining=m*60;setClock()}
+ timerStarted=true;document.getElementById('startTimer').textContent='Pause';
+ timerId=setInterval(()=>{remaining--;setClock();if(remaining<=0){stopTimer();document.getElementById('startTimer').textContent='Temps écoulé';finishQuiz(true)}},1000)}
+});
+document.getElementById('minutes').addEventListener('input',()=>{if(!timerStarted){remaining=Math.max(1,Math.min(180,parseInt(document.getElementById('minutes').value,10)||20))*60;setClock()}});
+document.getElementById('useTimer').addEventListener('change',e=>{document.getElementById('startTimer').disabled=!e.target.checked;if(!e.target.checked){stopTimer();timerStarted=false;document.getElementById('startTimer').textContent='Démarrer'}})
+function finishQuiz(auto=false){
+ if(submitted)return;submitted=true;stopTimer();
+ let score=0, unanswered=0;
+ questions.forEach((q,i)=>{
+  const picked=document.querySelector(`input[name="q${i}"]:checked`);const selected=picked?Number(picked.value):-1;
+  if(selected===q.answer)score++;if(selected<0)unanswered++;
+  document.querySelectorAll(`input[name="q${i}"]`).forEach(input=>{input.disabled=true;const label=input.closest('.option');const a=Number(input.value);if(a===q.answer)label.classList.add('correct');if(a===selected&&selected!==q.answer)label.classList.add('wrong')});
+  const exp=document.getElementById('ex'+i);exp.classList.add('show');
+  const status=selected===q.answer?'<span class="status ok">Bonne réponse ✓</span>':selected<0?'<span class="status no">Sans réponse</span>':'<span class="status no">Réponse incorrecte ✗</span>';
+  exp.innerHTML=`<div class="ex-title">${status} — Réponse correcte : (${String.fromCharCode(65+q.answer)}) ${q.options[q.answer]}</div><div>${q.explanation}</div>`;
+ });
+ document.getElementById('score').textContent=`${score} / ${questions.length} — ${Math.round(score/questions.length*100)} %`;
+ document.getElementById('correctCount').textContent=score;
+ document.getElementById('wrongCount').textContent=questions.length-score-unanswered;
+ document.getElementById('unansweredCount').textContent=unanswered;
+ document.getElementById('message').textContent=score===7?'Excellent ! Toutes les réponses sont correctes.':score>=5?'Très bien ! Relis les explications des questions ratées.':score>=3?'Bon début : révise les méthodes indiquées dans les corrections.':'Prends le temps de revoir chaque explication puis recommence.';
+ document.getElementById('result').classList.add('show');
+ document.getElementById('submit').disabled=true;document.getElementById('submit').textContent=auto?'Temps écoulé — correction affichée':'QCM terminé';
+ document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.getElementById('submit').addEventListener('click',()=>finishQuiz(false));
+document.getElementById('retry').addEventListener('click',()=>{submitted=false;stopTimer();timerStarted=false;remaining=Math.max(1,Math.min(180,parseInt(document.getElementById('minutes').value,10)||20))*60;setClock();document.getElementById('startTimer').textContent='Démarrer';document.getElementById('startTimer').disabled=false;document.getElementById('submit').disabled=false;document.getElementById('submit').textContent='Terminer le QCM et afficher la correction';document.getElementById('result').classList.remove('show');render();window.scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('startTimer').disabled=true;
+setClock();render();
+</script>
+</body>
+</html>

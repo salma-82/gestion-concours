@@ -17,6 +17,8 @@ public class StudentQcmAnswer {
     private String resourceId;
     @Column(name = "resource_title", length = 300)
     private String resourceTitle;
+    @Column(name = "student_filiere", length = 120)
+    private String studentFiliere;
     @Column(length = 160)
     private String school;
     @Column(length = 120)
@@ -43,6 +45,8 @@ public class StudentQcmAnswer {
     private String explanation;
     @Column(name = "is_correct", nullable = false)
     private boolean correct;
+    @Column(name = "session_verified")
+    private boolean sessionVerified;
     @Column(name = "answered_at", nullable = false)
     private LocalDateTime answeredAt = LocalDateTime.now();
 
@@ -55,6 +59,8 @@ public class StudentQcmAnswer {
     public void setResourceId(String resourceId) { this.resourceId = resourceId; }
     public String getResourceTitle() { return resourceTitle; }
     public void setResourceTitle(String resourceTitle) { this.resourceTitle = resourceTitle; }
+    public String getStudentFiliere() { return studentFiliere; }
+    public void setStudentFiliere(String studentFiliere) { this.studentFiliere = studentFiliere; }
     public String getSchool() { return school; }
     public void setSchool(String school) { this.school = school; }
     public String getSubject() { return subject; }
@@ -85,6 +91,8 @@ public class StudentQcmAnswer {
     public void setExplanation(String explanation) { this.explanation = explanation; }
     public boolean isCorrect() { return correct; }
     public void setCorrect(boolean correct) { this.correct = correct; }
+    public boolean isSessionVerified() { return sessionVerified; }
+    public void setSessionVerified(boolean sessionVerified) { this.sessionVerified = sessionVerified; }
     public LocalDateTime getAnsweredAt() { return answeredAt; }
     public void setAnsweredAt(LocalDateTime answeredAt) { this.answeredAt = answeredAt; }
 }

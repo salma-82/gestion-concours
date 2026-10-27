@@ -9,4 +9,5 @@ public interface StudentQcmAnswerRepository extends JpaRepository<StudentQcmAnsw
     Optional<StudentQcmAnswer> findByStudentIdAndResourceTypeAndResourceIdAndAttemptIdAndQuestionKey(
             Long studentId, String resourceType, String resourceId, String attemptId, String questionKey);
     List<StudentQcmAnswer> findByStudentIdOrderByAnsweredAtDesc(Long studentId);
+    List<StudentQcmAnswer> findByStudentIdAndSessionVerifiedTrueOrderByAnsweredAtDesc(Long studentId);
 }

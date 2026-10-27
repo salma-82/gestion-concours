@@ -318,8 +318,8 @@ export default function ClientExamens() {
 
       {/* ==================== VUE 1 : VISIONNEUSE DU DOCUMENT (PLEINE PAGE) ==================== */}
       {selectedFiliere ? (
-        <div style={{ width: '100%', display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des examens" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des examens" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', maxWidth: 'none', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
             <div style={{ padding: '3px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Filière : {selectedFiliere}</div>
             <label style={{ display: 'block', margin: '0 2px 16px', color: '#475569', fontSize: '12px', fontWeight: 700 }}>Année
               <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#fff', color: '#334155', fontSize: '12px' }}>
@@ -328,20 +328,20 @@ export default function ClientExamens() {
               </select>
             </label>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {examMatieresWithCount.map((matiere) => {
                 const isActive = selectedMatiereCard === matiere.id;
                 const subjectExams = filiereExamsForSelectedYear.filter((exam) => matchMatiere(exam.matiere, matiere.id));
-                return <React.Fragment key={matiere.id}>
+                return <div key={matiere.id}>
                   <button type="button" onClick={() => { setSelectedMatiereCard(matiere.id); setActiveExam(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>
                   {isActive && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '1px 0 8px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
                     {subjectExams.length ? subjectExams.map((exam, index) => <button key={exam.id || index} type="button" onClick={() => handleOpenReader(exam, 'sujet')} style={{ width: '100%', padding: '8px 9px', border: '0', borderRadius: '8px', background: activeExam?.id === exam.id ? '#2563eb' : 'transparent', color: activeExam?.id === exam.id ? '#fff' : '#475569', textAlign: 'left', fontSize: '11px', fontWeight: 650, cursor: 'pointer' }}><span>{exam.titre || `Examen National ${exam.annee || ''}`}</span><span style={{ display: 'block', marginTop: '3px', color: activeExam?.id === exam.id ? '#dbeafe' : '#94a3b8', fontSize: '10px' }}>{exam.annee || 'Année inconnue'} · {exam.session || 'Normale'}</span></button>) : <div style={{ padding: '8px 9px', color: '#94a3b8', fontSize: '11px' }}>Aucune épreuve pour cette matière.</div>}
                   </div>}
-                </React.Fragment>;
+                </div>;
               })}
             </div>}
           </aside>}
-          <main style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
+          <main style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeExam ? (
               <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                 <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>

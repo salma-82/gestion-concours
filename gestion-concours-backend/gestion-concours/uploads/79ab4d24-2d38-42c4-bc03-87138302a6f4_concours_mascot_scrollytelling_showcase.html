@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÉCONCOURS — Visualisation Mascot & Scrollytelling SaaS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+              950: '#0f172a'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- GSAP Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+      overflow-x: hidden;
+    }
+    
+    .glass-nav {
+      background: rgba(3, 7, 18, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 24px 60px rgba(99, 102, 241, 0.15);
+    }
+
+    .glow-purple {
+      box-shadow: 0 0 60px -10px rgba(99, 102, 241, 0.3);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Mascot SVG Keyframe Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .bibi-idle-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030712;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4f46e5;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP BAR & SCENARIO CONTROLLER -->
+  <header class="fixed top-0 left-0 right-0 z-50 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center font-black text-white shadow-lg shadow-brand-500/30">
+          É
+        </div>
+        <div class="flex flex-col">
+          <span class="font-extrabold text-lg tracking-tight gradient-text">ÉCONCOURS</span>
+          <span class="text-[10px] font-medium tracking-widest uppercase text-slate-400 -mt-1">Mascot Experience Lab</span>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <nav class="hidden md:flex items-center space-x-1 bg-slate-900/80 p-1 rounded-full border border-slate-800 text-xs">
+        <button onclick="setScenario(7)" id="btn-sec-7" class="px-4 py-1.5 rounded-full font-semibold transition-all bg-brand-600 text-white shadow-md">
+          v7: Interactive Scroll (Recommended)
+        </button>
+        <button onclick="setScenario(5)" id="btn-sec-5" class="px-4 py-1.5 rounded-full font-medium text-slate-400 hover:text-slate-200 transition-all">
+          v5: Companion AI
+        </button>
+        <button onclick="setScenario(2)" id="btn-sec-2" class="px-4 py-1.5 rounded-full font-medium text-slate-400 hover:text-slate-200 transition-all">
+          v2: Bibi Climbs
+        </button>
+        <button onclick="scrollToPoses()" class="px-3 py-1.5 rounded-full font-medium text-amber-400 hover:text-amber-300 transition-all flex items-center gap-1">
+          <i data-lucide="grid" class="w-3.5 h-3.5"></i> Matrix Poses
+        </button>
+      </nav>
+
+      <!-- CTA -->
+      <div class="flex items-center space-x-3">
+        <span class="hidden lg:inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+          ● Live GSAP Interactive
+        </span>
+        <button class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all border border-slate-700">
+          Export Specs
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <div class="relative pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- FLOATING/STICKY MASCOT CONTAINER (STAGE) -->
+    <div id="mascot-stage" class="fixed right-6 lg:right-16 top-1/2 -translate-y-1/2 z-40 w-72 h-80 pointer-events-none transition-all duration-500">
+      
+      <!-- Speech Bubble -->
+      <div id="bibi-bubble" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-brand-500/40 text-slate-200 text-xs font-medium px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md opacity-0 transform translate-y-2 transition-all duration-300 whitespace-nowrap z-50 flex items-center space-x-2">
+        <span id="bubble-text">Marhaban! Bienvenue sur ÉCONCOURS! 👋</span>
+        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-b border-r border-brand-500/40 transform rotate-45"></div>
+      </div>
+
+      <!-- Mascot Card Shadow Glow -->
+      <div class="absolute inset-0 bg-brand-500/10 rounded-full blur-3xl animate-pulse"></div>
+
+      <!-- BIBI SVG MASCOT WRAPPER -->
+      <div class="relative w-full h-full flex flex-col items-center justify-center pointer-events-auto group">
+        
+        <!-- Interactive Vector Graphic of Bibi -->
+        <div id="bibi-avatar-box" class="w-60 h-60 rounded-3xl bg-gradient-to-b from-slate-900/80 to-slate-950/90 border border-slate-800 p-4 shadow-2xl flex items-center justify-center relative backdrop-blur-xl transition-all duration-300">
+          
+          <!-- Background Glow Effect -->
+          <div id="bibi-bg-glow" class="absolute inset-4 rounded-2xl bg-indigo-500/10 transition-all duration-500"></div>
+
+          <!-- Dynamic SVG Vector Illustration -->
+          <svg id="bibi-svg" class="w-44 h-44 relative z-10 bibi-idle-float transition-all duration-500" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            
+            <!-- Body Shadow -->
+            <ellipse cx="100" cy="180" rx="45" ry="8" fill="#000" fill-opacity="0.3"/>
+            
+            <!-- Wings / Arms -->
+            <g id="bibi-wing-left" class="transition-transform duration-300 origin-right">
+              <path d="M45 105 C25 90 20 120 40 135 C50 130 55 115 45 105 Z" fill="#4F46E5"/>
+            </g>
+            <g id="bibi-wing-right" class="transition-transform duration-300 origin-left">
+              <path d="M155 105 C175 90 180 120 160 135 C150 130 145 115 155 105 Z" fill="#4F46E5"/>
+            </g>
+
+            <!-- Main Body (Yellow Cute Bird / Owl hybrid) -->
+            <path d="M100 30 C60 30 50 70 50 110 C50 150 65 170 100 170 C135 170 150 150 150 110 C150 70 140 30 100 30 Z" fill="url(#bibi-grad)"/>
+
+            <!-- Belly Patch -->
+            <path d="M100 85 C80 85 75 110 75 135 C75 155 85 165 100 165 C115 165 125 155 125 135 C125 110 120 85 100 85 Z" fill="#FEF08A" opacity="0.9"/>
+
+            <!-- Big Expressive Eyes -->
+            <g id="bibi-eyes">
+              <!-- Left Eye -->
+              <circle cx="82" cy="78" r="16" fill="white"/>
+              <circle id="pupil-l" cx="84" cy="78" r="7" fill="#0F172A"/>
+              <circle cx="86" cy="75" r="3" fill="white"/>
+
+              <!-- Right Eye -->
+              <circle cx="118" cy="78" r="16" fill="white"/>
+              <circle id="pupil-r" cx="116" cy="78" r="7" fill="#0F172A"/>
+              <circle cx="118" cy="75" r="3" fill="white"/>
+            </g>
+
+            <!-- Beak -->
+            <path d="M93 92 Q100 102 107 92 Z" fill="#F97316"/>
+
+            <!-- Graduation Cap (Default Hidden/Dynamic Prop) -->
+            <g id="prop-cap" class="transition-all duration-300 transform translate-y-0 opacity-100">
+              <path d="M60 40 L100 20 L140 40 L100 52 Z" fill="#1E1B4B" stroke="#6366F1" stroke-width="2"/>
+              <rect x="94" y="24" width="12" height="10" fill="#1E1B4B"/>
+              <path d="M135 40 L140 60" stroke="#F59E0B" stroke-width="2"/>
+              <circle cx="140" cy="62" r="3" fill="#F59E0B"/>
+            </g>
+
+            <!-- Dynamic Accessory Prop Container -->
+            <g id="bibi-prop" class="transition-all duration-300">
+              <!-- Dynamic SVG Content Swapped via JS -->
+            </g>
+
+            <!-- Gradients -->
+            <defs>
+              <linearGradient id="bibi-grad" x1="50" y1="30" x2="150" y2="170" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FACC15"/>
+                <stop offset="1" stop-color="#EAB308"/>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Pose Badge Indicator -->
+          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700 text-[10px] font-semibold text-slate-300 flex items-center space-x-1">
+            <span id="pose-indicator-dot" class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+            <span id="pose-indicator-name">Pose 1: Waving</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- LEFT SCROLLING CONTENT SECTIONS -->
+    <div class="w-full lg:w-7/12 space-y-32">
+
+      <!-- HERO SECTION -->
+      <section id="hero-sec" class="min-h-[80vh] flex flex-col justify-center space-y-8 pt-8">
+        
+        <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold w-max">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>La Plateforme #1 de Préparation aux Concours</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-[1.1] text-slate-100">
+          Réussis tes Concours avec <span class="gradient-text">Bibi L'Assistant</span>
+        </h1>
+
+        <p class="text-slate-400 text-lg sm:text-xl font-normal leading-relaxed max-w-2xl">
+          Une méthode interactive et dynamique taillée pour les Grandes Écoles (ENSA, ENCG, FMP, IAV, CNC). Laisse Bibi te guider étape par étape.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap gap-4 pt-2">
+          <button class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 font-bold text-sm text-white shadow-xl shadow-brand-500/25 transition-all flex items-center space-x-2 group">
+            <span>Commencer l'Entraînement</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+          
+          <button class="px-7 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-sm border border-slate-800 transition-all flex items-center space-x-2">
+            <i data-lucide="play-circle" class="w-4 h-4 text-brand-400"></i>
+            <span>Voir la Démo</span>
+          </button>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="grid grid-cols-3 gap-4 pt-8 border-t border-slate-900 max-w-lg">
+          <div>
+            <div class="text-2xl font-black text-white">98.4%</div>
+            <div class="text-xs text-slate-500">Taux d'Admissibilité</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-white">+15,000</div>
+            <div class="text-xs text-slate-500">QCMs Corrigés</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-white">24/7</div>
+            <div class="text-xs text-slate-500">Suivi Intelligent</div>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- SECTION 1: COURS & FICHES SYNTHÉTIQUES -->
+      <section id="sec-cours" class="min-h-[75vh] flex flex-col justify-center space-y-6">
+        
+        <div class="glass-card glass-card-hover p-8 sm:p-10 rounded-3xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xl mb-6">
+            01
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Fiches de Cours Synthétiques
+          </h2>
+
+          <p class="text-slate-400 text-base sm:text-lg leading-relaxed mt-3">
+            Des résumés structurés conçus par les meilleurs lauréats. Retrouve l'essentiel du programme sans perdre de temps sur les détails inutiles.
+          </p>
+
+          <!-- Interactive Mockup Pill -->
+          <div class="mt-6 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i>
+              <span>Mathématiques & Physique — Programme Officiel</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 font-medium">120 Fiches PDF</span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- SECTION 2: CONCOURS BLANCS & PRACTICE -->
+      <section id="sec-practice" class="min-h-[75vh] flex flex-col justify-center space-y-6">
+        
+        <div class="glass-card glass-card-hover p-8 sm:p-10 rounded-3xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xl mb-6">
+            02
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Concours Blancs Chronométrés
+          </h2>
+
+          <p class="text-slate-400 text-base sm:text-lg leading-relaxed mt-3">
+            Entraîne-toi dans les conditions réelles de l'examen. Un timer strict, une gestion du stress optimisée et des corrections détaillées pas à pas.
+          </p>
+
+          <div class="mt-6 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="timer" class="w-5 h-5 text-emerald-400"></i>
+              <span>Épreuve ENSA 2025 — Simulation en direct</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-medium">Mode Exam</span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- SECTION 3: ANALYTICS & DASHBOARD -->
+      <section id="sec-analytics" class="min-h-[75vh] flex flex-col justify-center space-y-6">
+        
+        <div class="glass-card glass-card-hover p-8 sm:p-10 rounded-3xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xl mb-6">
+            03
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Tableau de Bord & Analytics
+          </h2>
+
+          <p class="text-slate-400 text-base sm:text-lg leading-relaxed mt-3">
+            Bibi analyse tes erreurs fréquentes et adapte ton planning de révision quotidiennes pour combler tes lacunes spécifiques.
+          </p>
+
+          <div class="mt-6 p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs text-slate-300">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="bar-chart-3" class="w-5 h-5 text-amber-400"></i>
+              <span>Progression Globale: 84% de maîtrise</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-medium">AI Insights</span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- SECTION 4: RÉUSSITE & LAURÉATS (TROPHY) -->
+      <section id="sec-trophy" class="min-h-[75vh] flex flex-col justify-center space-y-6">
+        
+        <div class="glass-card glass-card-hover p-8 sm:p-10 rounded-3xl relative overflow-hidden bg-gradient-to-br from-indigo-950/40 via-slate-900/60 to-slate-950/80 border-brand-500/30">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-yellow-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 flex items-center justify-center font-bold text-xl mb-6">
+            04
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Rejoins les Lauréats ÉCONCOURS
+          </h2>
+
+          <p class="text-slate-400 text-base sm:text-lg leading-relaxed mt-3">
+            Décroche ton admission dans l'école de tes rêves. Commence ton programme de préparation personnalisé dès aujourd'hui.
+          </p>
+
+          <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+            <button class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-500/30 transition-all">
+              S'inscrire Maintenant
+            </button>
+            <span class="text-xs text-slate-400">Satisfait ou remboursé sous 14 jours</span>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- 8-POSE ASSET MATRIX MATRIX PREVIEW SECTION -->
+    <section id="matrix-section" class="mt-40 pt-20 border-t border-slate-900">
+      
+      <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+          <span>Asset Blueprint Specification</span>
+        </div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          Matrice des 8 Poses de Bibi
+        </h2>
+        <p class="text-slate-400 text-sm sm:text-base">
+          Voici le guide visuel des poses SVG et animations micro-interactions pour l'équipe de design et les développeurs GSAP.
+        </p>
+      </div>
+
+      <!-- Grid of 8 Poses -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Pose 1 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-4xl">
+            👋🏼 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 1: Waving</h3>
+            <p class="text-xs text-slate-500 mt-1">Main levée, confiant, accueil chaleureux sur le Hero.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-indigo-400 text-[10px] font-mono border border-slate-800">`bibi-waving.svg`</span>
+        </div>
+
+        <!-- Pose 2 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-4xl">
+            👉🏼 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 2: Pointing</h3>
+            <p class="text-xs text-slate-500 mt-1">Pointe vers la carte active des fonctionnalités.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-blue-400 text-[10px] font-mono border border-slate-800">`bibi-pointing.svg`</span>
+        </div>
+
+        <!-- Pose 3 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-4xl">
+            📖 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 3: Reading</h3>
+            <p class="text-xs text-slate-500 mt-1">Livre ÉCONCOURS ouvert, plongé dans les cours.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-cyan-400 text-[10px] font-mono border border-slate-800">`bibi-reading.svg`</span>
+        </div>
+
+        <!-- Pose 4 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-4xl">
+            ✍️ 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 4: Writing</h3>
+            <p class="text-xs text-slate-500 mt-1">Stylet en main, résout un concours blanc.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-emerald-400 text-[10px] font-mono border border-slate-800">`bibi-writing.svg`</span>
+        </div>
+
+        <!-- Pose 5 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-4xl">
+            🤔 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 5: Thinking</h3>
+            <p class="text-xs text-slate-500 mt-1">Main sur le menton, point d'interrogation flottant.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-purple-400 text-[10px] font-mono border border-slate-800">`bibi-thinking.svg`</span>
+        </div>
+
+        <!-- Pose 6 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-4xl">
+            📊 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 6: Presenting</h3>
+            <p class="text-xs text-slate-500 mt-1">Pointeur + écran de données de progression.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-amber-400 text-[10px] font-mono border border-slate-800">`bibi-presenting.svg`</span>
+        </div>
+
+        <!-- Pose 7 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-4xl">
+            ☕ 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 7: Relaxing</h3>
+            <p class="text-xs text-slate-500 mt-1">Tasse de café / reposé sur une pile de livres.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-rose-400 text-[10px] font-mono border border-slate-800">`bibi-relaxing.svg`</span>
+        </div>
+
+        <!-- Pose 8 -->
+        <div class="glass-card p-6 rounded-2xl text-center flex flex-col items-center justify-between space-y-4 border-slate-800 hover:border-brand-500/50 transition-all">
+          <div class="w-24 h-24 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-4xl">
+            🏆 🐥
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-200 text-base">Pose 8: Celebrating</h3>
+            <p class="text-xs text-slate-500 mt-1">Trophée doré et confettis pour la réussite.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900 text-yellow-400 text-[10px] font-mono border border-slate-800">`bibi-celebrating.svg`</span>
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="py-12 border-t border-slate-900 bg-slate-950 text-center text-slate-600 text-xs">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-400">ÉCONCOURS</span>
+        <span>— Designed for Premium SaaS Web Standards</span>
+      </div>
+      <div>
+        Inspired by Apple, Duolingo & Stripe Scrollytelling Architecture.
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- GSAP ANIMATION LOGIC & MASCOT STATE MANAGER -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Register GSAP ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    let activeScenario = 7;
+
+    // Define Bibi State Configurations per Section
+    const sectionStates = [
+      {
+        sectionId: "#hero-sec",
+        poseName: "Pose 1: Waving",
+        bubble: "Bienvenue sur ÉCONCOURS! 👋",
+        glowColor: "rgba(99, 102, 241, 0.2)",
+        pupilDx: 0,
+        wingAngle: 0,
+        scale: 1,
+        propSVG: `
+          <!-- Waving Hand Prop -->
+          <g transform="translate(145, 100) rotate(-20)">
+            <circle cx="10" cy="10" r="10" fill="#FACC15"/>
+          </g>
+        `
+      },
+      {
+        sectionId: "#sec-cours",
+        poseName: "Pose 3: Reading",
+        bubble: "Découvre les fiches synthétiques! 📖",
+        glowColor: "rgba(59, 130, 246, 0.25)",
+        pupilDx: -3,
+        wingAngle: -15,
+        scale: 0.95,
+        propSVG: `
+          <!-- Book Prop -->
+          <g transform="translate(70, 125)">
+            <rect x="0" y="0" width="60" height="40" rx="4" fill="#3B82F6"/>
+            <path d="M30 0 L30 40" stroke="#1E3A8A" stroke-width="2"/>
+            <line x1="8" y1="12" x2="22" y2="12" stroke="white" stroke-width="2"/>
+            <line x1="8" y1="22" x2="22" y2="22" stroke="white" stroke-width="2"/>
+            <line x1="38" y1="12" x2="52" y2="12" stroke="white" stroke-width="2"/>
+          </g>
+        `
+      },
+      {
+        sectionId: "#sec-practice",
+        poseName: "Pose 4: Writing / Quiz",
+        bubble: "Chronomètre actif! Prêt? ⏱️",
+        glowColor: "rgba(16, 185, 129, 0.25)",
+        pupilDx: 2,
+        wingAngle: 20,
+        scale: 0.95,
+        propSVG: `
+          <!-- Stopwatch Prop -->
+          <g transform="translate(135, 110)">
+            <circle cx="15" cy="15" r="18" fill="#10B981" stroke="#047857" stroke-width="3"/>
+            <circle cx="15" cy="15" r="14" fill="white"/>
+            <line x1="15" y1="15" x2="15" y2="6" stroke="#0F172A" stroke-width="2"/>
+            <line x1="15" y1="15" x2="21" y2="15" stroke="#0F172A" stroke-width="2"/>
+          </g>
+        `
+      },
+      {
+        sectionId: "#sec-analytics",
+        poseName: "Pose 6: Presenting",
+        bubble: "Suis tes progrès en temps réel! 📊",
+        glowColor: "rgba(245, 158, 11, 0.25)",
+        pupilDx: 0,
+        wingAngle: -10,
+        scale: 0.95,
+        propSVG: `
+          <!-- Mini Chart Prop -->
+          <g transform="translate(60, 115)">
+            <rect x="0" y="0" width="80" height="45" rx="6" fill="#0F172A" stroke="#F59E0B" stroke-width="2"/>
+            <path d="M10 35 L30 20 L50 28 L70 10" stroke="#F59E0B" stroke-width="3" fill="none"/>
+            <circle cx="70" cy="10" r="4" fill="#FACC15"/>
+          </g>
+        `
+      },
+      {
+        sectionId: "#sec-trophy",
+        poseName: "Pose 8: Celebrating",
+        bubble: "Objectif Lauréat Atteint! 🏆",
+        glowColor: "rgba(234, 179, 8, 0.35)",
+        pupilDx: 0,
+        wingAngle: 30,
+        scale: 1.05,
+        propSVG: `
+          <!-- Golden Trophy Prop -->
+          <g transform="translate(75, 100)">
+            <path d="M10 0 L40 0 L35 30 Q25 40 15 30 Z" fill="#FACC15" stroke="#D97706" stroke-width="2"/>
+            <rect x="20" y="38" width="10" height="12" fill="#D97706"/>
+            <rect x="12" y="50" width="26" height="8" rx="2" fill="#78350F"/>
+          </g>
+        `
+      }
+    ];
+
+    // Initialize GSAP ScrollTrigger Triggers
+    function setupScrollTriggers() {
+      // Clear existing triggers
+      ScrollTrigger.getAll().forEach(t => t.kill());
+
+      sectionStates.forEach((st, idx) => {
+        ScrollTrigger.create({
+          trigger: st.sectionId,
+          start: "top center",
+          end: "bottom center",
+          onEnter: () => applyState(st),
+          onEnterBack: () => applyState(st)
+        });
+      });
+    }
+
+    // Apply Mascot State with Smooth GSAP Transitions
+    function applyState(st) {
+      // Update Indicator Text
+      document.getElementById('pose-indicator-name').innerText = st.poseName;
+      
+      // Speech Bubble Text Update
+      const bubbleEl = document.getElementById('bibi-bubble');
+      document.getElementById('bubble-text').innerText = st.bubble;
+      
+      gsap.to(bubbleEl, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        ease: "back.out(1.7)"
+      });
+
+      // Background Glow Color Change
+      document.getElementById('bibi-bg-glow').style.backgroundColor = st.glowColor;
+
+      // Eye pupil shift
+      gsap.to('#pupil-l, #pupil-r', {
+        x: st.pupilDx,
+        duration: 0.4,
+        ease: "power2.out"
+      });
+
+      // Wings Rotation
+      gsap.to('#bibi-wing-left', { rotation: -st.wingAngle, duration: 0.4 });
+      gsap.to('#bibi-wing-right', { rotation: st.wingAngle, duration: 0.4 });
+
+      // Swap Prop SVG
+      const propContainer = document.getElementById('bibi-prop');
+      gsap.to(propContainer, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.2,
+        onComplete: () => {
+          propContainer.innerHTML = st.propSVG;
+          gsap.to(propContainer, {
+            scale: 1,
+            opacity: 1,
+            duration: 0.3,
+            ease: "back.out(1.8)"
+          });
+        }
+      });
+
+      // Overall Avatar Bounce Scale
+      gsap.to('#bibi-avatar-box', {
+        scale: st.scale,
+        duration: 0.4,
+        ease: "back.out(1.5)"
+      });
+    }
+
+    // Interactive Scenario Switcher Function
+    function setScenario(num) {
+      activeScenario = num;
+      
+      // Update Tab Styles
+      [2, 5, 7].forEach(id => {
+        const btn = document.getElementById(`btn-sec-${id}`);
+        if (id === num) {
+          btn.className = "px-4 py-1.5 rounded-full font-semibold transition-all bg-brand-600 text-white shadow-md";
+        } else {
+          btn.className = "px-4 py-1.5 rounded-full font-medium text-slate-400 hover:text-slate-200 transition-all";
+        }
+      });
+
+      const mascotStage = document.getElementById('mascot-stage');
+
+      if (num === 5) {
+        // Companion AI Mode: Compact Floating Widget
+        gsap.to(mascotStage, {
+          scale: 0.85,
+          x: 20,
+          duration: 0.5,
+          ease: "power3.out"
+        });
+      } else if (num === 2) {
+        // Bibi Climbs Mode: Scale Step Increase
+        gsap.to(mascotStage, {
+          scale: 1,
+          x: 0,
+          duration: 0.5,
+          ease: "power3.out"
+        });
+      } else {
+        // Interactive Scroll (Default)
+        gsap.to(mascotStage, {
+          scale: 1,
+          x: 0,
+          duration: 0.5,
+          ease: "power3.out"
+        });
+      }
+    }
+
+    function scrollToPoses() {
+      document.getElementById('matrix-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initialize on window load
+    window.onload = function() {
+      setupScrollTriggers();
+      // Apply initial hero state
+      applyState(sectionStates[0]);
+    };
+  </script>
+</body>
+</html>

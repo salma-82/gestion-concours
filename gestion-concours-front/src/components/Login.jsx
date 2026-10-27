@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+
+const saveSessionResponse = (responseUser) => {
+  const user = { ...responseUser };
+  if (user.sessionToken) localStorage.setItem('authToken', user.sessionToken);
+  delete user.sessionToken;
+  localStorage.setItem('user', JSON.stringify(user));
+  return user;
+};
 import { useNavigate, Link } from 'react-router-dom';
 import { LandingMascot } from './LandingPage';
 import './Auth.css';
@@ -51,10 +59,9 @@ export default function Login() {
             try {
               const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
               const response = await axios.post(`${apiBase}/api/auth/google`, { credential }, { withCredentials: true });
-              const user = { ...response.data };
+              const user = saveSessionResponse(response.data);
               delete user.motDePasse;
               delete user.password;
-              localStorage.setItem('user', JSON.stringify(user));
               navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
             } catch (err) {
               setGoogleError(err.response?.data?.message || 'Connexion Google impossible. Vérifiez votre compte puis réessayez.');
@@ -109,10 +116,9 @@ export default function Login() {
         { credential: `demo-google:${targetEmail}` },
         { withCredentials: true, timeout: 5000 }
       );
-      const user = { ...response.data };
+      const user = saveSessionResponse(response.data);
       delete user.motDePasse;
       delete user.password;
-      localStorage.setItem('user', JSON.stringify(user));
       setShowGoogleModal(false);
       navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
     } catch (err) {
@@ -127,6 +133,7 @@ export default function Login() {
         pack: 'PACK_COMPLET',
         active: 1
       };
+      localStorage.removeItem('authToken');
       localStorage.setItem('user', JSON.stringify(fallbackUser));
       setShowGoogleModal(false);
       navigate(fallbackUser.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
@@ -170,12 +177,10 @@ export default function Login() {
         motDePasse
       });
 
-      const user = { ...response.data };
+      const user = saveSessionResponse(response.data);
       // L'API renvoie l'entité utilisateur complète : ne pas conserver le hash du mot de passe côté navigateur.
       delete user.motDePasse;
       delete user.password;
-      localStorage.setItem('user', JSON.stringify(user));
-
       if (user.role === 'ADMIN') {
         navigate('/admin-dashboard');
       } else {

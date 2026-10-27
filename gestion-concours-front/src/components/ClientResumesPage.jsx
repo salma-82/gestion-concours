@@ -392,10 +392,10 @@ export default function ClientResumesPage() {
           STEP 2 : CHAPITRES DE LA MATIÈRE
       ───────────────────────────────────── */}
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: '18px' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {chapitresForMatiere(selectedMatiere).map((chapitre) => {
                 const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
                 const isActive = selectedChapitre === chapitre.nom;
@@ -408,7 +408,7 @@ export default function ClientResumesPage() {
               })}
             </div>
           </aside>}
-          <div style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
+          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeResume && (
               <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                 <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#1e293b', fontWeight: 750 }}>{activeResume.titre || selectedChapitre}</div>
@@ -423,9 +423,6 @@ export default function ClientResumesPage() {
                 ) : <div style={{ padding: '48px 24px', color: '#64748b', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
               </div>
             )}
-            <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: activeResume ? 'none' : 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>
-              Sélectionnez un chapitre dans le menu à gauche pour afficher son résumé.
-            </div>
             <div style={{ display: 'none' }}>
               <div style={{ marginBottom: '20px' }}>
                 <button
@@ -568,10 +565,10 @@ export default function ClientResumesPage() {
           STEP 3 : LECTEUR HTML DU RÉSUMÉ
       ───────────────────────────────────── */}
       {step === 'reader' && activeResume && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: '18px' }}>
-          <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px' }}>
+          <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {chapitresForMatiere(selectedMatiere).map((chapitre) => {
                 const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
                 const isActive = selectedChapitre === chapitre.nom;
@@ -584,7 +581,7 @@ export default function ClientResumesPage() {
               })}
             </div>
           </aside>
-          <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)' }}>
+          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {/* Top bar */}
             <div style={{
               background: '#fff', borderRadius: '18px',

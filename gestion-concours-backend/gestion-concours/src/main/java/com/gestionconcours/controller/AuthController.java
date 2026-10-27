@@ -5,11 +5,13 @@ import com.gestionconcours.model.InscriptionRequest;
 import com.gestionconcours.model.User;
 import com.gestionconcours.repository.InscriptionRequestRepository;
 import com.gestionconcours.repository.UserRepository;
+import com.gestionconcours.service.AuthSessionService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,15 +35,17 @@ public class AuthController {
     private final UserRepository userRepository;
     private final InscriptionRequestRepository inscriptionRequestRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthSessionService authSessionService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${google.client-id:}")
     private String googleClientId;
 
-    public AuthController(UserRepository userRepository, InscriptionRequestRepository inscriptionRequestRepository) {
+    public AuthController(UserRepository userRepository, InscriptionRequestRepository inscriptionRequestRepository, AuthSessionService authSessionService) {
         this.userRepository = userRepository;
         this.inscriptionRequestRepository = inscriptionRequestRepository;
+        this.authSessionService = authSessionService;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -53,7 +57,7 @@ public class AuthController {
             User user = userOpt.get();
             // ⚠️ Ḥyd l-mouchkil dyal getMotDePasse ila knt dayr getPassword f User dyalk
             if (passwordEncoder.matches(request.getMotDePasse(), user.getMotDePasse())) {
-                return ResponseEntity.ok(user);
+                return ResponseEntity.ok(sessionResponse(user));
             }
         }
         return ResponseEntity.status(401).body("Email ou mot de passe incorrect !");
@@ -101,7 +105,9 @@ public class AuthController {
                 safeUser.put("prenom", user.getPrenom());
                 safeUser.put("role", user.getRole());
                 safeUser.put("pack", user.getPack());
+                safeUser.put("filiere", user.getFiliere());
                 safeUser.put("active", user.getActive());
+                safeUser.put("sessionToken", authSessionService.create(user));
                 return ResponseEntity.ok(safeUser);
             }
 
@@ -156,7 +162,9 @@ public class AuthController {
             safeUser.put("prenom", user.getPrenom());
             safeUser.put("role", user.getRole());
             safeUser.put("pack", user.getPack());
+            safeUser.put("filiere", user.getFiliere());
             safeUser.put("active", user.getActive());
+            safeUser.put("sessionToken", authSessionService.create(user));
             return ResponseEntity.ok(safeUser);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -166,6 +174,31 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(Map.of("message", "Impossible de vérifier la connexion Google pour le moment."));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+        authSessionService.revoke(bearerToken(authorization));
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    private Map<String, Object> sessionResponse(User user) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", user.getId());
+        response.put("email", user.getEmail());
+        response.put("nom", user.getNom());
+        response.put("prenom", user.getPrenom());
+        response.put("role", user.getRole());
+        response.put("pack", user.getPack());
+        response.put("filiere", user.getFiliere());
+        response.put("active", user.getActive());
+        response.put("sessionToken", authSessionService.create(user));
+        return response;
+    }
+
+    private String bearerToken(String authorization) {
+        return authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7)
+                ? authorization.substring(7).trim() : null;
     }
 
     @PostMapping("/register")

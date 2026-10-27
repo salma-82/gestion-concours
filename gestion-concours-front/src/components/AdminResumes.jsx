@@ -66,6 +66,9 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/login');
   };

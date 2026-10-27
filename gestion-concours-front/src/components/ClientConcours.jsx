@@ -361,19 +361,15 @@ export default function ClientConcours() {
   };
 
   const handleOpenSchool = (ecole) => {
-    const contests = [...(ecole.concours || [])].sort((a, b) => {
-      const yearDiff = (Number(b.annee) || 0) - (Number(a.annee) || 0);
-      return yearDiff || (a.titre || '').localeCompare(b.titre || '');
-    });
-    const firstConcours = contests.find(c => c.htmlUrl || c.htmlCorrectionUrl || c.pdfCorrectionUrl) || contests[0];
     setSelectedEcole(ecole.name);
     setSelectedMatiere(ALL_MATIERES);
-    setSelectedYear(firstConcours?.annee ? String(firstConcours.annee) : '');
+    setSelectedYear('');
     setExpandedYear('');
     setExpandedSubject(null);
     setSearchMatiere('');
     setSearchConcours('');
-    if (firstConcours) handleOpenViewer(firstConcours, 'sujet');
+    setIsViewerSidebarCollapsed(false);
+    setViewerModal({ isOpen: true, concours: null, activeTab: 'sujet' });
   };
 
   const closeViewerAndReturnToDashboard = () => {
@@ -393,6 +389,8 @@ export default function ClientConcours() {
       return getPdfUrl(viewerModal.concours.htmlCorrectionUrl || viewerModal.concours.pdfCorrectionUrl);
     }
   }, [viewerModal]);
+
+  if (!requestedEcole && !viewerModal.isOpen) return null;
 
   return (
     <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: viewerModal.isOpen ? '0' : requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: '#0f172a' }}>
@@ -1499,7 +1497,7 @@ export default function ClientConcours() {
       </>
       )}
 
-      {viewerModal.isOpen && viewerModal.concours && (
+      {viewerModal.isOpen && (
         <div style={{
           position: 'relative',
           width: '100%',
@@ -1525,14 +1523,14 @@ export default function ClientConcours() {
               backgroundColor: '#f1f5f9',
               padding: '20px 16px',
               display: 'flex',
-              flexDirection: isViewerSidebarCollapsed ? 'column' : 'row',
+              flexDirection: 'column',
               gap: '18px',
               overflow: 'visible',
-              alignItems: isViewerSidebarCollapsed ? 'stretch' : 'flex-start'
+              alignItems: 'stretch'
             }}>
-              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', padding: '14px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', padding: '14px 18px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
                 <h2 style={{ margin: '2px 4px 12px', color: '#1e3a8a', fontSize: '15px', fontWeight: 750 }}>Concours et QCM</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', alignItems: 'start', gap: '10px' }}>
                   {availableYearsForSelectedMatiere.map((year) => {
                     const yearConcours = concoursForNavigationYear(year);
                     const yearKey = String(year);
@@ -1580,7 +1578,7 @@ export default function ClientConcours() {
                                     <span>{subjectConcours.length}</span>
                                   </button>
                                   {isExpandedSubject && subjectConcours.map(concours => {
-                                    const activeConcours = String(viewerModal.concours.id) === String(concours.id);
+                                    const activeConcours = String(viewerModal.concours?.id) === String(concours.id);
                                     return (
                                       <button
                                         key={concours.id}
@@ -1605,7 +1603,7 @@ export default function ClientConcours() {
                   })}
                 </div>
               </aside>}
-              <div style={{ flex: isViewerSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isViewerSidebarCollapsed ? '100%' : undefined, minWidth: isViewerSidebarCollapsed ? 0 : 'min(100%, 320px)', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+              {viewerModal.concours && <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
               {currentViewerUrl ? (
                 viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (
@@ -1654,7 +1652,7 @@ export default function ClientConcours() {
                 </div>
               )}
                 </div>
-              </div>
+              </div>}
             </div>
 
           </div>

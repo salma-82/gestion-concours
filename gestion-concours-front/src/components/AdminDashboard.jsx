@@ -107,6 +107,9 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
   };
@@ -229,6 +232,7 @@ export default function AdminDashboard() {
   const [isConcoursModalOpen, setIsConcoursModalOpen] = useState(false);
   const [conTitre, setConTitre] = useState('');
   const [conEcole, setConEcole] = useState('');
+  const [conFiliere, setConFiliere] = useState('');
   const [conMatiere, setConMatiere] = useState('');
   const [conChapitre, setConChapitre] = useState('');
   const [conAnnee, setConAnnee] = useState('');
@@ -838,6 +842,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append('titre', conTitre);
     if (conEcole) formData.append('ecole', conEcole);
+    if (conFiliere) formData.append('filiere', conFiliere);
     formData.append('matiere', conMatiere);
     if (conChapitre) formData.append('chapitre', conChapitre);
     if (conAnnee) formData.append('annee', conAnnee);
@@ -3843,6 +3848,18 @@ export default function AdminDashboard() {
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du concours</label>
                 <input type="text" placeholder="Ex: Concours Blanc ENSA 2024" value={conTitre} onChange={(e) => setConTitre(e.target.value)} required style={styles.formInput} />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Filière du baccalauréat</label>
+                <select value={conFiliere} onChange={(e) => setConFiliere(e.target.value)} style={styles.formInput}>
+                  <option value="">Toutes / non précisée</option>
+                  <option value="Sciences Mathématiques A">Sciences Mathématiques A</option>
+                  <option value="Sciences Mathématiques B">Sciences Mathématiques B</option>
+                  <option value="Sciences Physiques">Sciences Physiques</option>
+                  <option value="Sciences de la Vie et de la Terre (SVT)">Sciences de la Vie et de la Terre (SVT)</option>
+                  <option value="Sciences Économiques">Sciences Économiques</option>
+                </select>
               </div>
 
               <div style={styles.formGroup}>

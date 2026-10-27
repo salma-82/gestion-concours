@@ -35,7 +35,7 @@ export default function ClientLayout() {
   const currentConcoursEcole = new URLSearchParams(location.search).get('ecole');
   const currentConcoursBlancMatiere = new URLSearchParams(location.search).get('matiere');
   useEffect(() => {
-    setOpenMenu(location.state?.openSidebarMenu || null);
+    setOpenMenu(location.pathname === '/client-dashboard' ? location.state?.openSidebarMenu || null : null);
     setIsMobileMenuOpen(false);
     setIsAccountMenuOpen(false);
   }, [location.pathname, location.search, location.state]);
@@ -60,12 +60,10 @@ export default function ClientLayout() {
   useEffect(() => {
     const fetchFilieres = async () => {
       try {
-        const [resCoursF, resCoursAll, resExamAll, resConcours, resConcoursBlanc] = await Promise.allSettled([
+        const [resCoursF, resCoursAll, resExamAll] = await Promise.allSettled([
           axios.get('http://localhost:8081/api/cours-bac/filieres'),
           axios.get('http://localhost:8081/api/cours-bac'),
-          axios.get('http://localhost:8081/api/examens-nationaux'),
-          axios.get('http://localhost:8081/api/concours'),
-          axios.get('http://localhost:8081/api/concours-blancs/publies')
+          axios.get('http://localhost:8081/api/examens-nationaux')
         ]);
 
         // 1. Filières pour les Cours
@@ -107,37 +105,7 @@ export default function ClientLayout() {
 
         // 3. Écoles proposées dans Concours : uniquement celles présentes
         // dans les épreuves publiées par l'administration.
-        if (resConcours.status === 'fulfilled' && Array.isArray(resConcours.value.data)) {
-          const ecolesSet = new Set(
-            filterByStudentPack(resConcours.value.data)
-              .map(concours => typeof concours.ecole === 'string' ? concours.ecole.trim() : '')
-              .filter(Boolean)
-          );
-          setConcoursEcoles(Array.from(ecolesSet).sort((a, b) => a.localeCompare(b)));
-        }
-
         // 4. Matières qui ont au moins un fichier HTML dans les concours blancs.
-        let concoursBlancData = resConcoursBlanc.status === 'fulfilled'
-          ? resConcoursBlanc.value.data
-          : null;
-        if (!concoursBlancData) {
-          try {
-            const fallbackResponse = await axios.get('http://localhost:8081/api/concours-blancs');
-            concoursBlancData = fallbackResponse.data;
-          } catch (err) {
-            console.error('Erreur chargement des concours blancs du sidebar:', err);
-          }
-        }
-        const concoursBlancList = Array.isArray(concoursBlancData)
-          ? concoursBlancData
-          : (Array.isArray(concoursBlancData?.concours) ? concoursBlancData.concours : []);
-        const concoursBlancMatieresSet = new Set(
-          concoursBlancList
-            .filter(concours => typeof concours.htmlUrl === 'string' && concours.htmlUrl.trim())
-            .map(concours => typeof concours.matiere === 'string' ? concours.matiere.trim() : '')
-            .filter(Boolean)
-        );
-        setConcoursBlancMatieres(Array.from(concoursBlancMatieresSet).sort((a, b) => a.localeCompare(b)));
       } catch (err) {
         console.error("Erreur chargement filières client:", err);
       }
@@ -145,7 +113,52 @@ export default function ClientLayout() {
     fetchFilieres();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    axios.get('http://localhost:8081/api/concours')
+      .then((response) => {
+        if (!isMounted || !Array.isArray(response.data)) return;
+        const schools = new Set(
+          filterByStudentPack(response.data)
+            .map((concours) => typeof concours.ecole === 'string' ? concours.ecole.trim() : '')
+            .filter(Boolean)
+        );
+        setConcoursEcoles(Array.from(schools).sort((a, b) => a.localeCompare(b)));
+      })
+      .catch((error) => console.error('Erreur chargement des écoles de concours:', error));
+
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    let user = {};
+    try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
+    const params = user.filiere ? { params: { filiere: user.filiere } } : {};
+
+    axios.get('http://localhost:8081/api/concours-blancs/publies', params)
+      .then((response) => {
+        if (!isMounted) return;
+        const data = Array.isArray(response.data)
+          ? response.data
+          : (Array.isArray(response.data?.concours) ? response.data.concours : []);
+        const subjects = new Set(
+          data
+            .filter((concours) => typeof concours.htmlUrl === 'string' && concours.htmlUrl.trim())
+            .map((concours) => typeof concours.matiere === 'string' ? concours.matiere.trim() : '')
+            .filter(Boolean)
+        );
+        setConcoursBlancMatieres(Array.from(subjects).sort((a, b) => a.localeCompare(b)));
+      })
+      .catch((error) => console.error('Erreur chargement des matières de concours blanc:', error));
+
+    return () => { isMounted = false; };
+  }, []);
+
   const handleLogout = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
   };
@@ -926,16 +939,18 @@ export default function ClientLayout() {
               if (path === '/client-resumes') links = resumesMatieres.map((m) => ({ label: m === 'Physique-Chimie' ? 'Physique - Chimie' : m, path: `/client-resumes?matiere=${encodeURIComponent(m)}` }));
               if (path === '/client-concours') links = concoursEcoles.map((e) => ({ label: e, path: `/client-concours?ecole=${encodeURIComponent(e)}` }));
               if (path === '/client-concours-blanc') links = concoursBlancMatieres.map((m) => ({ label: m, path: `/client-concours-blanc?matiere=${encodeURIComponent(m)}` }));
-              const hasDropdown = links.length > 0;
+              const hasDropdown = links.length > 0 || path === '/client-concours' || path === '/client-concours-blanc';
               const active = location.pathname === path;
               const menuId = path.replace('/client-', '');
               return (
-                <div className="client-nav-item" key={path}>
+                <div className="client-nav-item" key={path} data-nav-path={path}>
                   <button className={`client-nav-link ${active ? 'is-active' : ''}`} type="button" aria-expanded={hasDropdown ? openMenu === menuId : undefined} onClick={() => hasDropdown ? setOpenMenu((current) => current === menuId ? null : menuId) : (setOpenMenu(null), setIsMobileMenuOpen(false), navigate(path))}>
                     <span className="client-nav-icon">{item.renderIcon(active)}</span><span>{navbarLabels[path]}</span>
                     {hasDropdown && <svg className={`client-nav-chevron ${openMenu === menuId ? 'is-open' : ''}`} viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>}
                   </button>
                   {hasDropdown && openMenu === menuId && <div className="client-nav-dropdown">
+                    {path === '/client-concours' && links.length === 0 && <div className="client-nav-dropdown-link">Aucune école disponible</div>}
+                    {path === '/client-concours-blanc' && links.length === 0 && <div className="client-nav-dropdown-link">Aucune matière disponible</div>}
                     <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-cours' ? 'les cours' : path === '/client-examens' ? 'les examens' : path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>
                     {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => selectNavbarOption(path, link)}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
                   </div>}

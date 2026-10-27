@@ -6,6 +6,7 @@ import com.gestionconcours.model.QcmQuestion;
 import com.gestionconcours.repository.ConcoursBlancRepository;
 import com.gestionconcours.repository.QcmQuestionRepository;
 import com.gestionconcours.repository.QcmResponseRepository;
+import com.gestionconcours.service.AuthSessionService;
 import com.gestionconcours.model.QcmResponse;
 import com.gestionconcours.service.PdfQcmExtractorService;
 import org.springframework.http.MediaType;
@@ -26,6 +27,7 @@ public class QcmController {
     private final QcmResponseRepository qcmResponseRepository;
     private final ConcoursBlancRepository concoursBlancRepository;
     private final PdfQcmExtractorService pdfQcmExtractorService;
+    private final AuthSessionService authSessionService;
     private final String UPLOAD_DIR = "uploads/";
 
     private static final String QCM_TRACKING_BRIDGE = """
@@ -243,17 +245,21 @@ public class QcmController {
     public QcmController(QcmQuestionRepository qcmQuestionRepository,
                           QcmResponseRepository qcmResponseRepository,
                           ConcoursBlancRepository concoursBlancRepository,
-                          PdfQcmExtractorService pdfQcmExtractorService) {
+                          PdfQcmExtractorService pdfQcmExtractorService,
+                          AuthSessionService authSessionService) {
         this.qcmQuestionRepository = qcmQuestionRepository;
         this.qcmResponseRepository = qcmResponseRepository;
         this.concoursBlancRepository = concoursBlancRepository;
         this.pdfQcmExtractorService = pdfQcmExtractorService;
+        this.authSessionService = authSessionService;
     }
 
     @PostMapping("/concours-blanc/{id}/responses")
-    public ResponseEntity<?> recordResponse(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> recordResponse(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String authorization, @RequestBody Map<String, Object> body) {
+        var sessionUser = authSessionService.resolve(authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7) ? authorization.substring(7).trim() : null);
+        if (sessionUser.isEmpty()) return ResponseEntity.status(401).body("Session expirée. Veuillez vous reconnecter.");
         Optional<ConcoursBlanc> optional = concoursBlancRepository.findById(id);
-        if (optional.isEmpty()) return ResponseEntity.notFound().build();
+        if (optional.isEmpty() || !optional.get().getPublie()) return ResponseEntity.notFound().build();
         String attemptId = String.valueOf(body.getOrDefault("attemptId", "")).trim();
         String questionKey = String.valueOf(body.getOrDefault("questionId", "")).trim();
         String selected = String.valueOf(body.getOrDefault("selectedChoiceLabel", "")).trim().toUpperCase(Locale.ROOT);
@@ -267,7 +273,7 @@ public class QcmController {
                 .orElseGet(QcmResponse::new);
         response.setConcoursBlanc(optional.get());
         response.setAttemptId(attemptId);
-        response.setStudentId(parseLong(body.get("studentId")));
+        response.setStudentId(sessionUser.get().getId());
         response.setQuestionKey(questionKey);
         response.setQuestionNumber(parseInteger(body.get("questionNumber")));
         response.setQuestionText(limit(String.valueOf(body.getOrDefault("questionText", "")), 10000));

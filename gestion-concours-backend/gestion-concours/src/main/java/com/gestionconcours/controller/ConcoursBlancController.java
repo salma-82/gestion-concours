@@ -49,8 +49,10 @@ public class ConcoursBlancController {
     // GET - Liste publiée uniquement (clients)
     // =====================================================================
     @GetMapping("/publies")
-    public List<ConcoursBlanc> getConcoursPublies() {
-        return concoursBlancRepository.findByPublieTrue();
+    public List<ConcoursBlanc> getConcoursPublies(@RequestParam(value = "filiere", required = false) String filiere) {
+        return filiere == null || filiere.isBlank()
+                ? concoursBlancRepository.findByPublieTrue()
+                : concoursBlancRepository.findPublishedForFiliereOrAll(filiere.trim());
     }
 
     // =====================================================================
@@ -140,6 +142,7 @@ public class ConcoursBlancController {
             @RequestParam("titre") String titre,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "ecole", required = false) String ecole,
+            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam("matiere") String matiere,
             @RequestParam(value = "chapitre", required = false) String chapitre,
             @RequestParam(value = "annee", required = false) Integer annee,
@@ -167,6 +170,7 @@ public class ConcoursBlancController {
             concours.setTitre(titre);
             concours.setDescription(description != null && !description.trim().isEmpty() ? description.trim() : null);
             concours.setEcole(ecole != null && !ecole.trim().isEmpty() ? ecole.trim() : null);
+            concours.setFiliere(filiere != null && !filiere.trim().isEmpty() ? filiere.trim() : null);
             concours.setMatiere(matiere);
             concours.setChapitre(chapitre != null && !chapitre.trim().isEmpty() ? chapitre.trim() : null);
             concours.setAnnee(annee);
@@ -256,6 +260,7 @@ public class ConcoursBlancController {
             @PathVariable Long id,
             @RequestParam(value = "titre", required = false) String titre,
             @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam(value = "matiere", required = false) String matiere,
             @RequestParam(value = "chapitre", required = false) String chapitre,
             @RequestParam(value = "dureeMnutes", required = false) Integer dureeMnutes,
@@ -273,6 +278,7 @@ public class ConcoursBlancController {
 
         if (titre != null && !titre.trim().isEmpty()) concours.setTitre(titre.trim());
         if (description != null) concours.setDescription(description.trim());
+        if (filiere != null) concours.setFiliere(filiere.trim());
         if (matiere != null && !matiere.trim().isEmpty()) concours.setMatiere(matiere.trim());
         if (chapitre != null) concours.setChapitre(chapitre.trim());
         if (dureeMnutes != null) concours.setDureeMnutes(dureeMnutes);

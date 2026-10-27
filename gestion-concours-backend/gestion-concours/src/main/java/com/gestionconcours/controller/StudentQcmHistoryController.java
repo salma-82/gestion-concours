@@ -4,6 +4,12 @@ import com.gestionconcours.model.StudentQcmAnswer;
 import com.gestionconcours.model.QcmResponse;
 import com.gestionconcours.repository.QcmResponseRepository;
 import com.gestionconcours.repository.StudentQcmAnswerRepository;
+import com.gestionconcours.model.User;
+import com.gestionconcours.model.Concours;
+import com.gestionconcours.model.ConcoursBlanc;
+import com.gestionconcours.repository.ConcoursRepository;
+import com.gestionconcours.repository.ConcoursBlancRepository;
+import com.gestionconcours.service.AuthSessionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,15 +21,23 @@ import java.util.*;
 public class StudentQcmHistoryController {
     private final StudentQcmAnswerRepository repository;
     private final QcmResponseRepository legacyRepository;
+    private final AuthSessionService authSessionService;
+    private final ConcoursRepository concoursRepository;
+    private final ConcoursBlancRepository concoursBlancRepository;
 
-    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, QcmResponseRepository legacyRepository) {
+    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, QcmResponseRepository legacyRepository, AuthSessionService authSessionService, ConcoursRepository concoursRepository, ConcoursBlancRepository concoursBlancRepository) {
         this.repository = repository;
         this.legacyRepository = legacyRepository;
+        this.authSessionService = authSessionService;
+        this.concoursRepository = concoursRepository;
+        this.concoursBlancRepository = concoursBlancRepository;
     }
 
     @PostMapping("/attempt-answer")
-    public ResponseEntity<?> saveAnswer(@RequestBody Map<String, Object> body) {
-        Long studentId = asLong(body.get("studentId"));
+    public ResponseEntity<?> saveAnswer(@RequestHeader(value = "Authorization", required = false) String authorization, @RequestBody Map<String, Object> body) {
+        Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
+        if (sessionUser.isEmpty()) return ResponseEntity.status(401).body("Session expirée. Veuillez vous reconnecter.");
+        Long studentId = sessionUser.get().getId();
         String resourceId = value(body.get("resourceId"));
         String resourceType = value(body.get("sourceType"));
         String attemptId = value(body.get("attemptId"));
@@ -34,6 +48,32 @@ public class StudentQcmHistoryController {
                 || questionKey.isBlank() || selected.isBlank() || correct.isBlank()) {
             return ResponseEntity.badRequest().body("Données de tentative QCM incomplètes.");
         }
+        String resourceTitle = value(body.get("resourceTitle"));
+        String school = value(body.get("school"));
+        String subject = value(body.get("subject"));
+        String chapter = value(body.get("chapter"));
+        Integer year = asInteger(body.get("year"));
+        try {
+            Long databaseResourceId = Long.valueOf(resourceId);
+            if (resourceType.toLowerCase(Locale.ROOT).contains("blanc")) {
+                ConcoursBlanc resource = concoursBlancRepository.findById(databaseResourceId).orElse(null);
+                if (resource == null || !resource.getPublie()) return ResponseEntity.badRequest().body("Concours blanc introuvable ou non publié.");
+                resourceTitle = resource.getTitre();
+                school = resource.getEcole();
+                subject = resource.getMatiere();
+                chapter = resource.getChapitre();
+                year = resource.getAnnee();
+            } else {
+                Concours resource = concoursRepository.findById(databaseResourceId).orElse(null);
+                if (resource == null) return ResponseEntity.badRequest().body("Concours introuvable.");
+                resourceTitle = resource.getTitre();
+                school = resource.getEcole();
+                subject = resource.getMatiere();
+                year = resource.getAnnee();
+            }
+        } catch (NumberFormatException exception) {
+            return ResponseEntity.badRequest().body("Identifiant du concours invalide.");
+        }
         StudentQcmAnswer answer = repository
                 .findByStudentIdAndResourceTypeAndResourceIdAndAttemptIdAndQuestionKey(
                         studentId, resourceType, resourceId, attemptId, questionKey)
@@ -41,11 +81,12 @@ public class StudentQcmHistoryController {
         answer.setStudentId(studentId);
         answer.setResourceType(resourceType);
         answer.setResourceId(resourceId);
-        answer.setResourceTitle(value(body.get("resourceTitle")));
-        answer.setSchool(value(body.get("school")));
-        answer.setSubject(value(body.get("subject")));
-        answer.setChapter(value(body.get("chapter")));
-        answer.setYear(asInteger(body.get("year")));
+        answer.setResourceTitle(resourceTitle);
+        answer.setSchool(school);
+        answer.setSubject(subject);
+        answer.setChapter(chapter);
+        answer.setYear(year);
+        answer.setStudentFiliere(sessionUser.get().getFiliere());
         answer.setTotalQuestions(asInteger(body.get("totalQuestions")));
         answer.setAttemptId(attemptId);
         answer.setQuestionKey(questionKey.substring(0, Math.min(255, questionKey.length())));
@@ -62,7 +103,10 @@ public class StudentQcmHistoryController {
     }
 
     @GetMapping("/mes-concours")
-    public ResponseEntity<?> getStudentHistory(@RequestParam Long studentId) {
+    public ResponseEntity<?> getStudentHistory(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
+        if (sessionUser.isEmpty()) return ResponseEntity.status(401).body("Session expirée. Veuillez vous reconnecter.");
+        Long studentId = sessionUser.get().getId();
         List<StudentQcmAnswer> answers = new ArrayList<>(repository.findByStudentIdOrderByAnsweredAtDesc(studentId));
         Set<String> savedKeys = new HashSet<>();
         answers.forEach(answer -> savedKeys.add(historyKey(answer.getResourceType(), answer.getResourceId(), answer.getAttemptId(), answer.getQuestionKey())));
@@ -106,6 +150,7 @@ public class StudentQcmHistoryController {
             attempt.put("resourceType", first.getResourceType());
             attempt.put("resourceId", first.getResourceId());
             attempt.put("resourceTitle", first.getResourceTitle());
+            attempt.put("filiere", first.getStudentFiliere());
             attempt.put("school", first.getSchool());
             attempt.put("subject", first.getSubject());
             attempt.put("chapter", first.getChapter());
@@ -138,6 +183,7 @@ public class StudentQcmHistoryController {
     }
 
     private String value(Object value) { return value == null ? "" : String.valueOf(value).trim(); }
+    private String bearerToken(String authorization) { return authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7) ? authorization.substring(7).trim() : null; }
     private String historyKey(String type, String resource, String attempt, String question) { return type + "|" + resource + "|" + attempt + "|" + question; }
     private Long asLong(Object value) { try { return value == null ? null : Long.valueOf(String.valueOf(value)); } catch (NumberFormatException ignored) { return null; } }
     private Integer asInteger(Object value) { try { return value == null || String.valueOf(value).isBlank() ? null : Integer.valueOf(String.valueOf(value)); } catch (NumberFormatException ignored) { return null; } }

@@ -18,6 +18,7 @@ public class ConcoursBlanc {
 
     private String matiere;
     private String chapitre;
+    private String filiere;
 
     // Champs conservés pour compatibilité
     private String ecole;
@@ -76,6 +77,9 @@ public class ConcoursBlanc {
 
     public String getChapitre() { return chapitre; }
     public void setChapitre(String chapitre) { this.chapitre = chapitre; }
+
+    public String getFiliere() { return filiere; }
+    public void setFiliere(String filiere) { this.filiere = filiere; }
 
     public Integer getAnnee() { return annee; }
     public void setAnnee(Integer annee) { this.annee = annee; }

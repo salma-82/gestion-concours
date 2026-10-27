@@ -11,6 +11,8 @@ public interface ConcoursBlancRepository extends JpaRepository<ConcoursBlanc, Lo
 
     // Récupérer les concours publiés uniquement (pour clients)
     List<ConcoursBlanc> findByPublieTrue();
+    @Query("SELECT c FROM ConcoursBlanc c WHERE c.publie = true AND (c.filiere IS NULL OR LOWER(c.filiere) = LOWER(:filiere))")
+    List<ConcoursBlanc> findPublishedForFiliereOrAll(@Param("filiere") String filiere);
 
     // Récupérer par matière (publiés)
     List<ConcoursBlanc> findByMatiereAndPublieTrue(String matiere);

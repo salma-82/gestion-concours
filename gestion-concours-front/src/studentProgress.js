@@ -7,6 +7,11 @@ const readJson = (key, fallback) => {
   }
 };
 
+const localDateKey = (value) => {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export const getStudentScope = () => {
   const user = readJson('user', {});
   const identity = user?.id ?? user?.email ?? 'guest';
@@ -48,6 +53,29 @@ const saveProgress = (items) => {
   return items;
 };
 
+const sendStudentActivityEvent = (payload) => {
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
+  fetch('http://localhost:8081/api/student-activities', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload)
+  }).then((response) => {
+    if (response.ok) window.dispatchEvent(new CustomEvent('student-server-activity-updated'));
+  }).catch((error) => console.warn('Impossible d’enregistrer cette activité sur le serveur.', error));
+};
+
+export const fetchStudentActivityEvents = async () => {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Session étudiant manquante.');
+  const response = await fetch('http://localhost:8081/api/student-activities', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error(`Chargement des activités impossible (${response.status}).`);
+  const data = await response.json();
+  return Array.isArray(data?.events) ? data.events : [];
+};
+
 export const recordStudentActivity = ({ type, resourceId, title, subject = '', chapter = '' }) => {
   if (!title) return readStudentProgress();
 
@@ -65,16 +93,45 @@ export const recordStudentActivity = ({ type, resourceId, title, subject = '', c
     visits: (existing?.visits || 0) + 1,
     completed: existing?.completed || false,
     completedAt: existing?.completedAt || null,
+    durationSeconds: existing?.durationSeconds || 0,
+    durationByDay: existing?.durationByDay || {},
     firstViewedAt: existing?.firstViewedAt || now,
     lastViewedAt: now
   };
 
+  sendStudentActivityEvent({ type, resourceId: stableResourceId, eventType: 'VIEW' });
+
   return saveProgress([updated, ...items.filter((item) => item.id !== id)].slice(0, 100));
+};
+
+export const recordStudentActivityDuration = (id, durationSeconds, date = new Date()) => {
+  const seconds = Math.max(0, Math.floor(Number(durationSeconds) || 0));
+  if (!id || !seconds) return readStudentProgress();
+  const day = localDateKey(date);
+  const items = readStudentProgress().map((item) => item.id === id ? {
+    ...item,
+    durationSeconds: (Number(item.durationSeconds) || 0) + seconds,
+    durationByDay: {
+      ...(item.durationByDay || {}),
+      [day]: (Number(item.durationByDay?.[day]) || 0) + seconds
+    }
+  } : item);
+  const activity = readStudentProgress().find((item) => item.id === id);
+  if (activity) sendStudentActivityEvent({ type: activity.type, resourceId: String(activity.id).slice(String(activity.type).length + 1), eventType: 'DURATION', durationSeconds: seconds });
+  return saveProgress(items);
 };
 
 export const setStudentActivityCompleted = (id, completed) => {
   const now = new Date().toISOString();
-  const items = readStudentProgress().map((item) => item.id === id
+  const currentItems = readStudentProgress();
+  const activity = currentItems.find((item) => item.id === id);
+  const knownTypes = ['Examen national', 'Concours blanc', 'Concours', 'Cours', 'Résumé'];
+  const type = activity?.type || knownTypes.find((candidate) => String(id).startsWith(`${candidate}:`));
+  const resourceId = activity
+    ? String(activity.id).slice(String(activity.type).length + 1)
+    : type ? String(id).slice(type.length + 1) : '';
+  if (type && resourceId) sendStudentActivityEvent({ type, resourceId, eventType: completed ? 'COMPLETE' : 'UNCOMPLETE' });
+  const items = currentItems.map((item) => item.id === id
     ? { ...item, completed, completedAt: completed ? now : null }
     : item
   );

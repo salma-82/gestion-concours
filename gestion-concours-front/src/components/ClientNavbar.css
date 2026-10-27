@@ -273,6 +273,14 @@
   white-space: normal;
 }
 
+.client-nav-item[data-nav-path="/client-concours"] .client-nav-dropdown-link.is-section-link {
+  display: none;
+}
+
+.client-nav-item[data-nav-path="/client-concours-blanc"] .client-nav-dropdown-link.is-section-link {
+  display: none;
+}
+
 .client-nav-dropdown-link:hover,
 .client-nav-dropdown-link:focus-visible,
 .client-nav-dropdown-link.is-active {

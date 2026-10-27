@@ -31,7 +31,9 @@ export default function AuthPage({ initialMode = 'login', onBackToHome }) {
         motDePasse: loginPassword,
       });
 
-      const user = response.data;
+      const user = { ...response.data };
+      if (user.sessionToken) localStorage.setItem('authToken', user.sessionToken);
+      delete user.sessionToken;
       localStorage.setItem('user', JSON.stringify(user));
 
       if (user.role === 'ADMIN') {

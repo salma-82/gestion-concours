@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { recordStudentActivity } from '../studentProgress';
+import { recordStudentActivity, recordStudentActivityDuration } from '../studentProgress';
 
 const API = 'http://localhost:8081';
 
@@ -344,6 +344,34 @@ export default function ClientCoursPage() {
   const iframeRef = useRef(null);
   const [courseHtml, setCourseHtml] = useState('');
   const [courseFrameHeight, setCourseFrameHeight] = useState(800);
+
+  useEffect(() => {
+    if (!activeCours?.id || activeCours.id === 'placeholder' || !activeCours.htmlUrl || !['chapitres', 'reader'].includes(step)) return undefined;
+    const activityId = `Cours:${activeCours.id}`;
+    let visibleSince = document.visibilityState === 'visible' ? Date.now() : null;
+    const flushVisibleTime = () => {
+      if (visibleSince === null) return;
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - visibleSince) / 1000);
+      if (elapsedSeconds > 0) recordStudentActivityDuration(activityId, elapsedSeconds, new Date(now));
+      visibleSince = now;
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushVisibleTime();
+        visibleSince = null;
+      } else if (visibleSince === null) {
+        visibleSince = Date.now();
+      }
+    };
+    const interval = window.setInterval(flushVisibleTime, 15000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      flushVisibleTime();
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [activeCours?.id, activeCours?.htmlUrl, step]);
 
   useEffect(() => {
     if (!activeCours?.htmlUrl) {

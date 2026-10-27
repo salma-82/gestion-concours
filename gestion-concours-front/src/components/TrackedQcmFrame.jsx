@@ -174,11 +174,9 @@ export default function TrackedQcmFrame({
           attemptId: event.data.attemptId
         };
 
-        let historyStudentId = null;
-        try { historyStudentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
-        if (historyStudentId) {
+        const historySessionToken = localStorage.getItem('authToken');
+        if (historySessionToken) {
           axios.post(`${API_BASE}/api/qcm/attempt-answer`, {
-            studentId: historyStudentId,
             sourceType: studentMistake.sourceType,
             resourceId: studentMistake.resourceId,
             resourceTitle: studentMistake.resourceTitle,
@@ -196,7 +194,7 @@ export default function TrackedQcmFrame({
             correctChoiceLabel: mistake.correctChoiceLabel,
             correctChoiceText: mistake.correctChoiceText,
             explanation: mistake.explanation
-          }).then(() => window.dispatchEvent(new CustomEvent('student-qcm-history-updated')))
+          }, { headers: { Authorization: `Bearer ${historySessionToken}` } }).then(() => window.dispatchEvent(new CustomEvent('student-qcm-history-updated')))
             .catch((error) => console.warn('Impossible d’enregistrer cette réponse dans l’historique du QCM:', error));
         }
 
@@ -252,22 +250,6 @@ export default function TrackedQcmFrame({
           }
         }
 
-        if (String(sourceType).toLowerCase().includes('concours blanc') && /^\d+$/.test(String(resourceId))) {
-          let studentId = null;
-          try { studentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
-          axios.post(`${API_BASE}/api/qcm/concours-blanc/${resourceId}/responses`, {
-            studentId,
-            attemptId: event.data.attemptId,
-            questionId: mistake.questionId ?? mistake.questionNumber ?? mistake.questionText,
-            questionNumber: mistake.questionNumber,
-            questionText: mistake.questionText,
-            selectedChoiceLabel: mistake.selectedChoiceLabel,
-            selectedChoiceText: mistake.selectedChoiceText,
-            correctChoiceLabel: mistake.correctChoiceLabel,
-            correctChoiceText: mistake.correctChoiceText,
-            explanation: mistake.explanation
-          }).catch((error) => console.error('Impossible d’enregistrer la réponse QCM.', error));
-        }
       }
 
       // 2. Clic sur « Sauvegarder mes erreurs » depuis l'iframe du QCM

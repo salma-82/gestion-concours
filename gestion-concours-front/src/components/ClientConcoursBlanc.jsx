@@ -127,12 +127,9 @@ export default function ClientConcoursBlanc() {
     try {
       setLoading(true);
       setError(null);
-      let response;
-      try {
-        response = await axios.get(`${API}/api/concours-blancs/publies`);
-      } catch (e) {
-        response = await axios.get(`${API}/api/concours-blancs`);
-      }
+      let user = {};
+      try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
+      const response = await axios.get(`${API}/api/concours-blancs/publies`, user.filiere ? { params: { filiere: user.filiere } } : {});
 
       let dataToSet = [];
       if (Array.isArray(response.data)) {
@@ -180,6 +177,11 @@ export default function ClientConcoursBlanc() {
   useEffect(() => {
     if (loading) return;
 
+    if (!requestedMatiere) {
+      navigate('/client-dashboard', { replace: true, state: { openSidebarMenu: 'concours-blanc' } });
+      return;
+    }
+
     setSelectedChapitre(null);
     setActiveConcours(null);
     const matchingConcours = requestedMatiere
@@ -192,24 +194,16 @@ export default function ClientConcoursBlanc() {
     const matiereConfig = firstQcm
       ? getMatiereConfig(firstQcm.matiere)
       : requestedMatiere ? getMatiereConfig(requestedMatiere) : null;
+    const firstChapitre = firstQcm
+      ? firstQcm.chapitre || 'GÃ©nÃ©ral / Sans Chapitre'
+      : null;
     setSelectedMatiere(matiereConfig);
-    if (firstQcm) {
-      const chapitre = firstQcm.chapitre || 'Général / Sans Chapitre';
-      setSelectedChapitre(chapitre);
-      setActiveConcours(firstQcm);
-      setIsSidebarCollapsed(true);
-      setCurrentStep('player');
-      recordStudentActivity({
-        type: 'Concours blanc',
-        resourceId: firstQcm.id,
-        title: firstQcm.titre || firstQcm.title || 'Concours blanc',
-        subject: firstQcm.matiere || matiereConfig.nom,
-        chapter: chapitre
-      });
-    } else {
-      setCurrentStep(matiereConfig ? 'chapitres' : 'matieres');
-    }
-  }, [requestedMatiere, loading, concoursList]);
+    setSelectedChapitre(null);
+    setActiveConcours(null);
+    setIsSidebarCollapsed(false);
+    setCurrentStep(matiereConfig ? 'chapitres-menu' : 'matieres');
+
+  }, [requestedMatiere, loading, concoursList, navigate]);
 
   const filteredConcoursList = requestedMatiere
     ? htmlConcoursList.filter(concours =>
@@ -257,28 +251,16 @@ export default function ClientConcoursBlanc() {
   // Handlers de navigation
   const handleSelectMatiere = (cfg) => {
     setSelectedMatiere(cfg);
-    const chapitres = getChapitresForMatiere(cfg);
-    const firstChapitre = chapitres[0]?.nom;
-    const firstQcm = firstChapitre ? getConcoursForChapitre(cfg, firstChapitre)[0] : null;
-    if (firstQcm) {
-      setSelectedChapitre(firstChapitre);
-      handleOpenQcm(firstQcm, firstChapitre, cfg);
-      return;
-    }
-    setSelectedChapitre(null);
-    setCurrentStep('chapitres');
+    const firstChapitre = getChapitresForMatiere(cfg)[0]?.nom || null;
+    setSelectedChapitre(firstChapitre);
+    setActiveConcours(null);
+    setIsSidebarCollapsed(false);
+    setCurrentStep(firstChapitre ? 'qcms' : 'chapitres-menu');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectChapitre = (chapNom) => {
-    setSelectedChapitre(chapNom);
-    const qcms = getConcoursForChapitre(selectedMatiere, chapNom);
-    if (qcms.length === 1) {
-      handleOpenQcm(qcms[0], chapNom);
-      return;
-    }
-    setCurrentStep('qcms');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleNavigateChapitre(chapNom);
   };
 
   const handleNavigateChapitre = (chapNom) => {
@@ -309,10 +291,12 @@ export default function ClientConcoursBlanc() {
 
   const handleBackToChapitres = () => {
     setIsSidebarCollapsed(false);
-    setCurrentStep('chapitres');
+    setCurrentStep('chapitres-menu');
     setSelectedChapitre(null);
     setActiveConcours(null);
   };
+
+  if (!requestedMatiere) return null;
 
   return (
     <div style={{ minHeight: 'calc(100vh - 76px)', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
@@ -320,18 +304,42 @@ export default function ClientConcoursBlanc() {
       {currentStep === 'loading' && (
         <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
           <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
-          <p style={{ fontWeight: 600 }}>Chargement du premier QCM...</p>
+          <p style={{ fontWeight: 600 }}>Chargement du contenu...</p>
         </div>
+      )}
+
+      {currentStep === 'chapitres-menu' && selectedMatiere && (
+        <section style={{ width: '100%', padding: '24px 28px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+          <h2 style={{ margin: '2px 4px 14px', color: '#1e3a8a', fontSize: '17px', fontWeight: 750 }}>Chapitres et QCM</h2>
+          {getChapitresForMatiere(selectedMatiere).length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {getChapitresForMatiere(selectedMatiere).map((chapitre) => (
+                <button
+                  key={chapitre.nom}
+                  type="button"
+                  onClick={() => handleSelectChapitre(chapitre.nom)}
+                  style={{ width: '100%', padding: '12px 14px', border: '1px solid #93c5fd', borderRadius: '12px', background: '#eff6ff', color: '#1d4ed8', textAlign: 'left', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                >
+                  {chapitre.nom}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '12px 14px', border: '1px solid #e2e8f0', borderRadius: '12px', color: '#64748b', fontSize: '14px' }}>
+              Aucun chapitre disponible pour cette matière.
+            </div>
+          )}
+        </section>
       )}
 
       {/* ========================================================
           ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
-        <div style={{ display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: '18px', width: '100%' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px', width: '100%' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et QCM</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
                 const qcms = getConcoursForChapitre(selectedMatiere, chapitre.nom);
                 const isActiveChapter = selectedChapitre === chapitre.nom;
@@ -367,7 +375,7 @@ export default function ClientConcoursBlanc() {
             </div>
           </aside>}
 
-          <div style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
+          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeConcours.htmlUrl ? (
               <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
                 <TrackedQcmFrame
@@ -738,27 +746,6 @@ export default function ClientConcoursBlanc() {
       ======================================================== */}
       {currentStep === 'qcms' && selectedMatiere && selectedChapitre && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          {/* Breadcrumb Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-            <button
-              onClick={handleBackToMatieres}
-              style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontWeight: 700, fontSize: '14px', padding: 0 }}
-            >
-              🎓 Matières
-            </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <button
-              onClick={handleBackToChapitres}
-              style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontWeight: 700, fontSize: '14px', padding: 0 }}
-            >
-              {selectedMatiere.icon} {selectedMatiere.nom}
-            </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '14px' }}>
-              📌 {selectedChapitre}
-            </span>
-          </div>
-
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
             <div>
               <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
