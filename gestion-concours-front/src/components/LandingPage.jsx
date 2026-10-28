@@ -2,7 +2,6 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import logoImg from '../assets/logo.png';
 import medcineImg from '../assets/MEDCINE.jpg';
 import ensaImg from '../assets/ENSA.jpg';
 import ensaMarocImg from '../assets/ENSA Maroc.png';
@@ -10,7 +9,7 @@ import ensamImg from '../assets/ENSAM.jpg';
 import encgImg from '../assets/ENCG.jpeg';
 import logoEncgImg from '../assets/logo-encg.png';
 import logoEnsaMarocImg from '../assets/logo-ensa-maroc.jpg';
-import logoEnsamiImg from '../assets/logo-ensam-umi.png';
+import logoEnsamiImg from '../assets/logo-ensam-umi-transparent.png';
 import logoFmpcImg from '../assets/logo-fmpc.png';
 import './LandingPage.css';
 
@@ -143,7 +142,6 @@ export default function LandingPage({ onNavigateToAuth }) {
 
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   // Mini-Quiz interactive demo state
@@ -170,19 +168,6 @@ export default function LandingPage({ onNavigateToAuth }) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  // Sticky nav scroll listener
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsNavScrolled(true);
-      } else {
-        setIsNavScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Keep Bibi alongside the current landing-page section and give each section its own pose.
   useEffect(() => {
@@ -248,7 +233,8 @@ export default function LandingPage({ onNavigateToAuth }) {
       } else if (insideHero) {
         setZone('hero', { side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
       } else if (methodSection && anchorY < methodSection.getBoundingClientRect().top) {
-        setZone('approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
+        const passedFeatures = featuresRect && featuresRect.bottom < anchorY;
+        setZone(passedFeatures ? 'after-features' : 'approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
       } else {
         const nextSection = [
           { selector: '#demo-qcm', pose: { side: 'left', speech: 'Yallah, jarrab QCM! ✏️', top: '25vh', scale: 1.18, rotate: '-5deg' } },
@@ -500,19 +486,19 @@ export default function LandingPage({ onNavigateToAuth }) {
     setQuizSubmitted(true);
   };
 
-  const partnerLogos = [
-    { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
-    { src: logoFmpcImg, alt: 'Faculté de médecine et de pharmacie' },
-    { src: logoEncgImg, alt: 'ENCG' },
-    { src: logoEnsamiImg, alt: 'ENSAM' }
-  ];
+const partnerLogos = [
+  { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
+  { src: logoEnsamiImg, alt: 'ENSAM' },
+  { src: logoFmpcImg, alt: 'Faculté de médecine et de pharmacie' },
+  { src: logoEncgImg, alt: 'ENCG' }
+];
 
   return (
     <div className="landing-root" ref={rootRef}>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap"
         rel="stylesheet"
       />
 
@@ -523,7 +509,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <button
         ref={mascotRef}
-        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}`}
+        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}${['start', 'hero', 'approach'].includes(mascotNavigation.zone) ? ' is-hero' : ''}`}
         style={{ '--mascot-top': mascotNavigation.top, '--mascot-scale': mascotNavigation.scale, '--mascot-rotate': mascotNavigation.rotate }}
         type="button"
         aria-label="Faire bouger la mascotte"
@@ -535,9 +521,16 @@ export default function LandingPage({ onNavigateToAuth }) {
         </span>
       </button>
 
-      <nav className={`lp-nav ${isNavScrolled ? 'is-scrolled' : ''}`} id="nav">
+      <nav className="lp-nav" id="nav">
         <div className="lp-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span className="lp-nav-mascot"><LandingMascot className="lp-mascot-art" /></span>
+          <span className="lp-nav-mascot lp-brand-cap" aria-hidden="true">
+            <svg viewBox="0 0 48 42" fill="none">
+              <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#174f9b" />
+              <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#245fa9" />
+              <path d="M42 16v16" stroke="#e2ae4f" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="42" cy="34" r="2.5" fill="#e2ae4f" />
+            </svg>
+          </span>
           <span className="lp-wordmark">ÉCONCOURS</span>
         </div>
 
@@ -562,6 +555,11 @@ export default function LandingPage({ onNavigateToAuth }) {
               FAQ
             </a>
           </li>
+          <li>
+            <a href="/login" onClick={(e) => { e.preventDefault(); handleNav('login'); }}>
+              Se connecter
+            </a>
+          </li>
         </ul>
 
         <div className="lp-nav-actions">
@@ -570,6 +568,9 @@ export default function LandingPage({ onNavigateToAuth }) {
           </button>
           <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
             <span>Créer un compte</span>
+          </button>
+          <button className="lp-btn-try" type="button" onClick={() => handleScrollTo('demo-qcm')}>
+            Essayer gratuitement
           </button>
           <button
             className="lp-menu-toggle"
@@ -603,6 +604,9 @@ export default function LandingPage({ onNavigateToAuth }) {
           <a href="#faq" onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}>
             FAQ
           </a>
+          <a href="/login" onClick={(e) => { e.preventDefault(); handleNav('login'); }}>
+            Se connecter
+          </a>
           <div className="lp-mobile-menu-actions">
             <button className="lp-btn-ghost" type="button" onClick={() => handleNav('login')} style={{ width: '100%' }}>
               Se connecter
@@ -619,6 +623,27 @@ export default function LandingPage({ onNavigateToAuth }) {
       ==================================================================== */}
       <section className="lp-hero-section" id="hero">
         <div className="lp-hero-ambient" aria-hidden="true" />
+        <div className="lp-hero-ruler" aria-hidden="true">
+          <span>01</span><i /><span>f(x)=y</span><i /><span>∞</span>
+        </div>
+        <div className="lp-math-note lp-math-note--left" aria-hidden="true">lim<sub>x→+∞</sub> <span>ln(x)/x</span> = 0</div>
+        <div className="lp-math-note lp-math-note--right" aria-hidden="true">∫ e<sup>ax</sup> dx = e<sup>ax</sup></div>
+        <div className="lp-math-note lp-math-note--lower" aria-hidden="true">Δ &gt; 0</div>
+        <div className="lp-math-note lp-math-note--euler" aria-hidden="true">e<sup>iπ</sup> + 1 = 0</div>
+        <div className="lp-math-note lp-math-note--quadratic" aria-hidden="true">x = (-b ± √Δ) / 2a</div>
+        <div className="lp-math-note lp-math-note--probability" aria-hidden="true">P(A ∩ B) = P(A) · P<sub>A</sub>(B)</div>
+        <div className="lp-math-note lp-math-note--determinant" aria-hidden="true">det(A) = ad - bc</div>
+        <div className="lp-math-note lp-math-note--physics" aria-hidden="true">E = mc²</div>
+        <div className="lp-math-note lp-math-note--derivative" aria-hidden="true">(uv)&prime; = u&prime;v + uv&prime;</div>
+        <div className="lp-math-note lp-math-note--trigonometry" aria-hidden="true">cos²(x) + sin²(x) = 1</div>
+        <div className="lp-math-note lp-math-note--biology" aria-hidden="true">ATP → ADP + P<sub>i</sub><br />2n = 46 chromosomes</div>
+        <div className="lp-math-note lp-math-note--newton" aria-hidden="true">∑ F⃗ = m · a⃗</div>
+        <div className="lp-math-graph lp-math-graph--left" aria-hidden="true">
+          <svg viewBox="0 0 140 90" fill="none"><path d="M10 80h120M20 85V10" stroke="currentColor" strokeDasharray="3 3" /><path d="M20 70Q50 10 80 50T130 15" stroke="#2563eb" strokeWidth="2" /><circle cx="80" cy="50" r="3" fill="#2563eb" /><text x="90" y="45">f(x)</text></svg>
+        </div>
+        <div className="lp-math-graph lp-math-graph--right" aria-hidden="true">
+          <svg viewBox="0 0 130 80" fill="none"><path d="M10 70h110M20 75V10" stroke="currentColor" /><path d="M20 65Q60 65 110 15" stroke="#1e40af" strokeWidth="2" /><text x="64" y="30">∫ eˣ dx</text></svg>
+        </div>
         <div className="lp-hero-decor lp-hero-decor--books" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
             <path d="M8 12h31l-4 7H12l-4-7Z" fill="#fff" stroke="#d5aa7c" strokeWidth="1.5" />
@@ -643,23 +668,6 @@ export default function LandingPage({ onNavigateToAuth }) {
             <circle cx="42" cy="35" r="2" fill="#e0a340" />
           </svg>
         </div>
-        <div className="lp-partner-strip" aria-label="Nos partenaires et objectifs écoles">
-          <div className="lp-partner-heading">Nos partenaires et objectifs écoles</div>
-          <div className="lp-partner-logos">
-            <div className="lp-partner-track">
-              {[0, 1].map((copy) => (
-                <div className="lp-partner-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
-                  {partnerLogos.map((logo) => (
-                    <div className="lp-partner-logo-item" key={logo.alt}>
-                      <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         <div className="lp-hero-decor lp-hero-decor--cap-left-low" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
             <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#142b54" />
@@ -686,29 +694,38 @@ export default function LandingPage({ onNavigateToAuth }) {
             <path d="m29 16 5 5M12 33l7 5" stroke="#253e67" strokeWidth="1.5" />
           </svg>
         </div>
-        <div className="lp-hero-badge">
-          <span className="badge-icon">🇲🇦</span>
-          <span>N°1 de la Préparation aux Grandes Écoles & au Bac au Maroc</span>
-        </div>
-
         <h1 className="lp-hero-title">
-          ECONCOURS: Your Path to <span className="lp-hero-gradient-text">Excellence</span>
-          <span className="lp-hero-arabic" lang="ar" dir="rtl">منصة الإعداد للامتحانات والكونكور</span>
+          Pr&eacute;parez vos <span className="lp-title-underlined">concours</span>,<br />
+          assurez votre <span className="lp-hero-gradient-text">avenir.</span>
         </h1>
-
-        <p className="lp-hero-desc">
-          La plateforme d'excellence pour les bacheliers et préparationnaires marocains : résumés de cours clairs, QCM chronométrés des 15 dernières années et suivi statistique en direct pour intégrer l'ENSA, l'ENSAM, la Médecine et l'ENCG.
-        </p>
+        <p className="lp-hero-desc">La plateforme tout-en-un pour bien pr&eacute;parer vos concours au Maroc.</p>
 
         <div className="lp-hero-actions">
           <button className="lp-btn-hero-primary" type="button" onClick={() => handleNav('register')}>
             <span className="lp-cta-mascot" aria-hidden="true"><LandingMascot className="lp-mascot-art" /></span>
-            <span>Start Your Preparation</span>
-            <span aria-hidden="true">↘</span>
+            <span aria-hidden="true">🚀</span>
+            <span>Essayer gratuitement</span>
           </button>
           <button className="lp-btn-hero-secondary" type="button" onClick={() => handleScrollTo('demo-qcm')}>
-            <span>✨ Tester un QCM en direct</span>
+            <span>Essayer gratuitement</span>
+            <span aria-hidden="true">›</span>
           </button>
+        </div>
+
+        <div className="lp-partner-strip" aria-label="Écoles préparées">
+          <div className="lp-partner-logos lp-marquee-mask">
+            <div className="lp-partner-track">
+              {[0, 1].map((copy) => (
+                <div className="lp-partner-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+                  {partnerLogos.map((logo) => (
+                    <div className="lp-partner-logo-item" key={logo.alt}>
+                      <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="lp-social-proof">
