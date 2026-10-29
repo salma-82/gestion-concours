@@ -57,9 +57,9 @@ function FeatureIcon({ name }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{FEATURE_ICONS[name]}</svg>;
 }
 
-export function LandingMascot({ className = '', showCap = true, wave = false }) {
+export function LandingMascot({ className = '', showCap = true, wave = false, holdingNotebook = false }) {
   const mascotId = useId().replace(/:/g, '');
-  const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}`.trim();
+  const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}${holdingNotebook ? ' lp-mascot--holding-notebook' : ''}`.trim();
   return (
     <svg className={mascotClassName} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
       <defs>
@@ -77,6 +77,10 @@ export function LandingMascot({ className = '', showCap = true, wave = false }) 
           <stop offset="70%" stopColor="#ffb000" />
           <stop offset="100%" stopColor="#e68a00" />
         </radialGradient>
+        <linearGradient id={`${mascotId}-bookCover`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2563eb" />
+          <stop offset="100%" stopColor="#1d4ed8" />
+        </linearGradient>
         <filter id={`${mascotId}-softShadow`} x="-10%" y="-10%" width="120%" height="120%">
           <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity=".2" />
         </filter>
@@ -88,19 +92,99 @@ export function LandingMascot({ className = '', showCap = true, wave = false }) 
       <ellipse cx="120" cy="155" rx="68" ry="72" fill={`url(#${mascotId}-owlBrown)`} />
       <ellipse cx="120" cy="165" rx="46" ry="50" fill={`url(#${mascotId}-owlBelly)`} />
       <path d="M102 150q8 6 16 0m4 0q8 6 16 0M98 168q12 7 24 0m-2 0q10 7 22 0" stroke="#d1b894" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <g className="lp-mascot-wing lp-mascot-wing-left">
-        <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
-      </g>
-      <g className={`lp-mascot-wing lp-mascot-wing-right${wave ? ' lp-mascot-wing-right--raised' : ''}`}>
-        {wave ? (
-          <>
-            <path d="M174 143C190 128 199 103 207 77C211 64 219 59 225 64C231 69 226 82 223 92C230 81 237 82 239 89C241 96 234 105 230 111C223 130 212 153 190 169Z" fill="#5e2e15" />
-            <path d="M189 145C203 125 211 102 219 76" stroke="#87502e" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity=".7" />
-          </>
-        ) : (
-          <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
-        )}
-      </g>
+      
+      {!holdingNotebook && (
+        <>
+          <g className="lp-mascot-wing lp-mascot-wing-left">
+            <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
+          </g>
+          <g className={`lp-mascot-wing lp-mascot-wing-right${wave ? ' lp-mascot-wing-right--raised' : ''}`}>
+            {wave ? (
+              <>
+                <path d="M174 143C190 128 199 103 207 77C211 64 219 59 225 64C231 69 226 82 223 92C230 81 237 82 239 89C241 96 234 105 230 111C223 130 212 153 190 169Z" fill="#5e2e15" />
+                <path d="M189 145C203 125 211 102 219 76" stroke="#87502e" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity=".7" />
+              </>
+            ) : (
+              <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
+            )}
+          </g>
+        </>
+      )}
+
+      {/* NOTEBOOK HOLDING GROUP ("ktab dyal note") */}
+      {holdingNotebook && (
+        <g className="lp-mascot-notebook-layer" filter={`url(#${mascotId}-softShadow)`}>
+          {/* Notebook Main Group */}
+          <g transform="rotate(-5 120 185)">
+            {/* Blue back cover */}
+            <rect x="76" y="138" width="86" height="92" rx="8" fill={`url(#${mascotId}-bookCover)`} stroke="#1e3a8a" strokeWidth="2" />
+            
+            {/* White paper sheet */}
+            <rect x="83" y="142" width="75" height="84" rx="5" fill="#ffffff" />
+            
+            {/* Orange header tab */}
+            <rect x="83" y="142" width="75" height="18" rx="5" fill="#ea580c" />
+            <rect x="83" y="152" width="75" height="8" fill="#ea580c" />
+            <text x="120" y="155" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="900" fontFamily="sans-serif" letterSpacing="1.2">
+              NOTES
+            </text>
+
+            {/* Ruled lines */}
+            <g stroke="#bfdbfe" strokeWidth="1.6" strokeLinecap="round">
+              <line x1="91" y1="168" x2="149" y2="168" />
+              <line x1="91" y1="178" x2="149" y2="178" />
+              <line x1="91" y1="188" x2="149" y2="188" />
+              <line x1="91" y1="198" x2="149" y2="198" />
+              <line x1="91" y1="208" x2="149" y2="208" />
+              <line x1="91" y1="218" x2="140" y2="218" />
+            </g>
+
+            {/* Handwritten style notes & checkmarks */}
+            <g fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800">
+              <text x="93" y="176" fill="#1e3a8a" fontSize="7.5">✓ ENSA · ENSAM</text>
+              <text x="93" y="186" fill="#ea580c" fontSize="7">✓ QCM + Résumés</text>
+              <text x="93" y="196" fill="#059669" fontSize="7">lim f(x) = 20/20</text>
+              <text x="93" y="206" fill="#4338ca" fontSize="6.5">Objectif Admis ★</text>
+            </g>
+
+            {/* Spiral binding rings along left edge */}
+            <g fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2">
+              <rect x="73" y="146" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="156" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="166" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="176" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="186" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="196" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="206" width="9" height="3.5" rx="1.5" />
+              <rect x="73" y="216" width="9" height="3.5" rx="1.5" />
+            </g>
+          </g>
+
+          {/* Left Wing holding the notebook */}
+          <path d="M52 142 C65 150 78 168 85 186 C74 195 62 188 50 166 Z" fill="#6b3519" stroke="#572b13" strokeWidth="2" strokeLinejoin="round" />
+          <ellipse cx="80" cy="182" rx="7" ry="9" fill="#733b1e" transform="rotate(-15 80 182)" />
+
+          {/* Right Wing & Pencil */}
+          <g transform="translate(162, 175) rotate(-22)">
+            {/* Pencil body */}
+            <rect x="-4" y="-22" width="8" height="30" rx="1" fill="#f59e0b" stroke="#b45309" strokeWidth="1" />
+            {/* Pencil wood tip */}
+            <polygon points="-4,-22 4,-22 0,-32" fill="#fed7aa" stroke="#b45309" strokeWidth="1" />
+            {/* Pencil graphite point */}
+            <polygon points="-1.5,-28 1.5,-28 0,-32" fill="#1e293b" />
+            {/* Pencil metal ferrule */}
+            <rect x="-4" y="4" width="8" height="6" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
+            {/* Pencil eraser */}
+            <rect x="-4" y="8" width="8" height="6" rx="2" fill="#f43f5e" />
+            
+            {/* Right Wing clutching the pencil */}
+            <ellipse cx="-2" cy="0" rx="12" ry="14" fill="#5e2e15" stroke="#451e0c" strokeWidth="1.5" />
+            <circle cx="2" cy="-4" r="5" fill="#733b1e" />
+          </g>
+        </g>
+      )}
+
+      {/* Head and eyes */}
       <g className="lp-mascot-head">
         <ellipse cx="120" cy="95" rx="60" ry="52" fill={`url(#${mascotId}-owlBrown)`} />
         <path d="M70 55Q55 20 85 42ZM170 55q15-35-15-13Z" fill="#572b13" />
@@ -142,11 +226,10 @@ export default function LandingPage({ onNavigateToAuth }) {
 
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   // Mini-Quiz interactive demo state
-  const [quizAnswer, setQuizAnswer] = useState(null);
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [mascotClickCount, setMascotClickCount] = useState(0);
   const [mascotNavigation, setMascotNavigation] = useState({ zone: 'start', side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
   const mascotRef = useRef(null);
@@ -168,6 +251,13 @@ export default function LandingPage({ onNavigateToAuth }) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    const handleScroll = () => setHasScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Keep Bibi alongside the current landing-page section and give each section its own pose.
   useEffect(() => {
@@ -237,7 +327,6 @@ export default function LandingPage({ onNavigateToAuth }) {
         setZone(passedFeatures ? 'after-features' : 'approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
       } else {
         const nextSection = [
-          { selector: '#demo-qcm', pose: { side: 'left', speech: 'Yallah, jarrab QCM! ✏️', top: '25vh', scale: 1.18, rotate: '-5deg' } },
           { selector: '#apropos', pose: { side: 'right', speech: 'Chouf l-progress dyalk! 📊', top: '28vh', scale: 1.1, rotate: '4deg' } },
           { selector: '#tarifs', pose: { side: 'right', speech: 'Khtar l-formule li tnasbek! ⭐', top: '28vh', scale: 1.2, rotate: '5deg' } },
           { selector: '#faq', pose: { side: 'left', speech: '3endek chi sou2al? 💡', top: '32vh', scale: 1.08, rotate: '-5deg' } },
@@ -349,7 +438,6 @@ export default function LandingPage({ onNavigateToAuth }) {
 
         revealGroup('.lp-features-section', '.lp-section-header > *, .lp-feature-story-card, .lp-features-cta');
         revealGroup('.lp-methodology-section', '.lp-section-header > *, .lp-method-copy, .lp-method-preview');
-        revealGroup('.lp-quiz-demo-section', '.lp-section-header > *, .lp-quiz-widget');
         revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
         revealGroup('.lp-pricing-section', '.lp-section-header > *, .lp-pricing-toggle-wrap, .lp-discount-badge, .lp-plan-card, .lp-plan-btn');
         revealGroup('.lp-faq-section', '.lp-section-header > *, .lp-faq-item');
@@ -480,12 +568,6 @@ export default function LandingPage({ onNavigateToAuth }) {
     return () => ctx.revert();
   }, []);
 
-  const handleSelectQuizOption = (opt) => {
-    if (quizSubmitted) return;
-    setQuizAnswer(opt);
-    setQuizSubmitted(true);
-  };
-
 const partnerLogos = [
   { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
   { src: logoEnsamiImg, alt: 'ENSAM' },
@@ -509,7 +591,7 @@ const partnerLogos = [
       ==================================================================== */}
       <button
         ref={mascotRef}
-        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}${['start', 'hero', 'approach'].includes(mascotNavigation.zone) ? ' is-hero' : ''}`}
+        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}${mascotNavigation.zone === 'approach' ? ' is-hidden' : ''}${['start', 'hero', 'approach'].includes(mascotNavigation.zone) ? ' is-hero' : ''}`}
         style={{ '--mascot-top': mascotNavigation.top, '--mascot-scale': mascotNavigation.scale, '--mascot-rotate': mascotNavigation.rotate }}
         type="button"
         aria-label="Faire bouger la mascotte"
@@ -521,28 +603,28 @@ const partnerLogos = [
         </span>
       </button>
 
-      <nav className="lp-nav" id="nav">
+      <nav className={`lp-nav${hasScrolled ? ' has-scrolled' : ''}`} id="nav">
         <div className="lp-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <span className="lp-nav-mascot lp-brand-cap" aria-hidden="true">
             <svg viewBox="0 0 48 42" fill="none">
-              <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#174f9b" />
-              <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#245fa9" />
+              <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#0b2d63" />
+              <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#0b2d63" />
               <path d="M42 16v16" stroke="#e2ae4f" strokeWidth="2" strokeLinecap="round" />
               <circle cx="42" cy="34" r="2.5" fill="#e2ae4f" />
             </svg>
           </span>
-          <span className="lp-wordmark">ÉCONCOURS</span>
+          <span className="lp-wordmark"><span className="lp-wordmark-prefix">E-</span><span className="lp-wordmark-main">CONCOURS</span></span>
         </div>
 
         <ul className="lp-nav-links">
           <li>
-            <a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>
-              Fonctionnalités
+            <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
+              Comment ça marche
             </a>
           </li>
           <li>
-            <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
-              Méthodologie
+            <a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>
+              Fonctionnalités
             </a>
           </li>
           <li>
@@ -555,11 +637,6 @@ const partnerLogos = [
               FAQ
             </a>
           </li>
-          <li>
-            <a href="/login" onClick={(e) => { e.preventDefault(); handleNav('login'); }}>
-              Se connecter
-            </a>
-          </li>
         </ul>
 
         <div className="lp-nav-actions">
@@ -569,8 +646,8 @@ const partnerLogos = [
           <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
             <span>Créer un compte</span>
           </button>
-          <button className="lp-btn-try" type="button" onClick={() => handleScrollTo('demo-qcm')}>
-            Essayer gratuitement
+          <button className="lp-btn-try" type="button" onClick={() => handleNav('login')}>
+            Se connecter
           </button>
           <button
             className="lp-menu-toggle"
@@ -592,11 +669,11 @@ const partnerLogos = [
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
         <div className="lp-mobile-menu">
+          <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
+            Comment ça marche
+          </a>
           <a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>
             Fonctionnalités
-          </a>
-          <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
-            Méthodologie
           </a>
           <a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>
             Tarifs
@@ -623,8 +700,66 @@ const partnerLogos = [
       ==================================================================== */}
       <section className="lp-hero-section" id="hero">
         <div className="lp-hero-ambient" aria-hidden="true" />
+        <span className="lp-hero-sparkle lp-hero-sparkle--left" aria-hidden="true">✦</span>
+        <span className="lp-hero-sparkle lp-hero-sparkle--right" aria-hidden="true">✦</span>
+        <span className="lp-hero-sparkle lp-hero-sparkle--lower" aria-hidden="true">✧</span>
+        <div className="lp-hero-nitrogen-molecule" aria-hidden="true">
+          <svg viewBox="0 0 72 44" fill="none">
+            <text x="4" y="12" fill="#3478c8" fontSize="11" fontFamily="Georgia,serif" fontStyle="italic">N₂</text>
+            <path d="M22 25h27M22 29h27" stroke="#4d8de0" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="17" cy="27" r="6" fill="#fff" stroke="#3478c8" strokeWidth="1.5" />
+            <circle cx="54" cy="27" r="6" fill="#fff" stroke="#3478c8" strokeWidth="1.5" />
+          </svg>
+        </div>
+        <div className="lp-hero-water-molecule" aria-hidden="true">
+          <svg viewBox="0 0 100 66" fill="none">
+            <path d="M50 30 26 49M50 30l24 19" stroke="#3b82f6" strokeWidth="1.8" />
+            <circle cx="50" cy="27" r="8" fill="#fff" stroke="#f59e0b" strokeWidth="1.8" />
+            <circle cx="22" cy="52" r="7" fill="#fff" stroke="#3b82f6" strokeWidth="1.8" />
+            <circle cx="78" cy="52" r="7" fill="#fff" stroke="#3b82f6" strokeWidth="1.8" />
+            <text x="3" y="14" fill="#2563eb" fontSize="11" fontFamily="'Fira Code', monospace">H₂O</text>
+          </svg>
+        </div>
         <div className="lp-hero-ruler" aria-hidden="true">
           <span>01</span><i /><span>f(x)=y</span><i /><span>∞</span>
+        </div>
+        <div className="lp-hero-science-decor lp-hero-science-decor--atom" aria-hidden="true">
+          <svg viewBox="0 0 90 90" fill="none">
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(-35 45 45)" stroke="#3b82f6" strokeWidth="1.7" />
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(35 45 45)" stroke="#60a5fa" strokeWidth="1.7" />
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(90 45 45)" stroke="#93c5fd" strokeWidth="1.7" />
+            <circle cx="45" cy="45" r="5" fill="#f59e0b" />
+            <circle cx="71" cy="29" r="3.5" fill="#2563eb" />
+            <circle cx="27" cy="61" r="3.5" fill="#2563eb" />
+          </svg>
+        </div>
+        <div className="lp-hero-science-decor lp-hero-science-decor--hexagon" aria-hidden="true">
+          <svg viewBox="0 0 70 70" fill="none">
+            <polygon points="35,5 62,20 62,50 35,65 8,50 8,20" stroke="#94a3b8" strokeWidth="1.8" />
+            <circle cx="35" cy="5" r="3.5" fill="#cbd5e1" />
+            <circle cx="62" cy="20" r="3.5" fill="#93c5fd" />
+            <circle cx="62" cy="50" r="3.5" fill="#cbd5e1" />
+            <circle cx="35" cy="65" r="3.5" fill="#93c5fd" />
+            <circle cx="8" cy="50" r="3.5" fill="#cbd5e1" />
+            <circle cx="8" cy="20" r="3.5" fill="#93c5fd" />
+          </svg>
+        </div>
+        <div className="lp-hero-science-decor lp-hero-science-decor--dna" aria-hidden="true">
+          <svg viewBox="0 0 80 140" fill="none">
+            <path d="M20 10 Q50 30 20 50 Q-10 70 20 90 Q50 110 20 130" stroke="#3b82f6" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M60 10 Q30 30 60 50 Q90 70 60 90 Q30 110 60 130" stroke="#60a5fa" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <line x1="28" y1="20" x2="52" y2="20" stroke="#93c5fd" strokeWidth="1.8" />
+            <line x1="18" y1="35" x2="62" y2="35" stroke="#bfdbfe" strokeWidth="1.5" />
+            <line x1="20" y1="50" x2="60" y2="50" stroke="#93c5fd" strokeWidth="1.8" />
+            <line x1="18" y1="65" x2="62" y2="65" stroke="#bfdbfe" strokeWidth="1.5" />
+            <line x1="28" y1="80" x2="52" y2="80" stroke="#93c5fd" strokeWidth="1.8" />
+            <line x1="18" y1="95" x2="62" y2="95" stroke="#bfdbfe" strokeWidth="1.5" />
+            <line x1="20" y1="110" x2="60" y2="110" stroke="#93c5fd" strokeWidth="1.8" />
+            <line x1="28" y1="125" x2="52" y2="125" stroke="#bfdbfe" strokeWidth="1.5" />
+            <text x="65" y="42" fill="#64748b" fontSize="9" fontWeight="600">BAS</text>
+            <text x="65" y="72" fill="#3b82f6" fontSize="9" fontWeight="600">DNA</text>
+            <text x="65" y="102" fill="#f97316" fontSize="9" fontWeight="600">DNA</text>
+          </svg>
         </div>
         <div className="lp-math-note lp-math-note--left" aria-hidden="true">lim<sub>x→+∞</sub> <span>ln(x)/x</span> = 0</div>
         <div className="lp-math-note lp-math-note--right" aria-hidden="true">∫ e<sup>ax</sup> dx = e<sup>ax</sup></div>
@@ -637,12 +772,18 @@ const partnerLogos = [
         <div className="lp-math-note lp-math-note--derivative" aria-hidden="true">(uv)&prime; = u&prime;v + uv&prime;</div>
         <div className="lp-math-note lp-math-note--trigonometry" aria-hidden="true">cos²(x) + sin²(x) = 1</div>
         <div className="lp-math-note lp-math-note--biology" aria-hidden="true">ATP → ADP + P<sub>i</sub><br />2n = 46 chromosomes</div>
-        <div className="lp-math-note lp-math-note--newton" aria-hidden="true">∑ F⃗ = m · a⃗</div>
+        <div className="lp-math-note lp-math-note--newton" aria-hidden="true">U = R · I</div>
         <div className="lp-math-graph lp-math-graph--left" aria-hidden="true">
           <svg viewBox="0 0 140 90" fill="none"><path d="M10 80h120M20 85V10" stroke="currentColor" strokeDasharray="3 3" /><path d="M20 70Q50 10 80 50T130 15" stroke="#2563eb" strokeWidth="2" /><circle cx="80" cy="50" r="3" fill="#2563eb" /><text x="90" y="45">f(x)</text></svg>
         </div>
         <div className="lp-math-graph lp-math-graph--right" aria-hidden="true">
           <svg viewBox="0 0 130 80" fill="none"><path d="M10 70h110M20 75V10" stroke="currentColor" /><path d="M20 65Q60 65 110 15" stroke="#1e40af" strokeWidth="2" /><text x="64" y="30">∫ eˣ dx</text></svg>
+        </div>
+        <div className="lp-math-graph lp-math-graph--exponential" aria-hidden="true">
+          <svg viewBox="0 0 130 90" fill="none"><path d="M10 75h110M20 82V10" stroke="currentColor" /><path d="M22 70C43 68 51 63 65 51S88 28 112 14" stroke="#2563eb" strokeWidth="2" /><text x="8" y="12">y</text><text x="119" y="84">x</text><text x="69" y="36">eˣ</text></svg>
+        </div>
+        <div className="lp-math-graph lp-math-graph--area" aria-hidden="true">
+          <svg viewBox="0 0 150 100" fill="none"><path d="M12 84h126M24 91V12" stroke="currentColor" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82L132 84H26Z" fill="rgba(245,158,11,.16)" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82" stroke="#2563eb" strokeWidth="2" /><path d="m31 40 35 38M43 36l40 44M57 45l39 35M73 60l30 23" stroke="#f59e0b" strokeWidth="1" opacity=".55" /><text x="8" y="12">z</text><text x="139" y="92">x</text></svg>
         </div>
         <div className="lp-hero-decor lp-hero-decor--books" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
@@ -661,6 +802,14 @@ const partnerLogos = [
           </svg>
         </div>
         <div className="lp-hero-decor lp-hero-decor--cap-right" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#6f9ff1" stroke="#5685d5" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#bcd2fb" stroke="#85a6d8" strokeWidth="1.5" />
+            <path d="M42 20v13" stroke="#e0a340" strokeWidth="1.5" />
+            <circle cx="42" cy="35" r="2" fill="#e0a340" />
+          </svg>
+        </div>
+        <div className="lp-hero-decor lp-hero-decor--cap-left" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
             <path d="m4 19 20-9 20 9-20 10-20-10Z" fill="#6f9ff1" stroke="#5685d5" strokeWidth="1.5" strokeLinejoin="round" />
             <path d="M13 24v8c6 5 16 5 22 0v-8" fill="#bcd2fb" stroke="#85a6d8" strokeWidth="1.5" />
@@ -701,15 +850,21 @@ const partnerLogos = [
         <p className="lp-hero-desc">La plateforme tout-en-un pour bien pr&eacute;parer vos concours au Maroc.</p>
 
         <div className="lp-hero-actions">
-          <button className="lp-btn-hero-primary" type="button" onClick={() => handleNav('register')}>
-            <span className="lp-cta-mascot" aria-hidden="true"><LandingMascot className="lp-mascot-art" /></span>
-            <span aria-hidden="true">🚀</span>
-            <span>Essayer gratuitement</span>
-          </button>
-          <button className="lp-btn-hero-secondary" type="button" onClick={() => handleScrollTo('demo-qcm')}>
-            <span>Essayer gratuitement</span>
-            <span aria-hidden="true">›</span>
-          </button>
+          <div className="lp-hero-cta">
+            <div
+              className="lp-hero-mascot-companion"
+              onClick={() => handleNav('register')}
+              role="button"
+              tabIndex={0}
+              title="Jarab fabor avec la mascotte ECONCOURS"
+              aria-label="Mascotte tenant son carnet de notes"
+            >
+              <LandingMascot className="lp-mascot-hero-note" holdingNotebook={true} />
+            </div>
+            <button className="lp-btn-hero-primary" type="button" onClick={() => handleScrollTo('methodologie')}>
+              <span>Jarab fabor</span>
+            </button>
+          </div>
         </div>
 
         <div className="lp-partner-strip" aria-label="Écoles préparées">
@@ -717,9 +872,10 @@ const partnerLogos = [
             <div className="lp-partner-track">
               {[0, 1].map((copy) => (
                 <div className="lp-partner-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
-                  {partnerLogos.map((logo) => (
-                    <div className="lp-partner-logo-item" key={logo.alt}>
-                      <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                  {[partnerLogos[2], partnerLogos[0], partnerLogos[1], partnerLogos[3]].map((logo) => (
+                    <div className={`lp-partner-logo-item${logo.src === logoFmpcImg ? ' lp-partner-logo-item--medicine' : ''}`} key={logo.alt}>
+                      <img className={logo.src === logoFmpcImg ? 'lp-partner-logo-image--medicine' : undefined} src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                      {logo.src === logoFmpcImg && <span className="lp-partner-medicine-caption">FACULTÉ DE MÉDECINE ET DE PHARMACIE<br />UNIVERSITÉ HASSAN II DE CASABLANCA</span>}
                     </div>
                   ))}
                 </div>
@@ -771,254 +927,511 @@ const partnerLogos = [
       </section>
 
       {/* ====================================================================
-          5b. FONCTIONNALITÉS CLÉS DE LA PLATEFORME
-      ==================================================================== */}
-      <section className="lp-features-section" id="fonctionnalites">
-        <div className="lp-features-layout">
-          <div className="lp-features-mascot-space" aria-hidden="true" />
-          <div className="lp-features-content">
-            <div className="lp-section-header">
-              <span className="lp-section-eyebrow">CE QU'ON OFFRE</span>
-              <h2 className="lp-section-title">
-                Fonctionnalités Clés<br /><span>de la Plateforme</span>
-              </h2>
-              <p className="lp-section-desc">
-                Tout ce dont tu as besoin pour préparer ton Bac et réussir les concours des grandes écoles.
-              </p>
-            </div>
-
-            <div className="lp-features-categories">
-              <div className="lp-feat-category">
-                <div className="lp-feat-cat-label lp-feat-cat-label--a">
-                  <span className="lp-feat-cat-letter">A</span><span>Suivi Dynamique</span>
-                </div>
-                <div className="lp-feat-cards-row">
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="profile" /></span>
-                    <div><strong>Profil Étudiant</strong><p>Espace personnalisé avec ta photo, ton nom et ton historique de progression complet.</p></div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="calendar" /></span>
-                    <div><strong>Calendrier Interactif</strong><p>Événements officiels des concours et événements personnels de révision.</p></div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="dashboard" /></span>
-                    <div><strong>Dashboard Global</strong><p>Vue d'ensemble interactive avec graphiques de progression en temps réel.</p></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lp-feat-category">
-                <div className="lp-feat-cat-label lp-feat-cat-label--b">
-                  <span className="lp-feat-cat-letter">B</span><span>Contenus Pédagogiques</span>
-                </div>
-                <div className="lp-feat-cards-row">
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="course" /></span>
-                    <div><strong>Cours Complets Bac</strong><p>Cours structurés et complets selon le programme officiel du Baccalauréat marocain.</p></div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="summary" /></span>
-                    <div><strong>Résumés LaTeX</strong><p>Fiches de synthèse formatées en LaTeX avec formules essentielles et condensés.</p></div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="papers" /></span>
-                    <div><strong>Annales Corrigées</strong><p>Annales des concours officiels corrigées étape par étape pour chaque école.</p></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lp-feat-category">
-                <div className="lp-feat-cat-label lp-feat-cat-label--c">
-                  <span className="lp-feat-cat-letter">C</span><span>Moteur de Test</span>
-                </div>
-                <div className="lp-feat-cards-row">
-                  <div className="lp-feat-card lp-feat-card--timer">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="timer" /></span>
-                    <div><strong>Tests Chronométrés</strong><p>Compte à rebours officiel pour simuler les conditions réelles des concours.</p></div>
-                    <div className="lp-feat-timer-badge">00 : 00 : 39</div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="quiz" /></span>
-                    <div><strong>QCM par Chapitre &amp; École</strong><p>Questions organisées par matière, chapitre et institution (ENSA, Médecine…).</p></div>
-                  </div>
-                  <div className="lp-feat-card">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="save" /></span>
-                    <div><strong>Sauvegarde Automatique des Erreurs</strong><p>Toutes tes fautes sont enregistrées automatiquement pour révision ciblée.</p></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lp-feat-category">
-                <div className="lp-feat-cat-label lp-feat-cat-label--d">
-                  <span className="lp-feat-cat-letter">D</span><span>Ciblage des Erreurs</span>
-                </div>
-                <div className="lp-feat-cards-row lp-feat-cards-row--duo">
-                  <div className="lp-feat-card lp-feat-card--duo">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="correction" /></span>
-                    <div><strong>Correction Intelligente</strong><p>Smart correction — analyse automatique de tes erreurs avec retour détaillé et conseils.</p></div>
-                  </div>
-                  <div className="lp-feat-card lp-feat-card--duo lp-feat-card--accent">
-                    <span className="lp-feat-card-icon"><FeatureIcon name="target" /></span>
-                    <div><strong>Objectif Zéro Faute</strong><p>Goal tracking — suivi de ton objectif jusqu'à la maîtrise totale de chaque chapitre.</p></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="lp-features-cta">
-              <button className="lp-btn-primary lp-features-start-btn" type="button" onClick={() => handleNav('register')}>
-                <span>Accéder à toutes les fonctionnalités</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ====================================================================
           6. 3-STEP METHODOLOGY SECTION (STYLE KRESCO)
       ==================================================================== */}
       <section className="lp-methodology-section" id="methodologie">
-        <div className="lp-section-header">
-          <span className="lp-section-eyebrow">LA MÉTHODE DE L'EXCELLENCE</span>
-          <h2 className="lp-section-title">
-            Le parcours ÉCONCOURS<br />de la révision à l'admission.
+        {/* Decorative formula: DNA helix */}
+        <div className="lp-bg-formula lp-bg-formula--dna-1" aria-hidden="true">
+          <svg viewBox="0 0 80 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 10 Q50 30 20 50 Q-10 70 20 90 Q50 110 20 130" stroke="#3b82f6" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <path d="M60 10 Q30 30 60 50 Q90 70 60 90 Q30 110 60 130" stroke="#60a5fa" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            <line x1="28" y1="20" x2="52" y2="20" stroke="#93c5fd" strokeWidth="1.5" />
+            <line x1="18" y1="35" x2="62" y2="35" stroke="#bfdbfe" strokeWidth="1.2" />
+            <line x1="20" y1="50" x2="60" y2="50" stroke="#93c5fd" strokeWidth="1.5" />
+            <line x1="18" y1="65" x2="62" y2="65" stroke="#bfdbfe" strokeWidth="1.2" />
+            <line x1="28" y1="80" x2="52" y2="80" stroke="#93c5fd" strokeWidth="1.5" />
+            <line x1="18" y1="95" x2="62" y2="95" stroke="#bfdbfe" strokeWidth="1.2" />
+            <line x1="20" y1="110" x2="60" y2="110" stroke="#93c5fd" strokeWidth="1.5" />
+            <line x1="28" y1="125" x2="52" y2="125" stroke="#bfdbfe" strokeWidth="1.2" />
+            <text x="65" y="42" fill="#64748b" fontSize="9" fontWeight="600">BAS</text>
+            <text x="65" y="72" fill="#3b82f6" fontSize="9" fontWeight="600">DNA</text>
+            <text x="65" y="102" fill="#f97316" fontSize="9" fontWeight="600">DNA</text>
+          </svg>
+        </div>
+        {/* Decorative formula: sine curve 2 */}
+        <div className="lp-bg-formula lp-bg-formula--sine-2" aria-hidden="true">
+          <svg viewBox="0 0 160 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="10" y1="60" x2="150" y2="60" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="15" y1="65" x2="15" y2="8" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
+            <path d="M15 40 Q35 5 60 40 Q85 75 110 40 Q135 5 150 40" stroke="#818cf8" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <circle cx="110" cy="40" r="3.5" fill="#f59e0b" stroke="#fff" strokeWidth="1.5" />
+            <text x="118" y="25" fill="#a1a1aa" fontSize="11" fontFamily="serif" fontStyle="italic">g(x)</text>
+          </svg>
+        </div>
+        {/* Decorative formula: hexagon 2 */}
+        <div className="lp-bg-formula lp-bg-formula--hexagon-2" aria-hidden="true">
+          <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="30,4 54,17 54,43 30,56 6,43 6,17" stroke="#a5b4fc" strokeWidth="1.3" fill="none" />
+            <circle cx="30" cy="4" r="2.5" fill="#e2e8f0" />
+            <circle cx="54" cy="17" r="2.5" fill="#c7d2fe" />
+            <circle cx="6" cy="43" r="2.5" fill="#e2e8f0" />
+            <circle cx="30" cy="56" r="2.5" fill="#c7d2fe" />
+          </svg>
+        </div>
+        <div className="lp-section-header lp-methodology-header">
+          <h2 className="lp-methodology-title">
+            Votre <span>parcours</span>
           </h2>
-          <p className="lp-section-desc">
-            Sept étapes pour organiser tes révisions, t'entraîner efficacement et suivre ta progression jusqu'aux concours.
+          <p className="lp-methodology-subtitle">
+            De la révision à l'admission · 7 étapes clés
           </p>
         </div>
 
         <div className="lp-method-timeline">
-          <div className="lp-method-track" aria-hidden="true"><span className="lp-method-track-fill" /></div>
+          <div className="lp-method-track" aria-hidden="true">
+            <span className="lp-method-track-fill" style={{ display: 'none' }} />
+          </div>
           {[
-            { icon: '📅', label: 'PLANIFIER', title: 'Calendrier des concours & agenda personnel', text: "Suis les dates d'inscription et les épreuves officielles des concours ENSA, ENSAM, Médecine et ENCG. Organise aussi tes séances de révision avec ton agenda personnel.", preview: 'Agenda concours', tag: 'Concours 2027', speech: 'Nbdaw b planning! 📅', lines: ['ENSA · Inscription ouverte', 'ENSAM · Épreuve à venir', 'Révision personnelle · 18:00'] },
-            { icon: '📚', label: 'COMPRENDRE', title: 'Cours Bac & examens nationaux', text: 'Retrouve des cours complets et structurés selon le programme du Baccalauréat marocain, avec les annales des examens nationaux et leurs corrigés.', preview: 'Cours du Baccalauréat', tag: 'Mathématiques', speech: 'Fhem dars mzyan! 📚', lines: ['Limites et continuité', 'Dérivation · cours complet', 'Examen national corrigé'] },
-            { icon: '📝', label: 'SYNTHÉTISER', title: 'Résumés express', text: 'Révise rapidement avec des fiches condensées qui regroupent les formules et les notions clés de chaque chapitre.', preview: 'Fiche de révision', tag: 'Formules clés', speech: 'Wjjed résumé dyalk! 📝', lines: ['Limite remarquable', 'Dérivée · fonctions usuelles', 'Synthèse prête à réviser'] },
-            { icon: '⏱️', label: 'S’ENTRAÎNER', title: 'Concours blancs par chapitre', text: 'Valide tes acquis au fil des révisions avec des QCM chronométrés par matière et par chapitre : Mathématiques, Physique, SVT et plus.', preview: 'Test par chapitre', tag: '12 questions', speech: 'Dreb QCM b chrono! ⏱️', lines: ['Mathématiques · Suites', 'Temps restant · 08:42', 'Progression · 4 / 12'] },
-            { icon: '🏛️', label: 'SE PRÉPARER', title: 'Annales concours par école', text: 'Entraîne-toi sur les vrais sujets des grandes écoles sous forme de QCM interactifs pour maîtriser le format des épreuves officielles.', preview: 'Annales de concours', tag: 'ENSA · 2025', speech: 'Jarrab annales l’école! 🏛️', lines: ['Sujet officiel · Mathématiques', 'Format QCM interactif', 'Barème de l’épreuve'] },
-            { icon: '🔄', label: 'PROGRESSER', title: 'Réviser mes erreurs', text: 'Les questions manquées dans tes QCM sont sauvegardées automatiquement. Reprends-les de façon ciblée pour renforcer tes points faibles jusqu’à maîtriser chaque notion.', preview: 'Révision ciblée', tag: 'Mes erreurs', speech: 'Raja3 les erreurs dyalk! 🔄', lines: ['Question à revoir · Suites', 'Correction détaillée disponible', 'Objectif · zéro faute'] },
-            { icon: '🚀', label: 'ATTEINDRE SON OBJECTIF', title: 'Dashboard & objectif admissibilité', text: 'Visualise tes statistiques, ta précision et ta progression dans un tableau de bord dynamique qui t’accompagne jusqu’à la réussite aux concours.', preview: 'Mon tableau de bord', tag: 'Progression', speech: 'Qrebti l’admissibilité! 🚀', lines: ['Précision moyenne · 86 %', 'Chapitres maîtrisés · 18 / 24', 'Objectif · admissibilité'] }
-          ].map((step, index) => (
-            <article className={`lp-method-row ${index % 2 === 0 ? 'is-left' : 'is-right'}`} data-mascot-speech={step.speech} key={step.title}>
-              <div className="lp-method-copy">
-                <span className="lp-method-node" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                <div className="lp-method-kicker"><span>{String(index + 1).padStart(2, '0')}</span>{step.icon} {step.label}</div>
-                <h3>Étape {String(index + 1).padStart(2, '0')} : {step.title}</h3>
-                <p>{step.text}</p>
+            {
+              number: '01',
+              side: 'left-card',
+              isOrangeNode: false,
+              kicker: 'PLANIFIER',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              ),
+              title: 'Calendrier & agenda',
+              pills: ['Dates des concours', 'Inscriptions', 'Planning personnel'],
+              subtitle: 'ENSA · ENSAM · Médecine · ENCG',
+              cardBadge: 'Agenda',
+              cardTitle: 'Agenda concours',
+              cardItems: [
+                { color: '#2563eb', text: 'Dates des concours' },
+                { color: '#ea580c', text: 'Inscriptions' },
+                { color: '#0f172a', text: 'Planning personnel' }
+              ],
+              progress: '32%',
+              speech: 'Nbdaw b planning! 📅'
+            },
+            {
+              number: '02',
+              side: 'right-card',
+              isOrangeNode: false,
+              kicker: 'COMPRENDRE',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+              ),
+              title: 'Cours & examens nationaux',
+              pills: ['Cours du Bac', 'Annales', 'Corrigés détaillés'],
+              subtitle: 'Mathématiques · Physique · SVT',
+              cardBadge: 'Bac',
+              cardTitle: 'Cours du Baccalauréat',
+              cardItems: [
+                { color: '#2563eb', text: 'Cours du Bac' },
+                { color: '#ea580c', text: 'Annales' },
+                { color: '#0f172a', text: 'Corrigés détaillés' }
+              ],
+              progress: '46%',
+              speech: 'Fhem dars mzyan! 📚'
+            },
+            {
+              number: '03',
+              side: 'left-card',
+              isOrangeNode: false,
+              kicker: 'SYNTHÉTISER',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <line x1="10" y1="9" x2="8" y2="9" />
+                </svg>
+              ),
+              title: 'Fiches de révision',
+              pills: ['Formules clés', 'Résumés', 'Notions essentielles'],
+              subtitle: 'Révision rapide par chapitre',
+              cardBadge: 'Fiches',
+              cardTitle: 'Fiche de révision',
+              cardItems: [
+                { color: '#2563eb', text: 'Formules clés' },
+                { color: '#ea580c', text: 'Résumés' },
+                { color: '#0f172a', text: 'Notions essentielles' }
+              ],
+              progress: '58%',
+              speech: 'Wjjed résumé dyalk! 📝'
+            },
+            {
+              number: '04',
+              side: 'right-card',
+              isOrangeNode: false,
+              kicker: "S'ENTRAÎNER",
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="13" r="8" />
+                  <path d="M12 9v4l2.5 1.5" />
+                  <path d="M12 2v3" />
+                  <path d="M9 2h6" />
+                </svg>
+              ),
+              title: 'Concours blancs',
+              pills: ['QCM chronométrés', 'Matières', 'Chapitres'],
+              subtitle: 'Score · Temps · Progression',
+              cardBadge: 'QCM',
+              cardTitle: 'Test par chapitre',
+              cardItems: [
+                { color: '#2563eb', text: 'QCM chronométrés' },
+                { color: '#ea580c', text: 'Matières' },
+                { color: '#0f172a', text: 'Chapitres' }
+              ],
+              progress: '50%',
+              speech: 'Dreb QCM b chrono! ⏱️'
+            },
+            {
+              number: '05',
+              side: 'left-card',
+              isOrangeNode: false,
+              kicker: 'SE PRÉPARER',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                </svg>
+              ),
+              title: 'Annales des concours',
+              pills: ['Sujets officiels', 'QCM interactifs', 'Barèmes'],
+              subtitle: 'Préparation par école',
+              cardBadge: 'Annales',
+              cardTitle: 'Annales de concours',
+              cardItems: [
+                { color: '#2563eb', text: 'Sujets officiels' },
+                { color: '#ea580c', text: 'QCM interactifs' },
+                { color: '#0f172a', text: 'Barèmes' }
+              ],
+              progress: '40%',
+              speech: 'Jarrab annales l’école! 🏛️'
+            },
+            {
+              number: '06',
+              side: 'right-card',
+              isOrangeNode: false,
+              kicker: 'PROGRESSER',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21.5 2v6h-6" />
+                  <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                </svg>
+              ),
+              title: 'Révision des erreurs',
+              pills: ['Erreurs sauvegardées'],
+              subtitle: 'Révision ciblée · Amélioration continue',
+              cardBadge: 'Erreurs',
+              cardTitle: 'Révision ciblée',
+              cardItems: [
+                { color: '#2563eb', text: 'Erreurs sauvegardées' }
+              ],
+              progress: '65%',
+              speech: 'Raja3 les erreurs dyalk! 🔄'
+            },
+            {
+              number: '07',
+              side: 'left-card',
+              isOrangeNode: true,
+              kicker: 'ATTEINDRE SON OBJECTIF',
+              kickerIcon: (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              ),
+              title: 'Dashboard & progression',
+              pills: ['Statistiques', 'Précision', 'Chapitres maîtrisés'],
+              subtitle: 'Objectif : admissibilité',
+              cardBadge: 'Stats',
+              cardTitle: 'Mon tableau de bord',
+              cardItems: [
+                { color: '#2563eb', text: 'Statistiques' },
+                { color: '#ea580c', text: 'Précision' },
+                { color: '#0f172a', text: 'Chapitres maîtrisés' }
+              ],
+              progress: '75%',
+              speech: 'Qrebti l’admissibilité! 🚀'
+            }
+          ].map((step) => {
+            const isLeftCard = step.side === 'left-card';
+
+            const cardElement = (
+              <div className="lp-method-preview lp-method-col-card" aria-label={`Aperçu : ${step.cardTitle}`}>
+                <div className="lp-method-card">
+                  <div className="lp-method-card-header">
+                    <div className="lp-method-card-dots">
+                      <span className="dot-red" />
+                      <span className="dot-dark" />
+                      <span className="dot-blue" />
+                    </div>
+                    <span className="lp-method-card-badge">{step.cardBadge}</span>
+                  </div>
+                  <h4 className="lp-method-card-title">{step.cardTitle}</h4>
+                  <ul className="lp-method-card-list">
+                    {step.cardItems.map((item) => (
+                      <li key={item.text} className="lp-method-card-item">
+                        <span className="lp-method-card-item-dot" style={{ backgroundColor: item.color }} />
+                        <span>{item.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="lp-method-card-progress">
+                    <div className="lp-method-card-progress-bar" style={{ width: step.progress }} />
+                  </div>
+                </div>
               </div>
-              <div className="lp-method-preview" aria-label={`Aperçu : ${step.preview}`}>
-                <div className="lp-preview-top"><span className="lp-preview-brand"><i>{String(index + 1).padStart(2, '0')}</i> ÉCONCOURS</span><span className="lp-preview-tag">{step.tag}</span></div>
-                <div className="lp-preview-panel"><strong>{step.preview}</strong><ul>{step.lines.map((line, lineIndex) => <li key={line}><i className={`lp-preview-dot dot-${lineIndex}`} />{line}</li>)}</ul><div className="lp-preview-progress"><span style={{ width: `${32 + index * 9}%` }} /></div></div>
+            );
+
+            const infoElement = (
+              <div className="lp-method-copy lp-method-col-info">
+                <div className="lp-method-info">
+                  <div className="lp-method-info-kicker">
+                    {step.kickerIcon}
+                    <span>{step.kicker}</span>
+                  </div>
+                  <h3 className="lp-method-info-title">{step.title}</h3>
+                  <div className="lp-method-info-pills">
+                    {step.pills.map((pill) => (
+                      <span key={pill} className="lp-method-info-pill">{pill}</span>
+                    ))}
+                  </div>
+                  <p className="lp-method-info-subtitle">{step.subtitle}</p>
+                </div>
               </div>
-            </article>
+            );
+
+            return (
+              <article
+                className={`lp-method-row ${isLeftCard ? 'is-left' : 'is-right'}`}
+                data-mascot-speech={step.speech}
+                key={step.number}
+              >
+                {/* Left side */}
+                {isLeftCard ? cardElement : infoElement}
+
+                {/* Center node */}
+                <div className="lp-method-node-wrap">
+                  <div className={`lp-method-node-circle ${step.isOrangeNode ? 'is-orange' : ''}`}>
+                    {step.number}
+                  </div>
+                </div>
+
+                {/* Right side */}
+                {isLeftCard ? infoElement : cardElement}
+              </article>
+            );
+          })}
+
+          {/* Bottom Admission Goal Node */}
+          <div className="lp-methodology-goal">
+            <div className="lp-methodology-goal-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z" />
+              </svg>
+            </div>
+            <span className="lp-methodology-goal-title">Admission</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-features-section fk" id="fonctionnalites">
+        <div className="fk-content-wrap">
+        <span className="fk-badge">Fonctionnalités clés</span>
+        <h2>Une préparation adaptée à tes <b>objectifs</b></h2>
+        <p className="fk-sub">Suis ta progression, organise tes révisions et corrige tes erreurs, au même endroit.</p>
+
+        <div className="fk-grid">
+          <article className="fk-card fk-green">
+            <div className="fk-vis" aria-hidden="true">
+              <div className="fk-ring"><i>85%</i></div>
+              <div className="fk-bars"><span style={{ height: '30%' }} /><span style={{ height: '50%' }} /><span style={{ height: '42%' }} /><span style={{ height: '80%' }} /><span style={{ height: '100%' }} /></div>
+            </div>
+            <h3>Dashboard de progression</h3>
+            <p>Analyse tes résultats et suis ton évolution au fil des révisions.</p>
+          </article>
+
+          <article className="fk-card">
+            <div className="fk-vis" aria-hidden="true">
+              <div className="fk-cal">
+                <span className="on" /><span /><span className="on" /><span /><span className="on" /><span /><span />
+                <span /><span className="on" /><span /><span className="on" /><span /><span className="on" /><span />
+                <span className="on" /><span /><span /><span className="on" /><span /><span /><span className="on" />
+              </div>
+            </div>
+            <h3>Calendrier personnalisé</h3>
+            <p>Organise tes séances et tes objectifs de révision sur mesure.</p>
+          </article>
+
+          <article className="fk-card fk-violet fk-dark">
+            <div className="fk-vis" aria-hidden="true">
+              <div className="fk-qcm">
+                <b />
+                <div><u>A</u><em /></div>
+                <div className="ok"><u>B</u><em /><s>✓</s></div>
+                <div><u>C</u><em /></div>
+              </div>
+            </div>
+            <h3>Entraînement personnalisé</h3>
+            <p>Entraîne-toi par matière, chapitre ou concours d’école ciblé.</p>
+          </article>
+
+          <article className="fk-card fk-orange">
+            <div className="fk-vis" aria-hidden="true">
+              <div className="fk-err">
+                <div><b>×</b><em /><strong>✓</strong></div>
+                <div><b>×</b><em /><strong>✓</strong></div>
+                <div><b>×</b><em /><strong>✓</strong></div>
+              </div>
+            </div>
+            <h3>Sauvegarde des erreurs</h3>
+            <p>Retrouve automatiquement les questions incorrectes et leurs corrections.</p>
+          </article>
+        </div>
+
+        <button className="fk-cta" type="button" onClick={() => handleNav('register')}>
+          Accéder à toutes les fonctionnalités <span aria-hidden="true">→</span>
+        </button>
+        </div>
+      </section>
+      {/* ====================================================================
+          8. STATS & IMPACT SECTION (DARK THEME)
+      ==================================================================== */}
+      <section className="lp-three-steps-section" aria-labelledby="lp-three-steps-title">
+        <div className="lp-three-steps-header">
+          <span className="lp-three-steps-eyebrow">VOS ÉTAPES</span>
+          <h2 id="lp-three-steps-title">Votre préparation, pas à pas</h2>
+        </div>
+        <div className="lp-three-steps-grid">
+          <article className="lp-three-step-card">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">01</span>
+            </div>
+            <h3>Créez votre compte</h3>
+            <p>Inscrivez-vous en quelques instants pour accéder à la plateforme.</p>
+          </article>
+          <article className="lp-three-step-card lp-three-step-card--accent">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">02</span>
+            </div>
+            <h3>Choisissez votre pack</h3>
+            <p>Médecine, ENSA, ENSAM, ENCG ou un pack groupé, avec un paiement unique.</p>
+          </article>
+          <article className="lp-three-step-card">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">03</span>
+            </div>
+            <h3>Révisez et testez-vous</h3>
+            <p>QCM, résumés, cours et examens chronométrés pour arriver prêt le jour J.</p>
+          </article>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          9. PRICING & PLANS SECTION
+      ==================================================================== */}
+      <section className="lp-pricing-section" id="tarifs">
+        {/* Decorative formula: DNA helix 2 */}
+        <div className="lp-bg-formula lp-bg-formula--dna-2" aria-hidden="true">
+          <svg viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 8 Q45 25 18 42 Q-9 59 18 76 Q45 93 18 110" stroke="#818cf8" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M52 8 Q25 25 52 42 Q79 59 52 76 Q25 93 52 110" stroke="#a78bfa" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <line x1="24" y1="17" x2="46" y2="17" stroke="#c4b5fd" strokeWidth="1.2" />
+            <line x1="16" y1="30" x2="54" y2="30" stroke="#ddd6fe" strokeWidth="1" />
+            <line x1="18" y1="42" x2="52" y2="42" stroke="#c4b5fd" strokeWidth="1.2" />
+            <line x1="16" y1="59" x2="54" y2="59" stroke="#ddd6fe" strokeWidth="1" />
+            <line x1="24" y1="68" x2="46" y2="68" stroke="#c4b5fd" strokeWidth="1.2" />
+            <line x1="18" y1="76" x2="52" y2="76" stroke="#ddd6fe" strokeWidth="1" />
+            <line x1="16" y1="93" x2="54" y2="93" stroke="#c4b5fd" strokeWidth="1.2" />
+          </svg>
+        </div>
+        <div className="lp-section-header">
+          <span className="lp-section-eyebrow">FORMULES D'ACCÈS TRANSPARENTES</span>
+          <h2 className="lp-section-title">
+            Un pack. Votre filière. Toute l'année.
+          </h2>
+          <p className="lp-section-desc">
+            Paiement unique par pack. Choisissez les concours que vous préparez.
+          </p>
+        </div>
+
+        <div className="lp-pricing-grid">
+          {[
+            {
+              name: 'Médecine',
+              pack: 'MEDECINE',
+              description: 'Accès complet au concours de médecine',
+              price: '500',
+              features: ['Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'ENSAM',
+              pack: 'ENSAM',
+              description: 'Accès complet au concours ENSAM',
+              price: '400',
+              features: ['ENSAM', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'ENSA',
+              pack: 'ENSA',
+              description: 'Accès complet ENSA',
+              price: '300',
+              features: ['ENSA', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'Médecine + ENSA',
+              pack: 'MEDECINE_ENSA',
+              description: 'Les deux concours, un seul paiement',
+              price: '700',
+              saving: 'Économisez 100 DH vs les packs séparés',
+              features: ['ENSA', 'Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'ENCG',
+              pack: 'ENCG',
+              description: 'Accès complet au concours ENCG',
+              price: '400',
+              features: ['ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+            {
+              name: 'Médecine + ENSA + ENSAM',
+              pack: 'PACK_COMPLET',
+              description: 'Les trois concours — ENCG offert',
+              price: '1000',
+              featured: true,
+              features: ['Médecine', 'ENSA', 'ENSAM', 'ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+            },
+          ].map((plan) => (
+            <div className={`lp-plan-card${plan.featured ? ' is-featured' : ''}`} key={plan.name}>
+              {plan.featured && <div className="lp-featured-ribbon">⭐ LE PLUS CHOISI</div>}
+              <h3 className="lp-plan-name">{plan.name}</h3>
+              <p className="lp-plan-sub">{plan.description}</p>
+              <div className="lp-plan-price">
+                {plan.price ? <>{plan.price} <small>DH · unique</small></> : 'Tarif à préciser'}
+              </div>
+              {plan.saving && <span className="lp-discount-badge">{plan.saving}</span>}
+              <ul className="lp-plan-features">
+                {plan.features.map((feature) => (
+                  <li key={feature}>
+                    <span className="check-icon">✓</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <button className="lp-plan-btn" type="button" onClick={() => handleNav('register', plan.pack)}>
+                Souscrire <span aria-hidden="true">→</span>
+              </button>
+            </div>
           ))}
         </div>
       </section>
 
       {/* ====================================================================
-          7. INTERACTIVE LIVE QUIZ DEMO WIDGET (SIMULATION KRESCO)
-      ==================================================================== */}
-      <section className="lp-quiz-demo-section" id="demo-qcm">
-        <div className="lp-section-header">
-          <span className="lp-section-eyebrow">EXPÉRIENCE INTERACTIVE</span>
-          <h2 className="lp-section-title">
-            Testez la plateforme en direct.
-          </h2>
-          <p className="lp-section-desc">
-            Voici un extrait réel d'une question posée au concours de l’ENSA. Cliquez sur votre réponse pour voir le feedback interactif.
-          </p>
-        </div>
-
-        <div className="lp-quiz-widget">
-          <div className="lp-quiz-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span className="lp-quiz-header-badge">Concours ENSA · Mathématiques</span>
-              <span style={{ fontSize: '13px', color: '#cbd5e1' }}>Question n° 04</span>
-            </div>
-            <div className="lp-quiz-timer">
-              <span>⏱️ Temps recommandé : 1 min 30 s</span>
-            </div>
-          </div>
-
-          <div className="lp-quiz-body">
-            <div className="lp-quiz-question-box">
-              <div className="lp-quiz-subject-tag">Limites & Continuité</div>
-              <p className="lp-quiz-question-text">
-                Soit la fonction <em>f</em> définie sur ℝ* par <strong>f(x) = sin(3x) / x</strong>.<br />
-                Quelle est la valeur de la limite : <strong>lim<sub>x → 0</sub> f(x)</strong> ?
-              </p>
-            </div>
-
-            <div className="lp-quiz-options">
-              {[
-                { label: 'A', text: '0' },
-                { label: 'B', text: '1' },
-                { label: 'C', text: '3', correct: true },
-                { label: 'D', text: '+∞' }
-              ].map((opt) => {
-                let btnClass = 'lp-quiz-option-btn';
-                if (quizSubmitted) {
-                  if (opt.correct) btnClass += ' is-correct';
-                  else if (quizAnswer === opt.label) btnClass += ' is-wrong';
-                }
-
-                return (
-                  <button
-                    key={opt.label}
-                    type="button"
-                    className={btnClass}
-                    onClick={() => handleSelectQuizOption(opt.label)}
-                    disabled={quizSubmitted}
-                  >
-                    <span>
-                      <strong style={{ marginRight: '8px' }}>{opt.label}.</strong> {opt.text}
-                    </span>
-                    {quizSubmitted && opt.correct && (
-                      <span style={{ color: '#15803d', fontWeight: 800 }}>✓ Correct</span>
-                    )}
-                    {quizSubmitted && !opt.correct && quizAnswer === opt.label && (
-                      <span style={{ color: '#b91c1c', fontWeight: 800 }}>✕ Incorrect</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {quizSubmitted && (
-              <div className="lp-quiz-explanation">
-                <strong>💡 Explication du corrigé officiel :</strong>
-                <p>
-                  On utilise la limite usuelle de référence : <em>lim<sub>u → 0</sub> sin(u)/u = 1</em>.<br />
-                  En posant <em>u = 3x</em>, on a : <em>sin(3x)/x = 3 × [sin(3x) / (3x)]</em>.<br />
-                  Comme <em>x → 0 ⇒ 3x → 0</em>, on obtient : <strong>lim<sub>x → 0</sub> f(x) = 3 × 1 = 3</strong>.
-                  La bonne réponse est donc <strong>C</strong>.
-                </p>
-              </div>
-            )}
-
-            <div className="lp-quiz-footer">
-              <span style={{ fontSize: '13.5px', color: '#64748b' }}>
-                {quizSubmitted
-                  ? (quizAnswer === 'C' ? '🎉 Bravo, excellente intuition !' : '💡 Pas de panique : ECONCOURS vous aide à maîtriser chaque subtilité.')
-                  : 'Choisissez une option pour afficher la correction pas-à-pas.'}
-              </span>
-              <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
-                <span>S'entraîner sur +15 000 QCM</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ====================================================================
-          8. STATS & IMPACT SECTION (DARK THEME)
+          10. FAQ ACCORDION SECTION
       ==================================================================== */}
       <section className="lp-stats-section" id="apropos">
         <div className="lp-stats-inner">
@@ -1057,95 +1470,29 @@ const partnerLogos = [
         </div>
       </section>
 
-      {/* ====================================================================
-          9. PRICING & PLANS SECTION
-      ==================================================================== */}
-      <section className="lp-pricing-section" id="tarifs">
-        <div className="lp-section-header">
-          <span className="lp-section-eyebrow">FORMULES D'ACCÈS TRANSPARENTES</span>
-          <h2 className="lp-section-title">
-            Un pack. Votre filière. Toute l'année.
-          </h2>
-          <p className="lp-section-desc">
-            Paiement unique par pack. Choisissez les concours que vous préparez.
-          </p>
-        </div>
-
-        <div className="lp-pricing-grid">
-          {[
-            {
-              name: 'Médecine',
-              pack: 'MEDECINE',
-              description: 'Accès complet au concours de médecine',
-              price: '500',
-              features: ['Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-            {
-              name: 'ENSAM',
-              pack: 'ENSAM',
-              description: 'Accès complet au concours ENSAM',
-              price: '400',
-              features: ['ENSAM', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-            {
-              name: 'ENSA',
-              pack: 'ENSA',
-              description: 'Accès complet ENSA — ENSCK inclus',
-              price: '300',
-              features: ['ENSA', 'ENSCK', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-            {
-              name: 'Médecine + ENSA',
-              pack: 'MEDECINE_ENSA',
-              description: 'Les deux concours, un seul paiement',
-              price: '700',
-              saving: 'Économisez 100 DH vs les packs séparés',
-              features: ['ENSA', 'Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-            {
-              name: 'ENCG',
-              pack: 'ENCG',
-              description: 'Accès complet au concours ENCG',
-              price: '400',
-              features: ['ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-            {
-              name: 'Médecine + ENSA + ENSAM',
-              pack: 'PACK_COMPLET',
-              description: 'Les trois concours — ENSCK et ENCG offerts',
-              price: '1000',
-              featured: true,
-              features: ['Médecine', 'ENSA', 'ENSAM', 'ENSCK', 'ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
-            },
-          ].map((plan) => (
-            <div className={`lp-plan-card${plan.featured ? ' is-featured' : ''}`} key={plan.name}>
-              {plan.featured && <div className="lp-featured-ribbon">⭐ LE PLUS CHOISI</div>}
-              <h3 className="lp-plan-name">{plan.name}</h3>
-              <p className="lp-plan-sub">{plan.description}</p>
-              <div className="lp-plan-price">
-                {plan.price ? <>{plan.price} <small>DH · unique</small></> : 'Tarif à préciser'}
-              </div>
-              {plan.saving && <span className="lp-discount-badge">{plan.saving}</span>}
-              <ul className="lp-plan-features">
-                {plan.features.map((feature) => (
-                  <li key={feature}>
-                    <span className="check-icon">✓</span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <button className="lp-plan-btn" type="button" onClick={() => handleNav('register', plan.pack)}>
-                Souscrire <span aria-hidden="true">→</span>
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ====================================================================
-          10. FAQ ACCORDION SECTION
-      ==================================================================== */}
       <section className="lp-faq-section" id="faq">
+        {/* Decorative formula: sine curve */}
+        <div className="lp-bg-formula lp-bg-formula--sine-3" aria-hidden="true">
+          <svg viewBox="0 0 180 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="10" y1="70" x2="170" y2="70" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="20" y1="75" x2="20" y2="10" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
+            <path d="M20 50 Q45 10 70 50 Q95 90 120 50 Q145 10 165 50" stroke="#60a5fa" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+            <circle cx="70" cy="50" r="4" fill="#f97316" stroke="#fff" strokeWidth="1.5" />
+            <text x="130" y="30" fill="#94a3b8" fontSize="13" fontFamily="serif" fontStyle="italic">f = √A</text>
+          </svg>
+        </div>
+        {/* Decorative formula: hexagon */}
+        <div className="lp-bg-formula lp-bg-formula--hexagon-3" aria-hidden="true">
+          <svg viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="35,5 62,20 62,50 35,65 8,50 8,20" stroke="#94a3b8" strokeWidth="1.5" fill="none" />
+            <circle cx="35" cy="5" r="3" fill="#cbd5e1" />
+            <circle cx="62" cy="20" r="3" fill="#bfdbfe" />
+            <circle cx="62" cy="50" r="3" fill="#cbd5e1" />
+            <circle cx="35" cy="65" r="3" fill="#bfdbfe" />
+            <circle cx="8" cy="50" r="3" fill="#cbd5e1" />
+            <circle cx="8" cy="20" r="3" fill="#bfdbfe" />
+          </svg>
+        </div>
         <div className="lp-section-header">
           <span className="lp-section-eyebrow">QUESTIONS FRÉQUENTES</span>
           <h2 className="lp-section-title">
@@ -1214,17 +1561,6 @@ const partnerLogos = [
           <div className="lp-bottom-cta-content">
             <span className="lp-bottom-cta-kicker"><i aria-hidden="true">✦</i> TON PROCHAIN CHAPITRE COMMENCE ICI</span>
             <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
-            <p>Rejoins les bacheliers qui préparent leur réussite avec un parcours clair, des annales et des QCM ciblés.</p>
-            <div className="lp-bottom-cta-benefits">
-              <span><i aria-hidden="true">✓</i> Inscription gratuite</span>
-              <span><i aria-hidden="true">✓</i> Tu commences tout de suite</span>
-            </div>
-            <button className="lp-bottom-cta-btn" type="button" onClick={() => handleNav('register')}>
-              <span>Créer mon compte gratuit</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
       </section>
@@ -1235,11 +1571,20 @@ const partnerLogos = [
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
+            <div className="lp-footer-wordmark" aria-label="E-CONCOURS">
+              <svg className="lp-footer-cap" viewBox="0 0 48 42" fill="none" aria-hidden="true">
+                <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#eaf2ff" />
+                <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#eaf2ff" />
+                <path d="M42 16v16" stroke="#e2ae4f" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="42" cy="34" r="2.5" fill="#e2ae4f" />
+              </svg>
+              <span>E-</span>CONCOURS
+            </div>
             <p>
-              La plateforme de référence pour réussir les concours des grandes écoles et examens nationaux au Maroc.
+              La plateforme de référence pour les cours du Bac, la préparation aux examens nationaux et aux concours des grandes écoles au Maroc.
             </p>
             <div className="lp-footer-made-in">
-              <span aria-hidden="true">✦</span> Conçu avec passion pour la jeunesse marocaine.
+              Conçu avec passion pour la jeunesse marocaine.
             </div>
             <div className="lp-footer-social-block">
               <strong>Suivez-nous et contactez-nous</strong>
@@ -1260,7 +1605,7 @@ const partnerLogos = [
             <h4>Plateforme</h4>
             <ul>
               <li><a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>Fonctionnalités</a></li>
-              <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>Méthodologie</a></li>
+              <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>Comment ça marche</a></li>
               <li><a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>Tarifs & Packs</a></li>
             </ul>
           </div>
@@ -1287,7 +1632,7 @@ const partnerLogos = [
         </div>
 
         <div className="lp-footer-bottom">
-          <span>&copy; {new Date().getFullYear()} ECONCOURS. Tous droits réservés.</span>
+          <span>© 2027 E-CONCOURS. Tous droits réservés.</span>
           <span>Préparation aux Concours d’Accès aux Grandes Écoles du Maroc.</span>
         </div>
       </footer>
