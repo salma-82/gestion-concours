@@ -2,6 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ClientDashboard.css';
+import ClientContestStatsDashboard from './ClientContestStatsDashboard';
+import ClientMockExamStatsDashboard from './ClientMockExamStatsDashboard';
+import ClientNationalExamStatsDashboard from './ClientNationalExamStatsDashboard';
+import ClientCourseStatsDashboard from './ClientCourseStatsDashboard';
+import ClientSummaryStatsDashboard from './ClientSummaryStatsDashboard';
+import ClientGeneralStatsDashboard from './ClientGeneralStatsDashboard';
 import {
   fetchStudentActivityEvents,
   setStudentActivityCompleted
@@ -14,6 +20,7 @@ import {
   normalizeActivityCategory,
   summarizeDashboardActivities
 } from '../studentDashboardStats';
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const API_BASE = 'http://localhost:8081';
 const normalizeSchool = (name) => String(name || '').trim().toLocaleLowerCase();
@@ -39,7 +46,7 @@ const scoresOf = (records) => records
   .map((record) => record.score)
   .filter((score) => score !== null && score !== undefined && score !== '')
   .map(Number)
-  .filter(Number.isFinite);
+  .filter((score) => Number.isFinite(score) && score >= 0 && score <= 100);
 const isWithinPeriod = (attempt, period) => period === 'all'
   || (Number.isFinite(new Date(attempt.answeredAt).getTime()) && new Date(attempt.answeredAt).getTime() >= Date.now() - Number(period) * 86400000);
 
@@ -61,12 +68,12 @@ const formatDate = (value) => {
 };
 
 const DASHBOARD_SHORTCUTS = [
-  { label: 'Profil', abbreviation: '', mode: 'overview', path: '/client-dashboard', icon: 'home' },
-  { label: 'Concours', abbreviation: 'Conc.', mode: 'contests', path: '/client-concours', icon: 'contest' },
-  { label: 'Concours Blancs', abbreviation: 'C.B.', mode: 'mock-exams', path: '/client-concours-blanc', icon: 'white-contest' },
-  { label: 'Cours', abbreviation: 'Crs.', mode: 'courses', path: '/client-cours', icon: 'courses' },
-  { label: 'Examens', abbreviation: 'Exm.', mode: 'exams', path: '/client-examens', icon: 'exams' },
-  { label: 'Résumés', abbreviation: 'Res.', mode: 'summaries', path: '/client-resumes', icon: 'resumes' }
+  { label: 'Accueil / Profil', abbreviation: 'Accueil', mode: 'overview', path: '/client-dashboard', icon: 'home' },
+  { label: 'Concours réels', abbreviation: 'Concours', mode: 'contests', path: '/client-concours', icon: 'contest' },
+  { label: 'Concours Blancs', abbreviation: 'Blancs', mode: 'mock-exams', path: '/client-concours-blanc', icon: 'white-contest' },
+  { label: 'Cours BAC', abbreviation: 'Cours', mode: 'courses', path: '/client-cours', icon: 'courses' },
+  { label: 'Examens nationaux', abbreviation: 'Examens', mode: 'exams', path: '/client-examens', icon: 'exams' },
+  { label: 'Résumés & fiches', abbreviation: 'Résumés', mode: 'summaries', path: '/client-resumes', icon: 'resumes' }
 ];
 
 const DASHBOARD_MODES = {
@@ -97,11 +104,15 @@ export default function ClientDashboard() {
   const [studentActivityEvents, setStudentActivityEvents] = useState([]);
   const [activityDataLoading, setActivityDataLoading] = useState(true);
   const [activityDataError, setActivityDataError] = useState(false);
+  const [activityRetry, setActivityRetry] = useState(0);
   const [schoolCatalog, setSchoolCatalog] = useState([]);
   const [courseCatalog, setCourseCatalog] = useState([]);
   const [courseCatalogLoading, setCourseCatalogLoading] = useState(true);
+  const [courseCatalogError, setCourseCatalogError] = useState(false);
+  const [courseCatalogRetry, setCourseCatalogRetry] = useState(0);
   const [schoolAttempts, setSchoolAttempts] = useState([]);
   const [schoolDataLoading, setSchoolDataLoading] = useState(true);
+  const [schoolRetry, setSchoolRetry] = useState(0);
   const [schoolCatalogError, setSchoolCatalogError] = useState(false);
   const [schoolHistoryError, setSchoolHistoryError] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState('');
@@ -112,7 +123,16 @@ export default function ClientDashboard() {
   const [analyticsPeriod, setAnalyticsPeriod] = useState('all');
   const [analyticsSubject, setAnalyticsSubject] = useState('');
   const [selectedAttemptKey, setSelectedAttemptKey] = useState('');
-  const [dashboardMode, setDashboardMode] = useState('overview');
+  const [dashboardMode, setDashboardMode] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlMode = params.get('mode');
+      if (urlMode && ['overview', 'contests', 'mock-exams', 'courses', 'exams', 'summaries'].includes(urlMode)) {
+        return urlMode;
+      }
+    } catch {}
+    return 'overview';
+  });
   const [courseSubjectFilter, setCourseSubjectFilter] = useState('all');
   const [selectedRevisionSubject, setSelectedRevisionSubject] = useState('');
 
@@ -144,7 +164,7 @@ export default function ClientDashboard() {
       window.removeEventListener('student-server-activity-updated', refreshData);
       window.removeEventListener('storage', handleStorage);
     };
-  }, []);
+  }, [activityRetry]);
 
   useEffect(() => {
     let active = true;
@@ -153,11 +173,12 @@ export default function ClientDashboard() {
         if (!active) return;
         const list = Array.isArray(data) ? data : (data?.value || data?.cours || []);
         setCourseCatalog(Array.isArray(list) ? list : []);
+        setCourseCatalogError(false);
       })
-      .catch(() => { if (active) setCourseCatalog([]); })
+      .catch(() => { if (active) { setCourseCatalog([]); setCourseCatalogError(true); } })
       .finally(() => { if (active) setCourseCatalogLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [courseCatalogRetry]);
 
   useEffect(() => {
     let active = true;
@@ -182,106 +203,9 @@ export default function ClientDashboard() {
       active = false;
       window.removeEventListener('student-qcm-history-updated', loadSchoolData);
     };
-  }, []);
+  }, [schoolRetry]);
 
-  const analyticsActivities = filterDashboardActivities(studentActivities, { mode: dashboardMode, subject: analyticsSubject, period: analyticsPeriod });
-  const completedCount = analyticsActivities.filter((activity) => activity.completed).length;
-  const resourceCount = analyticsActivities.length;
-  const overallProgress = resourceCount ? Math.round((completedCount / resourceCount) * 100) : 0;
-  const pendingMistakes = schoolAttempts.reduce((count, attempt) => count + (attempt.answers || []).filter((answer) => !answer.correct).length, 0);
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const activitiesThisWeek = studentActivityEvents.filter((event) => {
-    const timestamp = new Date(event.occurredAt).getTime();
-    const category = dashboardMode === 'overview' ? '' : ({ contests: 'Concours', 'mock-exams': 'Concours blanc', courses: 'Cours', exams: 'Examen national', summaries: 'Résumé' })[dashboardMode];
-    return event.eventType === 'VIEW' && Number.isFinite(timestamp) && timestamp >= weekAgo
-      && (!category || normalizeActivityCategory(event.type) === category)
-      && (!analyticsSubject || event.subject === analyticsSubject);
-  }).length;
-
-  const progressBySubject = useMemo(() => {
-    const groups = analyticsActivities.reduce((result, activity) => {
-      const style = subjectStyle(activity.subject);
-      const group = result[style.name] || { ...style, total: 0, completed: 0 };
-      group.total += 1;
-      if (activity.completed) group.completed += 1;
-      result[style.name] = group;
-      return result;
-    }, {});
-    return Object.values(groups)
-      .map((group) => ({ ...group, percent: group.total ? Math.round((group.completed / group.total) * 100) : 0 }))
-      .sort((a, b) => b.total - a.total);
-  }, [analyticsActivities]);
-
-  const schoolCards = useMemo(() => {
-    const grouped = new Map();
-    schoolCatalog.forEach((contest) => {
-      const name = String(contest.ecole || '').trim();
-      const key = normalizeSchool(name);
-      if (!key) return;
-      const current = grouped.get(key) || { name, contestCount: 0, subjects: new Set(), years: new Set() };
-      current.contestCount += 1;
-      if (String(contest.matiere || '').trim()) current.subjects.add(String(contest.matiere).trim());
-      if (contest.annee) current.years.add(String(contest.annee));
-      grouped.set(key, current);
-    });
-
-    return [...grouped.values()].map((school) => {
-      const attempts = schoolAttempts.filter((attempt) => normalizeSchool(attempt.school) === normalizeSchool(school.name));
-      const scored = scoresOf(attempts);
-      const subjects = [...new Set(attempts.map((attempt) => String(attempt.subject || '').trim()).filter(Boolean))]
-        .map((name) => {
-          const records = attempts.filter((attempt) => String(attempt.subject || '').trim() === name);
-          const scores = scoresOf(records);
-          return {
-            name,
-            attempts: records.length,
-            average: scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : null
-          };
-        })
-        .sort((a, b) => (b.average ?? -1) - (a.average ?? -1));
-      return {
-        ...school,
-        subjects: [...school.subjects],
-        years: [...school.years].sort((a, b) => Number(b) - Number(a)),
-        attemptCount: attempts.length,
-        attemptedContests: new Set(attempts.map((attempt) => `${attempt.resourceType || ''}:${attempt.resourceId}`)).size,
-        average: scored.length ? Math.round(scored.reduce((sum, score) => sum + score, 0) / scored.length) : null,
-        best: scored.length ? Math.max(...scored) : null,
-        successRate: scored.length ? Math.round((scored.filter((score) => score >= 50).length / scored.length) * 100) : null,
-        subjectStats: subjects
-      };
-    }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [schoolCatalog, schoolAttempts]);
-  const selectedSchoolStats = schoolCards.find((school) => normalizeSchool(school.name) === normalizeSchool(selectedSchool));
-
-  const recentActivities = [...analyticsActivities]
-    .sort((a, b) => new Date(b.lastViewedAt).getTime() - new Date(a.lastViewedAt).getTime())
-    .slice(0, 5);
-
-  const weekDays = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - (6 - index));
-    const count = studentActivityEvents.filter((event) => {
-      const viewed = new Date(event.occurredAt);
-      const category = dashboardMode === 'overview' ? '' : ({ contests: 'Concours', 'mock-exams': 'Concours blanc', courses: 'Cours', exams: 'Examen national', summaries: 'Résumé' })[dashboardMode];
-      return event.eventType === 'VIEW' && !Number.isNaN(viewed.getTime())
-        && viewed.getFullYear() === date.getFullYear()
-        && viewed.getMonth() === date.getMonth()
-        && viewed.getDate() === date.getDate()
-        && (!category || normalizeActivityCategory(event.type) === category)
-        && (!analyticsSubject || event.subject === analyticsSubject);
-    }).length;
-    return { label: new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(date).replace('.', ''), count, key: date.toISOString() };
-  });
-  const maxDayCount = Math.max(1, ...weekDays.map((day) => day.count));
-
-  const stats = [
-    { label: 'Ressources consult\u00e9es', value: activityDataError ? '\u2014' : resourceCount, note: 'Ressources consult\u00e9es et enregistr\u00e9es', icon: '\u25A4', tint: '#eff6ff', color: '#2563eb' },
-    { label: 'Ressources termin\u00e9es', value: activityDataError ? '\u2014' : completedCount, note: 'Validations enregistr\u00e9es', icon: '\u2713', tint: '#ecfdf5', color: '#059669' },
-    { label: 'Activite cette semaine', value: activityDataError ? '\u2014' : activitiesThisWeek, note: 'Consultations enregistr\u00e9es en base', icon: '\u2197', tint: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Erreurs a revoir', value: schoolDataLoading || schoolHistoryError ? '\u2014' : pendingMistakes, note: 'R\u00e9ponses incorrectes des QCM', icon: '!', tint: '#fff7ed', color: '#ea580c' }
-  ];
+  const [statPeriod, setStatPeriod] = React.useState(7);
 
   const sectionActivities = useMemo(() => filterDashboardActivities(studentActivities, {
     mode: dashboardMode,
@@ -302,9 +226,10 @@ export default function ClientDashboard() {
   const activityTrendPoints = activityTrend.map((week, index) => `${40 + index * (620 / Math.max(1, activityTrend.length - 1))},${190 - week.views / activityTrendMax * 145}`).join(' ');
   const completionTrendPoints = activityTrend.map((week, index) => `${40 + index * (620 / Math.max(1, activityTrend.length - 1))},${190 - week.completions / activityTrendMax * 145}`).join(' ');
   const sectionCompleted = sectionActivities.filter((activity) => activity.completed).length;
-  const sectionCompletionRate = sectionActivities.length ? Math.round((sectionCompleted / sectionActivities.length) * 100) : 0;
+  const sectionCompletionRate = sectionActivities.length ? Math.round((sectionCompleted / sectionActivities.length) * 100) : null;
   const sectionVisits = sectionActivities.reduce((total, activity) => total + Number(activity.visits || 0), 0);
-  const correctionDocs = sectionActivities.filter((activity) => `${activity.id || ''} ${activity.title || ''}`.toLocaleLowerCase().includes('correction'));
+  const correctionDocs = sectionActivities.filter((activity) => activity.resourceVariant === 'correction'
+    || `${activity.id || ''} ${activity.title || ''}`.toLocaleLowerCase().includes('correction'));
   const examDocs = sectionActivities.filter((activity) => !correctionDocs.includes(activity));
   const completedQcmAttempts = useMemo(() => schoolAttempts.filter((attempt) => {
     const answered = Number(attempt.totalQuestions) || 0;
@@ -444,11 +369,7 @@ export default function ClientDashboard() {
     && (!analyticsSubject || normalizeCourseValue(course.matiere) === normalizeCourseValue(analyticsSubject))
   ), [courseCatalog, user.filiere, analyticsSubject]);
   const courseChapterAnalytics = useMemo(() => {
-    const resources = visibleCourseCatalog.length ? visibleCourseCatalog : courseActivities.map((activity) => ({
-      id: String(activity.id || '').replace(/^Cours:/, ''),
-      matiere: activity.subject,
-      chapitre: activity.chapter
-    }));
+    const resources = visibleCourseCatalog;
     const byResource = new Map(courseActivities.map((activity) => [String(activity.id || '').replace(/^Cours:/, ''), activity]));
     const chapters = new Map();
     resources.forEach((resource) => {
@@ -468,7 +389,7 @@ export default function ClientDashboard() {
     }).sort((a, b) => a.subject.localeCompare(b.subject) || a.name.localeCompare(b.name));
   }, [visibleCourseCatalog, courseActivities]);
   const completedCourseChapters = courseChapterAnalytics.filter((chapter) => chapter.validated).length;
-  const courseChapterProgress = courseChapterAnalytics.length ? Math.round((completedCourseChapters / courseChapterAnalytics.length) * 100) : 0;
+  const courseChapterProgress = courseChapterAnalytics.length ? Math.round((completedCourseChapters / courseChapterAnalytics.length) * 100) : null;
   const courseActivitySeconds = courseActivities.reduce((total, activity) => total + (Number(activity.durationSeconds) || 0), 0);
   const courseRevisionDistribution = useMemo(() => {
     const subjects = new Map();
@@ -546,12 +467,12 @@ export default function ClientDashboard() {
     && (courseSubjectFilter === 'all' || (courseSubjectFilter === 'strengths' ? chapter.percent >= 70 : chapter.percent < 70)));
   const courseCompletionCards = [
     { label: 'Chapitres validés', value: courseCatalogLoading ? '…' : courseChapterAnalytics.length ? `${completedCourseChapters}/${courseChapterAnalytics.length}` : '—', note: courseChapterAnalytics.length ? 'Tous les cours du chapitre terminés' : 'Aucun chapitre disponible', icon: '✓', tint: '#d1fae5', color: '#059669' },
-    { label: 'Progression', value: courseCatalogLoading ? '…' : `${courseChapterProgress}%`, note: 'Taux des chapitres validés', icon: '◉', tint: '#dbeafe', color: '#2563eb' },
+    { label: 'Progression', value: courseCatalogLoading ? '…' : courseChapterProgress === null ? '—' : `${courseChapterProgress}%`, note: 'Taux des chapitres validés', icon: '◉', tint: '#dbeafe', color: '#2563eb' },
     { label: 'Temps d’étude', value: `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(courseActivitySeconds / 3600)} h`, note: 'Temps visible dans les cours', icon: '◷', tint: '#e0e7ff', color: '#4f46e5' },
     { label: 'Série de révision', value: `${currentStudyStreak} / ${bestStudyStreak} j`, note: 'Actuelle / meilleure série', icon: '↗', tint: '#d1fae5', color: '#059669' }
   ];
   const activeDashboardStats = dashboardMode === 'courses' ? courseCompletionCards : sectionStats;
-  const dashboardProgressValue = dashboardMode === 'courses' ? courseChapterProgress : scoreMode ? (activeScoreAverage ?? 0) : sectionCompletionRate;
+  const dashboardProgressValue = dashboardMode === 'courses' ? (courseChapterProgress ?? 0) : scoreMode ? (activeScoreAverage ?? 0) : (sectionCompletionRate ?? 0);
   const weeklyStudyChartMax = Math.max(0.25, ...weeklyStudyHours.map((day) => day.hours));
   const weeklyStudyChartPoints = weeklyStudyHours.map((day, index) => `${30 + index * 106},${178 - (day.hours / weeklyStudyChartMax) * 130}`).join(' ');
   const availableSchools = [...new Set([...schoolCatalog.map((school) => school.ecole || school.name), ...concoursAttempts.map((attempt) => attempt.school)].filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
@@ -562,13 +483,31 @@ export default function ClientDashboard() {
     ...concoursAttempts.filter((attempt) => !selectedSchool || normalizeSchool(attempt.school) === normalizeSchool(selectedSchool)).map((attempt) => String(attempt.subject || '').trim())
   ].filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
   const activeContestAttempts = activeScoreAttempts;
-  const scoreTrendAttempts = [...activeContestAttempts].sort((a, b) => new Date(a.answeredAt) - new Date(b.answeredAt));
-  const trendMax = Math.max(100, ...scoreTrendAttempts.map((attempt) => Number(attempt.score) || 0));
-  const scoreTrendPoints = scoreTrendAttempts.map((attempt, index) => `${scoreTrendAttempts.length === 1 ? 350 : 40 + index * (620 / (scoreTrendAttempts.length - 1))},${200 - (Number(attempt.score) || 0) / trendMax * 160}`).join(' ');
+  const scoreTrendAttempts = [...activeContestAttempts].filter((attempt) => scoresOf([attempt]).length > 0).sort((a, b) => new Date(a.answeredAt) - new Date(b.answeredAt));
+  const scoreTrendData = scoreTrendAttempts.map((attempt, index) => ({
+    label: `${index + 1}. ${attempt.resourceTitle || 'QCM'}`,
+    score: Number(attempt.score),
+    date: formatDate(attempt.answeredAt)
+  }));
   const scorePerformanceGroups = dashboardMode === 'mock-exams' ? mockChapterPerformance : concoursSubjectPerformance;
   const scoreBestGroup = scorePerformanceGroups.find((group) => group.attempts > 0 && group.average !== null);
   const scoreImproveGroup = [...scorePerformanceGroups].reverse().find((group) => group.attempts > 0 && group.average !== null);
   const scoreErrorGroup = [...scorePerformanceGroups].sort((a, b) => b.errors - a.errors)[0];
+
+  const activityFilters = !scoreMode && !activityDataError ? (
+    <section className="dashboard-score-filters dashboard-panel dashboard-activity-filters" aria-label="Filtres des statistiques">
+      <label>Matière<select value={analyticsSubject} onChange={(event) => setAnalyticsSubject(event.target.value)}><option value="">Toutes les matières</option>{availableAnalyticsSubjects.map((subject) => <option key={subject} value={subject}>{subject}</option>)}</select></label>
+      <label>Période<select value={analyticsPeriod} onChange={(event) => setAnalyticsPeriod(event.target.value)}><option value="all">Toute la période</option><option value="30">30 derniers jours</option><option value="90">90 derniers jours</option></select></label>
+    </section>
+  ) : null;
+
+  const contestProgressActivities = sectionActivities.filter((activity) =>
+    statPeriod === 0 || !activity.lastViewedAt || new Date(activity.lastViewedAt).getTime() >= Date.now() - statPeriod * 86400000
+  );
+  const contestProgressTotal = contestProgressActivities.length;
+  const contestProgressCompleted = contestProgressActivities.filter((activity) => activity.completed).length;
+  const contestProgressInProgress = Math.max(0, contestProgressTotal - contestProgressCompleted);
+  const contestProgressRate = contestProgressTotal ? Math.round((contestProgressCompleted / contestProgressTotal) * 100) : 0;
 
   return (
     <div className="dashboard-with-rail">
@@ -578,7 +517,7 @@ export default function ClientDashboard() {
           return <button
             type="button"
             key={shortcut.path}
-            className={`dashboard-rail-link${index === 0 ? ' is-primary' : ''}${active ? ' is-active' : ''}`}
+            className={`dashboard-rail-link${active ? ' is-active' : ''}`}
             aria-label={shortcut.label}
             aria-pressed={active}
             title={shortcut.label}
@@ -589,191 +528,64 @@ export default function ClientDashboard() {
           </button>;
         })}
       </nav>
-      <div className="client-dashboard">
-        <div className="client-dashboard-content">
-        {!scoreMode && !activityDataError && <section className="dashboard-score-filters dashboard-panel dashboard-activity-filters" aria-label="Filtres des statistiques">
-          <label>Matière<select value={analyticsSubject} onChange={(event) => setAnalyticsSubject(event.target.value)}><option value="">Toutes les matières</option>{availableAnalyticsSubjects.map((subject) => <option key={subject} value={subject}>{subject}</option>)}</select></label>
-          <label>Période<select value={analyticsPeriod} onChange={(event) => setAnalyticsPeriod(event.target.value)}><option value="all">Toute la période</option><option value="30">30 derniers jours</option><option value="90">90 derniers jours</option></select></label>
-        </section>}
-        {activityDataLoading && <div className="dashboard-panel dashboard-score-empty">Chargement de vos activités enregistrées…</div>}
-        {dashboardMode === 'overview' ? <>
-        <section className="dashboard-welcome">
-          <div className="dashboard-welcome-copy">
-            <h1>Bonjour, {firstName}</h1>
-            <div className="dashboard-welcome-actions">
-              <button type="button" className="dashboard-primary-action" onClick={() => navigate('/client-cours')}>Continuer mes r&eacute;visions <span aria-hidden="true">{'\u2192'}</span></button>
-              <button type="button" className="dashboard-secondary-action" onClick={() => navigate('/client-examens')}>Voir les examens</button>
-            </div>
-          </div>
-        </section>
-
-        <section className="dashboard-overview-summary" aria-label="Résumé de votre progression">
-        <section className="dashboard-stats" aria-label="Statistiques de progression">
-          {stats.map((stat) => (
-            <article className="dashboard-stat-card" key={stat.label}>
-              <span className="dashboard-stat-icon" style={{ color: stat.color, background: stat.tint }}>{stat.icon}</span>
-              <div className="dashboard-stat-copy"><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.note}</small></div>
-            </article>
-          ))}
-        </section>
-        <section className="dashboard-overall-card dashboard-overall-standalone" aria-label="Progression générale">
-          <div className="dashboard-overall-copy">
-            <strong>Progression g&eacute;n&eacute;rale</strong>
-          </div>
-          <div className="dashboard-overall-content">
-            <div className="dashboard-ring" style={{ '--progress': `${activityDataError ? 0 : overallProgress}%` }}>
-              <div><strong>{activityDataError || !resourceCount ? '—' : `${overallProgress}%`}</strong><span>termin&eacute;</span></div>
-            </div>
-            <div className="dashboard-overall-copy">
-              <span>{activityDataError ? 'Données indisponibles' : `${completedCount} sur ${resourceCount} ressources enregistrées`}</span>
-            </div>
-          </div>
-        </section>
-        </section>
-
-        <div className="dashboard-activity-discord-layout">
-        <section className="dashboard-panel dashboard-score-trend dashboard-activity-trend">
-          <div className="dashboard-panel-heading"><div><span className="dashboard-section-kicker">ACTIVITÉ RÉELLE</span><h2>Évolution de vos consultations</h2></div></div>
-          {sectionEvents.some((event) => event.eventType === 'VIEW' || event.eventType === 'COMPLETE')
-            ? <><p className="dashboard-panel-description">Consultations et validations enregistrées par semaine, selon les filtres choisis.</p>
-              <svg className="dashboard-score-line-chart" viewBox="0 0 700 235" role="img" aria-label="Consultations et validations par semaine">
-                {[45, 90, 135, 180].map((y) => <line key={y} x1="40" x2="660" y1={y} y2={y} className="dashboard-study-gridline" />)}
-                <polyline points={activityTrendPoints} className="dashboard-study-line" />
-                <polyline points={completionTrendPoints} className="dashboard-study-line dashboard-activity-completion-line" />
-                {activityTrend.map((week, index) => {
-                  const x = 40 + index * (620 / Math.max(1, activityTrend.length - 1));
-                  const y = 190 - week.views / activityTrendMax * 145;
-                  return <g key={week.key}><circle cx={x} cy={y} r="4" className="dashboard-study-point"><title>{`${week.label} : ${week.views} consultations`}</title></circle></g>;
-                })}
-                <text x="40" y="222" className="dashboard-study-day-label">{activityTrend[0]?.label}</text><text x="660" y="222" textAnchor="end" className="dashboard-study-day-label">{activityTrend.at(-1)?.label}</text>
-              </svg><div className="dashboard-activity-trend-legend"><span>Consultations</span><span>Validations</span></div></>
-            : <div className="dashboard-mode-empty">La chronologie apparaîtra après une consultation ou une validation enregistrée.</div>}
-        </section>
-        <section className="dashboard-quick-links dashboard-discord-panel" aria-label="Communauté">
-          <a className="dashboard-discord-link" href="https://discord.com/app" target="_blank" rel="noreferrer" aria-label="Ouvrir Discord dans un nouvel onglet">
-            <span><svg viewBox="0 0 20 19" aria-hidden="true" focusable="false"><use href="/icons.svg#discord-icon" /></svg></span>
-            <strong>Discord</strong><small>Rejoindre la communaut&eacute;</small><b>{'\u2197'}</b>
-          </a>
-        </section>
-        </div>
-        {sectionSummary.resources > 0 && <div className="dashboard-score-insights dashboard-overview-insights">
-          <section className="dashboard-panel"><span className="dashboard-section-kicker">POINT FORT</span><h2>{sectionSummary.strength?.name || 'Pas encore de données'}</h2><p>{sectionSummary.strength ? `${sectionSummary.strength.completionRate}% de vos ressources consultées sont terminées dans cette matière.` : 'Les points forts apparaîtront après vos premières activités.'}</p></section>
-          {sectionSummary.subjects.length > 1 && sectionSummary.difficulty && <section className="dashboard-panel"><span className="dashboard-section-kicker">À RENFORCER</span><h2>{sectionSummary.difficulty?.name}</h2><p>{`${sectionSummary.difficulty.completionRate}% de vos ressources consultées sont terminées dans cette matière.`}</p></section>}
-        </div>}
-        <section className="dashboard-panel dashboard-school-section" aria-label="Statistiques par école">
-          <div className="dashboard-panel-heading">
-            <div><span className="dashboard-section-kicker">VOS OBJECTIFS</span><h2>Progression par &eacute;cole</h2></div>
-            <span className="dashboard-school-count">{schoolCards.length} &eacute;cole{schoolCards.length > 1 ? 's' : ''}</span>
-          </div>
-          <p className="dashboard-panel-description">Choisissez une &eacute;cole pour consulter vos r&eacute;sultats et votre progression.</p>
-          {schoolDataLoading ? <div className="dashboard-school-message">Chargement des &eacute;coles et des r&eacute;sultats...</div>
-            : schoolCatalogError ? <div className="dashboard-school-message">Impossible de charger la liste des &eacute;coles pour le moment.</div>
-            : schoolCards.length ? <>
-              <div className="dashboard-school-cards">
-                {schoolCards.map((school) => (
-                  <button type="button" key={school.name} className={`dashboard-school-card ${normalizeSchool(selectedSchool) === normalizeSchool(school.name) ? 'is-selected' : ''}`} onClick={() => setSelectedSchool(normalizeSchool(selectedSchool) === normalizeSchool(school.name) ? '' : school.name)} aria-pressed={normalizeSchool(selectedSchool) === normalizeSchool(school.name)}>
-                    <span className="dashboard-school-mark" aria-hidden="true">{school.name.slice(0, 1).toUpperCase()}</span>
-                    <span className="dashboard-school-card-copy"><strong>{school.name}</strong><small>{school.contestCount} concours &middot; {school.subjects.length} mati&egrave;re{school.subjects.length > 1 ? 's' : ''}</small></span>
-                    <span className="dashboard-school-average">{school.average === null ? '--' : `${school.average}%`}<small>moyenne</small></span>
-                  </button>
-                ))}
-              </div>
-              {selectedSchoolStats && <div className="dashboard-school-detail">
-                <div className="dashboard-school-detail-heading"><div><span>VOTRE DASHBOARD</span><h3>{selectedSchoolStats.name}</h3></div><button type="button" onClick={() => setSelectedSchool('')} aria-label="Fermer le dashboard de cette école">&times;</button></div>
-                <div className="dashboard-school-metrics">
-                  <article><span>Concours disponibles</span><strong>{selectedSchoolStats.contestCount}</strong></article>
-                  <article><span>Concours tent&eacute;s</span><strong>{selectedSchoolStats.attemptedContests}</strong><small>{selectedSchoolStats.attemptCount} tentative{selectedSchoolStats.attemptCount > 1 ? 's' : ''}</small></article>
-                  <article><span>Score moyen</span><strong>{selectedSchoolStats.average === null ? '--' : `${selectedSchoolStats.average}%`}</strong></article>
-                  <article><span>Meilleur score</span><strong>{selectedSchoolStats.best === null ? '--' : `${selectedSchoolStats.best}%`}</strong></article>
-                  <article><span>Scores &agrave; 50% ou plus</span><strong>{selectedSchoolStats.successRate === null ? '--' : `${selectedSchoolStats.successRate}%`}</strong></article>
-                </div>
-                {!!selectedSchoolStats.years.length && <div className="dashboard-school-years"><strong>Ann&eacute;es disponibles</strong>{selectedSchoolStats.years.map((year) => <span key={year}>{year}</span>)}</div>}
-                {schoolHistoryError ? <div className="dashboard-school-no-data">Impossible de charger vos r&eacute;sultats pour le moment.</div>
-                  : selectedSchoolStats.attemptCount ? <>
-                  <div className="dashboard-school-detail-title">R&eacute;sultats par mati&egrave;re</div>
-                  {selectedSchoolStats.subjectStats.length ? <div className="dashboard-school-subjects">
-                    {selectedSchoolStats.subjectStats.map((subject) => <div className="dashboard-school-subject-row" key={subject.name}><strong>{subject.name}</strong><span>{subject.attempts} tentative{subject.attempts > 1 ? 's' : ''}</span><b>{subject.average === null ? '--' : `${subject.average}%`}</b></div>)}
-                  </div> : <p className="dashboard-school-no-data">Les mati&egrave;res ne sont pas disponibles dans les r&eacute;sultats enregistr&eacute;s.</p>}
-                </> : <div className="dashboard-school-no-data">Aucune tentative enregistr&eacute;e pour cette &eacute;cole pour le moment. Vos r&eacute;sultats appara&icirc;tront ici apr&egrave;s un concours.</div>}
-              </div>}
-            </> : <div className="dashboard-school-message">Aucune &eacute;cole avec des concours publi&eacute;s pour le moment.</div>}
-        </section>
-
-        <div className="dashboard-content-grid">
-          <section className="dashboard-panel dashboard-subject-panel">
-            <div className="dashboard-panel-heading">
-              <div><span className="dashboard-section-kicker">VOTRE APPRENTISSAGE</span><h2>Progression par mati&egrave;re</h2></div>
-              <button type="button" onClick={() => navigate('/client-cours')}>Parcourir les cours <span aria-hidden="true">{'\u2192'}</span></button>
-            </div>
-            {progressBySubject.length ? (
-              <div className="dashboard-subject-list">
-                {progressBySubject.map((subject) => (
-                  <article className="dashboard-subject-row" key={subject.name}>
-                    <span className="dashboard-subject-icon" style={{ color: subject.color, background: subject.tint }}>{subject.icon}</span>
-                    <div className="dashboard-subject-main">
-                      <div className="dashboard-subject-title"><strong>{subject.name}</strong><span>{subject.completed}/{subject.total} termin&eacute;es</span></div>
-                      <div className="dashboard-progress-track"><span style={{ width: `${subject.percent}%`, background: subject.color }} /></div>
-                    </div>
-                    <strong className="dashboard-subject-percent" style={{ color: subject.color }}>{subject.percent}%</strong>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="dashboard-empty-state">
-                <span>{'\u25CB'}</span><strong>Votre progression appara&icirc;tra ici</strong>
-                <p>Consultez un cours, un r&eacute;sum&eacute; ou un sujet pour commencer &agrave; suivre votre avanc&eacute;e.</p>
-                <button type="button" onClick={() => navigate('/client-cours')}>D&eacute;couvrir les cours</button>
-              </div>
-            )}
-          </section>
-
-          <section className="dashboard-panel dashboard-week-panel">
-            <div className="dashboard-panel-heading">
-              <div><span className="dashboard-section-kicker">R&Eacute;GULARIT&Eacute;</span><h2>Cette semaine</h2></div>
-              <span className="dashboard-week-total">{activitiesThisWeek} ressource{activitiesThisWeek > 1 ? 's' : ''}</span>
-            </div>
-            <p className="dashboard-panel-description">Ressources consult&eacute;es au cours des sept derniers jours.</p>
-            <div className="dashboard-week-chart" aria-label="Ressources consultees par jour">
-              {weekDays.map((day) => (
-                <div className="dashboard-week-day" key={day.key}>
-                  <span className="dashboard-week-count">{day.count || ''}</span>
-                  <div className="dashboard-week-bar-track"><span style={{ height: `${day.count ? Math.max(10, day.count / maxDayCount * 100) : 4}%` }} /></div>
-                  <span className="dashboard-week-label">{day.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="dashboard-week-footer"><span className="dashboard-week-dot" />Votre activit&eacute; est mise &agrave; jour automatiquement</div>
-          </section>
-        </div>
-
-        <section className="dashboard-panel dashboard-activity-panel">
-          <div className="dashboard-panel-heading">
-            <div><span className="dashboard-section-kicker">REPRENDRE</span><h2>Activit&eacute;s r&eacute;centes</h2></div>
-            <button type="button" onClick={() => navigate('/client-erreurs?view=all')}>R&eacute;viser mes erreurs <span aria-hidden="true">{'\u2192'}</span></button>
-          </div>
-          {recentActivities.length ? (
-            <div className="dashboard-activity-list">
-              {recentActivities.map((activity) => {
-                const subject = subjectStyle(activity.subject);
-                return (
-                  <article className="dashboard-activity-row" key={activity.id}>
-                    <span className="dashboard-activity-type" style={{ color: subject.color, background: subject.tint }}>{String(activity.type || 'Ressource').slice(0, 3).toUpperCase()}</span>
-                    <div className="dashboard-activity-copy"><strong>{activity.title}</strong><span>{[activity.subject, activity.chapter].filter(Boolean).join(' / ') || subject.name}</span></div>
-                    <time>{formatDate(activity.lastViewedAt)}</time>
-                    <button className={`dashboard-completion-button ${activity.completed ? 'is-complete' : ''}`} type="button" onClick={() => setStudentActivityCompleted(activity.id, !activity.completed)}>
-                      {activity.completed ? 'Termin&eacute;e \u2713' : 'Marquer termin&eacute;e'}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="dashboard-activity-empty">Vos ressources consult&eacute;es appara&icirc;tront ici. Commencez par choisir un cours ou un examen.</div>
-          )}
-        </section>
-
-        </> : <>
-          <section className={`dashboard-mode-hero${dashboardMode === 'courses' ? ' dashboard-course-mode-hero' : ''}`}>
+      <div className="client-dashboard dashboard-bento-shell">
+        {dashboardMode === 'exams' ? (
+          <ClientNationalExamStatsDashboard
+            events={studentActivityEvents}
+            loading={activityDataLoading}
+            error={activityDataError}
+            onRetry={() => { setActivityDataLoading(true); setActivityRetry((value) => value + 1); }}
+          />
+        ) : (
+        <div className="client-dashboard-content bento-dashboard" data-dashboard-mode={dashboardMode}>
+        {activityDataLoading && dashboardMode !== 'overview' && <div className="dashboard-panel dashboard-score-empty">Chargement de vos activités enregistrées…</div>}
+        {dashboardMode === 'overview' ? (
+          <ClientGeneralStatsDashboard
+            events={studentActivityEvents}
+            activities={studentActivities}
+            mockAttempts={mockAttempts}
+            concoursAttempts={concoursAttempts}
+            activityLoading={activityDataLoading}
+            activityError={activityDataError}
+            schoolLoading={schoolDataLoading}
+            schoolError={schoolHistoryError}
+            firstName={firstName}
+            onNavigate={navigate}
+          />
+        )  : dashboardMode === 'contests' ? (
+          <ClientContestStatsDashboard
+            schoolCatalog={schoolCatalog}
+            schoolAttempts={schoolAttempts}
+            studentActivities={studentActivities}
+            schoolDataLoading={schoolDataLoading}
+            schoolCatalogError={schoolCatalogError}
+            schoolHistoryError={schoolHistoryError}
+            user={user}
+          />
+        ) : dashboardMode === 'mock-exams' ? (
+          <ClientMockExamStatsDashboard
+            schoolAttempts={schoolAttempts}
+            studentActivities={studentActivities}
+            schoolDataLoading={schoolDataLoading}
+            schoolHistoryError={schoolHistoryError}
+            user={user}
+          />
+        ) : dashboardMode === 'courses' ? (
+          <ClientCourseStatsDashboard
+            courseCatalog={courseCatalog}
+            courseCatalogLoading={courseCatalogLoading}
+            courseCatalogError={courseCatalogError}
+            studentActivities={studentActivities}
+            user={user}
+          />
+        ) : dashboardMode === 'summaries' ? (
+          <ClientSummaryStatsDashboard
+            studentActivities={studentActivities}
+            user={user}
+          />
+        ) : (
+          <>
+          <section className={`dashboard-mode-hero dashboard-mode-hero-compact${dashboardMode === 'courses' ? ' dashboard-course-mode-hero' : ''}`}>
             <div>
               <span className="dashboard-eyebrow">VOTRE ESPACE DE R&Eacute;VISION</span>
               <h1>{DASHBOARD_MODES[dashboardMode].title}</h1>
@@ -781,7 +593,7 @@ export default function ClientDashboard() {
             </div>
             <div className="dashboard-mode-progress">
               <div className={`dashboard-ring${dashboardMode === 'courses' ? ' dashboard-course-ring' : ''}`} style={{ '--progress': `${dashboardProgressValue}%` }}>
-                <div><strong>{dashboardMode === 'courses' ? `${courseChapterProgress}%` : scoreMode ? (activeScoreAverage === null ? '—' : `${activeScoreAverage}%`) : `${sectionCompletionRate}%`}</strong><span>{scoreMode ? 'moyenne' : 'terminé'}</span></div>
+                <div><strong>{dashboardMode === 'courses' ? (courseChapterProgress === null ? '—' : `${courseChapterProgress}%`) : scoreMode ? (activeScoreAverage === null ? '—' : `${activeScoreAverage}%`) : sectionCompletionRate === null ? '—' : `${sectionCompletionRate}%`}</strong><span>{scoreMode ? 'moyenne' : 'terminé'}</span></div>
               </div>
               <div className="dashboard-overall-copy">
                 <strong>{dashboardMode === 'courses' ? 'Chapitres validés' : scoreMode ? 'Score moyen' : 'Progression de la section'}</strong>
@@ -790,14 +602,295 @@ export default function ClientDashboard() {
             </div>
           </section>
 
-          <section className={`dashboard-stats${dashboardMode === 'courses' ? ' dashboard-courses-stats' : ''}`} aria-label={`Indicateurs ${DASHBOARD_MODES[dashboardMode].title}`}>
-            {activeDashboardStats.map((stat) => (
-              <article className="dashboard-stat-card" key={stat.label}>
-                <span className="dashboard-stat-icon" style={{ color: stat.color, background: stat.tint }}>{stat.icon}</span>
-                <div className="dashboard-stat-copy"><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.note}</small></div>
-              </article>
-            ))}
-          </section>
+          {/* ── Outlet-summary style donut card ────────────────────────── */}
+          {(() => {
+            // Compute counts filtered to statPeriod days
+            const cutoff = statPeriod === 0 ? 0 : Date.now() - statPeriod * 86400000;
+            const filtered = sectionActivities.filter((a) =>
+              statPeriod === 0 || !a.lastViewedAt || new Date(a.lastViewedAt).getTime() >= cutoff
+            );
+            const total = filtered.length;
+            const done = filtered.filter((a) => a.completed).length;
+            const inProgress = Math.max(0, total - done);
+            const pct = total ? Math.round((done / total) * 100) : 0;
+
+            const donutData = total
+              ? [
+                  { name: 'Terminées', value: done, color: '#059669' },
+                  { name: 'En cours', value: inProgress > 0 ? inProgress : (done === 0 ? 1 : 0), color: '#3b82f6' },
+                ].filter(d => d.value > 0)
+              : [
+                  { name: 'Terminées', value: 0, color: '#059669' },
+                  { name: 'En cours', value: 1, color: '#e2e8f0' },
+                ];
+
+            const PERIODS = [
+              { label: '7 jours', value: 7 },
+              { label: '30 jours', value: 30 },
+              { label: 'Tout', value: 0 },
+            ];
+
+            const modeTitle = dashboardMode === 'mock-exams'
+              ? 'Concours blancs'
+              : dashboardMode === 'contests'
+              ? 'Concours réels'
+              : dashboardMode === 'courses'
+              ? 'Cours BAC'
+              : dashboardMode === 'exams'
+              ? 'Examens nationaux'
+              : 'Fiches & Résumés';
+
+            return (
+              <section
+                className="dashboard-panel dashboard-mode-activity-summary"
+                style={{
+                  minWidth: 0,
+                  width: 'min(100%, 240px)',
+                  maxWidth: '240px',
+                  marginLeft: 0,
+                  marginRight: 0,
+                  boxSizing: 'border-box',
+                  background: '#fff',
+                  borderRadius: '18px',
+                  border: '1px solid #e3ebf6',
+                  boxShadow: '0 7px 24px rgba(28, 62, 115, .07)',
+                  padding: '12px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
+                {/* ── Top Header with Title and Filter ── */}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px',
+                  borderBottom: '1px solid #f1f5f9',
+                  paddingBottom: '10px',
+                }}>
+                  <div style={{ display: 'none' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#2563eb',
+                      letterSpacing: '1.2px',
+                      textTransform: 'uppercase',
+                      display: 'block',
+                      marginBottom: '2px',
+                    }}>
+                      RÉSUMÉ D'ACTIVITÉ
+                    </span>
+                    <h2 style={{
+                      margin: 0,
+                      fontSize: '18px',
+                      fontWeight: 800,
+                      color: '#18345b',
+                      letterSpacing: '-0.02em',
+                    }}>
+                      {modeTitle} · Synthèse
+                    </h2>
+                  </div>
+
+                  {/* Period Filter (7 jours / 30 jours / Tout) */}
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    background: '#f1f5f9',
+                    padding: '2px',
+                    borderRadius: '10px',
+                    gap: '2px',
+                  }}>
+                    {PERIODS.map((p) => {
+                      const active = statPeriod === p.value;
+                      return (
+                        <button
+                          key={p.value}
+                          type="button"
+                          onClick={() => setStatPeriod(p.value)}
+                          style={{
+                            padding: '5px 9px',
+                            borderRadius: '7px',
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            background: active ? '#2563eb' : 'transparent',
+                            color: active ? '#ffffff' : '#64748b',
+                            boxShadow: active ? '0 2px 8px rgba(37, 99, 235, 0.28)' : 'none',
+                          }}
+                        >
+                          {p.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ── Body: Donut Chart on left, 3 metrics on right (Outlet summary style) ── */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr',
+                  alignItems: 'center',
+                  gap: 0,
+                }}>
+                  {/* Left: Donut Chart */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: 0,
+                  }}>
+                    <div style={{ width: 92, height: 92, position: 'relative', flexShrink: 0 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={donutData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={29}
+                            outerRadius={40}
+                            paddingAngle={donutData.length > 1 ? 4 : 0}
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                            isAnimationActive
+                          >
+                            {donutData.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(val, name) => [`${val}`, name]}
+                            contentStyle={{
+                              borderRadius: '10px',
+                              fontSize: '12px',
+                              border: '1px solid #e2e8f0',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      {/* Center % text */}
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        pointerEvents: 'none',
+                      }}>
+                        <strong style={{ fontSize: '17px', fontWeight: 800, color: '#18345b', lineHeight: 1 }}>
+                          {pct}%
+                        </strong>
+                        <span style={{ fontSize: '8px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                          terminé
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#059669', display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>Terminées</span>
+                        <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{done}</strong>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>En cours</span>
+                        <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{inProgress}</strong>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>Total</span>
+                        <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{total}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: The 3 Metrics (Exact layout of Image 2) */}
+                  <div style={{
+                    display: 'none',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                    gap: '14px',
+                  }}>
+                    {/* Metric 1: Total consultées */}
+                    <div style={{
+                      background: '#f8fafc',
+                      borderRadius: '14px',
+                      padding: '14px 16px',
+                      border: '1px solid #edf2f7',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb' }} />
+                        <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Total consultés</span>
+                      </div>
+                      <strong style={{ fontSize: '26px', fontWeight: 800, color: '#18345b', lineHeight: 1.1 }}>
+                        {total}
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        {statPeriod === 7 ? 'Sur 7 jours' : statPeriod === 30 ? 'Sur 30 jours' : 'Toute période'}
+                      </span>
+                    </div>
+
+                    {/* Metric 2: Terminées */}
+                    <div style={{
+                      background: '#f0fdf4',
+                      borderRadius: '14px',
+                      padding: '14px 16px',
+                      border: '1px solid #dcfce7',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#059669' }} />
+                        <span style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>Terminés</span>
+                      </div>
+                      <strong style={{ fontSize: '26px', fontWeight: 800, color: '#15803d', lineHeight: 1.1 }}>
+                        {done}
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#86efac' }}>
+                        Marqués complétés
+                      </span>
+                    </div>
+
+                    {/* Metric 3: Progression */}
+                    <div style={{
+                      background: '#eff6ff',
+                      borderRadius: '14px',
+                      padding: '14px 16px',
+                      border: '1px solid #dbeafe',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#7c3aed' }} />
+                        <span style={{ fontSize: '12px', color: '#1e40af', fontWeight: 600 }}>Progression</span>
+                      </div>
+                      <strong style={{ fontSize: '26px', fontWeight: 800, color: '#2563eb', lineHeight: 1.1 }}>
+                        {pct}%
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#93c5fd' }}>
+                        Taux de complétion
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            );
+          })()}
+
+          {activityFilters}
 
           {dashboardMode === 'courses' ? <div className="dashboard-course-analytics">
             <section className="dashboard-panel dashboard-study-chart-panel">
@@ -858,6 +951,7 @@ export default function ClientDashboard() {
                 {[['all', 'Tous'], ['strengths', 'Points forts'], ['review', 'À revoir']].map(([value, label]) => <button key={value} type="button" className={courseSubjectFilter === value ? 'is-selected' : ''} aria-pressed={courseSubjectFilter === value} onClick={() => setCourseSubjectFilter(value)}>{label}</button>)}
               </div>
               {courseCatalogLoading ? <div className="dashboard-mode-empty">Chargement du programme de cours…</div>
+                : courseCatalogError ? <div className="dashboard-mode-empty">Impossible de charger le catalogue des cours. <button type="button" className="dashboard-inline-retry" onClick={() => { setCourseCatalogLoading(true); setCourseCatalogRetry((value) => value + 1); }}>Réessayer</button></div>
                 : courseChapterCards.length ? <div className="dashboard-course-card-grid">
                   {courseChapterCards.map((chapter) => <button type="button" className={`dashboard-course-chapter-card${chapter.percent >= 70 ? ' is-strength' : ''}`} key={`${chapter.subject}:${chapter.name}`} onClick={() => navigate('/client-cours')}>
                     <div className="dashboard-course-card-top"><span>{chapter.subject}</span><strong>{chapter.percent}%</strong></div>
@@ -873,8 +967,25 @@ export default function ClientDashboard() {
           {!scoreMode && dashboardMode !== 'overview' && <section className="dashboard-panel dashboard-score-trend dashboard-activity-trend">
             <div className="dashboard-panel-heading"><div><span className="dashboard-section-kicker">PROGRESSION CHRONOLOGIQUE</span><h2>Activité par semaine</h2></div><span className="dashboard-school-count">{sectionVisits} consultation{sectionVisits > 1 ? 's' : ''}</span></div>
             {sectionEvents.some((event) => event.eventType === 'VIEW' || event.eventType === 'COMPLETE')
-              ? <><p className="dashboard-panel-description">Évolution des consultations et validations à partir des événements enregistrés.</p>
-                <svg className="dashboard-score-line-chart" viewBox="0 0 700 235" role="img" aria-label="Consultations et validations hebdomadaires">
+            ? <><p className="dashboard-panel-description">Évolution des consultations et validations à partir des événements enregistrés.</p>
+                <div className="dashboard-weekly-bar-chart" role="img" aria-label="Consultations et validations hebdomadaires">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={activityTrend} margin={{ top: 14, right: 16, bottom: 0, left: -16 }} barGap={7}>
+                      <CartesianGrid stroke="#e5edf8" strokeDasharray="4 6" vertical={false} />
+                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#73839a', fontSize: 11 }} minTickGap={12} />
+                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#73839a', fontSize: 11 }} width={34} />
+                      <Tooltip
+                        formatter={(value, name) => [value, name === 'views' || name === 'Consultations' ? 'Consultations' : 'Validations']}
+                        contentStyle={{ border: '1px solid #dbeafe', borderRadius: 12, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.1)' }}
+                        cursor={{ fill: 'rgba(37, 99, 235, 0.05)' }}
+                      />
+                      <Bar dataKey="views" name="Consultations" fill="#2563eb" radius={[5, 5, 0, 0]} maxBarSize={30} />
+                      <Bar dataKey="completions" name="Validations" fill="#10b981" radius={[5, 5, 0, 0]} maxBarSize={30} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="dashboard-activity-bar-legend"><span>Consultations</span><span>Validations</span></div>
+                <svg className="dashboard-score-line-chart dashboard-weekly-activity-line-chart" viewBox="0 0 700 235" role="img" aria-label="Consultations et validations hebdomadaires">
                   {[45, 90, 135, 180].map((y) => <line key={y} x1="40" x2="660" y1={y} y2={y} className="dashboard-study-gridline" />)}
                   <polyline points={activityTrendPoints} className="dashboard-study-line" />
                   <polyline points={completionTrendPoints} className="dashboard-study-line dashboard-activity-completion-line" />
@@ -900,61 +1011,239 @@ export default function ClientDashboard() {
             </section>
 
             {schoolDataLoading ? <div className="dashboard-panel dashboard-score-empty">Chargement des résultats enregistrés…</div>
-              : schoolHistoryError ? <div className="dashboard-panel dashboard-score-empty">Impossible de charger vos résultats enregistrés. Reconnectez-vous puis réessayez.</div>
-              : !activeContestAttempts.length ? <div className="dashboard-activity-discord-layout">
-                <div className="dashboard-panel dashboard-score-empty">Aucun concours terminé ne correspond à ces filtres. Vos résultats apparaîtront ici après la fin d’un QCM.</div>
-                {dashboardMode === 'contests' && <section className="dashboard-quick-links dashboard-discord-panel" aria-label="Communauté">
-                  <a className="dashboard-discord-link" href="https://discord.com/app" target="_blank" rel="noreferrer" aria-label="Ouvrir Discord dans un nouvel onglet">
-                    <span><svg viewBox="0 0 20 19" aria-hidden="true" focusable="false"><use href="/icons.svg#discord-icon" /></svg></span>
-                    <strong>Discord</strong><small>Rejoindre la communaut&eacute;</small><b>{'\u2197'}</b>
-                  </a>
-                </section>}
-              </div>
+              : schoolHistoryError ? <div className="dashboard-panel dashboard-score-empty">Impossible de charger vos résultats enregistrés. <button type="button" className="dashboard-inline-retry" onClick={() => { setSchoolDataLoading(true); setSchoolRetry((value) => value + 1); }}>Réessayer</button></div>
               : <>
                 <div className="dashboard-activity-discord-layout">
                 <section className="dashboard-panel dashboard-score-trend">
-                  <div className="dashboard-panel-heading"><div><span className="dashboard-section-kicker">RÉSULTATS ENREGISTRÉS</span><h2>Évolution des scores</h2></div><span className="dashboard-school-count">{activeContestAttempts.length} tentative{activeContestAttempts.length > 1 ? 's' : ''}</span></div>
+                  <div className="dashboard-panel-heading">
+                    <div>
+                      <span className="dashboard-section-kicker">RÉSULTATS ENREGISTRÉS</span>
+                      <h2>Évolution des scores</h2>
+                    </div>
+                    <span className="dashboard-school-count">{activeContestAttempts.length} tentative{activeContestAttempts.length > 1 ? 's' : ''}</span>
+                  </div>
                   <p className="dashboard-panel-description">Chaque point correspond à une tentative terminée, triée par date.</p>
-                  <svg className="dashboard-score-line-chart" viewBox="0 0 700 235" role="img" aria-label="Évolution chronologique des scores enregistrés">
-                    {[40, 80, 120, 160, 200].map((y) => <line key={y} x1="40" x2="660" y1={y} y2={y} className="dashboard-study-gridline" />)}
-                    {scoreTrendAttempts.length > 1 && <polyline points={scoreTrendPoints} className="dashboard-study-line" />}
-                    {scoreTrendAttempts.map((attempt, index) => {
-                      const x = scoreTrendAttempts.length === 1 ? 350 : 40 + index * (620 / (scoreTrendAttempts.length - 1));
-                      const y = 200 - (Number(attempt.score) || 0) / trendMax * 160;
-                      return <g key={`${attempt.resourceType}|${attempt.resourceId}|${attempt.attemptId}`}><circle cx={x} cy={y} r="5" className="dashboard-study-point"><title>{`${attempt.resourceTitle || 'QCM'} · ${Math.round(Number(attempt.score) || 0)}% · ${formatDate(attempt.answeredAt)}`}</title></circle></g>;
-                    })}
-                    <text x="40" y="226" className="dashboard-study-day-label">{formatDate(scoreTrendAttempts[0]?.answeredAt)}</text><text x="660" y="226" textAnchor="end" className="dashboard-study-day-label">{formatDate(scoreTrendAttempts.at(-1)?.answeredAt)}</text>
-                  </svg>
+                  
+                  {/* Graphique Recharts toujours visible */}
+                  <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+                    {!scoreTrendData.length && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(255, 255, 255, 0.86)',
+                        backdropFilter: 'blur(3px)',
+                        borderRadius: '16px',
+                        gap: '10px',
+                        zIndex: 2,
+                        padding: '20px',
+                        textAlign: 'center',
+                      }}>
+                        <div style={{
+                          width: '52px',
+                          height: '52px',
+                          borderRadius: '14px',
+                          background: '#eff6ff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '26px',
+                          boxShadow: '0 2px 8px rgba(37,99,235,0.12)',
+                        }}>
+                          📈
+                        </div>
+                        <strong style={{ color: '#18345b', fontSize: '15px', fontWeight: 800 }}>
+                          Graphique d'évolution des scores
+                        </strong>
+                        <span style={{ color: '#64748b', fontSize: '13px', maxWidth: '400px', lineHeight: 1.5 }}>
+                          Aucun concours terminé ne correspond à ces filtres. Vos résultats s'afficheront ici sous forme de courbe dès la fin d'un QCM.
+                        </span>
+                      </div>
+                    )}
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={scoreTrendData.length ? scoreTrendData : [
+                          { date: 'QCM 1', score: 0 },
+                          { date: 'QCM 2', score: 0 },
+                          { date: 'QCM 3', score: 0 },
+                          { date: 'QCM 4', score: 0 },
+                          { date: 'QCM 5', score: 0 },
+                        ]}
+                        margin={{ top: 12, right: 18, bottom: 8, left: 0 }}
+                      >
+                        <CartesianGrid stroke="#e5edf7" strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} minTickGap={24} />
+                        <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={(value) => `${value}%`} width={44} />
+                        {scoreTrendData.length > 0 && (
+                          <Tooltip formatter={(value) => [`${value}%`, 'Score']} labelFormatter={(label, payload) => payload?.[0]?.payload?.label ? `${payload[0].payload.label} · ${label}` : label} />
+                        )}
+                        <Line
+                          type="monotone"
+                          dataKey="score"
+                          stroke={scoreTrendData.length ? "#2563eb" : "#cbd5e1"}
+                          strokeDasharray={scoreTrendData.length ? undefined : "5 5"}
+                          strokeWidth={3}
+                          dot={scoreTrendData.length ? { r: 4, fill: '#2563eb' } : false}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </section>
+
+                {dashboardMode === 'contests' && <section className="dashboard-contest-summary-card dashboard-contest-average-card" aria-label="Score moyen des concours">
+                  <div className="dashboard-contest-average-content">
+                    <div className="dashboard-ring dashboard-activity-summary-ring" style={{ '--progress': `${activityDataError ? 0 : activeScoreAverage ?? 0}%` }}>
+                      <div><strong>{schoolDataLoading ? '…' : activeScoreAverage === null ? '—' : `${activeScoreAverage}%`}</strong><span>moyenne</span></div>
+                    </div>
+                    <div className="dashboard-contest-average-copy">
+                      <strong>Score moyen</strong>
+                      <span>{schoolDataLoading ? 'Chargement…' : `${activeScoreAttempts.length} tentative${activeScoreAttempts.length > 1 ? 's' : ''}`}</span>
+                    </div>
+                  </div>
+                </section>}
+
+                {dashboardMode === 'contests' && <section className="dashboard-contest-summary-card dashboard-contest-progress-card" aria-label="Progression des concours">
+                  <div className="dashboard-contest-progress-heading">
+                    <strong>Progression</strong>
+                    <div className="dashboard-contest-periods" role="group" aria-label="Période de progression">
+                      {[{ label: '7 jours', value: 7 }, { label: '30 jours', value: 30 }, { label: 'Tout', value: 0 }].map((period) => (
+                        <button key={period.value} type="button" aria-pressed={statPeriod === period.value} className={statPeriod === period.value ? 'is-selected' : ''} onClick={() => setStatPeriod(period.value)}>{period.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="dashboard-contest-progress-content">
+                    <div className="dashboard-ring dashboard-activity-summary-ring" style={{ '--progress': `${activityDataError ? 0 : contestProgressRate}%` }}>
+                      <div><strong>{activityDataLoading || activityDataError || !contestProgressTotal ? '—' : `${contestProgressRate}%`}</strong><span>terminé</span></div>
+                    </div>
+                    <div className="dashboard-contest-progress-legend">
+                      <span><i className="is-complete" />Terminées<strong>{activityDataLoading ? '…' : activityDataError ? '—' : contestProgressCompleted}</strong></span>
+                      <span><i className="is-pending" />En cours<strong>{activityDataLoading ? '…' : activityDataError ? '—' : contestProgressInProgress}</strong></span>
+                      <span><i className="is-total" />Total<strong>{activityDataLoading ? '…' : activityDataError ? '—' : contestProgressTotal}</strong></span>
+                    </div>
+                  </div>
+                </section>}
+
                 {dashboardMode === 'contests' && <section className="dashboard-quick-links dashboard-discord-panel" aria-label="Communauté">
                   <a className="dashboard-discord-link" href="https://discord.com/app" target="_blank" rel="noreferrer" aria-label="Ouvrir Discord dans un nouvel onglet">
                     <span><svg viewBox="0 0 20 19" aria-hidden="true" focusable="false"><use href="/icons.svg#discord-icon" /></svg></span>
-                    <strong>Discord</strong><small>Rejoindre la communaut&eacute;</small><b>{'\u2197'}</b>
+                    <strong>Discord</strong><small>Rejoindre la communaut&eacute;</small><b>{'↗'}</b>
                   </a>
                 </section>}
                 </div>
 
                 <section className="dashboard-panel dashboard-score-performance">
-                  <div className="dashboard-panel-heading"><div><span className="dashboard-section-kicker">RÉSULTATS PAR {dashboardMode === 'mock-exams' ? 'CHAPITRE' : 'MATIÈRE'}</span><h2>Performance {dashboardMode === 'mock-exams' ? 'par chapitre' : 'par matière de l’école'}</h2></div></div>
-                  {scorePerformanceGroups.length ? <div className="dashboard-score-bars">{scorePerformanceGroups.map((group) => <button type="button" className="dashboard-score-bar-row" key={group.name} onClick={() => dashboardMode === 'mock-exams' ? setSelectedMockChapter((current) => current === group.name ? '' : group.name) : setSelectedContestSubject((current) => current === group.name ? '' : group.name)}>
-                    <span className="dashboard-score-bar-label">{group.name}</span><span className="dashboard-score-bar-track"><span style={{ width: `${Math.max(0, Math.min(100, group.average ?? 0))}%` }} /></span><strong>{group.average === null ? '—' : `${group.average}%`}</strong><small>{group.attempts} tentative{group.attempts > 1 ? 's' : ''} · {group.errors} erreur{group.errors > 1 ? 's' : ''}</small>
-                  </button>)}</div> : <div className="dashboard-mode-empty">Aucune performance n’est disponible pour ces filtres.</div>}
+                  <div className="dashboard-panel-heading">
+                    <div>
+                      <span className="dashboard-section-kicker">RÉSULTATS PAR {dashboardMode === 'mock-exams' ? 'CHAPITRE' : 'MATIÈRE'}</span>
+                      <h2>Performance {dashboardMode === 'mock-exams' ? 'par chapitre' : 'par matière de l’école'}</h2>
+                    </div>
+                  </div>
+                  {scorePerformanceGroups.length ? (
+                    <div className="dashboard-score-bars">
+                      {scorePerformanceGroups.map((group) => (
+                        <button type="button" className="dashboard-score-bar-row" key={group.name} onClick={() => dashboardMode === 'mock-exams' ? setSelectedMockChapter((current) => current === group.name ? '' : group.name) : setSelectedContestSubject((current) => current === group.name ? '' : group.name)}>
+                          <span className="dashboard-score-bar-label">{group.name}</span>
+                          <span className="dashboard-score-bar-track"><span style={{ width: `${Math.max(0, Math.min(100, group.average ?? 0))}%` }} /></span>
+                          <strong>{group.average === null ? '—' : `${group.average}%`}</strong>
+                          <small>{group.attempts} tentative{group.attempts > 1 ? 's' : ''} · {group.errors} erreur{group.errors > 1 ? 's' : ''}</small>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative', padding: '16px 0' }}>
+                      <div className="dashboard-score-bars" style={{ opacity: 0.35, pointerEvents: 'none' }}>
+                        {[
+                          { name: 'Mathématiques', percent: 0 },
+                          { name: 'Physique-Chimie', percent: 0 },
+                          { name: 'SVT', percent: 0 },
+                        ].map((item) => (
+                          <div className="dashboard-score-bar-row" key={item.name}>
+                            <span className="dashboard-score-bar-label">{item.name}</span>
+                            <span className="dashboard-score-bar-track"><span style={{ width: '0%' }} /></span>
+                            <strong>0%</strong>
+                            <small>0 tentative · 0 erreur</small>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(255, 255, 255, 0.82)',
+                        borderRadius: '12px',
+                        fontSize: '13px',
+                        color: '#64748b',
+                        fontWeight: 600,
+                      }}>
+                        📊 Les performances détaillées par matière s'afficheront après vos tentatives.
+                      </div>
+                    </div>
+                  )}
                 </section>
 
                 <div className="dashboard-score-insights">
-                  <section className="dashboard-panel"><span className="dashboard-section-kicker">POINT FORT</span><h2>{scoreBestGroup?.name || 'Pas encore de données'}</h2><p>{scoreBestGroup ? `Meilleure moyenne enregistrée : ${scoreBestGroup.average}% sur ${scoreBestGroup.attempts} tentative${scoreBestGroup.attempts > 1 ? 's' : ''}.` : 'Terminez un concours pour calculer vos points forts.'}</p></section>
-                  <section className="dashboard-panel"><span className="dashboard-section-kicker">À AMÉLIORER</span><h2>{scoreImproveGroup?.name || 'Pas encore de données'}</h2><p>{scoreImproveGroup ? `Moyenne enregistrée : ${scoreImproveGroup.average}% · ${scoreErrorGroup?.errors || 0} erreur${(scoreErrorGroup?.errors || 0) > 1 ? 's' : ''} pour ${scoreErrorGroup?.name || scoreImproveGroup.name}.` : 'Les pistes de révision apparaîtront avec vos résultats.'}</p></section>
+                  <section className="dashboard-panel">
+                    <span className="dashboard-section-kicker">POINT FORT</span>
+                    <h2>{scoreBestGroup?.name || 'Pas encore de données'}</h2>
+                    <p>{scoreBestGroup ? `Meilleure moyenne enregistrée : ${scoreBestGroup.average}% sur ${scoreBestGroup.attempts} tentative${scoreBestGroup.attempts > 1 ? 's' : ''}.` : 'Terminez un concours pour calculer vos points forts.'}</p>
+                  </section>
+                  <section className="dashboard-panel">
+                    <span className="dashboard-section-kicker">À AMÉLIORER</span>
+                    <h2>{scoreImproveGroup?.name || 'Pas encore de données'}</h2>
+                    <p>{scoreImproveGroup ? `Moyenne enregistrée : ${scoreImproveGroup.average}% · ${scoreErrorGroup?.errors || 0} erreur${(scoreErrorGroup?.errors || 0) > 1 ? 's' : ''} pour ${scoreErrorGroup?.name || scoreImproveGroup.name}.` : 'Les pistes de révision apparaîtront avec vos résultats.'}</p>
+                  </section>
                 </div>
 
                 <section className="dashboard-panel dashboard-score-history">
-                  <div className="dashboard-panel-heading"><div><span className="dashboard-section-kicker">HISTORIQUE</span><h2>Concours terminés</h2></div><span className="dashboard-week-total">{activeContestAttempts.length} résultat{activeContestAttempts.length > 1 ? 's' : ''}</span></div>
-                  <div className="dashboard-score-history-list">{[...activeContestAttempts].sort((a, b) => new Date(b.answeredAt) - new Date(a.answeredAt)).map((attempt) => {
-                    const key = `${attempt.resourceType}|${attempt.resourceId}|${attempt.attemptId}`;
-                    const open = selectedAttemptKey === key;
-                    return <div className="dashboard-score-history-item" key={key}><button type="button" className="dashboard-score-history-button" aria-expanded={open} onClick={() => setSelectedAttemptKey(open ? '' : key)}><span><strong>{attempt.resourceTitle || 'Concours'}</strong><small>{[attempt.school, attempt.subject, attempt.chapter].filter(Boolean).join(' · ') || 'Matière non renseignée'} · {formatDate(attempt.answeredAt)}</small></span><b>{Math.round(Number(attempt.score) || 0)}%</b><span>{attempt.correctAnswers}/{attempt.totalQuestions} bonnes réponses</span><strong>{open ? '−' : 'Voir les détails'}</strong></button>
-                      {open && <div className="dashboard-score-answer-list">{(attempt.answers || []).map((answer, index) => <article key={answer.questionId || index}><strong>Q{answer.questionNumber || index + 1} · {answer.correct ? 'Correcte' : 'À revoir'}</strong><span>{answer.questionText || 'Énoncé non enregistré'}</span><small>Votre réponse : {answer.selectedChoiceText || answer.selectedChoiceLabel || '—'} · Réponse attendue : {answer.correctChoiceText || answer.correctChoiceLabel || '—'}</small></article>)}</div>}
-                    </div>;
-                  })}</div>
+                  <div className="dashboard-panel-heading">
+                    <div>
+                      <span className="dashboard-section-kicker">HISTORIQUE</span>
+                      <h2>Concours terminés</h2>
+                    </div>
+                    <span className="dashboard-week-total">{activeContestAttempts.length} résultat{activeContestAttempts.length > 1 ? 's' : ''}</span>
+                  </div>
+                  {activeContestAttempts.length ? (
+                    <div className="dashboard-score-history-list">
+                      {[...activeContestAttempts].sort((a, b) => new Date(b.answeredAt) - new Date(a.answeredAt)).map((attempt) => {
+                        const key = `${attempt.resourceType}|${attempt.resourceId}|${attempt.attemptId}`;
+                        const open = selectedAttemptKey === key;
+                        return (
+                          <div className="dashboard-score-history-item" key={key}>
+                            <button type="button" className="dashboard-score-history-button" aria-expanded={open} onClick={() => setSelectedAttemptKey(open ? '' : key)}>
+                              <span>
+                                <strong>{attempt.resourceTitle || 'Concours'}</strong>
+                                <small>{[attempt.school, attempt.subject, attempt.chapter].filter(Boolean).join(' · ') || 'Matière non renseignée'} · {formatDate(attempt.answeredAt)}</small>
+                              </span>
+                              <b>{Math.round(Number(attempt.score) || 0)}%</b>
+                              <span>{attempt.correctAnswers}/{attempt.totalQuestions} bonnes réponses</span>
+                              <strong>{open ? '−' : 'Voir les détails'}</strong>
+                            </button>
+                            {open && (
+                              <div className="dashboard-score-answer-list">
+                                {(attempt.answers || []).map((answer, index) => (
+                                  <article key={answer.questionId || index}>
+                                    <strong>Q{answer.questionNumber || index + 1} · {answer.correct ? 'Correcte' : 'À revoir'}</strong>
+                                    <span>{answer.questionText || 'Énoncé non enregistré'}</span>
+                                    <small>Votre réponse : {answer.selectedChoiceText || answer.selectedChoiceLabel || '—'} · Réponse attendue : {answer.correctChoiceText || answer.correctChoiceLabel || '—'}</small>
+                                  </article>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="dashboard-mode-empty">
+                      Votre historique s'affichera ici dès que vous aurez validé un QCM.
+                    </div>
+                  )}
                 </section>
               </>}
           </div>}
@@ -962,21 +1251,117 @@ export default function ClientDashboard() {
           {!scoreMode && <div className="dashboard-content-grid dashboard-mode-grid">
             <section className="dashboard-panel">
               <div className="dashboard-panel-heading">
-                <div><span className="dashboard-section-kicker">ANALYSE</span><h2>{scoreMode ? `Classement personnel par ${dashboardMode === 'contests' ? 'école' : 'matière'}` : 'Progression par matière'}</h2></div>
-                <button type="button" onClick={() => navigate(DASHBOARD_SHORTCUTS.find((item) => item.mode === dashboardMode)?.path || '/client-dashboard')}>Ouvrir la section <span aria-hidden="true">{ '\u2192' }</span></button>
+                <div><span className="dashboard-section-kicker">ANALYSE</span><h2>Progression par matière</h2></div>
+                <button type="button" onClick={() => navigate(DASHBOARD_SHORTCUTS.find((item) => item.mode === dashboardMode)?.path || '/client-dashboard')}>Ouvrir la section <span aria-hidden="true">{'\u2192'}</span></button>
               </div>
-              {sectionGroups.length ? <div className="dashboard-subject-list">
-                {sectionGroups.map((group, index) => (
-                  <article className="dashboard-subject-row" key={group.name}>
-                    <span className="dashboard-subject-icon" style={{ color: subjectStyle(group.name).color, background: subjectStyle(group.name).tint }}>{subjectStyle(group.name).icon}</span>
-                    <div className="dashboard-subject-main">
-                      <div className="dashboard-subject-title"><strong>{group.name}</strong><span>{scoreMode ? `#${index + 1} · ${group.total} tentative${group.total > 1 ? 's' : ''}` : `${group.completed}/${group.total} terminées`}</span></div>
-                      <div className="dashboard-progress-track"><span style={{ width: `${group.percent}%`, background: scoreMode ? '#2563eb' : subjectStyle(group.name).color }} /></div>
+              {(() => {
+                const chartData = sectionGroups.length
+                  ? sectionGroups.map((group) => ({
+                      name: group.name.length > 12 ? group.name.slice(0, 12) + '…' : group.name,
+                      fullName: group.name,
+                      percent: group.percent,
+                      score: group.score,
+                      completed: group.completed,
+                      total: group.total,
+                    }))
+                  : [
+                      { name: 'Maths', fullName: 'Mathématiques', percent: 0 },
+                      { name: 'Physique', fullName: 'Physique-Chimie', percent: 0 },
+                      { name: 'SVT', fullName: 'SVT', percent: 0 },
+                      { name: 'Philo', fullName: 'Philosophie', percent: 0 },
+                      { name: 'Anglais', fullName: 'Anglais', percent: 0 },
+                    ];
+                const hasData = sectionGroups.length > 0;
+                const COLORS = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#0284c7', '#e11d48'];
+                return (
+                  <>
+                    <div style={{ width: '100%', height: 220, marginTop: 8, position: 'relative' }}>
+                      {!hasData && (
+                        <div style={{
+                          position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', zIndex: 2,
+                          background: 'rgba(255,255,255,0.82)', borderRadius: 10,
+                          gap: 6, pointerEvents: 'none',
+                        }}>
+                          <span style={{ fontSize: 28 }}>📊</span>
+                          <strong style={{ color: '#1e3a5f', fontSize: 13 }}>Aucune donnée pour l'instant</strong>
+                          <span style={{ color: '#64748b', fontSize: 12 }}>Les barres apparaîtront après vos premières consultations.</span>
+                        </div>
+                      )}
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={chartData}
+                          margin={{ top: 8, right: 12, left: 0, bottom: 4 }}
+                          barSize={32}
+                        >
+                          <CartesianGrid stroke="#e5edf7" strokeDasharray="3 3" vertical={false} />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            domain={[0, 100]}
+                            tick={{ fill: '#64748b', fontSize: 11 }}
+                            tickFormatter={(v) => `${v}%`}
+                            width={38}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            cursor={{ fill: 'rgba(37,99,235,0.06)', radius: 8 }}
+                            content={({ active, payload }) => {
+                              if (!active || !payload?.length) return null;
+                              const d = payload[0].payload;
+                              const color = subjectStyle(d.fullName).color;
+                              return (
+                                <div style={{
+                                  background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10,
+                                  padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+                                  minWidth: 160,
+                                }}>
+                                  <div style={{ fontWeight: 700, color: '#1e3a5f', marginBottom: 4, fontSize: 13 }}>{d.fullName}</div>
+                                  <div style={{ color, fontWeight: 700, fontSize: 18 }}>{hasData ? `${d.percent}%` : '—'}</div>
+                                  {hasData && d.total !== undefined && (
+                                    <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>
+                                      {d.completed}/{d.total} terminées
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }}
+                          />
+                          <Bar
+                            dataKey="percent"
+                            radius={[8, 8, 0, 0]}
+                            isAnimationActive
+                          >
+                            {chartData.map((entry, index) => {
+                              const color = subjectStyle(entry.fullName).color || COLORS[index % COLORS.length];
+                              return <Cell key={index} fill={color} />;
+                            })}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
-                    <strong className="dashboard-subject-percent" style={{ color: scoreMode ? '#2563eb' : subjectStyle(group.name).color }}>{scoreMode ? (group.score === null ? '—' : `${group.score}%`) : `${group.percent}%`}</strong>
-                  </article>
-                ))}
-              </div> : <div className="dashboard-mode-empty">Les statistiques par matière apparaîtront après vos premières consultations ou tentatives.</div>}
+                    {hasData && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 10 }}>
+                        {sectionGroups.map((group) => {
+                          const s = subjectStyle(group.name);
+                          return (
+                            <div key={group.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569' }}>
+                              <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: 'inline-block' }} />
+                              <span>{group.name}</span>
+                              <strong style={{ color: s.color }}>{group.percent}%</strong>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </section>
 
             <section className="dashboard-panel dashboard-mode-history">
@@ -999,9 +1384,11 @@ export default function ClientDashboard() {
             </section>
           </div>}
           </>}
-        </>}
-        {activityDataError && <div className="dashboard-panel dashboard-score-empty">Vos statistiques personnelles n’ont pas pu être chargées. Vérifiez votre connexion puis reconnectez-vous.</div>}
+          </>
+        )}
+        {activityDataError && <div className="dashboard-panel dashboard-score-empty">Vos statistiques personnelles n’ont pas pu être chargées. <button type="button" className="dashboard-inline-retry" onClick={() => { setActivityDataLoading(true); setActivityRetry((value) => value + 1); }}>Réessayer</button></div>}
         </div>
+        )}
       </div>
     </div>
   );

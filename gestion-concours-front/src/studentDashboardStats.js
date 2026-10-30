@@ -33,6 +33,7 @@ export const aggregateStudentActivityEvents = (events = []) => {
     const id = `${type}:${resourceId}${variant ? `:${variant}` : ''}`;
     const group = groups.get(id) || {
       id, type, title: event.title || '', subject: event.subject || '', chapter: event.chapter || '',
+      resourceVariant: variant,
       visits: 0, completed: false, completedAt: null, durationSeconds: 0, durationByDay: {},
       firstViewedAt: null, lastViewedAt: null
     };

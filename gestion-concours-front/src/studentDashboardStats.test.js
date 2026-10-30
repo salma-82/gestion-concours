@@ -35,6 +35,15 @@ test('recognizes all five tracked content categories and filters each dashboard'
   assert.deepEqual(activities.map((item) => item.type).sort(), ['Concours', 'Concours blanc', 'Cours', 'Examen national', 'Résumé'].sort());
 });
 
+test('keeps exam subjects and corrections as separate tracked resources', () => {
+  const activities = aggregateStudentActivityEvents([
+    { type: 'EXAMEN', resourceId: '22', resourceVariant: 'sujet', title: 'Examen national', eventType: 'VIEW', occurredAt: at(1) },
+    { type: 'EXAMEN', resourceId: '22', resourceVariant: 'correction', title: 'Examen national', eventType: 'VIEW', occurredAt: at(2) }
+  ]);
+  assert.equal(activities.length, 2);
+  assert.deepEqual(activities.map((activity) => activity.resourceVariant).sort(), ['correction', 'sujet']);
+});
+
 test('calculates real totals and returns no scores or groups for empty activity data', () => {
   const empty = summarizeDashboardActivities([]);
   assert.deepEqual({ resources: empty.resources, completed: empty.completed, visits: empty.visits, completionRate: empty.completionRate, strength: empty.strength, difficulty: empty.difficulty }, {

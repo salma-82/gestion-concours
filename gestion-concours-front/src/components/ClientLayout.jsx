@@ -244,8 +244,10 @@ export default function ClientLayout() {
       path: '/client-concours',
       renderIcon: (isActive) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="10" r="3" />
-          <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+          <path d="M7 4h10v7a5 5 0 0 1-10 0V4z" />
+          <path d="M7 8H4v1a4 4 0 0 0 4 4" />
+          <path d="M17 8h3v1a4 4 0 0 1-4 4" />
+          <path d="M12 16v3m-4 2h8m-7-2h6" />
         </svg>
       )
     },
@@ -961,13 +963,7 @@ export default function ClientLayout() {
           </nav>
 
           {/* Droite : Notification Bell & Profil Étudiant avec Initiale SB */}
-          <div className="client-search">
-            <svg className="client-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
-            <input aria-label="Rechercher dans ECONCOURS" placeholder="Rechercher..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && searchMatches[0]) selectSearchItem(searchMatches[0].path); if (event.key === 'Escape') setSearchQuery(''); }} />
-            {searchMatches.length > 0 && <div className="client-search-results">
-              {searchMatches.map((item) => <button type="button" key={item.path} onClick={() => selectSearchItem(item.path)}>{item.label}</button>)}
-            </div>}
-          </div>
+          <div className="client-search-placeholder" aria-hidden="true" />
           <div className="client-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* Cloche Notification */}
             <div

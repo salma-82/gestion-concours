@@ -112,7 +112,7 @@ export default function ClientMistakesPage() {
             <span style={{ width: 48, height: 48, display: 'grid', placeItems: 'center', borderRadius: '50%', color: '#fff', background: '#2875f5', fontSize: 25 }} aria-hidden="true">{view === 'saved' ? '▣' : '◎'}</span>
             <div>
               <h1 style={{ margin: 0, fontSize: 21, fontWeight: 850 }}>{view === 'saved' ? 'Erreurs sauvegardées' : 'Mes erreurs'}</h1>
-              <p style={{ margin: '5px 0 0', color: '#64748b', fontSize: 12 }}>{view === 'saved' ? 'Uniquement les questions que vous avez sauvegardées manuellement.' : 'Les erreurs de la dernière tentative de chaque QCM, actualisées automatiquement.'}</p>
+             
             </div>
           </div>
           {view === 'all' && (
@@ -125,7 +125,7 @@ export default function ClientMistakesPage() {
         </header>
 
         <div style={{ padding: '16px 18px 6px' }}>
-          <h2 style={{ margin: '0 0 10px', fontSize: 14, color: '#1e3a8a' }}>{view === 'saved' ? 'Mes erreurs sauvegardées' : 'Erreurs par QCM'}</h2>
+         
         </div>
         {loading ? <p style={{ padding: '10px 24px 24px', color: '#64748b', fontSize: 13 }}>Chargement…</p> : view === 'saved' ? (
           savedGroups.length === 0 ? <p style={{ padding: '8px 24px 24px', color: '#64748b', fontSize: 13 }}>Aucune erreur sauvegardée manuellement pour le moment.</p> : (

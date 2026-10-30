@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QCM Calcul Intégral – Extraits des concours</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --navy:#0b2a4a; --navy2:#123b66; --teal:#14b8a6; --teal-d:#0d9488;
+  --bg:#f3f7fb; --card:#fff; --text:#1b2a3a; --muted:#64748b; --line:#e2e8f0;
+  --ok:#16a34a; --okbg:#e8f8ee; --ko:#dc2626; --kobg:#fdecec; --na:#d97706; --nabg:#fff6e0;
+  --shadow:0 4px 18px rgba(11,42,74,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+header.top{display:none!important;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:14px 20px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top-in{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.brand h1{font-size:1.05rem;margin:0;font-weight:700}
+.brand small{color:#9fe8df;font-size:.82rem}
+.timer{display:none;align-items:center;gap:10px}
+.timer .t{font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:700;background:rgba(255,255,255,.12);padding:4px 16px;border-radius:12px;border:2px solid var(--teal)}
+.timer.warn .t{background:var(--ko);border-color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.65}}
+.wrap{max-width:1100px;margin:22px auto;padding:0 16px}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:26px}
+.hidden{display:none!important}
+h2{color:var(--navy);margin-top:0}
+.btn{border:0;border-radius:12px;padding:11px 20px;font-size:1rem;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--teal);color:#fff}.btn-p:hover{background:var(--teal-d)}
+.btn-n{background:var(--navy);color:#fff}.btn-n:hover{background:var(--navy2)}
+.btn-o{background:#fff;color:var(--navy);border:2px solid var(--navy)}.btn-o:hover{background:#eef4fa}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+/* setup */
+.info{background:#eefaf8;border-left:5px solid var(--teal);padding:12px 16px;border-radius:10px;margin:14px 0}
+.info li{margin:3px 0}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.mode{border:2px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
+.mode:hover{border-color:var(--teal)}
+.mode.sel{border-color:var(--teal);background:#eefaf8}
+.mode b{color:var(--navy)}
+.mode p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.dur{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0 20px}
+.dur input{width:100px;padding:9px 12px;border:2px solid var(--line);border-radius:10px;font-size:1rem}
+.dur input:focus{outline:none;border-color:var(--teal)}
+.chip{padding:6px 14px;border-radius:999px;border:2px solid var(--line);background:#fff;cursor:pointer;font-weight:600;color:var(--navy)}
+.chip:hover{border-color:var(--teal)}
+/* quiz layout */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr) 280px;gap:18px;align-items:start}
+@media(max-width:1100px){.layout{grid-template-columns:200px minmax(0,1fr)}.explain-side{grid-column:2;position:static!important}}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.side,.explain-side{grid-column:1;position:static!important}.side{order:0}.grid{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:480px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}.card{padding:18px}}
+.prog{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.prog>div{height:100%;background:linear-gradient(90deg,var(--teal),#38d9c9);width:0;transition:width .35s}
+.progtxt{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin-bottom:14px}
+.qhead{display:inline-block;background:var(--navy);color:#fff;border-radius:10px;padding:4px 14px;font-weight:700;margin-bottom:12px}
+.qtext{font-size:1.2rem;margin-bottom:18px;overflow-x:auto}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:14px;padding:12px 16px;cursor:pointer;background:#fff;transition:.15s;text-align:left;font-size:1.05rem;font-family:inherit;color:var(--text);width:100%}
+.opt:hover{border-color:var(--teal);background:#f6fffd}
+.opt .k{flex:0 0 36px;height:36px;border-radius:50%;background:#e6eef7;color:var(--navy);display:grid;place-items:center;font-weight:700}
+.opt.sel{border-color:var(--teal);background:#eefaf8}
+.opt.sel .k{background:var(--teal);color:#fff}
+.opt .v{overflow-x:auto;flex:1}
+.opt.good{border-color:var(--ok);background:var(--okbg)}
+.opt.good .k{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--ko);background:var(--kobg)}
+.opt.bad .k{background:var(--ko);color:#fff}
+.opts.locked .opt{cursor:default}
+.opts.locked .opt:hover{background:inherit}
+.opts.locked .opt.good:hover{background:var(--okbg)}
+.opts.locked .opt.bad:hover{background:var(--kobg)}
+.fb{margin-top:14px;padding:12px 16px;border-radius:12px;font-weight:700;font-size:1.05rem}
+.fb.ok{background:var(--okbg);color:var(--ok)}
+.fb.ko{background:var(--kobg);color:var(--ko)}
+.gb.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.gb.ko{background:var(--ko);color:#fff;border-color:var(--ko)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.anim{animation:slide .3s ease}
+@keyframes slide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+.side{position:sticky;top:18px;align-self:start}.side h3{margin:0 0 10px;color:var(--navy);font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gb{height:42px;border-radius:10px;border:2px solid var(--line);background:#fff;font-weight:700;color:var(--navy);cursor:pointer;transition:transform .15s,border-color .15s,background .15s}.gb:hover{transform:translateY(-1px);border-color:var(--teal)}
+.gb.ans,.gb.ok{background:var(--teal);color:#fff;border-color:var(--teal)}.gb.ko{background:#fee2e2;color:#b91c1c;border-color:#f87171}
+.gb.cur{outline:3px solid var(--navy);outline-offset:2px;box-shadow:0 0 0 5px rgba(20,184,166,.12)}
+.legend{margin-top:12px;font-size:.82rem;color:var(--muted)}
+.pause-ov{text-align:center;padding:60px 10px}
+/* results */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.stat{border-radius:14px;padding:14px;text-align:center}
+.stat b{display:block;font-size:1.7rem}
+.stat span{font-size:.85rem;color:var(--muted)}
+.s-score{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}.s-score span{color:#9fe8df}
+.s-ok{background:var(--okbg);color:var(--ok)}
+.s-ko{background:var(--kobg);color:var(--ko)}
+.s-na{background:var(--nabg);color:var(--na)}
+.s-in{background:#e6f3fb;color:var(--navy2)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.corr{border-radius:16px;border:2px solid var(--line);padding:18px;margin:16px 0;background:#fff}
+.corr.ok{border-color:var(--ok)}.corr.ko{border-color:var(--ko)}.corr.na{border-color:var(--na)}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-size:.85rem;font-weight:700;margin-left:8px;vertical-align:middle}
+.corr.ok .badge{background:var(--okbg);color:var(--ok)}
+.corr.ko .badge{background:var(--kobg);color:var(--ko)}
+.corr.na .badge{background:var(--nabg);color:var(--na)}
+.copt{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 12px;margin:6px 0;overflow-x:auto}
+.copt .k{font-weight:700;min-width:26px}
+.copt.good{background:var(--okbg);border-color:var(--ok)}
+.copt.bad{background:var(--kobg);border-color:var(--ko)}
+.tag{margin-left:auto;font-size:.8rem;font-weight:700;white-space:nowrap}
+.copt.good .tag{color:var(--ok)}.copt.bad .tag{color:var(--ko)}
+.expl{background:#f2f7fc;border-left:5px solid var(--navy2);border-radius:10px;padding:12px 16px;margin-top:12px;overflow-x:auto}
+.expl h4{margin:0 0 6px;color:var(--navy)}
+.expl .line{margin:6px 0}
+.note{font-size:.85rem;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(11,42,74,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.modal>div{background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+/* Explication visible dans la colonne latérale */
+.explain-side{margin-top:18px;padding:15px;border:1px solid #cbdff0;border-radius:14px;background:#f4f9ff;position:sticky;top:16px}
+.explain-side h3{margin:0 0 8px;color:var(--navy)}
+.explain-side .side-expl-content{font-size:.94rem;overflow-wrap:anywhere}
+.explain-side .line{margin:8px 0}
+.explain-side .hint{color:var(--muted);font-size:.9rem;margin:0}
+</style>
+</head>
+<body>
+
+<header class="top" id="hdr" style="display:none">
+  <div class="top-in">
+    <div></div>
+    <div class="timer" id="timerBox">
+      <span>⏱</span><span class="t" id="timerTxt">00:00</span>
+      <button class="btn btn-o hidden" id="pauseBtn" style="padding:6px 14px;background:#fff">⏸ Mettre en pause</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- QUIZ -->
+  <section class="layout hidden" id="quiz">
+    <aside class="card side">
+      <h3>Questions</h3><p style="margin:0 0 12px;color:var(--muted);font-size:.88rem">Clique sur Q1, Q2… pour aller directement à une question.</p>
+      <div class="grid" id="grid"></div>
+      <div class="legend"><div style="margin:5px 0">🟩 Réponse correcte</div><div style="margin:5px 0">🟥 Réponse incorrecte</div><div style="margin:5px 0">⬜ Sans réponse</div><div style="margin:5px 0">🔵 Question actuelle</div></div>
+    </aside>
+    <div class="card">
+      <div id="pauseView" class="pause-ov hidden">
+        <h2>⏸ Test en pause</h2>
+        <p>Le chronomètre est arrêté. Les questions sont masquées.</p>
+        <button class="btn btn-p" id="resumePause">▶ Reprendre</button>
+      </div>
+      <div id="qView">
+        <div class="prog"><div id="progBar"></div></div>
+        <div class="progtxt"><span id="progL"></span><span id="progR"></span></div>
+        <div id="qBody"></div>
+        <div class="nav">
+          <button class="btn btn-o" id="prevBtn">← Question précédente</button>
+          <button class="btn btn-n" id="finishBtn">Terminer le test</button>
+          <button class="btn btn-p" id="nextBtn">Question suivante →</button>
+        </div>
+      </div>
+    </div>
+    <aside class="card explain-side" id="sideExplain">
+      <h3>💡 Explication</h3>
+      <div class="side-expl-content" id="sideExplainContent"><p class="hint">Choisis une réponse pour afficher ici la correction détaillée de la question.</p></div>
+    </aside>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="hidden" id="results">
+    <div class="card">
+      <h2>📊 Résultats</h2>
+      <p id="rMsg" class="note"></p>
+      <div class="stats" id="stats"></div>
+      <div class="actions">
+        <button class="btn btn-p" id="restartBtn">↻ Recommencer le test</button>
+        <button class="btn btn-n" id="errBtn">✖ Revoir mes erreurs</button>
+        <button class="btn btn-o" id="allBtn">📖 Toutes les corrections</button>
+      </div>
+    </div>
+    <h2 id="corrTitle" style="margin-top:26px">Correction détaillée</h2>
+    <div id="corrList"></div>
+  </section>
+
+</main>
+
+<div class="modal hidden" id="modal"><div id="modalIn"></div></div>
+
+<script>
+/* ============================================================
+   DONNÉES  (extraites fidèlement du PDF – aucune question ajoutée)
+   Les formules sont en LaTeX, rendues par KaTeX.
+   ============================================================ */
+const QCM_DATA = {
+  concours: "Extraits des concours – Préparation aux concours Médecine · ENSA · ENSAM",
+  chapitre: "Calcul intégral",
+  prof: "Prof : Wassim RHORBA",
+  annee: "Année scolaire : 2026/25",
+  totalAnnonce: 40,
+  consignes: [
+    "Ce questionnaire comporte des extraits des concours sur le calcul intégral (40 QCM annoncés dans l'en-tête du PDF).",
+    "Chaque QCM comporte une seule réponse juste.",
+    "L'utilisation de toute sorte de calculatrice est interdite."
+  ],
+  questions: [
+    {
+      id: 1,
+      enonce: String.raw`L'intégrale \(\displaystyle\int_{\frac{\pi}{6}}^{\frac{\pi}{4}}\frac{1}{\sin x\,\tan x}\,dx\) est égale à :`,
+      options: [
+        {k:"A", t:String.raw`\(\dfrac{1}{2}-\dfrac{\sqrt2}{2}\)`},
+        {k:"B", t:String.raw`\(2-\sqrt2\)`},
+        {k:"C", t:String.raw`\(\sqrt2-2\)`},
+        {k:"D", t:String.raw`\(\dfrac{\sqrt2}{2}-\dfrac{1}{2}\)`},
+        {k:"E", t:String.raw`\(1-\sqrt2\)`}
+      ],
+      correct: "B",
+      explication: [
+        String.raw`\[\int_{\pi/6}^{\pi/4}\frac{\cos(x)}{\sin^2(x)}\,dx=\int_{\pi/6}^{\pi/4}\sin'(x)\,\sin^{-2}(x)\,dx\]`,
+        String.raw`\[=\left[\frac{\sin^{-2+1}(x)}{-2+1}\right]_{\pi/6}^{\pi/4}=\left[\frac{-1}{\sin(x)}\right]_{\pi/6}^{\pi/4}=\left[\frac{1}{\sin(x)}\right]_{\pi/4}^{\pi/6}=2-\sqrt2\]`
+      ]
+    },
+    {
+      id: 2,
+      enonce: String.raw`L'intégrale \(\displaystyle\int_{0}^{\frac{\pi}{2}}\frac{\sin 2x}{1+\sin^2 x}\,dx\) est égale à :`,
+      options: [
+        {k:"A", t:String.raw`\(0\)`},
+        {k:"B", t:String.raw`\(\ln(2)+1\)`},
+        {k:"C", t:String.raw`\(\ln(2)\)`},
+        {k:"D", t:String.raw`\(1\)`},
+        {k:"E", t:String.raw`\(-\ln(2)\)`}
+      ],
+      correct: "C",
+      explication: [
+        String.raw`\[\int_{0}^{\pi/2}\frac{\sin(2x)}{1+\sin^2(x)}\,dx=\int_{0}^{\pi/2}\frac{2\cos(x)\sin(x)}{1+\sin^2(x)}\,dx\]`,
+        String.raw`\[=\int_{0}^{\pi/2}\frac{\left(1+\sin^2(x)\right)'}{1+\sin^2(x)}\,dx\]`,
+        String.raw`\[=\Big[\ln\left|1+\sin^2(x)\right|\Big]_{0}^{\pi/2}=\ln(2)\]`
+      ]
+    },
+    {
+      id: 3,
+      enonce: String.raw`Soit \(\alpha\in\mathbb{R}^*\), si \(\displaystyle\int_{0}^{1}\frac{e^{\alpha x}}{1+e^{\alpha x}}\,dx=\frac{1}{\alpha}\) alors \(\alpha\) est égal à :`,
+      options: [
+        {k:"A", t:String.raw`\(\ln(e-1)\)`},
+        {k:"B", t:String.raw`\(2e-1\)`},
+        {k:"C", t:String.raw`\(\ln(2e+1)\)`},
+        {k:"D", t:String.raw`\(\ln(2e-1)\)`},
+        {k:"E", t:String.raw`\(2e+1\)`}
+      ],
+      correct: "D",
+      explication: [
+        String.raw`\[\int_{0}^{1}\frac{e^{\alpha x}}{1+e^{\alpha x}}\,dx=\frac{1}{\alpha}\]`,
+        String.raw`\[\frac{1}{\alpha}\int_{0}^{1}\frac{\left(1+e^{\alpha x}\right)'}{1+e^{\alpha x}}\,dx=\frac{1}{\alpha}\]`,
+        String.raw`\[\int_{0}^{1}\frac{\left(1+e^{\alpha x}\right)'}{1+e^{\alpha x}}\,dx=1\;\Rightarrow\;\Big[\ln\left|1+e^{\alpha x}\right|\Big]_{0}^{1}=1\]`,
+        String.raw`\[\Rightarrow\;\ln\left(\frac{1+e^{\alpha}}{2}\right)=1\;\;\vdots\;\;\alpha=\ln(2e-1)\]`
+      ]
+    },
+    {
+      id: 4,
+      enonce: String.raw`L'intégrale \(\displaystyle\int_{0}^{3}\frac{x^2+2}{\sqrt{x^3+6x+4}}\,dx\) est égale à :`,
+      options: [
+        {k:"A", t:String.raw`\(\dfrac{1}{3}\)`},
+        {k:"B", t:String.raw`\(\dfrac{8}{3}\)`},
+        {k:"C", t:String.raw`\(\dfrac{10}{3}\)`},
+        {k:"D", t:String.raw`\(\dfrac{14}{3}\)`},
+        {k:"E", t:String.raw`Autres réponse`}
+      ],
+      correct: "C",
+      explication: [
+        String.raw`\[\int_{0}^{3}\frac{x^2+2}{\sqrt{x^3+6x+4}}\,dx=\int_{0}^{3}(x^2+2)(x^3+6x+4)^{-\frac12}\,dx\]`,
+        String.raw`\[=\frac13\int_{0}^{3}(x^3+6x+4)'\,(x^3+6x+4)^{-\frac12}\,dx\]`,
+        String.raw`\[=\frac13\left[\frac{(x^3+6x+4)^{\frac12}}{\frac12}\right]_{0}^{3}=\frac{10}{3}\]`
+      ]
+    },
+    {
+      id: 5,
+      enonce: String.raw`Si pour tout entier naturel \(n\), \(I_n=\displaystyle\int_{1}^{e}x(\ln x)^n\,dx\) alors \((\forall n\in\mathbb{N}^*)\quad 2I_{n+1}+(n+1)I_n\) est égal à :`,
+      options: [
+        {k:"A", t:String.raw`\(e\)`},
+        {k:"B", t:String.raw`\(e^2\)`},
+        {k:"C", t:String.raw`\(1\)`},
+        {k:"D", t:String.raw`\(\dfrac{e-1}{2}\)`},
+        {k:"E", t:String.raw`\(\dfrac{e+1}{2}\)`}
+      ],
+      correct: "B",
+      explication: [
+        String.raw`\[I_{n+1}=\int_{1}^{e}x\cdot\ln^{n+1}(x)\,dx\]`,
+        String.raw`Intégration par parties : \(U(x)=\ln^{n+1}(x)\), \(U'(x)=\dfrac{(n+1)}{x}\ln^{n}(x)\) ; \(V'(x)=x\), \(V(x)=\dfrac{x^2}{2}\).`,
+        String.raw`\[I_{n+1}=\left[\frac{x^2}{2}\ln^{n+1}(x)\right]_{1}^{e}-\frac12(n+1)\int_{1}^{e}x\cdot\ln^{n}(x)\,dx\]`,
+        String.raw`\[I_{n+1}=\frac{e^2}{2}-\frac12(n+1)\,I_n\]`,
+        String.raw`\[2\,I_{n+1}=e^2-(n+1)\,I_n\]`,
+        String.raw`\[2\,I_{n+1}+(n+1)\,I_n=e^2\]`
+      ]
+    },
+    {
+      id: 6,
+      enonce: String.raw`L'intégrale \(\displaystyle\int_{0}^{1}\frac{x}{1+e^{-x^2}}\,dx\) est égale à :`,
+      options: [
+        {k:"A", t:String.raw`\(\sqrt{\ln\!\left(\dfrac{1+e}{2}\right)}\)`},
+        {k:"B", t:String.raw`\(\ln\sqrt{1+e}\)`},
+        {k:"C", t:String.raw`\(\ln(1+e)\)`},
+        {k:"D", t:String.raw`\(\ln\sqrt{\dfrac{1+e}{2}}\)`},
+        {k:"E", t:String.raw`\(\sqrt{\ln(1+e)}\)`}
+      ],
+      correct: "D",
+      explication: [
+        String.raw`\[=\int_{0}^{1}\frac{x\,e^{x^2}}{e^{x^2}+1}\,dx=\frac12\int_{0}^{1}\frac{\left(e^{x^2}+1\right)'}{e^{x^2}+1}\,dx\]`,
+        String.raw`\[=\frac12\Big[\ln\left|e^{x^2}+1\right|\Big]_{0}^{1}\]`,
+        String.raw`\[=\frac12\big(\ln(e+1)-\ln(2)\big)=\frac12\ln\left(\frac{e+1}{2}\right)\]`
+      ]
+    },
+    {
+      id: 7,
+      enonce: String.raw`Si \(\displaystyle\int_{1}^{2}f'(x)f''(x)\,dx=8\) et \(f'(2)-f'(1)=2\) alors \(f'(2)+f'(1)\) est égal à :`,
+      options: [
+        {k:"A", t:String.raw`\(4\)`},
+        {k:"B", t:String.raw`\(6\)`},
+        {k:"C", t:String.raw`\(8\)`},
+        {k:"D", t:String.raw`\(10\)`},
+        {k:"E", t:String.raw`\(12\)`}
+      ],
+      correct: "C",
+      explication: [
+        String.raw`On pose : \(g(x)=f'(x)\)`,
+        String.raw`\[\int_{1}^{2}g(x)\cdot g'(x)\,dx=8\]`,
+        String.raw`\[\frac12\int_{1}^{2}2\cdot g(x)\cdot g'(x)\,dx=8\;\Leftrightarrow\;\left[\frac12\,g^2(x)\right]_{1}^{2}=8\]`,
+        String.raw`\[\Leftrightarrow\;\left[\frac12\,f'^2(x)\right]_{1}^{2}=8\;\Leftrightarrow\;f'^2(2)-f'^2(1)=16\]`,
+        String.raw`\[\Leftrightarrow\;\big(f'(2)-f'(1)\big)\big(f'(2)+f'(1)\big)=16\]`,
+        String.raw`\[\Leftrightarrow\;2\big(f'(2)+f'(1)\big)=16\;\Leftrightarrow\;f'(2)+f'(1)=8\]`
+      ]
+    }
+  ]
+};
+
+/* ============================================================
+   LOGIQUE
+   ============================================================ */
+const Q = QCM_DATA.questions, N = Q.length;
+const $ = id => document.getElementById(id);
+const LS = "qcm_calcul_integral_v1";
+let S = null;       // état courant
+let tickId = null;
+let selMode = "concours";
+
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)); }catch(e){ return null; } }
+function clearSave(){ try{ localStorage.removeItem(LS); }catch(e){} }
+
+function math(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el,{delimiters:[
+      {left:"\\[",right:"\\]",display:true},
+      {left:"\\(",right:"\\)",display:false}
+    ],throwOnError:false});
+  }
+}
+function fmt(sec){
+  sec=Math.max(0,Math.round(sec));
+  const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), s=sec%60;
+  const p=n=>String(n).padStart(2,"0");
+  return h>0?`${p(h)}:${p(m)}:${p(s)}`:`${p(m)}:${p(s)}`;
+}
+function show(id){ ["quiz","results"].forEach(x=>$(x).classList.toggle("hidden",x!==id)); }
+
+/* ---- en-tête et écran de départ ---- */
+
+const DEFAULT_MODE = "entrainement";   // "concours" (sans pause) ou "entrainement" (pause possible)
+const DEFAULT_MIN  = 30;               // durée du test en minutes
+
+function newTest(){
+  const dur = DEFAULT_MIN*60;
+  S = {mode:DEFAULT_MODE, dur, answers:{}, cur:0, startAt:Date.now(), endAt:Date.now()+dur*1000,
+       paused:false, remaining:dur, finished:false, used:0};
+  save(); startQuiz();
+}
+
+function startQuiz(){
+  show("quiz");
+  $("timerBox").style.display="flex"; $("hdr").style.display="block";
+  $("pauseBtn").classList.toggle("hidden", S.mode!=="entrainement");
+  buildGrid(); renderQ(); tick();
+  clearInterval(tickId); tickId=setInterval(tick,250);
+}
+function remaining(){ return S.paused ? S.remaining : (S.endAt-Date.now())/1000; }
+function tick(){
+  const r = remaining();
+  $("timerTxt").textContent = fmt(r);
+  $("timerBox").classList.toggle("warn", r<=Math.max(60,S.dur*0.1) && r>0);
+  if(r<=0 && !S.finished){ finish(true); }
+}
+
+/* ---- pause ---- */
+$("pauseBtn").onclick = ()=>{
+  if(S.mode!=="entrainement") return;
+  S.remaining = remaining(); S.paused = true; save();
+  $("pauseView").classList.remove("hidden"); $("qView").classList.add("hidden");
+  $("pauseBtn").classList.add("hidden");
+};
+$("resumePause").onclick = ()=>{
+  S.endAt = Date.now()+S.remaining*1000; S.paused=false; save();
+  $("pauseView").classList.add("hidden"); $("qView").classList.remove("hidden");
+  $("pauseBtn").classList.remove("hidden");
+};
+
+/* ---- affichage d'une question ---- */
+function renderQ(anim=true){
+  const q = Q[S.cur];
+  const body = $("qBody");
+  body.className = anim ? "anim" : "";
+  const ans = S.answers[q.id];
+  const cls = o => ans===undefined ? "" : (o.k===q.correct ? " good" : (o.k===ans ? " bad" : ""));
+  body.innerHTML = `<span class="qhead">QCM ${String(q.id).padStart(2,"0")}</span>
+    <div class="qtext">${q.enonce}</div>
+    <div class="opts ${ans!==undefined?"locked":""}">${q.options.map(o=>`
+      <button class="opt${cls(o)}" data-k="${o.k}">
+        <span class="k">${o.k}</span><span class="v">${o.t}</span>
+      </button>`).join("")}</div>
+    ${ans===undefined ? "" : (ans===q.correct
+        ? `<div class="fb ok">✔ Bonne réponse !</div>`
+        : `<div class="fb ko">✘ Mauvaise réponse. La bonne réponse est ${q.correct}.</div>`)}`;
+  body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(S.answers[q.id]!==undefined) return;   // réponse verrouillée après le premier choix
+    S.answers[q.id]=b.dataset.k;
+    save(); renderQ(false);
+  });
+  math(body);
+  // Afficher l'explication dans la colonne de droite après la réponse
+  const explainContent = $("sideExplainContent");
+  if(ans === undefined){
+    explainContent.innerHTML = `<p class="hint">Réponds à la question pour voir ici la correction détaillée, étape par étape.</p>`;
+  } else {
+    explainContent.innerHTML = `<p><b>${ans===q.correct ? "✅ Bonne réponse" : "❌ Bonne réponse : "+q.correct}</b></p>` +
+      (q.explication && q.explication.length
+        ? q.explication.map(l=>`<div class="line">${l}</div>`).join("")
+        : `<p class="hint">Aucune explication détaillée disponible pour cette question.</p>`);
+  }
+  math(explainContent);
+  $("prevBtn").disabled = S.cur===0;
+  $("nextBtn").disabled = S.cur===N-1;
+  updateProg(); updateGrid();
+}
+function updateProg(){
+  const a = Object.keys(S.answers).length;
+  $("progBar").style.width = (a/N*100)+"%";
+  $("progL").textContent = `Question ${S.cur+1} / ${N}`;
+  $("progR").textContent = `${a} / ${N} répondue(s)`;
+}
+function buildGrid(){
+  $("grid").innerHTML = Q.map((q,i)=>`<button class="gb" data-i="${i}" aria-label="Aller à la question ${q.id}" title="Question ${q.id}">Q${q.id}</button>`).join("");
+  $("grid").querySelectorAll(".gb").forEach(b=>b.onclick=()=>{ S.cur=+b.dataset.i; save(); renderQ(); });
+}
+function updateGrid(){
+  $("grid").querySelectorAll(".gb").forEach((b,i)=>{
+    const a=S.answers[Q[i].id];
+    b.classList.toggle("ok", a!==undefined && a===Q[i].correct);
+    b.classList.toggle("ko", a!==undefined && a!==Q[i].correct);
+    b.classList.toggle("cur", i===S.cur);
+  });
+}
+$("prevBtn").onclick = ()=>{ if(S.cur>0){S.cur--; save(); renderQ();} };
+$("nextBtn").onclick = ()=>{ if(S.cur<N-1){S.cur++; save(); renderQ();} };
+
+/* ---- fin du test ---- */
+function modal(html, onOk){
+  $("modalIn").innerHTML = html + `<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" id="mNo">Annuler</button><button class="btn btn-p" id="mYes">Confirmer</button></div>`;
+  $("modal").classList.remove("hidden");
+  $("mNo").onclick=()=>$("modal").classList.add("hidden");
+  $("mYes").onclick=()=>{ $("modal").classList.add("hidden"); onOk(); };
+}
+$("finishBtn").onclick = ()=>{
+  const un = N-Object.keys(S.answers).length;
+  modal(un>0
+    ? `<h3>Terminer le test ?</h3><p>Il reste <b>${un}</b> question(s) sans réponse. Elles seront comptées comme non répondues.</p>`
+    : `<h3>Terminer le test ?</h3><p>Vous ne pourrez plus modifier vos réponses.</p>`,
+    ()=>finish(false));
+};
+
+function finish(auto){
+  if(S.finished) return;
+  const r = Math.max(0, remaining());
+  S.used = Math.min(S.dur, S.dur - r);
+  S.finished = true; save();
+  clearInterval(tickId);
+  $("timerBox").style.display="none"; $("hdr").style.display="none";
+  $("modal").classList.add("hidden");
+  showResults(auto);
+}
+
+function showResults(auto){
+  let ok=0, ko=0, na=0;
+  Q.forEach(q=>{
+    const a=S.answers[q.id];
+    if(a===undefined) na++; else if(a===q.correct) ok++; else ko++;
+  });
+  const pct = Math.round(ok/N*1000)/10;
+  $("rMsg").textContent = auto ? "⏰ Temps écoulé : le test a été terminé automatiquement." : "";
+  $("stats").innerHTML = `
+    <div class="stat s-score"><b>${ok} / ${N}</b><span>Score final</span></div>
+    <div class="stat s-ok"><b>${ok}</b><span>Réponses correctes</span></div>
+    <div class="stat s-ko"><b>${ko}</b><span>Réponses incorrectes</span></div>
+    <div class="stat s-na"><b>${na}</b><span>Sans réponse</span></div>
+    <div class="stat s-in"><b>${pct} %</b><span>Pourcentage de réussite</span></div>
+    <div class="stat s-in"><b>${fmt(S.used)}</b><span>Temps utilisé (sur ${fmt(S.dur)})</span></div>`;
+  show("results");
+  renderCorr(false);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function status(q){
+  const a=S.answers[q.id];
+  return a===undefined ? "na" : (a===q.correct ? "ok" : "ko");
+}
+function renderCorr(onlyErrors){
+  const list = Q.filter(q=> !onlyErrors || status(q)!=="ok");
+  $("corrTitle").textContent = onlyErrors ? "Mes erreurs (incorrectes et sans réponse)" : "Correction détaillée";
+  if(list.length===0){
+    $("corrList").innerHTML = `<div class="card">🎉 Aucune erreur : toutes les questions sont correctes !</div>`;
+    return;
+  }
+  const lbl = {ok:"Correcte", ko:"Incorrecte", na:"Sans réponse"};
+  $("corrList").innerHTML = list.map(q=>{
+    const st=status(q), a=S.answers[q.id];
+    return `<div class="corr ${st}">
+      <div><span class="qhead">QCM ${String(q.id).padStart(2,"0")}</span><span class="badge">${lbl[st]}</span></div>
+      <div class="qtext">${q.enonce}</div>
+      ${q.options.map(o=>{
+        const good=o.k===q.correct, bad=o.k===a && !good;
+        return `<div class="copt ${good?"good":bad?"bad":""}">
+          <span class="k">${o.k}</span><span>${o.t}</span>
+          <span class="tag">${good?"✔ Bonne réponse":""}${o.k===a?(good?" · ":"")+"Votre réponse":""}</span></div>`;
+      }).join("")}
+      <p class="note">Votre réponse : <b>${a||"aucune"}</b> · Bonne réponse (selon le PDF) : <b>${q.correct}</b></p>
+      <div class="expl">
+        ${q.explication && q.explication.length
+          ? q.explication.map(l=>`<div class="line">${l}</div>`).join("")
+          : "Aucune explication disponible dans le document"}
+      </div></div>`;
+  }).join("");
+  math($("corrList"));
+}
+$("errBtn").onclick = ()=>{ renderCorr(true); $("corrTitle").scrollIntoView({behavior:"smooth"}); };
+$("allBtn").onclick = ()=>{ renderCorr(false); $("corrTitle").scrollIntoView({behavior:"smooth"}); };
+$("restartBtn").onclick = ()=>{
+  clearSave(); clearInterval(tickId);
+  newTest(); window.scrollTo({top:0});
+};
+
+/* Si KaTeX se charge après le premier rendu, re-rendre les maths */
+window.addEventListener("load",()=>{ if(S){ math(document.body); } });
+
+/* Démarrage automatique : reprend le test en cours, sinon en commence un nouveau */
+(function(){
+  const sv = load();
+  if(sv && !sv.finished){ S = sv; startQuiz(); }
+  else if(sv && sv.finished){ S = sv; showResults(false); }
+  else newTest();
+})();
+</script>
+</body>
+</html>

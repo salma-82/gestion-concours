@@ -1057,3 +1057,26 @@ button[aria-label="Ouvrir le menu des chapitres"] {
 .course-reader-header > div:first-child {
   display: none !important;
 }
+
+.client-search-placeholder {
+  display: block;
+  flex: 0 0 clamp(150px, 11vw, 205px);
+  width: clamp(150px, 11vw, 205px);
+  height: 50px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+  .client-search-placeholder {
+    display: none;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1500px) {
+  .client-search-placeholder {
+    min-width: 125px;
+    width: 145px;
+    flex-basis: 145px;
+  }
+}

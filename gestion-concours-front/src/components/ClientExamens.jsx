@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { recordStudentActivity } from '../studentProgress';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
@@ -145,6 +145,8 @@ export default function ClientExamens() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filiereParam = searchParams.get('filiere') || '';
+  const requestedExamId = searchParams.get('examId') || '';
+  const requestedDocument = searchParams.get('document') || 'sujet';
 
   let profileFiliere = '';
   try { profileFiliere = JSON.parse(localStorage.getItem('user') || '{}')?.filiere || ''; } catch {}
@@ -181,6 +183,7 @@ export default function ClientExamens() {
   const [viewMode, setViewMode] = useState('scroll'); // 'scroll' ou 'single'
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showThumbnails, setShowThumbnails] = useState(true);
+  const openedExamRequestRef = useRef('');
 
   useEffect(() => {
     const stage = activeExam ? activeDocType : 'selection';
@@ -243,7 +246,7 @@ export default function ClientExamens() {
     }
   };
 
-  const handleOpenReader = (exam, type = 'sujet') => {
+  const handleOpenReader = useCallback((exam, type = 'sujet') => {
     setActiveExam(exam);
     setIsSidebarCollapsed(true);
     setActiveDocType(type);
@@ -257,7 +260,22 @@ export default function ClientExamens() {
     setCurrentPage(1);
     setZoomLevel(100);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [selectedMatiereCard]);
+
+  useEffect(() => {
+    if (!requestedExamId) {
+      openedExamRequestRef.current = '';
+      return;
+    }
+    const requestKey = `${requestedExamId}:${requestedDocument}`;
+    if (!examens.length || openedExamRequestRef.current === requestKey) return;
+    const exam = examens.find((item) => String(item.id) === requestedExamId);
+    if (!exam) return;
+    const documentType = requestedDocument === 'correction' ? 'correction' : 'sujet';
+    if (documentType === 'correction' && !exam.pdfCorrectionUrl && !exam.correctionPageImages?.length) return;
+    openedExamRequestRef.current = requestKey;
+    handleOpenReader(exam, documentType);
+  }, [examens, requestedExamId, requestedDocument, handleOpenReader]);
 
   const handleCloseReader = () => {
     setActiveExam(null);

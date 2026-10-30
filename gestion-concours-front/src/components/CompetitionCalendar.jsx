@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import './CompetitionCalendar.css';
+import './CompetitionCalendarEvents.css';
 import { getStudentPlanningKey, readStudentPlanning } from '../studentProgress';
 
 const API = 'http://localhost:8081/api/calendrier';
@@ -174,19 +175,15 @@ export default function CompetitionCalendar({ admin = false }) {
 
   return (
     <main className="competition-calendar">
-      <header className="calendar-heading">
-        <div><span className="calendar-kicker">ESPACE {admin ? 'ADMINISTRATEUR' : 'ÉTUDIANT'}</span>
-          <h1>Calendrier des concours</h1>
-          <p>{admin ? 'Planifiez les inscriptions et les dates des concours pour tous les étudiants.' : 'Consultez les dates des concours ou retrouvez votre planning personnel.'}</p>
-        </div>
-        {admin ? <button className="calendar-primary" onClick={openNew}>＋ Ajouter une date</button> : calendarView === 'personal' && <button className="calendar-primary" onClick={() => openPersonalForm()}>＋ Ajouter un objectif</button>}
-      </header>
+      {admin && <header className="calendar-heading calendar-heading-actions-only">
+        <button className="calendar-primary" onClick={openNew}>＋ Ajouter une date</button>
+      </header>}
 
       {error && <div className="calendar-alert" role="alert">{error}</div>}
 
       {!admin && <div className="calendar-view-switch" role="tablist" aria-label="Choisir un calendrier">
-        <button className={calendarView === 'competitions' ? 'active' : ''} onClick={() => setCalendarView('competitions')} role="tab" aria-selected={calendarView === 'competitions'}>🏆 Événements des concours</button>
-        <button className={calendarView === 'personal' ? 'active' : ''} onClick={() => setCalendarView('personal')} role="tab" aria-selected={calendarView === 'personal'}>👤 Mon calendrier personnel</button>
+        <button className={calendarView === 'competitions' ? 'active' : ''} onClick={() => setCalendarView('competitions')} role="tab" aria-selected={calendarView === 'competitions'}>Événements des concours</button>
+        <button className={calendarView === 'personal' ? 'active' : ''} onClick={() => setCalendarView('personal')} role="tab" aria-selected={calendarView === 'personal'}>Mon calendrier personnel</button>
       </div>}
 
       <section className="calendar-layout">
@@ -195,7 +192,9 @@ export default function CompetitionCalendar({ admin = false }) {
             <button aria-label="Mois précédent" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>‹</button>
             <h2>{monthLabel}</h2>
             <button aria-label="Mois suivant" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>›</button>
-            <button className="calendar-today" onClick={() => { const today = new Date(); setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelectedDate(dateKey(today)); }}>Aujourd’hui</button>
+            {!admin && calendarView === 'personal'
+              ? <button className="calendar-primary calendar-toolbar-add-objective" onClick={() => openPersonalForm()}>＋ Ajouter un objectif</button>
+              : <button className="calendar-today" onClick={() => { const today = new Date(); setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelectedDate(dateKey(today)); }}>Aujourd’hui</button>}
           </div>
           <div className="calendar-grid calendar-weekdays">{['Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.', 'Dim.'].map((day) => <div key={day}>{day}</div>)}</div>
           <div className="calendar-grid">
@@ -204,20 +203,32 @@ export default function CompetitionCalendar({ admin = false }) {
               const dayEvents = eventsForDay(key);
               return <button key={key} className={`calendar-day ${day.getMonth() === month.getMonth() ? '' : 'outside'} ${key === selectedDate ? 'selected' : ''} ${key === dateKey(new Date()) ? 'today' : ''}`} onClick={() => setSelectedDate(key)}>
                 <span>{day.getDate()}</span>
-                <div className="calendar-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} className={`dot-${typeInfo(event.eventType).color}`} title={event.title} />)}{dayEvents.length > 3 && <small>+{dayEvents.length - 3}</small>}</div>
+                {dayEvents.length > 0 && <div className="calendar-day-events">
+                  {dayEvents.slice(0, 2).map((event) => {
+                    const type = typeInfo(event.eventType);
+                    const subject = event.subject || event.concoursName || event.school;
+                    const details = [subject, type.label].filter(Boolean).join(' · ');
+                    return <span key={event.id} className={`calendar-event-chip event-chip-${type.color}`} title={[event.title, details].filter(Boolean).join(' · ')}>
+                      <strong>{event.title}</strong>
+                      <small>{details}</small>
+                    </span>;
+                  })}
+                  {dayEvents.length > 2 && <small className="calendar-more-events">+{dayEvents.length - 2} autres</small>}
+                </div>}
               </button>;
             })}
           </div>
           <div className="calendar-legend">{(admin || calendarView === 'competitions' ? eventTypes.slice(0, 3) : [
             { value: 'revision', label: 'Révision', color: 'blue' }, { value: 'exam', label: 'Examen', color: 'orange' }, { value: 'personal', label: 'Personnel', color: 'purple' }, { value: 'qcm', label: 'QCM', color: 'green' },
-          ]).map((type) => <span key={type.value}><i className={`dot-${type.color}`} />{type.label}</span>)}</div>
+          ]).map((type) => <span key={type.value} title={type.label} aria-label={type.label}><i className={`dot-${type.color}`} /></span>)}</div>
         </div>
 
         <aside className="calendar-agenda">
           <div className="agenda-heading"><div><span>AGENDA</span><h2>{new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' }).format(new Date(`${selectedDate}T00:00:00`))}</h2></div>
+            {selectedEvents.length > 0 && <span className="agenda-count">{selectedEvents.length} {selectedEvents.length === 1 ? 'événement' : 'événements'}</span>}
             {!admin && calendarView === 'competitions' && <button className="agenda-refresh" aria-label="Actualiser le calendrier" title="Actualiser le calendrier" onClick={loadEvents}>↻</button>}
             {admin && <button aria-label="Ajouter un événement" onClick={openNew}>＋</button>}</div>
-          {loading && calendarView === 'competitions' ? <p className="agenda-empty">Chargement du calendrier…</p> : selectedEvents.length === 0 ? <div className="agenda-empty"><span>📅</span><p>{calendarView === 'personal' ? 'Aucun objectif personnel prévu ce jour.' : 'Aucun événement prévu ce jour.'}</p></div> : <div className="agenda-list">{selectedEvents.map((event) => {
+          {loading && calendarView === 'competitions' ? <p className="agenda-empty">Chargement du calendrier…</p> : selectedEvents.length === 0 ? <div className="agenda-empty"><p>{calendarView === 'personal' ? 'Aucun objectif personnel prévu ce jour.' : 'Aucun événement prévu ce jour.'}</p></div> : <div className="agenda-list">{selectedEvents.map((event) => {
             const type = typeInfo(event.eventType);
             return <article className={`agenda-event event-${type.color}`} key={event.id}>
               <div className="event-time">{formatTime(event.startAt)}{event.endAt ? ` – ${formatTime(event.endAt)}` : ''}</div>
