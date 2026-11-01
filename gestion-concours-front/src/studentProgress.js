@@ -55,13 +55,14 @@ const saveProgress = (items) => {
 
 const sendStudentActivityEvent = (payload) => {
   const token = localStorage.getItem('authToken');
-  if (!token) return;
-  fetch('http://localhost:8081/api/student-activities', {
+  if (!token) return Promise.resolve(false);
+  return fetch('http://localhost:8081/api/student-activities', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload)
   }).then((response) => {
     if (response.ok) window.dispatchEvent(new CustomEvent('student-server-activity-updated'));
+    return response.ok;
   }).catch((error) => console.warn('Impossible d’enregistrer cette activité sur le serveur.', error));
 };
 
@@ -130,12 +131,15 @@ export const setStudentActivityCompleted = (id, completed) => {
   const resourceId = activity
     ? String(activity.id).slice(String(activity.type).length + 1)
     : type ? String(id).slice(type.length + 1) : '';
-  if (type && resourceId) sendStudentActivityEvent({ type, resourceId, eventType: completed ? 'COMPLETE' : 'UNCOMPLETE' });
+  const serverUpdate = type && resourceId
+    ? sendStudentActivityEvent({ type, resourceId, eventType: completed ? 'COMPLETE' : 'UNCOMPLETE' })
+    : Promise.resolve(false);
   const items = currentItems.map((item) => item.id === id
     ? { ...item, completed, completedAt: completed ? now : null }
     : item
   );
-  return saveProgress(items);
+  saveProgress(items);
+  return serverUpdate.then(() => items);
 };
 
 export const recordStudentMistake = (mistake) => {

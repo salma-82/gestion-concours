@@ -5,6 +5,7 @@ import logoImg from '../assets/logo.png';
 import { LandingMascot } from './LandingPage';
 import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
+import './ClientCompact.css';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -333,19 +334,19 @@ export default function ClientLayout() {
     }}>
 
       {/* Ancien sidebar conservé temporairement hors rendu. */}
-      {false && <aside style={{
-        width: '265px',
-        minWidth: '265px',
+      {<aside style={{
+        width: '130px',
+        minWidth: '130px',
         backgroundColor: '#ffffff',
         borderRight: isSidebarOpen ? '1px solid #edf2f7' : 'none',
-        display: 'none',
+        display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '24px 18px 20px 18px',
+        padding: '18px 10px 16px',
         boxShadow: '2px 0 20px rgba(0,0,0,0.015)',
         overflowY: 'auto',
         position: 'relative',
-        marginLeft: isSidebarOpen ? '0' : '-265px',
+        marginLeft: isSidebarOpen ? '0' : '-130px',
         opacity: isSidebarOpen ? 1 : 0,
         transition: 'margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease',
         flexShrink: 0,

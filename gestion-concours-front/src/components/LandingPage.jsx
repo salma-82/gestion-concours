@@ -236,6 +236,25 @@ export default function LandingPage({ onNavigateToAuth }) {
   const mascotProgressRef = useRef(0);
   const mascotMouseXRef = useRef(window.innerWidth / 2);
 
+  const handleFeatureClick = (step) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && (user.id || user.email)) {
+          navigate(step.route);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    if (onNavigateToAuth) {
+      onNavigateToAuth('register', 'GRATUIT');
+    } else {
+      navigate('/register?pack=GRATUIT&feature=' + encodeURIComponent(step.title));
+    }
+  };
+
   const handleNav = (mode, pack) => {
     if (onNavigateToAuth) {
       onNavigateToAuth(mode, pack);
@@ -843,6 +862,17 @@ const partnerLogos = [
             <path d="m29 16 5 5M12 33l7 5" stroke="#253e67" strokeWidth="1.5" />
           </svg>
         </div>
+        <div className="lp-hero-pendulum" aria-hidden="true">
+          <svg viewBox="0 0 180 180" fill="none">
+            <path d="M24 22h132" stroke="#4b91ff" strokeWidth="3" strokeLinecap="round" />
+            <path d="M90 22 59 126" stroke="#4b91ff" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M90 22 111 125c18-2 34-13 43-29" stroke="#80b2ff" strokeWidth="2" strokeDasharray="6 6" strokeLinecap="round" />
+            <path d="M59 138c18 15 44 18 66 7" stroke="#80b2ff" strokeWidth="2" strokeDasharray="5 6" strokeLinecap="round" />
+            <circle cx="59" cy="137" r="12" fill="#5798f5" />
+            <path d="M58 127a12 12 0 0 1 12 8" stroke="#a8ccff" strokeWidth="2" strokeLinecap="round" />
+            <path d="M159 19v7m-3.5-3.5h7" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
         <h1 className="lp-hero-title">
           Pr&eacute;parez vos <span className="lp-title-underlined">concours</span>,<br />
           assurez votre <span className="lp-hero-gradient-text">avenir.</span>
@@ -930,44 +960,6 @@ const partnerLogos = [
           6. 3-STEP METHODOLOGY SECTION (STYLE KRESCO)
       ==================================================================== */}
       <section className="lp-methodology-section" id="methodologie">
-        {/* Decorative formula: DNA helix */}
-        <div className="lp-bg-formula lp-bg-formula--dna-1" aria-hidden="true">
-          <svg viewBox="0 0 80 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 10 Q50 30 20 50 Q-10 70 20 90 Q50 110 20 130" stroke="#3b82f6" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-            <path d="M60 10 Q30 30 60 50 Q90 70 60 90 Q30 110 60 130" stroke="#60a5fa" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-            <line x1="28" y1="20" x2="52" y2="20" stroke="#93c5fd" strokeWidth="1.5" />
-            <line x1="18" y1="35" x2="62" y2="35" stroke="#bfdbfe" strokeWidth="1.2" />
-            <line x1="20" y1="50" x2="60" y2="50" stroke="#93c5fd" strokeWidth="1.5" />
-            <line x1="18" y1="65" x2="62" y2="65" stroke="#bfdbfe" strokeWidth="1.2" />
-            <line x1="28" y1="80" x2="52" y2="80" stroke="#93c5fd" strokeWidth="1.5" />
-            <line x1="18" y1="95" x2="62" y2="95" stroke="#bfdbfe" strokeWidth="1.2" />
-            <line x1="20" y1="110" x2="60" y2="110" stroke="#93c5fd" strokeWidth="1.5" />
-            <line x1="28" y1="125" x2="52" y2="125" stroke="#bfdbfe" strokeWidth="1.2" />
-            <text x="65" y="42" fill="#64748b" fontSize="9" fontWeight="600">BAS</text>
-            <text x="65" y="72" fill="#3b82f6" fontSize="9" fontWeight="600">DNA</text>
-            <text x="65" y="102" fill="#f97316" fontSize="9" fontWeight="600">DNA</text>
-          </svg>
-        </div>
-        {/* Decorative formula: sine curve 2 */}
-        <div className="lp-bg-formula lp-bg-formula--sine-2" aria-hidden="true">
-          <svg viewBox="0 0 160 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="10" y1="60" x2="150" y2="60" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
-            <line x1="15" y1="65" x2="15" y2="8" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
-            <path d="M15 40 Q35 5 60 40 Q85 75 110 40 Q135 5 150 40" stroke="#818cf8" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <circle cx="110" cy="40" r="3.5" fill="#f59e0b" stroke="#fff" strokeWidth="1.5" />
-            <text x="118" y="25" fill="#a1a1aa" fontSize="11" fontFamily="serif" fontStyle="italic">g(x)</text>
-          </svg>
-        </div>
-        {/* Decorative formula: hexagon 2 */}
-        <div className="lp-bg-formula lp-bg-formula--hexagon-2" aria-hidden="true">
-          <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="30,4 54,17 54,43 30,56 6,43 6,17" stroke="#a5b4fc" strokeWidth="1.3" fill="none" />
-            <circle cx="30" cy="4" r="2.5" fill="#e2e8f0" />
-            <circle cx="54" cy="17" r="2.5" fill="#c7d2fe" />
-            <circle cx="6" cy="43" r="2.5" fill="#e2e8f0" />
-            <circle cx="30" cy="56" r="2.5" fill="#c7d2fe" />
-          </svg>
-        </div>
         <div className="lp-section-header lp-methodology-header">
           <h2 className="lp-methodology-title">
             Votre <span>parcours</span>
@@ -999,13 +991,9 @@ const partnerLogos = [
               pills: ['Dates des concours', 'Inscriptions', 'Planning personnel'],
               subtitle: 'ENSA · ENSAM · Médecine · ENCG',
               cardBadge: 'Agenda',
-              cardTitle: 'Agenda concours',
-              cardItems: [
-                { color: '#2563eb', text: 'Dates des concours' },
-                { color: '#ea580c', text: 'Inscriptions' },
-                { color: '#0f172a', text: 'Planning personnel' }
-              ],
-              progress: '32%',
+              urlPath: 'e-concours.ma/client-calendrier',
+              screenshotUrl: '/screenshots/step-01-calendrier.png',
+              route: '/client-calendrier',
               speech: 'Nbdaw b planning! 📅'
             },
             {
@@ -1022,14 +1010,10 @@ const partnerLogos = [
               title: 'Cours & examens nationaux',
               pills: ['Cours du Bac', 'Annales', 'Corrigés détaillés'],
               subtitle: 'Mathématiques · Physique · SVT',
-              cardBadge: 'Bac',
-              cardTitle: 'Cours du Baccalauréat',
-              cardItems: [
-                { color: '#2563eb', text: 'Cours du Bac' },
-                { color: '#ea580c', text: 'Annales' },
-                { color: '#0f172a', text: 'Corrigés détaillés' }
-              ],
-              progress: '46%',
+              cardBadge: 'Examens',
+              urlPath: 'e-concours.ma/client-examens',
+              screenshotUrl: '/screenshots/step-02-examens.png',
+              route: '/client-examens',
               speech: 'Fhem dars mzyan! 📚'
             },
             {
@@ -1050,13 +1034,9 @@ const partnerLogos = [
               pills: ['Formules clés', 'Résumés', 'Notions essentielles'],
               subtitle: 'Révision rapide par chapitre',
               cardBadge: 'Fiches',
-              cardTitle: 'Fiche de révision',
-              cardItems: [
-                { color: '#2563eb', text: 'Formules clés' },
-                { color: '#ea580c', text: 'Résumés' },
-                { color: '#0f172a', text: 'Notions essentielles' }
-              ],
-              progress: '58%',
+              urlPath: 'e-concours.ma/client-resumes',
+              screenshotUrl: '/screenshots/step-03-resumes.png',
+              route: '/client-resumes',
               speech: 'Wjjed résumé dyalk! 📝'
             },
             {
@@ -1075,14 +1055,10 @@ const partnerLogos = [
               title: 'Concours blancs',
               pills: ['QCM chronométrés', 'Matières', 'Chapitres'],
               subtitle: 'Score · Temps · Progression',
-              cardBadge: 'QCM',
-              cardTitle: 'Test par chapitre',
-              cardItems: [
-                { color: '#2563eb', text: 'QCM chronométrés' },
-                { color: '#ea580c', text: 'Matières' },
-                { color: '#0f172a', text: 'Chapitres' }
-              ],
-              progress: '50%',
+              cardBadge: 'QCM Blanc',
+              urlPath: 'e-concours.ma/client-concours-blanc',
+              screenshotUrl: '/screenshots/step-04-concours-blanc.png',
+              route: '/client-concours-blanc',
               speech: 'Dreb QCM b chrono! ⏱️'
             },
             {
@@ -1101,13 +1077,9 @@ const partnerLogos = [
               pills: ['Sujets officiels', 'QCM interactifs', 'Barèmes'],
               subtitle: 'Préparation par école',
               cardBadge: 'Annales',
-              cardTitle: 'Annales de concours',
-              cardItems: [
-                { color: '#2563eb', text: 'Sujets officiels' },
-                { color: '#ea580c', text: 'QCM interactifs' },
-                { color: '#0f172a', text: 'Barèmes' }
-              ],
-              progress: '40%',
+              urlPath: 'e-concours.ma/client-concours',
+              screenshotUrl: '/screenshots/step-05-concours.png',
+              route: '/client-concours',
               speech: 'Jarrab annales l’école! 🏛️'
             },
             {
@@ -1122,14 +1094,12 @@ const partnerLogos = [
                 </svg>
               ),
               title: 'Révision des erreurs',
-              pills: ['Erreurs sauvegardées'],
+              pills: ['Erreurs sauvegardées', 'Explications', 'Ciblage'],
               subtitle: 'Révision ciblée · Amélioration continue',
               cardBadge: 'Erreurs',
-              cardTitle: 'Révision ciblée',
-              cardItems: [
-                { color: '#2563eb', text: 'Erreurs sauvegardées' }
-              ],
-              progress: '65%',
+              urlPath: 'e-concours.ma/client-erreurs',
+              screenshotUrl: '/screenshots/step-06-erreurs.png',
+              route: '/client-erreurs',
               speech: 'Raja3 les erreurs dyalk! 🔄'
             },
             {
@@ -1147,41 +1117,65 @@ const partnerLogos = [
               title: 'Dashboard & progression',
               pills: ['Statistiques', 'Précision', 'Chapitres maîtrisés'],
               subtitle: 'Objectif : admissibilité',
-              cardBadge: 'Stats',
-              cardTitle: 'Mon tableau de bord',
-              cardItems: [
-                { color: '#2563eb', text: 'Statistiques' },
-                { color: '#ea580c', text: 'Précision' },
-                { color: '#0f172a', text: 'Chapitres maîtrisés' }
-              ],
-              progress: '75%',
+              cardBadge: 'Dashboard',
+              urlPath: 'e-concours.ma/client-dashboard',
+              screenshotUrl: '/screenshots/step-07-dashboard.png',
+              route: '/client-dashboard',
               speech: 'Qrebti l’admissibilité! 🚀'
             }
           ].map((step) => {
             const isLeftCard = step.side === 'left-card';
 
             const cardElement = (
-              <div className="lp-method-preview lp-method-col-card" aria-label={`Aperçu : ${step.cardTitle}`}>
-                <div className="lp-method-card">
-                  <div className="lp-method-card-header">
-                    <div className="lp-method-card-dots">
-                      <span className="dot-red" />
-                      <span className="dot-dark" />
-                      <span className="dot-blue" />
+              <div className="lp-method-preview lp-method-col-card">
+                <div
+                  className="lp-skeuo-window"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleFeatureClick(step)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleFeatureClick(step);
+                    }
+                  }}
+                  aria-label={`Essai gratuit : ${step.title}`}
+                  title={`Cliquer pour essayer gratuitement : ${step.title}`}
+                >
+                  <div className="lp-skeuo-titlebar">
+                    <div className="lp-skeuo-controls" aria-hidden="true">
+                      <span className="lp-skeuo-dot dot-close" />
+                      <span className="lp-skeuo-dot dot-min" />
+                      <span className="lp-skeuo-dot dot-expand" />
                     </div>
-                    <span className="lp-method-card-badge">{step.cardBadge}</span>
+                    <div className="lp-skeuo-address-bar" aria-hidden="true">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lp-skeuo-lock-icon">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      <span className="lp-skeuo-url">{step.urlPath}</span>
+                    </div>
+                    <div className="lp-skeuo-badge">
+                      <span className="lp-skeuo-pill">{step.cardBadge}</span>
+                    </div>
                   </div>
-                  <h4 className="lp-method-card-title">{step.cardTitle}</h4>
-                  <ul className="lp-method-card-list">
-                    {step.cardItems.map((item) => (
-                      <li key={item.text} className="lp-method-card-item">
-                        <span className="lp-method-card-item-dot" style={{ backgroundColor: item.color }} />
-                        <span>{item.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="lp-method-card-progress">
-                    <div className="lp-method-card-progress-bar" style={{ width: step.progress }} />
+
+                  <div className="lp-skeuo-viewport">
+                    <img
+                      src={step.screenshotUrl}
+                      alt={`Capture d'écran E-CONCOURS : ${step.title}`}
+                      className="lp-skeuo-img"
+                      loading="lazy"
+                    />
+                    <div className="lp-skeuo-glare" aria-hidden="true" />
+                    <div className="lp-skeuo-hover-cta">
+                      <span className="lp-skeuo-cta-btn">
+                        <span>Essai gratuit</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1237,9 +1231,7 @@ const partnerLogos = [
             <span className="lp-methodology-goal-title">Admission</span>
           </div>
         </div>
-      </section>
-
-      <section className="lp-features-section fk" id="fonctionnalites">
+      </section><section className="lp-features-section fk" id="fonctionnalites">
         <div className="fk-content-wrap">
         <span className="fk-badge">Fonctionnalités clés</span>
         <h2>Une préparation adaptée à tes <b>objectifs</b></h2>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // Styles
 import 'katex/dist/katex.min.css';
@@ -34,7 +34,18 @@ import WhatsAppButton from './components/WhatsAppButton';
 function App() {
   return (
     <Router>
-      <WhatsAppButton />
+      <AppRoutes />
+    </Router>
+  );
+}
+
+function AppRoutes() {
+  const { pathname } = useLocation();
+  const showWhatsAppButton = pathname !== '/login' && pathname !== '/register';
+
+  return (
+    <>
+      {showWhatsAppButton && <WhatsAppButton />}
       <Routes>
 
         {/* =========================
@@ -115,7 +126,7 @@ function App() {
         />
 
       </Routes>
-    </Router>
+    </>
   );
 }
 

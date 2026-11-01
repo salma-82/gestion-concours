@@ -1,41 +1,80 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import './ClientNationalExamStatsDashboard.css';
 
 const API_BASE = 'http://localhost:8081';
-const normalize = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr-FR');
-const isExamEvent = (event) => ['examen', 'examen national'].includes(normalize(event?.type));
-const examIdOf = (event) => String(event?.resourceId || '').split(':')[0];
-const documentOf = (event) => {
-  const variant = normalize(event?.resourceVariant);
-  if (variant.includes('correction') || normalize(event?.title).includes('correction')) return 'correction';
-  if (variant === 'sujet' || variant === 'subject') return 'sujet';
-  return 'unknown';
-};
-const fmtNumber = (value) => new Intl.NumberFormat('fr-FR').format(value || 0);
-const fmtDate = (value, time = false) => {
-  if (!value || Number.isNaN(new Date(value).getTime())) return '—';
-  return new Intl.DateTimeFormat('fr-FR', time ? { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
-};
-const weekKey = (value) => {
-  const date = new Date(value);
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const PAGE_SIZE = 8;
+const COLORS = {
+  primary: '#2563eb',
+  success: '#10b981',
+  violet: '#8b5cf6',
+  amber: '#f59e0b',
+  muted: '#94a3b8',
+  ink: '#0f172a',
 };
 
-const unavailableMetrics = [
-  ['Examens réalisés', 'Les ouvertures de sujets ne comptent pas comme des examens passés.'],
-  ['Tentatives enregistrées', 'Les tentatives de réponse ne sont pas stockées.'],
-  ['Moyenne générale des notes', 'Aucune note réelle à agréger.'],
-  ['Meilleure note obtenue', 'Aucun résultat réel n’est enregistré.'],
-  ['Taux de réussite', 'Calculable uniquement à partir de notes réelles.'],
-  ['Réponses correctes', 'Les sujets PDF ne remontent pas les réponses.'],
-  ['Réponses incorrectes', 'Les sujets PDF ne remontent pas les réponses.'],
-  ['Réponses sans réponse', 'Aucune tentative ne permet de les compter.']
-];
+const normalize = (value) => String(value || '')
+  .trim()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLocaleLowerCase('fr-FR');
+
+const isExamEvent = (event) => normalize(event?.type).replace(/[_-]/g, ' ').includes('examen national');
+const eventKind = (event) => String(event?.eventType || '').toUpperCase();
+const resourceParts = (event) => {
+  const rawId = String(event?.resourceId || '');
+  const [id, ...suffix] = rawId.split(':');
+  return { id, suffix: suffix.join(':') };
+};
+const examIdOf = (event) => resourceParts(event).id;
+const documentOf = (event) => {
+  const { suffix } = resourceParts(event);
+  const variant = normalize(event?.resourceVariant || event?.documentType || suffix);
+  if (variant.includes('correction') || variant.includes('corrige') || normalize(event?.title).includes('correction')) return 'correction';
+  if (variant.includes('sujet') || variant.includes('subject')) return 'sujet';
+  return 'unknown';
+};
+const fmtNumber = (value) => new Intl.NumberFormat('fr-FR').format(Number(value) || 0);
+const fmtDate = (value, withTime = false) => {
+  if (!value || Number.isNaN(new Date(value).getTime())) return '—';
+  return new Intl.DateTimeFormat('fr-FR', withTime
+    ? { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+    : { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
+};
+const hasCorrection = (exam) => Boolean(exam?.pdfCorrectionUrl || exam?.correctionPageImages?.length);
+
+function MetricIcon({ name }) {
+  const paths = {
+    exams: <><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V9h5M9 13h6M9 17h6" /></>,
+    complete: <><path d="M20 11.2v.8a8 8 0 1 1-4.7-7.3" /><path d="m8.5 11.5 3 3 9-9" /></>,
+    correction: <><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V9h5M9 14h6m-6 3h4" /><path d="m9 11 1.5 1.5L13 10" /></>,
+    subjects: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z" /><path d="M4 5.5v15M8 7h8M8 11h8M8 15h5" /></>,
+    pending: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  };
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}
+
+const getStatus = (id, startedIds, completedIds) => {
+  if (completedIds.has(id)) return 'completed';
+  if (startedIds.has(id)) return 'in-progress';
+  return 'not-started';
+};
 
 export default function ClientNationalExamStatsDashboard({ events = [], loading = false, error = false, onRetry }) {
   const navigate = useNavigate();
@@ -47,159 +86,500 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   const [subject, setSubject] = useState('all');
   const [option, setOption] = useState('all');
   const [period, setPeriod] = useState('all');
-  const [examFilter, setExamFilter] = useState('all');
-  const [documentFilter, setDocumentFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [correctionFilter, setCorrectionFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     let active = true;
     setCatalogLoading(true);
     axios.get(`${API_BASE}/api/examens-nationaux`, { withCredentials: true })
-      .then(({ data }) => { if (active) { setCatalog(Array.isArray(data) ? data : []); setCatalogError(false); } })
-      .catch(() => { if (active) { setCatalog([]); setCatalogError(true); } })
+      .then(({ data }) => {
+        if (!active) return;
+        setCatalog(Array.isArray(data) ? data : []);
+        setCatalogError(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCatalog([]);
+        setCatalogError(true);
+      })
       .finally(() => { if (active) setCatalogLoading(false); });
     return () => { active = false; };
   }, [catalogRetry]);
 
-  const byId = useMemo(() => new Map(catalog.map((item) => [String(item.id), item])), [catalog]);
   const examEvents = useMemo(() => (Array.isArray(events) ? events : []).filter(isExamEvent), [events]);
-  const years = useMemo(() => [...new Set(catalog.map((item) => String(item.annee || '')).filter(Boolean))].sort((a, b) => Number(b) - Number(a)), [catalog]);
-  const subjects = useMemo(() => [...new Set(catalog.map((item) => item.matiere).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr')), [catalog]);
-  const options = useMemo(() => [...new Set(catalog.map((item) => item.optionBac).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr')), [catalog]);
-  const exams = useMemo(() => [...catalog].sort((a, b) => Number(b.annee || 0) - Number(a.annee || 0) || String(a.titre || '').localeCompare(String(b.titre || ''), 'fr')), [catalog]);
+  const byId = useMemo(() => new Map(catalog.map((exam) => [String(exam.id), exam])), [catalog]);
+  const years = useMemo(() => [...new Set(catalog.map((exam) => String(exam.annee || '')).filter(Boolean))]
+    .sort((a, b) => Number(b) - Number(a)), [catalog]);
+  const subjects = useMemo(() => [...new Set(catalog.map((exam) => exam.matiere).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'fr')), [catalog]);
+  const options = useMemo(() => [...new Set(catalog.map((exam) => exam.optionBac).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'fr')), [catalog]);
 
-  const filteredEvents = useMemo(() => {
-    const cutoff = period === 'all' ? null : Date.now() - Number(period) * 86400000;
-    return examEvents.filter((event) => {
+  const visibleCatalog = useMemo(() => catalog.filter((exam) =>
+    (year === 'all' || String(exam.annee || '') === year)
+    && (subject === 'all' || normalize(exam.matiere) === normalize(subject))
+    && (option === 'all' || normalize(exam.optionBac) === normalize(option))), [catalog, year, subject, option]);
+  const visibleIds = useMemo(() => new Set(visibleCatalog.map((exam) => String(exam.id))), [visibleCatalog]);
+  const visibleEvents = useMemo(() => examEvents.filter((event) => visibleIds.has(examIdOf(event))), [examEvents, visibleIds]);
+  const viewEvents = useMemo(() => visibleEvents.filter((event) => eventKind(event) === 'VIEW'), [visibleEvents]);
+  const subjectViewEvents = useMemo(() => viewEvents.filter((event) => documentOf(event) !== 'correction'), [viewEvents]);
+  const correctionViewEvents = useMemo(() => viewEvents.filter((event) => documentOf(event) === 'correction'), [viewEvents]);
+
+  // Completion is a manual state. Keep only the latest COMPLETE/UNCOMPLETE event per document.
+  const completionByExam = useMemo(() => {
+    const latestByDocument = new Map();
+    examEvents
+      .map((event, index) => ({ event, index, timestamp: new Date(event.occurredAt).getTime() }))
+      .filter(({ event }) => ['COMPLETE', 'UNCOMPLETE'].includes(eventKind(event)))
+      .sort((a, b) => {
+        const aTime = Number.isFinite(a.timestamp) ? a.timestamp : 0;
+        const bTime = Number.isFinite(b.timestamp) ? b.timestamp : 0;
+        return aTime - bTime || a.index - b.index;
+      })
+      .forEach(({ event }) => {
+        const { id } = resourceParts(event);
+        if (!id) return;
+        const document = documentOf(event) === 'unknown' ? 'sujet' : documentOf(event);
+        latestByDocument.set(`${id}:${document}`, eventKind(event) === 'COMPLETE');
+      });
+    const completed = new Set();
+    latestByDocument.forEach((isCompleted, key) => {
+      if (isCompleted) completed.add(key.split(':')[0]);
+    });
+    return completed;
+  }, [examEvents]);
+
+  const startedIds = useMemo(() => new Set(subjectViewEvents.map(examIdOf).filter(Boolean)), [subjectViewEvents]);
+  const correctionIds = useMemo(() => new Set(correctionViewEvents
+    .filter((event) => hasCorrection(byId.get(examIdOf(event))))
+    .map(examIdOf).filter(Boolean)), [correctionViewEvents, byId]);
+  const workedSubjects = useMemo(() => new Set(subjectViewEvents.map((event) => {
+    const exam = byId.get(examIdOf(event));
+    return normalize(exam?.matiere || event.subject);
+  }).filter(Boolean)), [subjectViewEvents, byId]);
+
+  const metrics = useMemo(() => ({
+    consulted: startedIds.size,
+    completed: visibleCatalog.filter((exam) => completionByExam.has(String(exam.id))).length,
+    corrections: correctionIds.size,
+    subjects: workedSubjects.size,
+    pending: [...startedIds].filter((id) => !completionByExam.has(id)).length,
+  }), [startedIds, visibleCatalog, completionByExam, correctionIds, workedSubjects]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { 'not-started': 0, 'in-progress': 0, completed: 0 };
+    visibleCatalog.forEach((exam) => { counts[getStatus(String(exam.id), startedIds, completionByExam)] += 1; });
+    return [
+      { name: 'Non commencés', value: counts['not-started'], color: '#94a3b8' },
+      { name: 'En cours', value: counts['in-progress'], color: COLORS.primary },
+      { name: 'Terminés', value: counts.completed, color: COLORS.success },
+    ];
+  }, [visibleCatalog, startedIds, completionByExam]);
+
+  const lineData = useMemo(() => {
+    const now = new Date();
+    const datedEvents = visibleEvents.map((event, index) => ({
+      event,
+      index,
+      date: new Date(event.occurredAt),
+    })).filter((item) => !Number.isNaN(item.date.getTime()));
+    let granularity = 'month';
+    let start;
+    let bucketCount;
+
+    if (period === 'week') {
+      granularity = 'day';
+      bucketCount = 7;
+      start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - bucketCount + 1);
+    } else if (period === 'month') {
+      granularity = 'day';
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      bucketCount = now.getDate();
+    } else if (period === 'quarter') {
+      granularity = 'month';
+      const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+      start = new Date(now.getFullYear(), quarterStartMonth, 1);
+      bucketCount = now.getMonth() - quarterStartMonth + 1;
+    } else {
+      const firstActivity = datedEvents.reduce((earliest, item) => item.date < earliest ? item.date : earliest, now);
+      start = datedEvents.length ? new Date(firstActivity.getFullYear(), firstActivity.getMonth(), 1) : new Date(now.getFullYear(), now.getMonth(), 1);
+      bucketCount = Math.max(1, (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth() + 1);
+    }
+
+    const buckets = Array.from({ length: bucketCount }, (_, index) => {
+      const date = new Date(start);
+      if (granularity === 'day') date.setDate(start.getDate() + index);
+      else date.setMonth(start.getMonth() + index);
+      const key = granularity === 'day'
+        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      return {
+        key,
+        label: new Intl.DateTimeFormat('fr-FR', granularity === 'day'
+          ? { weekday: 'short', day: 'numeric' }
+          : { month: 'short', year: bucketCount > 6 ? '2-digit' : undefined }).format(date),
+        exams: new Set(),
+        completed: new Set(),
+        corrections: new Set(),
+      };
+    });
+
+    const keyFor = (date) => granularity === 'day'
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    datedEvents.forEach(({ event, date }) => {
+      const bucket = buckets.find((item) => item.key === keyFor(date));
+      if (!bucket) return;
       const id = examIdOf(event);
-      const item = byId.get(id);
-      const date = new Date(event.occurredAt).getTime();
-      return (year === 'all' || String(item?.annee || '') === year)
-        && (subject === 'all' || normalize(item?.matiere || event.subject) === normalize(subject))
-        && (option === 'all' || normalize(item?.optionBac) === normalize(option))
-        && (examFilter === 'all' || id === examFilter)
-        && (documentFilter === 'all' || documentOf(event) === documentFilter)
-        && (cutoff === null || (Number.isFinite(date) && date >= cutoff));
+      const kind = eventKind(event);
+      if (kind === 'VIEW' && documentOf(event) === 'correction') bucket.corrections.add(id);
+      else if (kind === 'VIEW') bucket.exams.add(id);
+      else if (kind === 'COMPLETE') bucket.completed.add(id);
     });
-  }, [examEvents, byId, year, subject, option, period, examFilter, documentFilter]);
+    return buckets.map((bucket) => ({
+      label: bucket.label,
+      exams: bucket.exams.size,
+      completed: bucket.completed.size,
+      corrections: bucket.corrections.size,
+    }));
+  }, [visibleEvents, period]);
 
-  const views = useMemo(() => filteredEvents.filter((event) => event.eventType === 'VIEW'), [filteredEvents]);
-  const subjectViews = views.filter((event) => documentOf(event) === 'sujet').length;
-  const correctionViews = views.filter((event) => documentOf(event) === 'correction').length;
-  const unknownViews = views.filter((event) => documentOf(event) === 'unknown').length;
-  const consultedExams = new Set(views.map(examIdOf).filter(Boolean)).size;
-  const activeDays = new Set(views.map((event) => {
-    const date = new Date(event.occurredAt);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('fr-CA');
-  }).filter(Boolean)).size;
+  const subjectData = useMemo(() => {
+    const workedBySubject = new Map();
+    subjectViewEvents.forEach((event) => {
+      const exam = byId.get(examIdOf(event));
+      const name = exam?.matiere || event.subject;
+      if (!name) return;
+      if (!workedBySubject.has(name)) workedBySubject.set(name, new Set());
+      workedBySubject.get(name).add(examIdOf(event));
+    });
+    return [...new Set(visibleCatalog.map((exam) => exam.matiere).filter(Boolean))]
+      .map((name) => ({
+        name,
+        exams: workedBySubject.get(name)?.size || 0,
+        available: visibleCatalog.filter((exam) => exam.matiere === name).length,
+      }))
+      .sort((a, b) => b.exams - a.exams || a.name.localeCompare(b.name, 'fr'));
+  }, [visibleCatalog, subjectViewEvents, byId]);
 
-  const rows = useMemo(() => {
-    const grouped = new Map();
-    filteredEvents.filter((event) => event.eventType === 'VIEW').forEach((event) => {
+  const yearData = useMemo(() => years
+    .filter((item) => year === 'all' || item === year)
+    .map((item) => {
+      const examsOfYear = visibleCatalog.filter((exam) => String(exam.annee || '') === item);
+      const worked = examsOfYear.filter((exam) => startedIds.has(String(exam.id))).length;
+      return { year: item, worked, undiscovered: Math.max(0, examsOfYear.length - worked) };
+    })
+    .sort((a, b) => Number(a.year) - Number(b.year)), [years, year, visibleCatalog, startedIds]);
+
+  const correctionSummary = useMemo(() => {
+    const available = visibleCatalog.filter(hasCorrection);
+    const consulted = available.filter((exam) => correctionIds.has(String(exam.id))).length;
+    const pending = Math.max(0, available.length - consulted);
+    return { available: available.length, consulted, pending, rate: available.length ? Math.round((consulted / available.length) * 100) : 0 };
+  }, [visibleCatalog, correctionIds]);
+
+  const latestViewByExam = useMemo(() => {
+    const latest = new Map();
+    viewEvents.forEach((event) => {
       const id = examIdOf(event);
-      if (!id) return;
-      const item = byId.get(id) || {};
-      const row = grouped.get(id) || { id, exam: item, title: item.titre || event.title || `Examen national ${item.annee || ''}`.trim(), subject: item.matiere || event.subject || 'Matière non précisée', option: item.optionBac || 'Option non précisée', year: item.annee || '', sujets: 0, corrections: 0, unknown: 0, latest: null };
-      documentOf(event) === 'correction' ? row.corrections++ : documentOf(event) === 'sujet' ? row.sujets++ : row.unknown++;
-      const timestamp = new Date(event.occurredAt);
-      if (!Number.isNaN(timestamp.getTime()) && (!row.latest || timestamp > new Date(row.latest))) row.latest = event.occurredAt;
-      grouped.set(id, row);
+      const previous = latest.get(id);
+      if (!previous || new Date(event.occurredAt).getTime() > new Date(previous).getTime()) latest.set(id, event.occurredAt);
     });
-    return [...grouped.values()].sort((a, b) => new Date(b.latest || 0) - new Date(a.latest || 0));
-  }, [filteredEvents, byId]);
+    return latest;
+  }, [viewEvents]);
 
-  const weeklyActivity = useMemo(() => {
-    const today = new Date();
-    const monday = new Date(today);
-    monday.setHours(0, 0, 0, 0);
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7) - 49);
-    const data = Array.from({ length: 8 }, (_, index) => {
-      const start = new Date(monday);
-      start.setDate(monday.getDate() + index * 7);
-      return { key: weekKey(start), label: new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(start), sujets: 0, corrections: 0, nonPrecises: 0 };
-    });
-    views.forEach((event) => {
-      const bucket = data.find((item) => item.key === weekKey(event.occurredAt));
-      if (bucket) {
-        const metric = documentOf(event) === 'correction' ? 'corrections' : documentOf(event) === 'sujet' ? 'sujets' : 'nonPrecises';
-        bucket[metric] += 1;
-      }
-    });
-    return data;
-  }, [views]);
+  const historyRows = useMemo(() => {
+    const query = normalize(search);
+    return visibleCatalog
+      .map((exam) => {
+        const id = String(exam.id);
+        const status = getStatus(id, startedIds, completionByExam);
+        const isCorrectionConsulted = correctionIds.has(id);
+        return {
+          exam,
+          id,
+          status,
+          latest: latestViewByExam.get(id) || null,
+          isCorrectionConsulted,
+          correctionAvailable: hasCorrection(exam),
+        };
+      })
+      .filter((row) => {
+        const searchable = normalize([row.exam.titre, row.exam.matiere, row.exam.annee, row.exam.optionBac, row.exam.session].join(' '));
+        return (!query || searchable.includes(query))
+          && (statusFilter === 'all' || row.status === statusFilter)
+          && (correctionFilter === 'all'
+            || (correctionFilter === 'consulted' && row.isCorrectionConsulted)
+            || (correctionFilter === 'pending' && row.correctionAvailable && !row.isCorrectionConsulted)
+            || (correctionFilter === 'unavailable' && !row.correctionAvailable));
+      })
+      .sort((a, b) => new Date(b.latest || 0) - new Date(a.latest || 0)
+        || Number(b.exam.annee || 0) - Number(a.exam.annee || 0));
+  }, [visibleCatalog, startedIds, completionByExam, correctionIds, latestViewByExam, search, statusFilter, correctionFilter]);
 
-  const bySubject = useMemo(() => {
-    const grouped = new Map();
-    views.forEach((event) => {
-      const name = byId.get(examIdOf(event))?.matiere || event.subject || 'Matière non précisée';
-      grouped.set(name, (grouped.get(name) || 0) + 1);
-    });
-    return [...grouped].map(([name, consultations]) => ({ name, consultations })).sort((a, b) => b.consultations - a.consultations).slice(0, 8);
-  }, [views, byId]);
-  const splitData = [{ name: 'Sujets', value: subjectViews, color: '#2563eb' }, { name: 'Corrigés', value: correctionViews, color: '#0f9f78' }, { name: 'Non précisés', value: unknownViews, color: '#94a3b8' }].filter((item) => item.value);
+  const totalPages = Math.max(1, Math.ceil(historyRows.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageRows = historyRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const lineHasData = lineData.some((item) => item.exams || item.completed || item.corrections);
+  const statusTotal = statusCounts.reduce((sum, item) => sum + item.value, 0);
 
-  const reset = () => { setYear('all'); setSubject('all'); setOption('all'); setPeriod('all'); setExamFilter('all'); setDocumentFilter('all'); };
+  const recommendations = useMemo(() => {
+    const items = [];
+    const unfinished = [...startedIds].filter((id) => !completionByExam.has(id)).length;
+    if (unfinished) items.push({
+      title: 'Reprendre les examens en cours',
+      detail: `${fmtNumber(unfinished)} examen${unfinished > 1 ? 's' : ''} commencé${unfinished > 1 ? 's' : ''} ${unfinished > 1 ? 'restent' : 'reste'} à terminer.`,
+      action: 'Voir l’historique',
+      onClick: () => { setStatusFilter('in-progress'); setCurrentPage(1); },
+    });
+    if (correctionSummary.pending) items.push({
+      title: 'Consulter les corrections disponibles',
+      detail: `${fmtNumber(correctionSummary.pending)} correction${correctionSummary.pending > 1 ? 's restent' : ' reste'} à découvrir.`,
+      action: 'Filtrer les corrections',
+      onClick: () => { setCorrectionFilter('pending'); setCurrentPage(1); },
+    });
+    const leastWorkedSubject = subjectData
+      .filter((item) => item.available > 0 && item.exams < item.available)
+      .sort((a, b) => (a.exams / a.available) - (b.exams / b.available) || a.name.localeCompare(b.name, 'fr'))[0];
+    if (leastWorkedSubject) {
+      const targetExam = visibleCatalog.find((exam) => exam.matiere === leastWorkedSubject.name && !startedIds.has(String(exam.id)))
+        || visibleCatalog.find((exam) => exam.matiere === leastWorkedSubject.name);
+      items.push({
+        title: 'Équilibrer vos révisions',
+        detail: leastWorkedSubject.exams
+          ? `${leastWorkedSubject.name} : ${leastWorkedSubject.exams} examen${leastWorkedSubject.exams > 1 ? 's' : ''} travaillé${leastWorkedSubject.exams > 1 ? 's' : ''} sur ${leastWorkedSubject.available}.`
+          : `Vous n’avez pas encore ouvert d’examen de ${leastWorkedSubject.name}.`,
+        action: 'Voir les examens',
+        onClick: () => {
+          if (!targetExam) return navigate('/client-examens');
+          const params = new URLSearchParams();
+          if (targetExam.optionBac) params.set('filiere', targetExam.optionBac);
+          params.set('examId', String(targetExam.id));
+          params.set('document', 'sujet');
+          navigate(`/client-examens?${params.toString()}`);
+        },
+      });
+    }
+    return items.slice(0, 3);
+  }, [startedIds, completionByExam, correctionSummary.pending, subjectData, visibleCatalog, navigate]);
+
+  const resetFilters = () => {
+    setYear('all');
+    setSubject('all');
+    setOption('all');
+    setPeriod('all');
+    setSearch('');
+    setStatusFilter('all');
+    setCorrectionFilter('all');
+    setCurrentPage(1);
+  };
+  const openExam = (exam, document = 'sujet') => {
+    const params = new URLSearchParams();
+    if (exam.optionBac) params.set('filiere', exam.optionBac);
+    params.set('examId', String(exam.id));
+    params.set('document', document);
+    navigate(`/client-examens?${params.toString()}`);
+  };
 
   return (
     <section className="national-exam-stats" aria-labelledby="national-exam-stats-title">
       <header className="national-exam-hero">
-        <div><span className="national-exam-eyebrow">▦ &nbsp; SUIVI DES EXAMENS NATIONAUX</span><h1 id="national-exam-stats-title">Statistiques des examens</h1><p>Consultez votre historique des sujets et corrigés officiels avec des données réellement enregistrées.</p></div>
-        <button className="national-exam-primary-link" type="button" onClick={() => navigate('/client-examens')}>Voir les examens <span aria-hidden="true">↗</span></button>
+        <div>
+          <span className="national-exam-eyebrow">SUIVI DES EXAMENS NATIONAUX</span>
+          <h1 id="national-exam-stats-title">Statistiques des examens</h1>
+          <p>Une vue claire de vos examens travaillés, des corrections consultées et de votre progression.</p>
+        </div>
+        <button className="national-exam-primary-link" type="button" onClick={() => navigate('/client-examens')}>
+          Parcourir les examens <span aria-hidden="true">→</span>
+        </button>
       </header>
 
-      <section className="national-exam-filter-panel" aria-label="Filtres des examens nationaux">
-        <div className="national-exam-panel-title"><div><span className="national-exam-kicker">AFFINER L’ANALYSE</span><h2>Filtres</h2></div><button type="button" onClick={reset}>Réinitialiser</button></div>
+      <section className="national-exam-filter-panel" aria-label="Filtres des statistiques">
+        <div className="national-exam-panel-heading">
+          <div><span className="national-exam-kicker">AFFINER L’ANALYSE</span><h2>Filtres</h2></div>
+          <button className="national-exam-reset" type="button" onClick={resetFilters}>Réinitialiser</button>
+        </div>
         <div className="national-exam-filters">
-          <label>Année<select value={year} onChange={(e) => setYear(e.target.value)}><option value="all">Toutes les années</option>{years.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label>Matière<select value={subject} onChange={(e) => setSubject(e.target.value)}><option value="all">Toutes les matières</option>{subjects.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label>Option du Bac<select value={option} onChange={(e) => setOption(e.target.value)}><option value="all">Toutes les options</option>{options.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label>Période<select value={period} onChange={(e) => setPeriod(e.target.value)}><option value="7">7 derniers jours</option><option value="30">30 derniers jours</option><option value="90">3 derniers mois</option><option value="365">12 derniers mois</option><option value="all">Toute la période</option></select></label>
-          <label>Examen<select value={examFilter} onChange={(e) => setExamFilter(e.target.value)}><option value="all">Tous les examens</option>{exams.map((item) => <option value={String(item.id)} key={item.id}>{item.titre || `Examen ${item.annee || ''}`} · {item.annee || '—'}</option>)}</select></label>
-          <label>Tentative<select value="untracked" disabled aria-describedby="national-attempt-note"><option value="untracked">Non enregistrée</option></select><small id="national-attempt-note">Aucune note de tentative n’est stockée.</small></label>
-          <label>Document consulté<select value={documentFilter} onChange={(e) => setDocumentFilter(e.target.value)}><option value="all">Tous les documents</option><option value="sujet">Sujets</option><option value="correction">Corrigés</option><option value="unknown">Type non précisé</option></select></label>
+          <label>Année<select value={year} onChange={(event) => { setYear(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les années</option>{years.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <label>Matière<select value={subject} onChange={(event) => { setSubject(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les matières</option>{subjects.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <label>Option du Bac<select value={option} onChange={(event) => { setOption(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les options</option>{options.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <button className="national-exam-reset national-exam-reset-mobile" type="button" onClick={resetFilters}>Effacer les filtres</button>
         </div>
       </section>
 
-      {(error || catalogError) && <div className="national-exam-alert" role="alert"><span>{error ? 'Historique indisponible.' : 'Catalogue des examens indisponible.'}</span>{error && <button type="button" onClick={onRetry}>Réessayer</button>}{catalogError && <button type="button" onClick={() => setCatalogRetry((value) => value + 1)}>Recharger</button>}</div>}
+      {(error || catalogError) && <div className="national-exam-alert" role="alert">
+        <span>{error ? 'Les activités de votre compte sont indisponibles.' : 'Le catalogue des examens est indisponible.'}</span>
+        {error && onRetry && <button type="button" onClick={onRetry}>Réessayer</button>}
+        {catalogError && <button type="button" onClick={() => setCatalogRetry((value) => value + 1)}>Recharger</button>}
+      </div>}
 
-      <section className="national-exam-activity-kpis" aria-label="Consultations enregistrées">
-        <article><i className="is-blue">▤</i><div><span>Examens consultés</span><strong>{loading ? '…' : error ? '—' : fmtNumber(consultedExams)}</strong></div></article>
-        <article><i className="is-green">↗</i><div><span>Consultations de sujets</span><strong>{loading ? '…' : error ? '—' : fmtNumber(subjectViews)}</strong></div></article>
-        <article><i className="is-violet">✓</i><div><span>Consultations de corrigés</span><strong>{loading ? '…' : error ? '—' : fmtNumber(correctionViews)}</strong></div></article>
-        <article><i className="is-amber">◷</i><div><span>Jours avec activité</span><strong>{loading ? '…' : error ? '—' : fmtNumber(activeDays)}</strong></div></article>
+      <section className="national-exam-kpis" aria-label="Indicateurs principaux">
+        {[
+          { label: 'Examens consultés', value: metrics.consulted, icon: 'exams', tone: 'blue', note: 'Examens distincts ouverts' },
+          { label: 'Examens terminés', value: metrics.completed, icon: 'complete', tone: 'green', note: 'Marqués manuellement terminés' },
+          { label: 'Corrections consultées', value: metrics.corrections, icon: 'correction', tone: 'violet', note: 'Corrections PDF distinctes' },
+          { label: 'Matières travaillées', value: metrics.subjects, icon: 'subjects', tone: 'amber', note: 'Matières distinctes étudiées' },
+          { label: 'Examens à terminer', value: metrics.pending, icon: 'pending', tone: 'rose', note: 'Commencés, non terminés' },
+        ].map((item) => (
+          <article className={`national-exam-kpi is-${item.tone}`} key={item.label}>
+            <span className="national-exam-kpi-icon"><MetricIcon name={item.icon} /></span>
+            <span className="national-exam-kpi-label">{item.label}</span>
+            <strong>{loading || catalogLoading ? '…' : error || catalogError ? '—' : fmtNumber(item.value)}</strong>
+            <small>{item.note}</small>
+          </article>
+        ))}
       </section>
 
-      <section className="national-exam-performance">
-        <div className="national-exam-section-title"><div><span className="national-exam-kicker">RÉSULTATS ET TENTATIVES</span><h2>Performance aux examens</h2><p>Aucun résultat de tentative n’est actuellement enregistré pour les examens nationaux.</p></div><span className="national-exam-status">Notes non suivies</span></div>
-        <div className="national-exam-result-grid">{unavailableMetrics.map(([label, note]) => <article key={label}><span>{label}</span><strong>—</strong><small>{note}</small></article>)}</div>
-        <div className="national-exam-data-note"><b>i</b><p><strong>Les examens nationaux sont actuellement suivis comme des documents PDF.</strong> Le système enregistre les consultations des sujets et corrigés, mais aucune réponse, note ou tentative n’est liée à ces examens. Les graphiques de notes, de réponses correctes/incorrectes, de réussite, de performance par matière et de comparaison des tentatives ne peuvent donc pas être calculés à partir des données actuelles.</p></div>
-      </section>
-
-      <section className="national-exam-analytics">
-        <div className="national-exam-section-title"><div><span className="national-exam-kicker">ACTIVITÉ RÉELLE</span><h2>Vos consultations</h2><p>Ces graphiques montrent les ouvertures enregistrées des documents nationaux, pas les notes.</p></div><span className="national-exam-total">{loading || error ? '—' : fmtNumber(views.length)} consultation{views.length === 1 ? '' : 's'}</span></div>
-        <div className="national-exam-chart-grid">
-          <article className="national-exam-panel national-exam-panel-wide"><div className="national-exam-panel-title"><div><span className="national-exam-kicker">DANS LE TEMPS</span><h3>Sujets et corrigés consultés</h3></div><small>8 dernières semaines</small></div>
-            {loading ? <div className="national-exam-chart-empty">Chargement des activités…</div> : error ? <div className="national-exam-chart-empty">Historique des consultations indisponible.</div> : views.length ? <div className="national-exam-chart national-exam-chart-line"><ResponsiveContainer width="100%" height="100%"><LineChart data={weeklyActivity} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}><CartesianGrid stroke="#edf1f7" vertical={false} strokeDasharray="4 6" /><XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#8492a6', fontSize: 10 }} minTickGap={8} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#8492a6', fontSize: 10 }} width={32} /><Tooltip contentStyle={{ border: '1px solid #e2eaf5', borderRadius: 10 }} /><Line type="monotone" dataKey="sujets" name="Sujets" stroke="#2563eb" strokeWidth={3} dot={{ r: 3 }} /><Line type="monotone" dataKey="corrections" name="Corrigés" stroke="#0f9f78" strokeWidth={3} dot={{ r: 3 }} /><Line type="monotone" dataKey="nonPrecises" name="Type non précisé" stroke="#94a3b8" strokeWidth={2} dot={{ r: 2 }} /></LineChart></ResponsiveContainer></div> : <div className="national-exam-chart-empty">Les consultations apparaîtront après l’ouverture d’un sujet ou d’un corrigé national.</div>}
-          </article>
-          <article className="national-exam-panel"><div className="national-exam-panel-title"><div><span className="national-exam-kicker">DOCUMENTS</span><h3>Répartition des ouvertures</h3></div></div>
-            {loading ? <div className="national-exam-chart-empty">Chargement des activités…</div> : error ? <div className="national-exam-chart-empty">Historique des consultations indisponible.</div> : splitData.length ? <div className="national-exam-donut-row"><div className="national-exam-chart national-exam-chart-donut"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={splitData} dataKey="value" nameKey="name" innerRadius="62%" outerRadius="82%" paddingAngle={4} stroke="none">{splitData.map((item) => <Cell key={item.name} fill={item.color} />)}</Pie><Tooltip formatter={(value, name) => [fmtNumber(value), name]} /></PieChart></ResponsiveContainer><b>{fmtNumber(views.length)}<small>consultations</small></b></div><div className="national-exam-legend">{splitData.map((item) => <span key={item.name}><i style={{ background: item.color }} />{item.name}<b>{fmtNumber(item.value)}</b></span>)}</div></div> : <div className="national-exam-chart-empty">Aucune consultation enregistrée pour ces filtres.</div>}
-          </article>
-          <article className="national-exam-panel national-exam-panel-wide"><div className="national-exam-panel-title"><div><span className="national-exam-kicker">MATIÈRES</span><h3>Volume des consultations par matière</h3></div><small>Consultations, pas résultats</small></div>
-            {loading ? <div className="national-exam-chart-empty">Chargement des activités…</div> : error ? <div className="national-exam-chart-empty">Historique des consultations indisponible.</div> : bySubject.length ? <div className="national-exam-chart national-exam-chart-bars"><ResponsiveContainer width="100%" height="100%"><BarChart data={bySubject} margin={{ top: 8, right: 14, left: 0, bottom: 0 }}><CartesianGrid stroke="#edf1f7" vertical={false} strokeDasharray="4 6" /><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#8492a6', fontSize: 10 }} interval={0} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#8492a6', fontSize: 10 }} width={30} /><Tooltip formatter={(value) => [fmtNumber(value), 'Consultations']} /><Bar dataKey="consultations" name="Consultations" radius={[6, 6, 0, 0]} maxBarSize={48}>{bySubject.map((item, index) => <Cell key={item.name} fill={['#2563eb', '#0f9f78', '#8b5cf6', '#f59e0b', '#0ea5e9', '#e11d48'][index % 6]} />)}</Bar></BarChart></ResponsiveContainer></div> : <div className="national-exam-chart-empty">Aucune matière consultée pour ces filtres.</div>}
-          </article>
+      <section className="national-exam-section">
+        <div className="national-exam-section-title">
+          <div><span className="national-exam-kicker">ÉVOLUTION DE L’ACTIVITÉ</span><h2>Votre rythme de révision</h2><p>Examens ouverts, validations manuelles et corrections consultées.</p></div>
+          <label className="national-exam-period">Période
+            <select value={period} onChange={(event) => setPeriod(event.target.value)}>
+              <option value="week">Cette semaine</option><option value="month">Ce mois</option><option value="quarter">Ce trimestre</option><option value="all">Toute la période</option>
+            </select>
+          </label>
         </div>
+        <article className="national-exam-panel">
+          {loading ? <div className="national-exam-empty">Chargement des activités…</div> : error ? <div className="national-exam-empty">L’historique des activités est indisponible.</div> : lineHasData ? (
+            <div className="national-exam-chart national-exam-line-chart">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={lineData} margin={{ top: 12, right: 14, left: -15, bottom: 4 }}>
+                  <CartesianGrid stroke="#e8eef7" strokeDasharray="4 6" vertical={false} />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 11 }} minTickGap={18} />
+                  <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 11 }} width={32} />
+                  <Tooltip contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12, boxShadow: '0 8px 24px rgba(15,23,42,.08)' }} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
+                  <Line type="monotone" dataKey="exams" name="Examens consultés" stroke={COLORS.primary} strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="completed" name="Examens terminés" stroke={COLORS.success} strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="corrections" name="Corrections consultées" stroke={COLORS.violet} strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <div className="national-exam-empty">Les consultations et validations apparaîtront ici dès votre première activité.</div>}
+        </article>
       </section>
 
-      <section className="national-exam-analysis">
-        <div className="national-exam-section-title"><div><span className="national-exam-kicker">ANALYSE DÉTAILLÉE</span><h2>Analyse de vos résultats</h2></div></div>
-        <div className="national-exam-analysis-grid"><article><b>↗</b><div><strong>Points forts et matières à améliorer</strong><span>Non disponibles sans réponses et notes par matière.</span></div></article><article><b>▤</b><div><strong>Chapitres maîtrisés ou difficiles</strong><span>Les résultats ne sont pas enregistrés chapitre par chapitre.</span></div></article><article><b>!</b><div><strong>Questions incorrectes à revoir</strong><span>Aucune réponse d’examen n’est collectée depuis les sujets PDF.</span></div></article><article><b>★</b><div><strong>Examens les mieux réussis</strong><span>Les scores des examens nationaux ne sont pas disponibles.</span></div></article><article><b>↻</b><div><strong>Comparaison des tentatives</strong><span>Aucun historique de tentatives n’est enregistré pour ces examens.</span></div></article></div>
+      <section className="national-exam-chart-grid">
+        <article className="national-exam-panel">
+          <div className="national-exam-panel-heading"><div><span className="national-exam-kicker">RÉPARTITION PAR MATIÈRE</span><h3>Examens travaillés</h3></div></div>
+          {loading || catalogLoading ? <div className="national-exam-empty">Chargement…</div> : error || catalogError ? <div className="national-exam-empty">Les données ne sont pas disponibles.</div> : subjectData.length ? (
+            <div className="national-exam-chart national-exam-subject-chart" style={{ height: Math.max(180, subjectData.length * 38) }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={subjectData} layout="vertical" margin={{ top: 4, right: 18, left: 8, bottom: 4 }}>
+                  <CartesianGrid stroke="#e8eef7" strokeDasharray="4 6" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 10 }} />
+                  <YAxis type="category" dataKey="name" width={128} axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11 }} />
+                  <Tooltip formatter={(value) => [fmtNumber(value), 'Examens travaillés']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
+                  <Bar dataKey="exams" name="Examens travaillés" radius={[0, 7, 7, 0]} maxBarSize={24}>
+                    {subjectData.map((item, index) => <Cell key={item.name} fill={index === 0 ? COLORS.primary : index === subjectData.length - 1 ? '#cbd5e1' : '#7c9cff'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <div className="national-exam-empty">Aucune matière disponible dans le catalogue sélectionné.</div>}
+        </article>
+
+        <article className="national-exam-panel">
+          <div className="national-exam-panel-heading"><div><span className="national-exam-kicker">ÉTAT D’AVANCEMENT</span><h3>Examens du catalogue</h3></div></div>
+          {loading || catalogLoading ? <div className="national-exam-empty">Chargement…</div> : error || catalogError ? <div className="national-exam-empty">Les données ne sont pas disponibles.</div> : statusTotal ? (
+            <div className="national-exam-donut-layout">
+              <div className="national-exam-chart national-exam-donut-chart">
+                <ResponsiveContainer width="100%" height="100%"><PieChart>
+                  <Pie data={statusCounts} dataKey="value" nameKey="name" innerRadius="66%" outerRadius="88%" paddingAngle={3} stroke="none">
+                    {statusCounts.map((item) => <Cell key={item.name} fill={item.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [fmtNumber(value), name]} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
+                </PieChart></ResponsiveContainer>
+                <div className="national-exam-donut-center"><strong>{fmtNumber(visibleCatalog.length)}</strong><span>examens</span></div>
+              </div>
+              <div className="national-exam-legend">
+                {statusCounts.map((item) => (
+                  <div key={item.name}><i style={{ background: item.color }} /><span>{item.name}</span><strong>{fmtNumber(item.value)}</strong></div>
+                ))}
+              </div>
+            </div>
+          ) : <div className="national-exam-empty">Aucun examen n’est présent dans le catalogue.</div>}
+        </article>
+
+        <article className="national-exam-panel">
+          <div className="national-exam-panel-heading"><div><span className="national-exam-kicker">CORRECTIONS PDF</span><h3>Corrections à consulter</h3></div></div>
+          {loading || catalogLoading ? <div className="national-exam-empty">Chargement…</div> : error || catalogError ? <div className="national-exam-empty">Les données ne sont pas disponibles.</div> : correctionSummary.available ? (
+            <>
+              <div className="national-exam-correction-rate"><strong>{correctionSummary.rate}%</strong><span>de corrections consultées</span></div>
+              <div className="national-exam-chart national-exam-correction-chart">
+                <ResponsiveContainer width="100%" height="100%"><BarChart data={[{ name: 'Corrections disponibles', consulted: correctionSummary.consulted, pending: correctionSummary.pending }]} layout="vertical" margin={{ top: 10, right: 10, left: 8, bottom: 10 }}>
+                  <XAxis type="number" hide allowDecimals={false} /><YAxis type="category" dataKey="name" hide />
+                  <Tooltip formatter={(value, name) => [fmtNumber(value), name === 'consulted' ? 'Consultées' : 'À consulter']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
+                  <Legend formatter={(value) => value === 'consulted' ? 'Consultées' : 'À consulter'} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="consulted" name="consulted" stackId="corrections" fill={COLORS.success} radius={[8, 0, 0, 8]} />
+                  <Bar dataKey="pending" name="pending" stackId="corrections" fill="#dbe5f3" radius={[0, 8, 8, 0]} />
+                </BarChart></ResponsiveContainer>
+              </div>
+              <div className="national-exam-correction-footnote">{fmtNumber(correctionSummary.available)} corrections disponibles dans les examens sélectionnés.</div>
+            </>
+          ) : <div className="national-exam-empty">Aucune correction PDF disponible dans le catalogue sélectionné.</div>}
+        </article>
+
+        <article className="national-exam-panel national-exam-year-panel">
+          <div className="national-exam-panel-heading"><div><span className="national-exam-kicker">ACTIVITÉ PAR ANNÉE</span><h3>Années travaillées et à découvrir</h3></div></div>
+          {loading || catalogLoading ? <div className="national-exam-empty">Chargement…</div> : error || catalogError ? <div className="national-exam-empty">Les données ne sont pas disponibles.</div> : yearData.length ? (
+            <div className="national-exam-chart national-exam-year-chart" style={{ height: Math.max(190, yearData.length * 36) }}>
+              <ResponsiveContainer width="100%" height="100%"><BarChart data={yearData} layout="vertical" margin={{ top: 4, right: 18, left: 8, bottom: 4 }}>
+                <CartesianGrid stroke="#e8eef7" strokeDasharray="4 6" horizontal={false} />
+                <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 10 }} />
+                <YAxis type="category" dataKey="year" width={50} axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11 }} />
+                <Tooltip formatter={(value, name) => [fmtNumber(value), name === 'worked' ? 'Travaillés' : 'À découvrir']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
+                <Legend formatter={(value) => value === 'worked' ? 'Travaillés' : 'À découvrir'} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="worked" name="worked" stackId="year" fill={COLORS.primary} radius={[0, 0, 0, 0]} />
+                <Bar dataKey="undiscovered" name="undiscovered" stackId="year" fill="#dbe5f3" radius={[0, 7, 7, 0]} />
+              </BarChart></ResponsiveContainer>
+            </div>
+          ) : <div className="national-exam-empty">Aucune année n’est enregistrée dans le catalogue.</div>}
+        </article>
       </section>
 
-      <section className="national-exam-history">
-        <div className="national-exam-section-title"><div><span className="national-exam-kicker">HISTORIQUE</span><h2 id="national-exam-history-title">Examens consultés</h2><p>Date de la dernière ouverture enregistrée d’un sujet ou d’un corrigé.</p></div><span className="national-exam-total">{loading || error ? '—' : fmtNumber(rows.length)} examen{rows.length === 1 ? '' : 's'}</span></div>
-        {loading || catalogLoading ? <div className="national-exam-table-empty">Chargement de l’historique…</div> : error ? <div className="national-exam-table-empty"><strong>Historique indisponible</strong><p>Les consultations n’ont pas pu être chargées.</p><button type="button" onClick={onRetry}>Réessayer</button></div> : rows.length ? <div className="national-exam-table-scroll"><table><thead><tr><th>Examen / année</th><th>Matière / option</th><th>Nombre de tentatives</th><th>Dernière note</th><th>Meilleure note</th><th>Taux de réussite</th><th>Consultations</th><th>Date de consultation</th><th>Correction</th></tr></thead><tbody>{rows.map((row) => {
-          const hasCorrection = Boolean(row.exam.pdfCorrectionUrl || row.exam.correctionPageImages?.length);
-          return <tr key={row.id}><td><strong>{row.title}</strong><small>{row.year || 'Année non précisée'}{row.exam.session ? ` · ${row.exam.session}` : ''}</small></td><td><strong>{row.subject}</strong><small>{row.option}</small></td><td className="not-recorded">Non suivies</td><td>—</td><td>—</td><td>—</td><td><strong>{fmtNumber(row.sujets + row.corrections + row.unknown)}</strong><small>{row.sujets} sujet · {row.corrections} corrigé{row.unknown ? ` · ${row.unknown} non précisé` : ''}</small></td><td>{fmtDate(row.latest, true)}</td><td>{hasCorrection ? <button className="national-exam-correction-link" type="button" onClick={() => navigate(`/client-examens?examId=${encodeURIComponent(row.id)}&document=correction`)}>Ouvrir le corrigé ↗</button> : <span className="not-recorded">Indisponible</span>}</td></tr>;
-        })}</tbody></table></div> : <div className="national-exam-table-empty"><b>▤</b><strong>Aucun examen consulté pour ces filtres</strong><p>Les sujets et corrigés ouverts apparaîtront avec leur date réelle de consultation.</p><button type="button" onClick={() => catalogError ? setCatalogRetry((value) => value + 1) : navigate('/client-examens')}>{catalogError ? 'Recharger le catalogue' : 'Parcourir les examens'}</button></div>}
+      <section className="national-exam-panel national-exam-history">
+        <div className="national-exam-section-title">
+          <div><span className="national-exam-kicker">HISTORIQUE DES EXAMENS</span><h2>Examens du catalogue</h2><p>Chaque ligne représente un examen distinct, y compris ceux qui n’ont pas encore été ouverts.</p></div>
+          <span className="national-exam-result-count">{fmtNumber(historyRows.length)} résultat{historyRows.length > 1 ? 's' : ''}</span>
+        </div>
+        <div className="national-exam-table-filters">
+          <label className="national-exam-search">Recherche<input value={search} onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }} placeholder="Examen, matière, année…" /></label>
+          <label>Statut<select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setCurrentPage(1); }}><option value="all">Tous les statuts</option><option value="not-started">Non commencé</option><option value="in-progress">En cours</option><option value="completed">Terminé</option></select></label>
+          <label>Correction<select value={correctionFilter} onChange={(event) => { setCorrectionFilter(event.target.value); setCurrentPage(1); }}><option value="all">Toutes</option><option value="consulted">Consultée</option><option value="pending">À consulter</option><option value="unavailable">Indisponible</option></select></label>
+        </div>
+        {loading || catalogLoading ? <div className="national-exam-empty">Chargement de votre historique…</div> : error || catalogError ? <div className="national-exam-empty">Impossible de charger l’historique des examens.</div> : pageRows.length ? (
+          <div className="national-exam-table-scroll"><table>
+            <thead><tr><th>Examen</th><th>Matière</th><th>Année</th><th>Dernière consultation</th><th>Statut</th><th>Correction</th><th>Actions</th></tr></thead>
+            <tbody>{pageRows.map((row) => <tr key={row.id}>
+              <td><strong>{row.exam.titre || `Examen national ${row.exam.annee || ''}`}</strong><small>{row.exam.session || 'Session normale'}{row.exam.optionBac ? ` · ${row.exam.optionBac}` : ''}</small></td>
+              <td>{row.exam.matiere || '—'}</td>
+              <td>{row.exam.annee || '—'}</td>
+              <td>{fmtDate(row.latest, true)}</td>
+              <td><span className={`national-exam-status is-${row.status}`}>{row.status === 'completed' ? 'Terminé' : row.status === 'in-progress' ? 'En cours' : 'Non commencé'}</span></td>
+              <td><span className={`national-exam-correction-status ${row.isCorrectionConsulted ? 'is-consulted' : row.correctionAvailable ? 'is-pending' : 'is-unavailable'}`}>{row.isCorrectionConsulted ? 'Consultée' : row.correctionAvailable ? 'À consulter' : 'Indisponible'}</span></td>
+              <td><div className="national-exam-row-actions"><button type="button" onClick={() => openExam(row.exam, 'sujet')}>Ouvrir l’examen</button><button type="button" disabled={!row.correctionAvailable} onClick={() => openExam(row.exam, 'correction')}>Correction</button></div></td>
+            </tr>)}</tbody>
+          </table></div>
+        ) : <div className="national-exam-empty">Aucun examen ne correspond à votre recherche et à ces filtres.</div>}
+        {historyRows.length > PAGE_SIZE && <div className="national-exam-pagination">
+          <span>Page {safePage} sur {totalPages}</span>
+          <div><button type="button" disabled={safePage <= 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Précédent</button><button type="button" disabled={safePage >= totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Suivant</button></div>
+        </div>}
+      </section>
+
+      <section className="national-exam-recommendations">
+        <div className="national-exam-section-title"><div><span className="national-exam-kicker">À PARTIR DE VOTRE ACTIVITÉ</span><h2>Prochaines révisions</h2><p>Des pistes fondées sur vos examens et consultations enregistrés.</p></div></div>
+        {loading || catalogLoading ? <div className="national-exam-empty">Préparation de vos recommandations…</div> : error || catalogError ? <div className="national-exam-empty">Les recommandations seront disponibles lorsque vos données auront été chargées.</div> : recommendations.length ? (
+          <div className="national-exam-recommendation-grid">{recommendations.map((item) => <article key={item.title}>
+            <span className="national-exam-recommendation-mark" aria-hidden="true">→</span><h3>{item.title}</h3><p>{item.detail}</p><button type="button" onClick={item.onClick}>{item.action} <span aria-hidden="true">→</span></button>
+          </article>)}</div>
+        ) : <div className="national-exam-empty">Aucune action prioritaire ne ressort de vos données actuelles.</div>}
       </section>
     </section>
   );

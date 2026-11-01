@@ -351,8 +351,7 @@ export default function ClientGeneralStatsDashboard({
       <header className="general-stats-header">
         <div>
           <span className="general-stats-eyebrow">CENTRE DE PILOTAGE</span>
-          <h1>Bonjour {firstName}, voici votre progression</h1>
-          <p>Une vue d’ensemble de vos apprentissages et évaluations enregistrés sur E-CONCOURS.</p>
+          <h1>Bonjour {firstName}</h1>
         </div>
         <button type="button" className="general-stats-calendar" onClick={() => onNavigate('/client-calendrier')}>
           <span aria-hidden="true">▦</span> Mon calendrier

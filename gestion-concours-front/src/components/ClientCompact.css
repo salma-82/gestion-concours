@@ -1,0 +1,108 @@
+/* Shared density pass for the client area. Keep the existing colors, borders,
+   shadows and active states while reducing the amount of vertical chrome. */
+.client-header {
+  min-height: 68px;
+  height: 68px !important;
+  flex-basis: 68px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  padding-inline: clamp(12px, 1.8vw, 28px) !important;
+}
+
+.client-brand-mascot,
+.client-brand-mascot .client-boma-mascot {
+  width: 48px;
+  height: 52px;
+  flex-basis: 48px;
+}
+
+.client-brand-name { font-size: 19px; }
+.client-nav-links { min-height: 54px; padding: 3px 5px; }
+.client-nav-link { min-height: 42px; gap: 6px; padding-inline: clamp(8px, .75vw, 14px); }
+.client-nav-icon svg { width: 17px; height: 17px; }
+
+.client-page-content { scroll-padding-top: 8px; }
+.client-dashboard {
+  padding: 16px clamp(14px, 2.2vw, 34px) 24px;
+}
+.client-dashboard-content { gap: 14px; }
+.dashboard-welcome {
+  min-height: 174px;
+  gap: 18px;
+  padding: clamp(18px, 2.5vw, 30px);
+  border-radius: 20px;
+}
+.dashboard-eyebrow, .dashboard-section-kicker { margin-bottom: 6px; }
+.dashboard-welcome h1 { font-size: clamp(25px, 2.6vw, 34px); }
+.dashboard-welcome-copy > p { margin: 7px 0 13px; line-height: 1.45; }
+.dashboard-welcome-actions { gap: 8px; }
+.dashboard-welcome-actions button, .dashboard-empty-state button { min-height: 36px; padding-inline: 13px; }
+.dashboard-overall-card { gap: 11px; min-width: 220px; padding: 11px 13px; }
+.dashboard-ring { width: 70px; height: 70px; flex-basis: 70px; }
+.dashboard-ring > div { width: 56px; height: 56px; }
+.dashboard-overall-copy { gap: 3px; }
+
+.dashboard-stats { gap: 10px; }
+.dashboard-stat-card { gap: 10px; min-height: 0; padding: 9px 13px; border-radius: 14px; }
+.dashboard-stat-icon { width: 36px; height: 36px; flex-basis: 36px; border-radius: 11px; }
+.dashboard-stat-copy strong { font-size: 22px; }
+.dashboard-content-grid { gap: 12px; }
+.dashboard-panel { padding: 16px; border-radius: 15px; }
+.dashboard-panel-heading { gap: 10px; }
+.dashboard-panel-heading h2 { font-size: 16px; }
+.dashboard-subject-list { gap: 11px; margin-top: 15px; }
+.dashboard-subject-row { grid-template-columns: 32px minmax(0, 1fr) 36px; gap: 9px; }
+.dashboard-subject-icon { width: 32px; height: 32px; border-radius: 10px; }
+.dashboard-subject-title { gap: 7px; margin-bottom: 5px; }
+.dashboard-progress-track { height: 5px; }
+.dashboard-empty-state { padding: 20px 12px 8px; }
+
+/* The dashboard switches among dedicated analytics panels. Apply compact
+   card and section spacing to those panels without changing chart colors. */
+.bento-dashboard { gap: 14px !important; }
+.bento-dashboard > section,
+.bento-dashboard > article,
+.bento-dashboard .dashboard-panel,
+.bento-dashboard .contest-stats-root,
+.bento-dashboard .mock-exam-stats-root,
+.bento-dashboard .course-stats-root,
+.bento-dashboard .summary-stats-root,
+.bento-dashboard .national-exam-stats-root,
+.bento-dashboard .general-stats-root {
+  margin-block: 0 !important;
+}
+.bento-dashboard .dashboard-score-dashboard,
+.bento-dashboard .dashboard-score-insights,
+.bento-dashboard .dashboard-overview-charts,
+.bento-dashboard .dashboard-course-analytics { gap: 12px !important; }
+.bento-dashboard .dashboard-mode-hero-compact,
+.bento-dashboard .dashboard-mode-activity-summary { padding: 14px 16px !important; }
+.bento-dashboard .dashboard-score-dashboard > *,
+.bento-dashboard .dashboard-content-grid > *,
+.bento-dashboard .dashboard-overview-charts > *,
+.bento-dashboard .dashboard-course-analytics > * { min-width: 0; }
+
+@media (max-width: 900px) {
+  .client-header {
+    min-height: 62px;
+    height: 62px !important;
+    flex-basis: 62px;
+    margin: 8px 10px 7px;
+  }
+  .client-nav-links { min-height: 48px; }
+  .dashboard-welcome { min-height: 0; }
+}
+
+@media (max-width: 700px) {
+  .client-dashboard { padding: 12px 12px 20px; }
+  .client-dashboard-content { gap: 11px; }
+  .dashboard-welcome { padding: 17px; border-radius: 16px; }
+  .dashboard-stats { gap: 8px; }
+  .dashboard-stat-card { padding: 8px 10px; }
+  .dashboard-content-grid { gap: 10px; }
+  .dashboard-panel { padding: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .client-header, .client-nav-links, .client-nav-link { scroll-behavior: auto; }
+}

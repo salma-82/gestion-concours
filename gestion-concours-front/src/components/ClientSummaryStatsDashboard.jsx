@@ -785,9 +785,9 @@ export default function ClientSummaryStatsDashboard({
             </span>
           </div>
 
-          <div className="summary-panel-body" style={{ minHeight: 300 }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={consultationTrendData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+          <div className="summary-panel-body summary-trend-chart-body">
+            <ResponsiveContainer width="100%" height={250}>
+              <AreaChart data={consultationTrendData} margin={{ top: 10, right: 14, left: -10, bottom: 2 }}>
                 <defs>
                   <linearGradient id="summaryTrendGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
@@ -849,7 +849,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-panel-body">
             <div className="summary-donut-wrapper">
               <div className="summary-donut-chart-container">
-                <ResponsiveContainer width={220} height={220}>
+                <ResponsiveContainer width={190} height={190}>
                   <PieChart>
                     <Pie
                       data={subjectDistributionData}
@@ -917,9 +917,9 @@ export default function ClientSummaryStatsDashboard({
             </div>
           </div>
 
-          <div className="summary-panel-body" style={{ minHeight: 280 }}>
+          <div className="summary-panel-body summary-ranking-chart-body">
             {subjectRankingData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart
                   data={subjectRankingData}
                   layout="vertical"
@@ -960,9 +960,9 @@ export default function ClientSummaryStatsDashboard({
             <span className="summary-count-badge">Catalogue</span>
           </div>
 
-          <div className="summary-panel-body" style={{ minHeight: 280 }}>
+          <div className="summary-panel-body summary-coverage-chart-body">
             {coverageComparisonData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={coverageComparisonData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="subject" stroke="#334155" fontSize={11.5} fontWeight={700} tickLine={false} />

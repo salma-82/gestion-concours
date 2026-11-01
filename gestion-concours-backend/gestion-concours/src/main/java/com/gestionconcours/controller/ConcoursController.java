@@ -2,7 +2,9 @@ package com.gestionconcours.controller;
 
 import com.gestionconcours.model.Concours;
 import com.gestionconcours.repository.ConcoursRepository;
+import com.gestionconcours.repository.StudentActivityEventRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,9 +23,12 @@ import java.util.UUID;
 public class ConcoursController {
 
     private final ConcoursRepository concoursRepository;
+    private final StudentActivityEventRepository studentActivityEventRepository;
 
-    public ConcoursController(ConcoursRepository concoursRepository) {
+    public ConcoursController(ConcoursRepository concoursRepository,
+                              StudentActivityEventRepository studentActivityEventRepository) {
         this.concoursRepository = concoursRepository;
+        this.studentActivityEventRepository = studentActivityEventRepository;
     }
 
     private final String UPLOAD_DIR = "uploads/";
@@ -233,10 +238,12 @@ public class ConcoursController {
 
     // 6. DELETE: Supprimer un Concours par ID
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteConcours(@PathVariable Long id) {
         if (!concoursRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        studentActivityEventRepository.deleteByConcoursId(id);
         concoursRepository.deleteById(id);
         return ResponseEntity.ok("Concours supprimé avec succès !");
     }

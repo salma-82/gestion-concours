@@ -113,8 +113,11 @@
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 14px;
-  padding-top: 18px;
-  border-top: 1px solid #f1f5f9;
+  padding: 16px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .summary-filter-field {
@@ -195,35 +198,103 @@
 }
 
 .summary-kpi-card {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
-  padding: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  gap: 8px;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
   position: relative;
   overflow: hidden;
 }
 
 .summary-kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.08);
-  border-color: #ddd6fe;
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.08), 0 10px 14px -6px rgba(15, 23, 42, 0.04), inset 0 1px 0 #ffffff;
+  border-color: #cbd5e1;
+}
+
+/* Distinct Pastel Categorical Blocks for Summary KPIs */
+.summary-kpi-card:nth-child(1) {
+  background: linear-gradient(155deg, #f0f7ff 0%, #ffffff 75%);
+  border-color: rgba(186, 230, 253, 0.85);
+}
+.summary-kpi-card:nth-child(1) .summary-kpi-icon {
+  background: linear-gradient(145deg, #e0f2fe, #bae6fd);
+  color: #0284c7;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
+}
+
+.summary-kpi-card:nth-child(2) {
+  background: linear-gradient(155deg, #f0fdf4 0%, #ffffff 75%);
+  border-color: rgba(187, 247, 208, 0.85);
+}
+.summary-kpi-card:nth-child(2) .summary-kpi-icon {
+  background: linear-gradient(145deg, #dcfce7, #bbf7d0);
+  color: #16a34a;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
+}
+
+.summary-kpi-card:nth-child(3) {
+  background: linear-gradient(155deg, #fefce8 0%, #ffffff 75%);
+  border-color: rgba(254, 240, 138, 0.85);
+}
+.summary-kpi-card:nth-child(3) .summary-kpi-icon {
+  background: linear-gradient(145deg, #fef9c3, #fef08a);
+  color: #ca8a04;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
+}
+
+.summary-kpi-card:nth-child(4) {
+  background: linear-gradient(155deg, #f5f3ff 0%, #ffffff 75%);
+  border-color: rgba(221, 214, 254, 0.85);
+}
+.summary-kpi-card:nth-child(4) .summary-kpi-icon {
+  background: linear-gradient(145deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
+}
+
+.summary-kpi-card:nth-child(5) {
+  background: linear-gradient(155deg, #fff7ed 0%, #ffffff 75%);
+  border-color: rgba(254, 215, 170, 0.85);
+}
+.summary-kpi-card:nth-child(5) .summary-kpi-icon {
+  background: linear-gradient(145deg, #ffedd5, #fed7aa);
+  color: #ea580c;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
+}
+
+.summary-kpi-card:nth-child(6) {
+  background: linear-gradient(155deg, #f0fdfa 0%, #ffffff 75%);
+  border-color: rgba(153, 246, 228, 0.85);
+}
+.summary-kpi-card:nth-child(6) .summary-kpi-icon {
+  background: linear-gradient(145deg, #ccfbf1, #99f6e4);
+  color: #0d9488;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
 }
 
 .summary-kpi-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
 .summary-kpi-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  display: none !important;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,11 +360,11 @@
 .summary-kpi-main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .summary-kpi-value {
-  font-size: clamp(22px, 2.2vw, 30px);
+  font-size: clamp(21px, 2vw, 28px);
   font-weight: 850;
   color: #0f172a;
   letter-spacing: -0.03em;
@@ -314,6 +385,37 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Compact KPI row: retain the pastel skeuomorphic cards and their borders. */
+.summary-kpi-grid { gap: 12px; margin-bottom: 18px; }
+.summary-kpi-card { padding: 10px 13px; gap: 5px; border-radius: 15px; }
+.summary-kpi-icon { width: 32px; height: 32px; flex: 0 0 32px; font-size: 16px; }
+.summary-kpi-badge { padding: 3px 6px; font-size: 10px; }
+.summary-kpi-value { font-size: clamp(20px, 1.85vw, 26px); line-height: 1; }
+.summary-kpi-title { font-size: 11.5px; line-height: 1.15; }
+.summary-kpi-note { font-size: 10px; line-height: 1.15; }
+
+/* Reduce the large vertical gap between filters and KPI cards on the page. */
+.summary-stats-root { padding-bottom: 28px; }
+.summary-stats-header { gap: 12px; padding: 4px 0 10px; margin-bottom: 10px; }
+.summary-stats-header-top { gap: 10px; }
+.summary-stats-eyebrow { margin-bottom: 5px; padding: 3px 8px; }
+.summary-stats-title { font-size: clamp(23px, 2.2vw, 29px); line-height: 1.12; }
+.summary-stats-subtitle { margin-top: 4px; font-size: 13px; line-height: 1.35; }
+.summary-stats-live-badge { padding: 5px 11px; }
+.summary-stats-filters-bar { gap: 10px; padding: 12px 15px; border-radius: 15px; }
+.summary-filter-field { gap: 4px; }
+.summary-kpi-grid { margin-top: 0; }
+
+@media (max-width: 1100px) {
+  .summary-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .summary-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .summary-kpi-card { padding: 11px; gap: 6px; }
+  .summary-kpi-icon { width: 32px; height: 32px; flex-basis: 32px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -352,16 +454,17 @@
 
 /* Base Panel Card */
 .summary-panel-card {
-  background: #ffffff;
-  border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.035);
+  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   padding: 24px 26px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   min-width: 0;
   position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .summary-panel-header {
@@ -437,9 +540,32 @@
 
 .summary-donut-chart-container {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 190px;
+  height: 190px;
   margin: 0 auto;
+}
+
+/* Tighter chart panels to reduce scrolling while keeping their raised card look. */
+.summary-grid-row { gap: 14px; margin-bottom: 18px; }
+.summary-panel-card { padding: 18px 20px; border-radius: 18px; }
+.summary-panel-header { gap: 12px; margin-bottom: 13px; padding-bottom: 10px; }
+.summary-panel-title { font-size: 17px; }
+.summary-panel-subtitle { font-size: 12px; line-height: 1.4; }
+.summary-trend-chart-body { min-height: 215px; height: 215px; }
+.summary-ranking-chart-body,
+.summary-coverage-chart-body { min-height: 220px; height: 220px; }
+.summary-donut-chart-container { width: 170px; height: 170px; }
+.summary-donut-wrapper { gap: 10px; }
+.summary-donut-wrapper { gap: 14px; }
+.summary-donut-legend-list { gap: 8px; }
+.summary-donut-legend-item { padding: 10px 12px; }
+
+@media (max-width: 760px) {
+  .summary-panel-card { padding: 15px; }
+  .summary-trend-chart-body { min-height: 205px; height: 205px; }
+  .summary-ranking-chart-body,
+  .summary-coverage-chart-body { min-height: 205px; height: 205px; }
+  .summary-donut-chart-container { width: 160px; height: 160px; }
 }
 
 .summary-donut-center-label {

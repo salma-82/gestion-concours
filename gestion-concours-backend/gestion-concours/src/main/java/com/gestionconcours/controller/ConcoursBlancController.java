@@ -3,8 +3,10 @@ package com.gestionconcours.controller;
 import com.gestionconcours.model.ConcoursBlanc;
 import com.gestionconcours.repository.ConcoursBlancRepository;
 import com.gestionconcours.repository.QcmQuestionRepository;
+import com.gestionconcours.repository.StudentActivityEventRepository;
 import com.gestionconcours.service.PdfQcmExtractorService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,15 +26,18 @@ public class ConcoursBlancController {
     private final PdfQcmExtractorService pdfQcmExtractorService;
     private final QcmQuestionRepository qcmQuestionRepository;
     private final com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository;
+    private final StudentActivityEventRepository studentActivityEventRepository;
 
     public ConcoursBlancController(ConcoursBlancRepository concoursBlancRepository,
                                     PdfQcmExtractorService pdfQcmExtractorService,
                                     QcmQuestionRepository qcmQuestionRepository,
-                                    com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository) {
+                                    com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository,
+                                    StudentActivityEventRepository studentActivityEventRepository) {
         this.concoursBlancRepository = concoursBlancRepository;
         this.pdfQcmExtractorService = pdfQcmExtractorService;
         this.qcmQuestionRepository = qcmQuestionRepository;
         this.qcmResponseRepository = qcmResponseRepository;
+        this.studentActivityEventRepository = studentActivityEventRepository;
     }
 
     private final String UPLOAD_DIR = "uploads/";
@@ -395,10 +400,12 @@ public class ConcoursBlancController {
     // DELETE - Supprimer un QCM
     // =====================================================================
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteConcoursBlanc(@PathVariable Long id) {
         if (!concoursBlancRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        studentActivityEventRepository.deleteByConcoursBlancId(id);
         qcmQuestionRepository.deleteChoicesByConcoursBlancId(id);
         qcmQuestionRepository.deleteByConcoursBlancId(id);
         qcmResponseRepository.deleteByConcoursBlancId(id);

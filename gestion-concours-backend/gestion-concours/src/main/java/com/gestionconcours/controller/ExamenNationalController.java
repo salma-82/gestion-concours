@@ -2,9 +2,11 @@ package com.gestionconcours.controller;
 
 import com.gestionconcours.model.ExamenNational;
 import com.gestionconcours.repository.ExamenNationalRepository;
+import com.gestionconcours.repository.StudentActivityEventRepository;
 import com.gestionconcours.service.PdfPageConverterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class ExamenNationalController {
 
     private final ExamenNationalRepository examenNationalRepository;
+    private final StudentActivityEventRepository studentActivityEventRepository;
     private final PdfPageConverterService pdfPageConverterService;
     private final String UPLOAD_DIR = "uploads/";
 
@@ -251,10 +254,12 @@ public class ExamenNationalController {
 
     // 7. DELETE: Suppression d'un Examen National
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteExamen(@PathVariable Long id) {
         if (!examenNationalRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        studentActivityEventRepository.deleteByExamenNationalId(id);
         examenNationalRepository.deleteById(id);
         return ResponseEntity.ok("Examen national supprimé avec succès !");
     }

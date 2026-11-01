@@ -853,7 +853,7 @@ export default function ClientContestStatsDashboard({
           {/* ------------------------------------------------------------------
               3. ROW 1 : GRAND GRAPHIQUE ÉVOLUTION (Line) + RÉPARTITION (Doughnut)
               ------------------------------------------------------------------ */}
-          <div className="contest-grid-row">
+          <div className="contest-grid-row contest-grid-row--overview">
             {/* Grand Graphique : Évolution des scores */}
             <article className="contest-panel-card contest-col-8">
               <div className="contest-panel-header">
@@ -871,23 +871,23 @@ export default function ClientContestStatsDashboard({
                 </div>
               </div>
 
-              <div style={{ width: '100%', height: 300 }}>
+              <div style={{ width: '100%', height: 108 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={scoreEvolutionData} margin={{ top: 16, right: 20, left: -10, bottom: 6 }}>
+                  <LineChart data={scoreEvolutionData} margin={{ top: 8, right: 12, left: -10, bottom: 2 }}>
                     <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+                      tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
                       axisLine={{ stroke: '#e2e8f0' }}
                       tickLine={false}
                     />
                     <YAxis
                       domain={[0, 100]}
-                      tick={{ fill: '#64748b', fontSize: 12 }}
+                      tick={{ fill: '#64748b', fontSize: 10 }}
                       tickFormatter={(v) => `${v}%`}
                       axisLine={false}
                       tickLine={false}
-                      width={45}
+                      width={38}
                     />
                     <Tooltip
                       content={({ active, payload }) => {
@@ -971,8 +971,8 @@ export default function ClientContestStatsDashboard({
                         data={responseDistributionData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={55}
-                        outerRadius={78}
+                        innerRadius="58%"
+                        outerRadius="82%"
                         paddingAngle={3}
                         dataKey="value"
                         startAngle={90}

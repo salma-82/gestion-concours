@@ -2,11 +2,13 @@ package com.gestionconcours.controller;
 
 import com.gestionconcours.model.Resume;
 import com.gestionconcours.repository.ResumeRepository;
+import com.gestionconcours.repository.StudentActivityEventRepository;
 import com.gestionconcours.service.PdfPageConverterService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +27,7 @@ import java.util.UUID;
 public class ResumeController {
 
     private final ResumeRepository resumeRepository;
+    private final StudentActivityEventRepository studentActivityEventRepository;
     private final PdfPageConverterService pdfPageConverterService;
     private final String UPLOAD_DIR = "uploads/";
 
@@ -273,7 +276,12 @@ public class ResumeController {
     }
 
     @DeleteMapping("/api/resumes/{id}")
+    @Transactional
     public ResponseEntity<?> deleteResume(@PathVariable Long id) {
+        if (!resumeRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        studentActivityEventRepository.deleteByResumeId(id);
         resumeRepository.deleteById(id);
         return ResponseEntity.ok("Résumé supprimé avec succès !");
     }
