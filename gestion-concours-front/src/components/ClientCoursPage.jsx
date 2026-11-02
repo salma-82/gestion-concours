@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { recordStudentActivity, recordStudentActivityDuration } from '../studentProgress';
+import {
+  fetchStudentActivityCompletionMap,
+  getStudentActivityStatusKey,
+  recordStudentActivity,
+  recordStudentActivityDuration,
+  saveStudentMistakesManually,
+  setStudentActivityCompleted
+} from '../studentProgress';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 
-const API = 'http://localhost:8081';
+const API = '';
 
 /* ─────────────────────────────────────────────
    PROGRAMMES OFFICIELS & CONFIGURATION DES 5 MATIÈRES
@@ -145,7 +153,7 @@ const MATIERES = [
   },
   {
     id: 'SVT',
-    nom: 'SVT (Sciences de la Vie et de la Terre)',
+    nom: 'Sciences de la Vie et de la Terre',
     color: '#059669',
     squareBg: '#10b981',
     gradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
@@ -217,7 +225,7 @@ const MATIERES = [
   },
   {
     id: 'Anglais',
-    nom: 'Anglais (English)',
+    nom: 'Anglais',
     color: '#0284c7',
     squareBg: '#0ea5e9',
     gradient: 'linear-gradient(135deg, #0369a1 0%, #38bdf8 100%)',
@@ -332,6 +340,34 @@ export default function ClientCoursPage() {
   const [coursBacList, setCoursBacList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [completionStatuses, setCompletionStatuses] = useState({});
+  const [completingActivityKey, setCompletingActivityKey] = useState('');
+  const [completionErrorKey, setCompletionErrorKey] = useState('');
+
+  const activeCourseStatusKey = activeCours?.id && activeCours.id !== 'placeholder'
+    ? getStudentActivityStatusKey('Cours', activeCours.id)
+    : '';
+  const activeCourseCompleted = completionStatuses[activeCourseStatusKey] === true;
+
+  const handleCompleteCourse = async (event, course) => {
+    event?.stopPropagation();
+    if (!course?.id) return;
+    const statusKey = getStudentActivityStatusKey('Cours', course.id);
+    if (completionStatuses[statusKey] === true || completingActivityKey === statusKey) return;
+
+    setCompletingActivityKey(statusKey);
+    setCompletionErrorKey('');
+    try {
+      const saved = await setStudentActivityCompleted(`Cours:${course.id}`, true);
+      if (!saved) throw new Error('Impossible d’enregistrer la progression.');
+      setCompletionStatuses((current) => ({ ...current, [statusKey]: true }));
+    } catch (saveError) {
+      console.error('Erreur lors de l’enregistrement de la progression du cours:', saveError);
+      setCompletionErrorKey(statusKey);
+    } finally {
+      setCompletingActivityKey('');
+    }
+  };
 
   // Recherche rapide
   const [searchQuery, setSearchQuery] = useState('');
@@ -387,11 +423,39 @@ export default function ClientCoursPage() {
         if (cancelled) return;
         const base = `<base href="${getFullUrl(activeCours.htmlUrl)}">`;
         const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'course-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()<\/script>`;
+        const courseMistakeBridgeScript = `<script>(function(){
+          var className='econcourse-save-course-mistake';var pending=new Map();
+          var textOf=function(node){return String(node&&node.innerText||'').replace(/ +/g,' ').trim().slice(0,5000)};
+          var scan=function(){document.querySelectorAll('.corr.ko').forEach(function(card){
+            if(card.querySelector('.'+className))return;
+            var button=document.createElement('button');button.type='button';button.className=className;button.textContent='Sauvegarder cette erreur';
+            button.style.cssText='margin-top:10px;padding:6px 12px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;color:#1d4ed8;font:700 12px inherit;cursor:pointer;';
+            button.addEventListener('click',function(){
+              var head=card.querySelector('.qhead');var qtext=card.querySelector('.qtext,.question-text,.statement,.enonce');
+              var wrong=card.querySelector('.copt.bad,.copt.wrong,.wrong-answer');var good=card.querySelector('.copt.good,.copt.correct,.correct-answer');
+              var note=card.querySelector('.note');var expl=card.querySelector('.expl,.explanation,.correction-explanation');
+              var root=card.closest('[data-question-id],.question,.qblock,.exercise-question')||card.parentElement||card;
+              var question=root.querySelector('.qtext,.question-text,.statement,.enonce')||qtext;
+              var numberText=(textOf(head).match(/[0-9]+/)||[])[0];var requestId=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+              var sourceType=card.closest('[data-exercise],.exercise,.exercice')?'Exercice':'Cours';
+              var selectedLabel=wrong&&(wrong.getAttribute('data-choice-label')||wrong.getAttribute('data-label')||textOf(wrong.querySelector('.k')))||'';
+              var correctLabel=good&&(good.getAttribute('data-choice-label')||good.getAttribute('data-label')||textOf(good.querySelector('.k')))||'';
+              button.disabled=true;button.textContent='Enregistrement…';pending.set(requestId,button);
+              parent.postMessage({type:'econcourse-save-course-mistake',requestId:requestId,sourceType:sourceType,mistake:{questionId:(card.getAttribute('data-question-id')||numberText||textOf(question)),questionNumber:numberText?Number(numberText):null,questionText:textOf(question)||textOf(head),selectedChoiceLabel:selectedLabel,selectedChoiceText:textOf(wrong&&wrong.querySelector('.v'))||textOf(wrong)||textOf(note),correctChoiceLabel:correctLabel,correctChoiceText:textOf(good&&good.querySelector('.v'))||textOf(good),explanation:textOf(expl)}},'*');
+            });card.appendChild(button);
+          })};
+          window.addEventListener('message',function(event){var data=event.data||{};if(data.type!=='econcourse-course-save-ack')return;var button=pending.get(data.requestId);if(!button)return;pending.delete(data.requestId);button.textContent=data.success?'Erreur sauvegardée':(data.message||'Réessayer la sauvegarde');button.disabled=!!data.success;});
+          var start=function(){scan();if(document.body)new MutationObserver(scan).observe(document.body,{childList:true,subtree:true})};
+          if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+        })()</script>`;
         let html = String(data || '');
         if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
         else html = `${base}${html}`;
         if (/<\/body>/i.test(html)) html = html.replace(/<\/body>/i, `${resizeScript}</body>`);
         else html += resizeScript;
+        const bodyClose = html.toLowerCase().lastIndexOf('</body>');
+        if (bodyClose >= 0) html = `${html.slice(0, bodyClose)}${courseMistakeBridgeScript}${html.slice(bodyClose)}`;
+        else html += courseMistakeBridgeScript;
         setCourseHtml(html);
       })
       .catch(() => { if (!cancelled) setCourseHtml(''); })
@@ -401,13 +465,31 @@ export default function ClientCoursPage() {
 
   useEffect(() => {
     const handleCourseFrameMessage = (event) => {
-      if (event.source !== iframeRef.current?.contentWindow || event.data?.type !== 'course-html-height') return;
-      const height = Number(event.data.height);
-      if (Number.isFinite(height) && height > 0) setCourseFrameHeight(Math.min(Math.max(height, 320), 100000));
+      if (event.source !== iframeRef.current?.contentWindow) return;
+      if (event.data?.type === 'course-html-height') {
+        const height = Number(event.data.height);
+        if (Number.isFinite(height) && height > 0) setCourseFrameHeight(Math.min(Math.max(height, 320), 100000));
+        return;
+      }
+      if (event.data?.type !== 'econcourse-save-course-mistake' || !event.data?.mistake || !activeCours?.id) return;
+      const sourceType = event.data.sourceType === 'Exercice' || /exercice/i.test(`${activeCours.titre || ''} ${activeCours.type || ''}`) ? 'Exercice' : 'Cours';
+      saveStudentMistakesManually({
+        sourceType,
+        resourceId: String(activeCours.id),
+        resourceTitle: activeCours.titre || selectedChapitre || 'Cours',
+        subject: activeCours.matiere || selectedMatiere?.nom || '',
+        chapter: activeCours.chapitre || selectedChapitre || '',
+        year: activeCours.annee || activeCours.year || null,
+        mistakes: [{ ...event.data.mistake, sourceType }]
+      }).then(() => {
+        iframeRef.current?.contentWindow?.postMessage({ type: 'econcourse-course-save-ack', requestId: event.data.requestId, success: true }, '*');
+      }).catch((saveError) => {
+        iframeRef.current?.contentWindow?.postMessage({ type: 'econcourse-course-save-ack', requestId: event.data.requestId, success: false, message: saveError.message || 'Sauvegarde impossible' }, '*');
+      });
     };
     window.addEventListener('message', handleCourseFrameMessage);
     return () => window.removeEventListener('message', handleCourseFrameMessage);
-  }, []);
+  }, [activeCours, selectedChapitre, selectedMatiere]);
 
   useEffect(() => {
     const stage = activeCours ? 'cours' : (step === 'cours' ? 'chapitres' : (selectedMatiere ? 'chapitres' : 'matieres'));
@@ -441,16 +523,20 @@ export default function ClientCoursPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    fetchStudentActivityCompletionMap()
+      .then((statuses) => { if (isMounted) setCompletionStatuses(statuses); })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   /* ─── Helpers d'URL ─── */
   const getFullUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      if (url.includes('localhost:8080') && API.includes('8081')) {
-        return url.replace('localhost:8080', 'localhost:8081');
-      }
-      return url;
-    }
-    return `${API}/${url.startsWith('/') ? url.substring(1) : url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+    return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
   /* ─── Cours filtrés par la filière sélectionnée ─── */
@@ -610,10 +696,16 @@ export default function ClientCoursPage() {
 
       {step === 'matieres' && selectedFiliere && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', minHeight: 'calc(100vh - 140px)' }}>
-          <aside style={{ width: '100%', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', boxSizing: 'border-box' }}>
-            <div style={{ padding: '4px 5px 12px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Fili&egrave;re : {selectedFiliere}</div>
+          <style>{`
+            .client-course-subject-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+            @media (max-width: 1450px) { .client-course-subject-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+            @media (max-width: 1100px) { .client-course-subject-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+            @media (max-width: 760px) { .client-course-subject-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+            @media (max-width: 480px) { .client-course-subject-grid { grid-template-columns: minmax(0, 1fr); } }
+          `}</style>
+          <aside style={{ width: 'calc(100% - min(6cm, 12vw))', marginInline: 'auto', background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none', boxSizing: 'border-box' }}>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', alignItems: 'start', gap: '10px' }}>
+            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div className="client-course-subject-grid" style={{ display: 'grid', alignItems: 'start', gap: '10px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere?.id === matiere.id;
                 const expanded = active;
@@ -638,14 +730,27 @@ export default function ClientCoursPage() {
         </div>
       )}
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: isSidebarCollapsed ? 'column' : 'row', alignItems: 'stretch', gap: isSidebarCollapsed ? '12px' : '18px', minHeight: 'calc(100vh - 140px)' }}>
-          {isSidebarCollapsed ? (
-            <button type="button" aria-label="Rouvrir le menu des matières et chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '12px', minHeight: 'calc(100vh - 140px)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: 0, background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none', position: 'sticky', top: 0, zIndex: 40 }}>
+            <button type="button" aria-label={isSidebarCollapsed ? 'Rouvrir le menu des matières et chapitres' : 'Réduire le menu des matières et chapitres'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Réduire le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '46px', height: '48px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '12px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
-          ) : (
+            {activeCours && activeCours.id !== 'placeholder' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  disabled={activeCourseCompleted || completingActivityKey === activeCourseStatusKey}
+                  onClick={(event) => handleCompleteCourse(event, activeCours)}
+                  style={{ padding: '10px 14px', border: 0, borderRadius: '10px', background: activeCourseCompleted ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '12px', fontWeight: 750, whiteSpace: 'nowrap', cursor: activeCourseCompleted ? 'default' : 'pointer', opacity: completingActivityKey === activeCourseStatusKey ? 0.7 : 1 }}
+                >
+                  {activeCourseCompleted ? '✓ Terminé' : completingActivityKey === activeCourseStatusKey ? 'Enregistrement…' : 'Terminer'}
+                </button>
+              </div>
+            )}
+          </div>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
+          {!isSidebarCollapsed && (
           <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
-            <div style={{ padding: '3px 5px 10px', color: '#64748b', fontSize: '12px', fontWeight: 650 }}>Fili&egrave;re : {selectedFiliere}</div>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' }}>
               {matieresWithCount.map((matiere) => {
@@ -665,7 +770,7 @@ export default function ClientCoursPage() {
           <main style={{ flex: isSidebarCollapsed ? '1 1 auto' : '1 1 620px', width: isSidebarCollapsed ? '100%' : undefined, minWidth: isSidebarCollapsed ? 0 : 'min(100%, 320px)' }}>
             {activeCours ? (
               <div style={{ position: 'relative', width: '100%' }}>
-                <div className="course-reader-header" style={{ position: 'absolute', zIndex: 20, top: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <div className="course-reader-header" style={{ position: 'absolute', zIndex: 20, top: '8px', left: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', padding: 0, borderRadius: 0, background: 'transparent', boxShadow: 'none' }}>
                   <div>
                     <div style={{ color: selectedMatiere.badgeColor, fontSize: '11px', fontWeight: 800 }}>{selectedMatiere.nom}{selectedFiliere ? ` · ${selectedFiliere}` : ''}</div>
                     <div style={{ color: '#1e293b', fontSize: '16px', fontWeight: 750, marginTop: '3px' }}>{activeCours.titre || selectedChapitre}</div>
@@ -678,13 +783,16 @@ export default function ClientCoursPage() {
                       {coursForChapitre(selectedMatiere, selectedChapitre).map((cours, index) => <button key={cours.id || index} type="button" role="menuitem" onClick={() => openReader(selectedChapitre, cours)} style={{ width: '100%', display: 'block', padding: '9px 10px', border: 0, borderRadius: '7px', background: String(activeCours.id) === String(cours.id) ? '#eff6ff' : '#ffffff', color: String(activeCours.id) === String(cours.id) ? '#1d4ed8' : '#334155', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 700 }}>{cours.titre || `Cours ${index + 1}`}</button>)}
                     </div>}
                   </div>}
+
                 </div>
+                {completionErrorKey && completionErrorKey === activeCourseStatusKey && <span role="alert" style={{ position: 'absolute', zIndex: 21, top: '52px', right: '8px', color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
                 {activeCours.htmlUrl ? <iframe ref={iframeRef} key={activeCours.id || activeCours.htmlUrl} srcDoc={courseHtml} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', background: '#ffffff', overflow: 'hidden' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
               </div>
             ) : (
               <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
             )}
           </main>
+          </div>
         </div>
       )}
 
@@ -734,9 +842,6 @@ export default function ClientCoursPage() {
                 </h1>
               </div>
               <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14.5px' }}>
-                {selectedFiliere && (
-                  <>Filière : <strong style={{ color: '#1e293b' }}>{selectedFiliere}</strong> • </>
-                )}
                 Matière : <strong style={{ color: '#1e293b' }}>{selectedMatiere.nom}</strong>
               </p>
             </div>
@@ -850,6 +955,24 @@ export default function ClientCoursPage() {
                       </div>
                     </div>
 
+                    {(() => {
+                      const statusKey = getStudentActivityStatusKey('Cours', coursItem.id);
+                      const isCompleted = completionStatuses[statusKey] === true;
+                      return <>
+                        <span style={{ padding: '5px 10px', borderRadius: '999px', background: isCompleted ? '#dcfce7' : '#fef3c7', color: isCompleted ? '#15803d' : '#92400e', fontSize: '11px', fontWeight: 750, whiteSpace: 'nowrap' }}>
+                          {isCompleted ? 'Terminé' : 'En cours'}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={isCompleted || completingActivityKey === statusKey || !coursItem.id}
+                          onClick={(event) => handleCompleteCourse(event, coursItem)}
+                          style={{ padding: '10px 14px', border: '1px solid', borderColor: isCompleted ? '#16a34a' : '#2563eb', borderRadius: '14px', background: isCompleted ? '#16a34a' : '#fff', color: isCompleted ? '#fff' : '#1d4ed8', fontSize: '12px', fontWeight: 750, cursor: isCompleted ? 'default' : 'pointer' }}
+                        >
+                          {isCompleted ? '✓ Terminé' : completingActivityKey === statusKey ? 'Enregistrement…' : 'Terminer'}
+                        </button>
+                        {completionErrorKey === statusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
+                      </>;
+                    })()}
                     <button
                       onClick={(e) => { e.stopPropagation(); openReader(selectedChapitre, coursItem); }}
                       style={{

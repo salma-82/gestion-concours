@@ -6,7 +6,7 @@ const formatMeta = (item) => [item.matiere, item.ecole, item.annee].filter(Boole
 
 export default function AdminOverview({
   requests = [], users = [], contests = [], whiteContests = [], exams = [], courses = [], resumes = [],
-  studentMistakesCount = 0, loading = false, onNavigate
+  loading = false, onNavigate
 }) {
   const cards = [
     { label: 'Utilisateurs', value: users.length, icon: '👥', tone: 'blue', tab: 'users', note: 'Comptes enregistrés' },
@@ -15,7 +15,6 @@ export default function AdminOverview({
     { label: 'Concours blancs', value: whiteContests.length, icon: '📝', tone: 'cyan', tab: 'concours', note: 'QCM et entraînements' },
     { label: 'Examens nationaux', value: exams.length, icon: '🎓', tone: 'green', tab: 'examens', note: 'Sujets disponibles' },
     { label: 'Cours BAC', value: courses.length, icon: '📚', tone: 'rose', tab: 'coursBac', note: 'Cours publiés' },
-    { label: 'Erreurs Étudiants', value: studentMistakesCount, icon: '❌', tone: 'amber', tab: 'studentMistakes', note: 'Questions sauvegardées' }
   ];
 
   const distribution = [

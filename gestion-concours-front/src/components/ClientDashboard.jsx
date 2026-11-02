@@ -22,7 +22,7 @@ import {
 } from '../studentDashboardStats';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 const normalizeSchool = (name) => String(name || '').trim().toLocaleLowerCase();
 const normalizeCourseValue = (value) => String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
 const courseFiliereFamily = (value) => {

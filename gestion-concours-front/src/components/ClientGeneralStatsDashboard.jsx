@@ -45,7 +45,7 @@ const PERIODS = [
   { value: '90', label: '3 mois' },
   { value: 'all', label: 'Toute la période' }
 ];
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 const dateMs = (value) => {
   const time = new Date(value || '').getTime();
   return Number.isFinite(time) ? time : null;
@@ -110,32 +110,45 @@ export default function ClientGeneralStatsDashboard({
     const refreshLocalData = async () => {
       const localMistakes = readStudentMistakes().filter((item) => item.savedForReview);
       setPlanning(readStudentPlanning());
+      const token = localStorage.getItem('authToken');
       let studentId = null;
       try { studentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
-      if (!studentId) {
+      if (!studentId || !token) {
         if (active) {
-          setMistakes(localMistakes);
+          const byQuestion = new Map();
+          localMistakes.forEach((item) => {
+            const key = `${item.sourceType || item.resourceType || ''}|${item.resourceId}|${item.questionId || item.questionNumber || ''}|${item.savedManually === false ? 'automatic' : 'manual'}`;
+            if (!byQuestion.has(key) || (item.savedManually === true && byQuestion.get(key).savedManually !== true)) byQuestion.set(key, item);
+          });
+          setMistakes([...byQuestion.values()]);
           setMistakeLoading(false);
         }
         return;
       }
       try {
-        const { data } = await axios.get(`${API_BASE}/api/student-mistakes`, { params: { studentId } });
+        const { data } = await axios.get(`${API_BASE}/api/student-mistakes`, {
+          params: { studentId, kind: 'all' },
+          headers: { Authorization: `Bearer ${token}` }
+        });
         const serverMistakes = Array.isArray(data) ? data.map((item) => ({ ...item, savedForReview: true })) : [];
-        const merged = [...serverMistakes];
+        const byQuestion = new Map();
+        serverMistakes.forEach((item) => byQuestion.set(`${item.sourceType || item.resourceType || ''}|${item.resourceId}|${item.questionId || item.questionNumber || ''}|${item.savedManually === false ? 'automatic' : 'manual'}`, item));
         localMistakes.forEach((local) => {
-          const exists = merged.some((item) => String(item.resourceId) === String(local.resourceId)
-            && String(item.attemptId || '') === String(local.attemptId || '')
-            && String(item.questionId || '') === String(local.questionId || ''));
-          if (!exists) merged.push(local);
+          const key = `${local.sourceType || local.resourceType || ''}|${local.resourceId}|${local.questionId || local.questionNumber || ''}|${local.savedManually === false ? 'automatic' : 'manual'}`;
+          if (!byQuestion.has(key)) byQuestion.set(key, local);
         });
         if (active) {
-          setMistakes(merged);
+          setMistakes([...byQuestion.values()]);
           setMistakeLoading(false);
         }
       } catch {
         if (active) {
-          setMistakes(localMistakes);
+          const byQuestion = new Map();
+          localMistakes.forEach((item) => {
+            const key = `${item.sourceType || item.resourceType || ''}|${item.resourceId}|${item.questionId || item.questionNumber || ''}|${item.savedManually === false ? 'automatic' : 'manual'}`;
+            if (!byQuestion.has(key) || (item.savedManually === true && byQuestion.get(key).savedManually !== true)) byQuestion.set(key, item);
+          });
+          setMistakes([...byQuestion.values()]);
           setMistakeLoading(false);
         }
       }

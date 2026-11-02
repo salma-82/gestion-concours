@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -396,13 +396,14 @@ export default function LandingPage({ onNavigateToAuth }) {
   }, []);
 
   // GSAP Animations and 3D Orbit Carousel
-  useEffect(() => {
+  useLayoutEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const ctx = gsap.context(() => {
       if (!prefersReducedMotion) {
         // Entrance animations
-        gsap.from('.lp-hero-badge', { opacity: 0, y: -20, duration: 0.7, ease: 'power3.out', delay: 0.1 });
+        const heroBadge = rootRef.current?.querySelector('.lp-hero-badge');
+        if (heroBadge) gsap.from(heroBadge, { opacity: 0, y: -20, duration: 0.7, ease: 'power3.out', delay: 0.1 });
         gsap.fromTo('.lp-hero-title', { autoAlpha: 0, y: 42, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, ease: 'power3.out', delay: 0.25, clearProps: 'opacity,visibility,transform' });
         gsap.from('.lp-hero-desc', { opacity: 0, y: 25, duration: 0.8, ease: 'power3.out', delay: 0.4 });
         gsap.fromTo('.lp-hero-actions', { autoAlpha: 0, y: 30, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.9, ease: 'power3.out', delay: 0.55, clearProps: 'opacity,visibility,transform' });

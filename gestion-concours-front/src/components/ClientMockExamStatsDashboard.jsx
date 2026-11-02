@@ -23,7 +23,7 @@ import MathContent from './MathContent';
 import { readStudentMistakes } from '../studentProgress';
 import './ClientMockExamStatsDashboard.css';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 
 const COLORS = {
   primary: '#2563eb',
@@ -121,13 +121,20 @@ export default function ClientMockExamStatsDashboard({
       }
       try {
         const localSaved = readStudentMistakes().filter(m => m.savedForReview);
-        if (studentId) {
-          const res = await axios.get(`${API_BASE}/api/student-mistakes`, { params: { studentId } });
+        const token = localStorage.getItem('authToken');
+        if (studentId && token) {
+          const res = await axios.get(`${API_BASE}/api/student-mistakes`, {
+            params: { studentId, kind: 'all' },
+            headers: { Authorization: `Bearer ${token}` }
+          });
           if (active && Array.isArray(res.data)) {
             const merged = res.data.map(item => ({ ...item, savedForReview: true }));
+            const keys = new Set(merged.map((item) => `${item.sourceType || item.resourceType || ''}|${item.resourceId}|${item.questionId || item.questionNumber || ''}|${item.savedManually === false ? 'automatic' : 'manual'}`));
             localSaved.forEach(local => {
-              if (!merged.some(m => String(m.resourceId) === String(local.resourceId) && String(m.questionId) === String(local.questionId))) {
+              const key = `${local.sourceType || local.resourceType || ''}|${local.resourceId}|${local.questionId || local.questionNumber || ''}|${local.savedManually === false ? 'automatic' : 'manual'}`;
+              if (!keys.has(key)) {
                 merged.push(local);
+                keys.add(key);
               }
             });
             setSavedMistakesList(merged);
@@ -140,7 +147,13 @@ export default function ClientMockExamStatsDashboard({
       }
     };
     fetchSavedMistakes();
-    return () => { active = false; };
+    window.addEventListener('student-mistakes-updated', fetchSavedMistakes);
+    window.addEventListener('student-qcm-history-updated', fetchSavedMistakes);
+    return () => {
+      active = false;
+      window.removeEventListener('student-mistakes-updated', fetchSavedMistakes);
+      window.removeEventListener('student-qcm-history-updated', fetchSavedMistakes);
+    };
   }, [user?.id]);
 
   // --------------------------------------------------------------------------
@@ -504,16 +517,17 @@ export default function ClientMockExamStatsDashboard({
   // 13. SAVED QUESTIONS STATS
   // --------------------------------------------------------------------------
   const savedQuestionsStats = useMemo(() => {
-    const autoSaved = savedMistakesList.filter(m => !m.manualFavorite);
-    const manualSaved = savedMistakesList.filter(m => m.manualFavorite);
-    const reviewed = savedMistakesList.filter(m => m.resolved || m.reviewed);
+    const contestMistakes = savedMistakesList.filter((mistake) => String(mistake.sourceType || mistake.resourceType || '').toLowerCase().includes('blanc'));
+    const autoSaved = contestMistakes.filter(m => m.savedManually === false);
+    const manualSaved = contestMistakes.filter(m => m.savedManually !== false);
+    const reviewed = contestMistakes.filter(m => m.resolved || m.reviewed);
 
     return {
-      total: savedMistakesList.length,
+      total: contestMistakes.length,
       autoCount: autoSaved.length,
       manualCount: manualSaved.length,
       reviewedCount: reviewed.length,
-      pendingCount: Math.max(0, savedMistakesList.length - reviewed.length),
+      pendingCount: Math.max(0, contestMistakes.length - reviewed.length),
     };
   }, [savedMistakesList]);
 

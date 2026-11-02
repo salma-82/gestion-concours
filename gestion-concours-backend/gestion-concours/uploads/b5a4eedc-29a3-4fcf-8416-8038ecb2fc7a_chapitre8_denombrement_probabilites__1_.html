@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 8 : Dénombrement et probabilités</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#1e4fa0;--border:#c9cce0;--title-bg:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#2f5fc0;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 18px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;font-size:.9rem;opacity:.75}
+.cols{max-width:1200px;margin:0 auto;column-width:340px;column-gap:20px}
+section{break-inside:avoid;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:#fff;font-size:1.05rem}
+.b{padding:8px 16px;overflow-x:auto}
+ul{margin:6px 0;padding-left:20px}li{margin:6px 0}
+h3{font-size:.98rem;margin:12px 0 2px;color:var(--blue)}
+table{border-collapse:collapse;margin:8px auto}td,th{border:1px solid var(--border);padding:4px 12px;text-align:center}
+</style></head><body>
+<header><h1>Chapitre 8 : Dénombrement et probabilités</h1></header>
+<div class="cols">
+<section><h2>A.1 Cardinal d’un ensemble fini</h2><div class="b"><p>Le nombre d’éléments d’un ensemble fini \(E\) est appelé le <b>cardinal</b> de \(E\), noté \(\mathrm{Card}(E)\).</p></div></section>
+<section><h2>A.2 Principe fondamental du dénombrement</h2><div class="b"><p>Soit une expérience nécessitant \(k\) choix successifs. Si le \(1^{er}\) choix se fait de \(n_1\) façons, le \(2^e\) de \(n_2\) façons, …, le \(k^e\) de \(n_k\) façons, alors le nombre total de résultats possibles est : \[n_1\times n_2\times\cdots\times n_k\]</p></div></section>
+<section><h2>A.3 Arrangements sans répétition</h2><div class="b"><p>Sélection ordonnée de \(p\) éléments parmi \(n\) (\(0\le p\le n\)) : \[A_n^p=n\times(n-1)\times\cdots\times(n-p+1)=\frac{n!}{(n-p)!}\]</p><p><b>Cas particuliers</b> : \(A_n^1=n\) ; \(A_n^0=1\).</p></div></section>
+<section><h2>A.4 Permutations</h2><div class="b"><p>Arrangement de \(n\) éléments parmi \(n\) (\(p=n\)) : \[A_n^n=n!=n\times(n-1)\times\cdots\times2\times1\]</p><p><b>Conventions</b> : \(0!=1\) ; \(1!=1\).</p></div></section>
+<section><h2>A.5 Arrangements avec répétition</h2><div class="b"><p>Le nombre de sélections ordonnées de \(p\) éléments parmi \(n\) avec répétition possible est égal à \(n^p\).</p></div></section>
+<section><h2>A.6 Combinaisons</h2><div class="b"><p>Sélection non ordonnée de \(p\) éléments parmi \(n\) : \[C_n^p=\frac{A_n^p}{p!}=\frac{n!}{p!(n-p)!}\]</p><p><b>Propriétés</b> : \(C_n^1=n\), \(C_n^n=1\), \(C_n^p=C_n^{n-p}\).</p></div></section>
+<section><h2>A.7 Types de tirages et importance de l’ordre</h2><div class="b"><table><tr><th>Type de tirage</th><th>Nombre</th><th>Ordre</th></tr><tr><td>Avec remise</td><td>\(n^p\)</td><td>Important</td></tr><tr><td>Sans remise</td><td>\(A_n^p\)</td><td>Important</td></tr><tr><td>Simultané</td><td>\(C_n^p\)</td><td>Sans importance</td></tr></table></div></section>
+<section><h2>A.8 Coefficient d’ordre (anagrammes)</h2><div class="b"><p>Pour arranger \(p\) places contenant \(p_1\) éléments de type A, \(p_2\) de type B, et \(p_3\) de type C avec \(p_1+p_2+p_3=p\) : \[\text{Nombre d’arrangements}=\frac{p!}{p_1!\times p_2!\times p_3!}\]</p></div></section>
+<section><h2>B.1 Propriétés générales</h2><div class="b"><p>Soit \(\Omega\) l’univers fini associé à une expérience.</p><ul><li>\(P(\Omega)=1\) ; \(P(\emptyset)=0\) ; \(0\le P(A)\le1\).</li><li><b>Événement contraire</b> : \(P(\bar A)=1-P(A)\).</li><li><b>Union</b> : \(P(A\cup B)=P(A)+P(B)-P(A\cap B)\).</li><li><b>Équiprobabilité</b> : \(P(A)=\frac{\mathrm{Card}(A)}{\mathrm{Card}(\Omega)}\).</li></ul></div></section>
+<section><h2>B.2 Probabilité conditionnelle</h2><div class="b"><p>Probabilité de \(B\) sachant \(A\) (avec \(P(A)\ne0\)) : \[P_A(B)=\frac{P(A\cap B)}{P(A)}\implies P(A\cap B)=P(A)\times P_A(B)\]</p></div></section>
+<section><h2>B.3 Arbre des possibilités pondéré</h2><div class="b"><p>L’arbre modélise la succession des événements :</p><ul><li>\(A\to B\) : \(P(A\cap B)=P(A)\times P_A(B)\)</li><li>\(A\to\bar B\) : \(P(A\cap\bar B)=P(A)\times P_A(\bar B)\)</li><li>\(\bar A\to B\) : \(P(\bar A\cap B)=P(\bar A)\times P_{\bar A}(B)\)</li><li>\(\bar A\to\bar B\) : \(P(\bar A\cap\bar B)=P(\bar A)\times P_{\bar A}(\bar B)\)</li></ul></div></section>
+<section><h2>B.4 Loi des probabilités totales</h2><div class="b"><p>Les événements \(A\) et \(\bar A\) forment une partition de \(\Omega\). Pour tout événement \(B\) : \[P(B)=P(B\cap A)+P(B\cap\bar A)\] \[P(B)=P(A)\times P_A(B)+P(\bar A)\times P_{\bar A}(B)\]</p></div></section>
+<section><h2>B.5 Indépendance de deux événements</h2><div class="b"><ul><li>\(A\) et \(B\) sont <b>indépendants</b> \(\iff P(A\cap B)=P(A)\times P(B)\).</li><li><b>Propriété</b> : Si \(P(A)\ne0\), \(A\) et \(B\) sont indépendants \(\iff P_A(B)=P(B)\).</li></ul></div></section>
+<section><h2>B.6 Épreuves répétées (schéma de Bernoulli)</h2><div class="b"><p>Soit \(A\) un événement de probabilité \(p\). La probabilité de réaliser <b>exactement</b> \(k\) <b>fois</b> l’événement \(A\) au cours de \(n\) répétitions indépendantes est : \[P(X=k)=C_n^k\,p^k(1-p)^{n-k}\] où \(n\) est le nombre total de répétitions dans les mêmes conditions.</p></div></section>
+</div></body></html>

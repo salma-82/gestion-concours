@@ -41,6 +41,9 @@ public class StudentMistake {
     @Column(columnDefinition = "LONGTEXT")
     private String questionText;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String choicesText;
+
     private String selectedChoiceLabel;
 
     @Column(columnDefinition = "LONGTEXT")

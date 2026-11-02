@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import axios from 'axios';
 import { recordStudentMistake, resolveStudentMistakes } from '../studentProgress';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 
 export const getTrackedQcmUrl = (sourceUrl) => {
   if (!sourceUrl) return '';
@@ -29,6 +29,7 @@ export default function TrackedQcmFrame({
   style
 }) {
   const iframeRef = useRef(null);
+  const saveRequestTimerRef = useRef(null);
   const trackedSrc = useMemo(() => getTrackedQcmUrl(src), [src]);
   const [verifiedTrackedSrc, setVerifiedTrackedSrc] = useState('');
   const [htmlDocument, setHtmlDocument] = useState(null);
@@ -68,8 +69,17 @@ export default function TrackedQcmFrame({
       const base = `<base href="${baseUrl}"><style>html,body{height:auto!important;min-height:0!important;overflow:visible!important}</style>`;
       const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'tracked-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()</script>`;
       let html = String(data || '');
+      const isQuestionPaletteQcm = /id=["']pal["']/.test(html) && /class=["'][^"']*\bwrap\b/.test(html);
+      const integratedQcmStyle = isQuestionPaletteQcm
+        ? '<style>html,body{width:100%!important;min-width:0!important}body{background:#f1f5f9!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}</style>'
+        : '';
       if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
       else html = `${base}${html}`;
+      if (integratedQcmStyle) {
+        const headClose = html.toLowerCase().lastIndexOf('</head>');
+        if (headClose >= 0) html = `${html.slice(0, headClose)}${integratedQcmStyle}${html.slice(headClose)}`;
+        else html = `${integratedQcmStyle}${html}`;
+      }
       const bodyClose = html.toLowerCase().lastIndexOf('</body>');
       if (bodyClose >= 0) html = `${html.slice(0, bodyClose)}${resizeScript}${html.slice(bodyClose)}`;
       else html += resizeScript;
@@ -110,6 +120,7 @@ export default function TrackedQcmFrame({
       questionId: String(m.questionId ?? m.questionNumber ?? m.questionText ?? '').slice(0, 100),
       questionNumber: m.questionNumber,
       questionText: m.questionText,
+      choicesText: m.choicesText || '',
       selectedChoiceLabel: m.selectedChoiceLabel,
       selectedChoiceText: m.selectedChoiceText,
       correctChoiceLabel: m.correctChoiceLabel,
@@ -118,17 +129,34 @@ export default function TrackedQcmFrame({
       attemptId: m.attemptId || actionAttemptId
     }));
 
+    const incompleteCount = formattedList.filter((item) =>
+      !String(item.questionText || '').trim()
+      || !String(item.selectedChoiceLabel || '').trim()
+      || !String(item.correctChoiceLabel || '').trim()
+    ).length;
+    if (incompleteCount > 0) {
+      setSaveStatus('error');
+      setSaveMessage(`${incompleteCount} question(s) n'ont pas pu être enregistrée(s) : détails de correction introuvables.`);
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveMessage('');
+      }, 5000);
+      return;
+    }
+
     // Toujours enregistrer en local
     formattedList.forEach((item) => recordStudentMistake({ ...item, savedForReview: true }));
 
+    let savedOnServer = !studentId;
     if (studentId) {
       try {
-        await axios.post(`${API_BASE}/api/student-mistakes/batch`, {
+        const response = await axios.post(`${API_BASE}/api/student-mistakes/batch`, {
           studentId,
           studentName: user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Étudiant'),
           studentEmail: user.email || '',
           mistakes: formattedList
         });
+        savedOnServer = response.status >= 200 && response.status < 300;
       } catch (err) {
         console.warn('Erreur lors de la sauvegarde sur le serveur (sauvegardé en local):', err);
       }
@@ -139,13 +167,37 @@ export default function TrackedQcmFrame({
       iframeRef.current?.contentWindow?.postMessage({ type: 'econcourse-mistakes-saved-ack' }, '*');
     } catch {}
 
-    setSaveStatus('saved');
-    setSaveMessage(`✓ ${formattedList.length} question(s) ajoutée(s) à « Erreurs sauvegardées » !`);
+    setSaveStatus(savedOnServer ? 'saved' : 'error');
+    setSaveMessage(savedOnServer
+      ? `✓ ${formattedList.length} question(s) ajoutée(s) à « Erreurs sauvegardées »${studentId ? ' !' : ' sur cet appareil.'}`
+      : 'Question(s) gardée(s) sur cet appareil, mais la synchronisation serveur a échoué.');
     setTimeout(() => {
       setSaveStatus('idle');
       setSaveMessage('');
     }, 4500);
   }, [chapter, resourceId, resourceTitle, school, year, sessionMistakes, sourceType, src, subject, title]);
+
+  const requestSaveMistakes = useCallback(() => {
+    const frame = iframeRef.current?.contentWindow;
+    if (!frame) {
+      handleSaveMistakes();
+      return;
+    }
+
+    if (saveRequestTimerRef.current) clearTimeout(saveRequestTimerRef.current);
+    saveRequestTimerRef.current = setTimeout(() => {
+      saveRequestTimerRef.current = null;
+      handleSaveMistakes();
+    }, 1200);
+
+    try {
+      frame.postMessage({ type: 'econcourse-request-save-mistakes' }, '*');
+    } catch {
+      clearTimeout(saveRequestTimerRef.current);
+      saveRequestTimerRef.current = null;
+      handleSaveMistakes();
+    }
+  }, [handleSaveMistakes]);
 
   useEffect(() => {
     const handleQcmMessage = (event) => {
@@ -175,7 +227,12 @@ export default function TrackedQcmFrame({
         };
 
         const historySessionToken = localStorage.getItem('authToken');
-        if (historySessionToken) {
+        if (historySessionToken
+          && /^\d+$/.test(String(studentMistake.resourceId || ''))
+          && studentMistake.attemptId
+          && studentMistake.questionText
+          && studentMistake.selectedChoiceLabel
+          && studentMistake.correctChoiceLabel) {
           axios.post(`${API_BASE}/api/qcm/attempt-answer`, {
             sourceType: studentMistake.sourceType,
             resourceId: studentMistake.resourceId,
@@ -189,6 +246,7 @@ export default function TrackedQcmFrame({
             questionId: String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? ''),
             questionNumber: mistake.questionNumber,
             questionText: mistake.questionText,
+            choicesText: mistake.choicesText || '',
             selectedChoiceLabel: mistake.selectedChoiceLabel,
             selectedChoiceText: mistake.selectedChoiceText,
             correctChoiceLabel: mistake.correctChoiceLabel,
@@ -200,37 +258,6 @@ export default function TrackedQcmFrame({
 
         if (isWrong) {
           recordStudentMistake(studentMistake);
-          let student = {};
-          try { student = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
-          if (student.id) {
-            const autoSaved = {
-              studentId: student.id,
-              studentName: `${student.prenom || ''} ${student.nom || ''}`.trim() || 'Étudiant',
-              studentEmail: student.email || '',
-              mistakes: [{
-                sourceType: studentMistake.sourceType,
-                resourceId: studentMistake.resourceId,
-                resourceTitle: studentMistake.resourceTitle,
-                subject: studentMistake.subject,
-                chapter: studentMistake.chapter,
-                school: studentMistake.school,
-                questionId: String(studentMistake.questionId ?? studentMistake.questionNumber ?? studentMistake.questionText ?? '').slice(0, 100),
-                questionNumber: studentMistake.questionNumber,
-                questionText: studentMistake.questionText,
-                selectedChoiceLabel: studentMistake.selectedChoiceLabel,
-                selectedChoiceText: studentMistake.selectedChoiceText,
-                correctChoiceLabel: studentMistake.correctChoiceLabel,
-                correctChoiceText: studentMistake.correctChoiceText,
-                explanation: studentMistake.explanation,
-                attemptId: studentMistake.attemptId
-              }]
-            };
-            autoSaved.mistakes[0].year = studentMistake.year;
-            autoSaved.saveForReview = false;
-            axios.post(`${API_BASE}/api/student-mistakes/auto`, autoSaved)
-              .then(() => window.dispatchEvent(new CustomEvent('student-mistakes-updated')))
-              .catch((error) => console.warn('Erreur QCM conservée localement, synchronisation serveur impossible:', error));
-          }
           setSessionMistakes((prev) => {
             const key = String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText);
             const exists = prev.some((item) => String(item.questionId ?? item.questionNumber ?? item.questionText) === key);
@@ -239,12 +266,16 @@ export default function TrackedQcmFrame({
         } else {
           let studentId = null;
           try { studentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
-          resolveStudentMistakes(studentMistake.resourceId, String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? ''));
+          const resolvedQuestionId = String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? '');
+          setSessionMistakes((prev) => prev.filter((item) =>
+            String(item.questionId ?? item.questionNumber ?? item.questionText ?? '') !== resolvedQuestionId
+          ));
+          resolveStudentMistakes(studentMistake.resourceId, resolvedQuestionId);
           if (studentId) {
             axios.post(`${API_BASE}/api/student-mistakes/resolve`, {
               studentId,
               resourceId: studentMistake.resourceId,
-              questionId: String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? '')
+              questionId: resolvedQuestionId
             }).then(() => window.dispatchEvent(new CustomEvent('student-mistakes-updated')))
               .catch((error) => console.warn('Impossible d’actualiser la liste de révision:', error));
           }
@@ -254,41 +285,52 @@ export default function TrackedQcmFrame({
 
       // 2. Clic sur « Sauvegarder mes erreurs » depuis l'iframe du QCM
       if (event.data?.type === 'econcourse-save-mistakes-action') {
+        if (saveRequestTimerRef.current) {
+          clearTimeout(saveRequestTimerRef.current);
+          saveRequestTimerRef.current = null;
+        }
         const mistakesFromIframe = Array.isArray(event.data?.mistakes) ? event.data.mistakes : null;
         handleSaveMistakes(mistakesFromIframe, event.data.attemptId);
       }
     };
 
     window.addEventListener('message', handleQcmMessage);
-    return () => window.removeEventListener('message', handleQcmMessage);
+    return () => {
+      window.removeEventListener('message', handleQcmMessage);
+      if (saveRequestTimerRef.current) clearTimeout(saveRequestTimerRef.current);
+    };
   }, [chapter, handleSaveMistakes, resourceId, resourceTitle, school, sourceType, src, subject, title, year]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'auto' }}>
       <div style={{
-        padding: '8px 12px',
+        padding: '0 0 8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        gap: '10px'
+        gap: '10px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: 'transparent'
       }}>
         {saveMessage && (
           <span style={{
             fontSize: '12px',
             fontWeight: 700,
-            color: saveStatus === 'saved' ? '#059669' : saveStatus === 'none' ? '#d97706' : '#2563eb'
+            color: saveStatus === 'saved' ? '#059669' : saveStatus === 'none' ? '#d97706' : saveStatus === 'error' ? '#dc2626' : '#2563eb'
           }}>
             {saveMessage}
           </span>
         )}
         <button
           type="button"
-          onClick={() => handleSaveMistakes()}
+          onClick={requestSaveMistakes}
           disabled={saveStatus === 'saving'}
           title="Enregistrer toutes les questions ratées pour les réviser plus tard dans votre espace"
           style={{
             padding: '7px 14px',
-            backgroundColor: saveStatus === 'saved' ? '#059669' : '#2563eb',
+            backgroundColor: saveStatus === 'saved' ? '#059669' : '#0B3675',
             color: '#ffffff',
             border: 'none',
             borderRadius: '9px',
@@ -298,7 +340,7 @@ export default function TrackedQcmFrame({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            boxShadow: '0 2px 6px rgba(37,99,235,0.2)',
+            boxShadow: '0 2px 6px rgba(11,54,117,0.2)',
             transition: 'all 0.15s ease'
           }}
         >

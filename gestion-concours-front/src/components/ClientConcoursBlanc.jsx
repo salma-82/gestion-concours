@@ -3,8 +3,9 @@ import axios from 'axios';
 import { recordStudentActivity } from '../studentProgress';
 import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 
-const API = 'http://localhost:8081';
+const API = '';
 
 const MATIERES_CONFIG = [
   { 
@@ -149,8 +150,9 @@ export default function ClientConcoursBlanc() {
 
   const getFullUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${API}/${url.startsWith('/') ? url.substring(1) : url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+    return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
   // 1. Matières existantes
@@ -309,8 +311,8 @@ export default function ClientConcoursBlanc() {
       )}
 
       {currentStep === 'chapitres-menu' && selectedMatiere && (
-        <section style={{ width: '100%', padding: '24px 28px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-          <h2 style={{ margin: '2px 4px 14px', color: '#1e3a8a', fontSize: '17px', fontWeight: 750 }}>Chapitres et QCM</h2>
+        <section style={{ width: 'calc(100% - min(6cm, 12vw))', margin: '0 auto', minHeight: 'calc(100vh - 120px)', padding: '24px 28px', boxSizing: 'border-box' }}>
+          <h2 style={{ margin: '2px 4px 14px', color: '#1e3a8a', fontSize: '17px', fontWeight: 750 }}></h2>
           {getChapitresForMatiere(selectedMatiere).length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {getChapitresForMatiere(selectedMatiere).map((chapitre) => (
@@ -336,9 +338,8 @@ export default function ClientConcoursBlanc() {
           ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px', width: '100%' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et QCM</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: isSidebarCollapsed ? '38px minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px', width: '100%' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 280px', width: '280px', minWidth: '220px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px', boxSizing: 'border-box' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
                 const qcms = getConcoursForChapitre(selectedMatiere, chapitre.nom);
@@ -377,7 +378,7 @@ export default function ClientConcoursBlanc() {
 
           <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeConcours.htmlUrl ? (
-              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+              <div style={{ minWidth: 0 }}>
                 <TrackedQcmFrame
                   src={getFullUrl(activeConcours.htmlUrl)}
                   title={activeConcours.titre}

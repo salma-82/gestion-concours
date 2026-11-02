@@ -18,7 +18,7 @@ import {
 } from 'recharts';
 import './ClientNationalExamStatsDashboard.css';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 const PAGE_SIZE = 8;
 const COLORS = {
   primary: '#2563eb',

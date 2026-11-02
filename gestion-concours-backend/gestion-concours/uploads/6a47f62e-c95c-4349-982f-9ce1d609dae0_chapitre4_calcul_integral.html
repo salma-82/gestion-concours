@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 4 : Calcul intégral &amp; primitives</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#1e4fa0;--border:#c9cce0;--title-bg:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#2f5fc0;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 18px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;font-size:.9rem;opacity:.75}
+.cols{max-width:1200px;margin:0 auto;column-width:340px;column-gap:20px}
+section{break-inside:avoid;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:#fff;font-size:1.05rem}
+.b{padding:8px 16px;overflow-x:auto}
+ul{margin:6px 0;padding-left:20px}li{margin:6px 0}
+h3{font-size:.98rem;margin:12px 0 2px;color:var(--blue)}
+table{border-collapse:collapse;margin:8px auto}td,th{border:1px solid var(--border);padding:4px 12px;text-align:center}
+</style></head><body>
+<div class="cols">
+<section><h2>1. Définitions et propriétés</h2><div class="b"><ul><li><b>Primitive</b> : \(F\) est une primitive de \(f\) sur \(I\iff F'(x)=f(x)\).</li><li><b>L’intégrale</b> : \(\int_a^bf(x)dx=[F(x)]_a^b=F(b)-F(a)\).</li><li>\(\int_a^af(x)dx=0\) ; \(\int_a^bf(x)dx=-\int_b^af(x)dx\).</li><li><b>Relation de Chasles</b> : \(\int_a^bf(x)dx=\int_a^cf(x)dx+\int_c^bf(x)dx\).</li><li><b>Linéarité</b> : \(\int_a^b(f(x)+g(x))dx=\int_a^bf(x)dx+\int_a^bg(x)dx\) ; \(\int_a^b\alpha f(x)dx=\alpha\int_a^bf(x)dx\).</li><li><b>Positivité et Ordre</b> : Si \(a\le b\), alors \(f(x)\ge0\Rightarrow\int_a^bf(x)dx\ge0\).</li><li><b>Parité</b> : Si \(f\) est paire \(\Rightarrow\int_{-a}^af(x)dx=2\int_0^af(x)dx\).</li><li><b>Imparité</b> : Si \(f\) est impaire \(\Rightarrow\int_{-a}^af(x)dx=0\).</li><li><b>Intégration par Parties (I.P.P.)</b> : \(\int_a^bu(x)v'(x)dx=[u(x)v(x)]_a^b-\int_a^bu'(x)v(x)dx\).</li></ul></div></section>
+<section><h2>2. Primitives usuelles</h2><div class="b"><ul><li>\(x^n\to\frac1{n+1}x^{n+1}+C\)</li><li>\(1/x^2\to-1/x+C\)</li><li>\(1/x^n\to\frac{-1}{(n-1)x^{n-1}}+C\)</li><li>\(1/\sqrt x\to2\sqrt x+C\)</li><li>\(\sqrt x\to\frac23x\sqrt x+C\)</li><li>\(1/x\to\ln|x|+C\)</li><li>\(\ln(x)\to x\ln(x)-x+C\)</li><li>\(e^x\to e^x+C\)</li><li>\(\cos(x)\to\sin(x)+C\)</li><li>\(\sin(x)\to-\cos(x)+C\)</li><li>\(1+\tan^2(x)=\frac1{\cos^2(x)}\to\tan(x)+C\)</li></ul></div></section>
+<section><h2>3. Formes composées (\(u\) et \(u'\))</h2><div class="b"><ul><li>\(u'u^n\to\frac1{n+1}u^{n+1}+C\)</li><li>\(u'/u^2\to-1/u+C\)</li><li>\(u'/u^n\to\frac{-1}{(n-1)u^{n-1}}+C\)</li><li>\(u'/\sqrt u\to2\sqrt u+C\)</li><li>\(u'/u\to\ln|u|+C\)</li><li>\(u'\sqrt u\to\frac23u\sqrt u+C\)</li><li>\(u'e^u\to e^u+C\)</li><li>\(u'\sin(u)\to-\cos(u)+C\)</li><li>\(u'\cos(u)\to\sin(u)+C\)</li><li>\(\frac{u'}{\cos^2(u)}=u'(1+\tan^2(u))\to\tan(u)+C\)</li><li>\(u'\tan(u)\to-\ln|\cos(u)|+C\)</li></ul></div></section>
+<section><h2>4. Astuces limites et primitives</h2><div class="b"><ul><li>\(\int\frac{\ln(x)}xdx=\frac12\ln^2(x)+C\)</li><li>\(\int\frac{\ln^n(x)}xdx=\frac1{n+1}\ln^{n+1}(x)+C\)</li><li>\(\int\frac1{x\ln(x)}dx=\ln|\ln(x)|+C\)</li><li>\(\int\frac1{x\ln^n(x)}dx=\frac{-1}{(n-1)\ln^{n-1}(x)}+C\)</li><li>\(\int e^{ax}\cos(bx)dx=\frac{e^{ax}(a\cos(bx)+b\sin(bx))}{a^2+b^2}+C\)</li><li>\(\int e^{ax}\sin(bx)dx=\frac{e^{ax}(a\sin(bx)-b\cos(bx))}{a^2+b^2}+C\)</li><li>\(\int\cos(\ln(x))dx=\frac{x(\cos(\ln(x))+\sin(\ln(x)))}2+C\)</li><li>\(\int\sin(\ln(x))dx=\frac{x(\sin(\ln(x))-\cos(\ln(x)))}2+C\)</li></ul></div></section>
+<section><h2>5. Intégrale de \(\frac1{ax^2+bx+c}\)</h2><div class="b"><p>Soit \(I=\int\frac1{ax^2+bx+c}dx\) et \(\Delta=b^2-4ac\).</p><ul><li><b>Cas \(\Delta>0\)</b> : deux racines distinctes \(x_1\) et \(x_2\). \(\frac1{a(x-x_1)(x-x_2)}=\frac1{a(x_1-x_2)}\left(\frac1{x-x_1}-\frac1{x-x_2}\right)\) ; \(I=\frac1{a(x_1-x_2)}\ln\left|\frac{x-x_1}{x-x_2}\right|+C\).</li><li><b>Cas \(\Delta=0\)</b> : une racine double \(x_0\). \(I=\int\frac1{a(x-x_0)^2}dx=\frac{-1}{a(x-x_0)}+C\).</li><li><b>Cas \(\Delta<0\)</b> : utilisation de la forme canonique et Arctan. \(\int\frac1{x^2+\omega^2}dx=\frac1\omega\arctan\left(\frac x\omega\right)+C\).</li></ul></div></section>
+<section><h2>6. Applications : calcul d’aires</h2><div class="b"><ul><li><b>Aire entre \(C_f\) et l’axe des abscisses</b> sur \([a;b]\) : \(\mathcal A=\int_a^b|f(x)|dx\times u.a.\)</li><li><b>Aire entre deux courbes \(C_f\) et \(C_g\)</b> sur \([a;b]\) : \(\mathcal A=\int_a^b|f(x)-g(x)|dx\times u.a.\)</li><li>\(u.a.=\|\vec i\|\times\|\vec j\|\) (unité d’aire).</li></ul></div></section>
+</div></body></html>

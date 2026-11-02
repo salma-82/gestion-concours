@@ -41,7 +41,9 @@ function App() {
 
 function AppRoutes() {
   const { pathname } = useLocation();
-  const showWhatsAppButton = pathname !== '/login' && pathname !== '/register';
+  const showWhatsAppButton = pathname !== '/login'
+    && pathname !== '/register'
+    && !pathname.startsWith('/admin');
 
   return (
     <>

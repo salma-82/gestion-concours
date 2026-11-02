@@ -35,6 +35,8 @@ public class StudentQcmAnswer {
     private Integer questionNumber;
     @Column(columnDefinition = "TEXT")
     private String questionText;
+    @Column(columnDefinition = "TEXT")
+    private String choicesText;
     private String selectedChoiceLabel;
     private String correctChoiceLabel;
     @Column(columnDefinition = "TEXT")
@@ -79,6 +81,8 @@ public class StudentQcmAnswer {
     public void setQuestionNumber(Integer questionNumber) { this.questionNumber = questionNumber; }
     public String getQuestionText() { return questionText; }
     public void setQuestionText(String questionText) { this.questionText = questionText; }
+    public String getChoicesText() { return choicesText; }
+    public void setChoicesText(String choicesText) { this.choicesText = choicesText; }
     public String getSelectedChoiceLabel() { return selectedChoiceLabel; }
     public void setSelectedChoiceLabel(String selectedChoiceLabel) { this.selectedChoiceLabel = selectedChoiceLabel; }
     public String getCorrectChoiceLabel() { return correctChoiceLabel; }

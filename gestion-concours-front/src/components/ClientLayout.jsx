@@ -62,9 +62,9 @@ export default function ClientLayout() {
     const fetchFilieres = async () => {
       try {
         const [resCoursF, resCoursAll, resExamAll] = await Promise.allSettled([
-          axios.get('http://localhost:8081/api/cours-bac/filieres'),
-          axios.get('http://localhost:8081/api/cours-bac'),
-          axios.get('http://localhost:8081/api/examens-nationaux')
+          axios.get('/api/cours-bac/filieres'),
+          axios.get('/api/cours-bac'),
+          axios.get('/api/examens-nationaux')
         ]);
 
         // 1. Filières pour les Cours
@@ -116,7 +116,7 @@ export default function ClientLayout() {
 
   useEffect(() => {
     let isMounted = true;
-    axios.get('http://localhost:8081/api/concours')
+    axios.get('/api/concours')
       .then((response) => {
         if (!isMounted || !Array.isArray(response.data)) return;
         const schools = new Set(
@@ -137,7 +137,7 @@ export default function ClientLayout() {
     try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
     const params = user.filiere ? { params: { filiere: user.filiere } } : {};
 
-    axios.get('http://localhost:8081/api/concours-blancs/publies', params)
+    axios.get('/api/concours-blancs/publies', params)
       .then((response) => {
         if (!isMounted) return;
         const data = Array.isArray(response.data)
@@ -158,7 +158,7 @@ export default function ClientLayout() {
 
   const handleLogout = () => {
     const token = localStorage.getItem('authToken');
-    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
@@ -332,7 +332,6 @@ export default function ClientLayout() {
       overflow: 'hidden',
       position: 'relative'
     }}>
-
       {/* Ancien sidebar conservé temporairement hors rendu. */}
       {<aside style={{
         width: '130px',
@@ -837,7 +836,7 @@ export default function ClientLayout() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '14px', marginTop: '4px', marginBottom: '6px', borderLeft: '2px solid #e2e8f0', marginLeft: '26px' }}>
                       {[
                         ['all', 'Mes erreurs'],
-                        ['saved', 'Erreurs sauvegardées']
+                        ['saved', 'Mes erreurs sauvegardées']
                       ].map(([view, label]) => {
                         const selected = location.pathname === '/client-erreurs' && new URLSearchParams(location.search).get('view') === view;
                         return (
@@ -936,7 +935,7 @@ export default function ClientLayout() {
             {navbarItems.map((item) => {
               const path = item.path;
               let links = [];
-              if (path === '/client-erreurs') links = [{ label: 'Mes erreurs', path: '/client-erreurs?view=all' }, { label: 'Erreurs sauvegardées', path: '/client-erreurs?view=saved' }];
+              if (path === '/client-erreurs') links = [{ label: 'Mes erreurs', path: '/client-erreurs?view=all' }, { label: 'Mes erreurs sauvegardées', path: '/client-erreurs?view=saved' }];
               if (path === '/client-examens') links = examensFilieres.map((f) => ({ label: f, path: `/client-examens?filiere=${encodeURIComponent(f)}` }));
               if (path === '/client-cours') links = coursFilieres.map((f) => ({ label: f, path: `/client-cours?filiere=${encodeURIComponent(f)}` }));
               if (path === '/client-resumes') links = resumesMatieres.map((m) => ({ label: m === 'Physique-Chimie' ? 'Physique - Chimie' : m, path: `/client-resumes?matiere=${encodeURIComponent(m)}` }));

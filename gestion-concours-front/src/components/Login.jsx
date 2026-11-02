@@ -130,7 +130,7 @@ export default function Login() {
             if (!credential) { setGoogleError("Google n\u2019a pas renvoy\u00e9 les informations de connexion. R\u00e9essayez."); return; }
             setGoogleLoading(true); setGoogleError('');
             try {
-              const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+              const apiBase = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '');
               const response = await axios.post(`${apiBase}/api/auth/google`, { credential }, { withCredentials: true });
               const user = saveSessionResponse(response.data);
               navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
@@ -161,7 +161,7 @@ export default function Login() {
     const targetEmail = (customEmail || demoGoogleEmail || 'etudiant.concours@gmail.com').trim().toLowerCase();
     setGoogleLoading(true); setGoogleError('');
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+      const apiBase = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '');
       const response = await axios.post(`${apiBase}/api/auth/google`, { credential: `demo-google:${targetEmail}` }, { withCredentials: true, timeout: 5000 });
       const user = saveSessionResponse(response.data);
       setShowGoogleModal(false);
@@ -194,7 +194,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/login', { email: email.trim(), motDePasse });
+      const response = await axios.post('/api/auth/login', { email: email.trim(), motDePasse });
       const user = saveSessionResponse(response.data);
       delete user.motDePasse; delete user.password;
       navigate(user.role === 'ADMIN' ? '/admin-dashboard' : '/client-dashboard');
@@ -251,23 +251,23 @@ export default function Login() {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          border: 1px solid rgba(36,87,230,.2);
+          border: 1px solid rgba(11,45,99,.2);
           border-radius: 999px;
           background: rgba(255,255,255,.92);
-          color: #2457e6;
+          color: #0B2D63;
           font: 700 12.5px/1 inherit;
           cursor: pointer;
           transition: all .2s;
           text-decoration: none;
           backdrop-filter: blur(8px);
           z-index: 50;
-          box-shadow: 0 4px 14px rgba(36,87,230,.08);
+          box-shadow: 0 4px 14px rgba(11,45,99,.08);
         }
         .ecl-back:hover {
           background: #ffffff;
-          color: #173db4;
+          color: #08224B;
           transform: translateX(-2px);
-          box-shadow: 0 6px 18px rgba(36,87,230,.18);
+          box-shadow: 0 6px 18px rgba(11,45,99,.18);
         }
 
         /* ── Centered aside content ── */
@@ -346,11 +346,9 @@ export default function Login() {
           text-align: center;
         }
         .ecl-accent {
-          color: #2457e6;
-          background: linear-gradient(100deg,#1746c9 0%,#3876ff 48%,#754de8 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #0B2D63;
+          background: none;
+          -webkit-text-fill-color: #0B2D63;
         }
         .ecl-aside-desc {
           margin: 0 0 20px;
@@ -366,7 +364,7 @@ export default function Login() {
           width: 100%;
           max-width: 380px;
           margin: 0 0 24px;
-          padding: 14px 18px;
+          padding: 10px 16px;
           border-radius: 20px;
           background: rgba(255, 255, 255, .55);
           border: 1px solid rgba(255, 255, 255, .9);
@@ -374,24 +372,25 @@ export default function Login() {
           backdrop-filter: blur(10px);
           list-style: none;
           display: grid;
-          gap: 9px;
+          gap: 6px;
           text-align: left;
         }
         .ecl-features-card li {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           color: #334155;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
+          line-height: 1.3;
         }
         .ecl-feat-icon {
           display: inline-flex;
-          flex: 0 0 20px;
+          flex: 0 0 18px;
           align-items: center;
           justify-content: center;
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
           background: rgba(36, 87, 230, .12);
           color: #2457e6;
@@ -407,20 +406,20 @@ export default function Login() {
           gap: 6px;
           padding: 12px 26px;
           border-radius: 999px;
-          background: rgba(36, 87, 230, .08);
-          border: 1.5px solid rgba(36, 87, 230, .22);
-          color: #2457e6;
+          background: rgba(11, 45, 99, .08);
+          border: 1.5px solid rgba(11, 45, 99, .22);
+          color: #0B2D63;
           font-size: 13.5px;
           text-decoration: none;
           transition: all .22s cubic-bezier(.2,.8,.2,1);
-          box-shadow: 0 4px 14px rgba(36, 87, 230, .08);
+          box-shadow: 0 4px 14px rgba(11, 45, 99, .08);
         }
         .ecl-aside-switch:hover {
-          background: #2457e6;
+          background: #0B2D63;
           color: #ffffff;
-          border-color: #2457e6;
+          border-color: #0B2D63;
           transform: translateY(-2px);
-          box-shadow: 0 8px 22px rgba(36, 87, 230, .25);
+          box-shadow: 0 8px 22px rgba(11, 45, 99, .25);
         }
         .ecl-aside-switch strong { font-weight: 800; }
 
@@ -440,7 +439,7 @@ export default function Login() {
         /* ── Main Panel ── */
         .ecl-main { flex:1;display:flex;align-items:center;justify-content:center;padding:clamp(24px,4vw,64px) clamp(20px,4vw,56px);background:radial-gradient(ellipse at 90% 5%,rgba(36,87,230,.06),transparent 35%),radial-gradient(ellipse at 5% 90%,rgba(36,87,230,.04),transparent 35%),linear-gradient(125deg,#fbfbfc 0%,#f6f8fc 100%);position:relative;z-index:1;overflow-y:auto; }
         .ecl-panel { width:100%;max-width:510px; }
-        .ecl-eyebrow { display:inline-block;margin-bottom:10px;color:#2457e6;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase; }
+        .ecl-eyebrow { display:inline-block;margin-bottom:10px;color:#0B2D63;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase; }
         .ecl-title { margin:0 0 10px;color:#14213d;font-family:Poppins,Inter,sans-serif;font-size:clamp(26px,2.8vw,36px);font-weight:900;line-height:1.12;letter-spacing:-.055em; }
         .ecl-subtitle { margin:0 0 26px;color:#5e6b85;font-size:15px;line-height:1.65; }
 
@@ -482,10 +481,10 @@ export default function Login() {
         .ecl-google-opts-link { background:none;border:none;color:#2457e6;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline; }
 
         /* ── Submit ── */
-        .ecl-submit { display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:8px;padding:14px 24px;border:none;border-radius:999px;background:#2457e6;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(36,87,230,.28);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,background .22s;position:relative;overflow:hidden; }
+        .ecl-submit { display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:8px;padding:14px 24px;border:none;border-radius:999px;background:#0B2D63;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(11,45,99,.28);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,background .22s;position:relative;overflow:hidden; }
         .ecl-submit::after { content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);transform:translateX(-100%);transition:transform .5s; }
         .ecl-submit:hover::after { transform:translateX(100%); }
-        .ecl-submit:hover:not(:disabled) { background:#173db4;transform:translateY(-2px);box-shadow:0 18px 34px rgba(36,87,230,.32); }
+        .ecl-submit:hover:not(:disabled) { background:#08224B;transform:translateY(-2px);box-shadow:0 18px 34px rgba(11,45,99,.32); }
         .ecl-submit:disabled { opacity:.72;cursor:wait; }
         .ecl-btn-arrow { font-size:16px;transition:transform .2s; }
         .ecl-submit:hover .ecl-btn-arrow { transform:translateX(3px); }
@@ -494,7 +493,7 @@ export default function Login() {
 
         /* ── Switch text ── */
         .ecl-switch-text { margin:8px 0 0;text-align:center;color:#5e6b85;font-size:13px; }
-        .ecl-link-btn { border:none;background:transparent;color:#2457e6;font:700 13px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
+        .ecl-link-btn { border:none;background:transparent;color:#0B2D63;font:700 13px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
 
         /* ── Security ── */
         .ecl-security { display:flex;align-items:center;justify-content:center;gap:7px;margin-top:22px;color:#97a3b8;font-size:12px;font-weight:600; }
@@ -566,10 +565,11 @@ export default function Login() {
             </p>
 
             <ul className="ecl-features-card">
-              <li><span className="ecl-feat-icon">✓</span> QCM &amp; Annales officiels</li>
+              <li><span className="ecl-feat-icon">✓</span> Cours du Bac par option</li>
+              <li><span className="ecl-feat-icon">✓</span> Examens nationaux corrigés</li>
               <li><span className="ecl-feat-icon">✓</span> Résumés &amp; Fiches de révision</li>
-              <li><span className="ecl-feat-icon">✓</span> Concours blancs chronométrés</li>
-              <li><span className="ecl-feat-icon">✓</span> Statistiques &amp; progression</li>
+              <li><span className="ecl-feat-icon">✓</span> Concours blancs en QCM chronométrés</li>
+              <li><span className="ecl-feat-icon">✓</span> Concours officiels des grandes écoles en QCM interactifs</li>
             </ul>
 
             <Link to="/register" className="ecl-aside-switch">

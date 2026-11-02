@@ -4,8 +4,9 @@ import { recordStudentActivity } from '../studentProgress';
 import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { filterByStudentPack } from '../packAccess';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 
 // Couleurs et badges thématiques pour les matières
 const MATIERE_THEMES = {
@@ -121,11 +122,9 @@ const getEcoleMeta = (ecoleName = '') => {
 
 const getPdfUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    if (url.includes('localhost:8080')) return url.replace('localhost:8080', 'localhost:8081');
-    return url;
-  }
-  return `${API_BASE}/uploads/${url}`;
+  const normalizedUrl = toBackendResourceUrl(url);
+  if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('/')) return normalizedUrl;
+  return `/uploads/${normalizedUrl}`;
 };
 
 const ALL_MATIERES = 'Toutes les matières';
@@ -1521,16 +1520,19 @@ export default function ClientConcours() {
               flex: 1,
               minHeight: 'calc(100vh - 116px)',
               backgroundColor: '#f1f5f9',
-              padding: '20px 16px',
-              display: 'flex',
-              flexDirection: 'column',
+              padding: '32px 16px 20px',
+              display: 'grid',
+              gridTemplateColumns: isViewerSidebarCollapsed
+                ? '38px minmax(0, 1fr)'
+                : !viewerModal.concours
+                ? 'minmax(0, 1fr)'
+                : 'minmax(240px, 290px) minmax(0, 1fr)',
               gap: '18px',
               overflow: 'visible',
               alignItems: 'stretch'
             }}>
-              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', padding: '14px 18px', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-                <h2 style={{ margin: '2px 4px 12px', color: '#1e3a8a', fontSize: '15px', fontWeight: 750 }}>Concours et QCM</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', alignItems: 'start', gap: '10px' }}>
+              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: viewerModal.concours ? '0 0 290px' : '1 1 auto', width: viewerModal.concours ? '290px' : '100%', minWidth: viewerModal.concours ? '240px' : 0, maxHeight: viewerModal.concours ? 'calc(100vh - 116px)' : 'none', overflowY: viewerModal.concours ? 'auto' : 'visible', padding: viewerModal.concours ? '14px 18px' : 0, background: viewerModal.concours ? '#ffffff' : 'transparent', border: viewerModal.concours ? '1px solid #dbeafe' : 'none', borderRadius: viewerModal.concours ? '16px' : 0, boxShadow: viewerModal.concours ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: viewerModal.concours ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
+                <div style={{ display: 'grid', width: '90%', maxWidth: '1600px', margin: '0 auto', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', alignItems: 'start', gap: '10px' }}>
                   {availableYearsForSelectedMatiere.map((year) => {
                     const yearConcours = concoursForNavigationYear(year);
                     const yearKey = String(year);
@@ -1571,11 +1573,18 @@ export default function ClientConcours() {
                                 <div key={subjectKey}>
                                   <button
                                     type="button"
-                                    onClick={() => setExpandedSubject(current => current === subjectKey ? null : subjectKey)}
+                                    onClick={() => {
+                                      if (subjectConcours.length === 1) {
+                                        const concours = subjectConcours[0];
+                                        setSelectedYear(String(concours.annee || ''));
+                                        handleOpenViewer(concours, 'sujet');
+                                        return;
+                                      }
+                                      setExpandedSubject(current => current === subjectKey ? null : subjectKey);
+                                    }}
                                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '8px 10px', border: 0, borderRadius: '8px', background: isExpandedSubject ? '#dbeafe' : 'transparent', color: isExpandedSubject ? '#1d4ed8' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
                                   >
                                     <span>{subject}</span>
-                                    <span>{subjectConcours.length}</span>
                                   </button>
                                   {isExpandedSubject && subjectConcours.map(concours => {
                                     const activeConcours = String(viewerModal.concours?.id) === String(concours.id);
@@ -1607,7 +1616,7 @@ export default function ClientConcours() {
                 <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
               {currentViewerUrl ? (
                 viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (
-                  <div style={{ width: '100%', background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+                  <div style={{ width: '100%', minWidth: 0 }}>
                     <TrackedQcmFrame
                       src={currentViewerUrl}
                       title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}

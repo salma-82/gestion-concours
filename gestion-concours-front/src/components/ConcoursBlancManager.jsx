@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 
 export default function AdminConcours() {
   const [concoursList, setConcoursList] = useState([]);
@@ -50,7 +51,7 @@ export default function AdminConcours() {
     const defauts = CHAPITRES_PAR_MATIERE[mat] || [];
     // Enrichir avec les chapitres existants en base
     try {
-      const res = await axios.get(`http://localhost:8081/api/concours-blancs/chapitres/all?matiere=${encodeURIComponent(mat)}`);
+      const res = await axios.get(`/api/concours-blancs/chapitres/all?matiere=${encodeURIComponent(mat)}`);
       const existants = Array.isArray(res.data) ? res.data : [];
       const all = [...new Set([...defauts, ...existants])];
       setChapitresDisponibles(all);
@@ -69,18 +70,10 @@ export default function AdminConcours() {
   const [previewHtmlModalOpen, setPreviewHtmlModalOpen] = useState(false);
   const [previewHtmlItem, setPreviewHtmlItem] = useState(null);
 
-  // --- STATES GESTION QCM ---
-  const [qcmModalOpen, setQcmModalOpen] = useState(false);
-  const [qcmCurrentConcours, setQcmCurrentConcours] = useState(null);
-  const [qcmQuestions, setQcmQuestions] = useState([]);
-  const [qcmLoading, setQcmLoading] = useState(false);
-  const [qcmSaving, setQcmSaving] = useState(false);
-  const [qcmStats, setQcmStats] = useState({});
-
   // 1. Jbd les données men Backend (GET)
   const fetchConcours = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/api/concours-blancs', {
+      const response = await axios.get('/api/concours-blancs', {
         withCredentials: true
       });
       const data = Array.isArray(response.data) ? response.data : [];
@@ -93,15 +86,7 @@ export default function AdminConcours() {
       setChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
       setAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
 
-      // Charger les stats QCM
-      const statsObj = {};
-      await Promise.all(data.map(async (cb) => {
-        try {
-          const s = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}/stats`, { withCredentials: true });
-          statsObj[cb.id] = s.data;
-        } catch (e) {}
-      }));
-      setQcmStats(statsObj);
+
 
     } catch (error) {
       console.error("Erreur f jbd l-concours:", error);
@@ -146,7 +131,7 @@ export default function AdminConcours() {
     formData.append('file', htmlFile);
 
     try {
-      await axios.post('http://localhost:8081/api/concours-blancs', formData, {
+      await axios.post('/api/concours-blancs', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -188,7 +173,7 @@ export default function AdminConcours() {
     formData.append('file', standaloneHtmlFile);
 
     try {
-      await axios.post(`http://localhost:8081/api/concours-blancs/${concoursForHtml.id}/upload-html`, formData, {
+      await axios.post(`/api/concours-blancs/${concoursForHtml.id}/upload-html`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -210,7 +195,7 @@ export default function AdminConcours() {
   const handleDelete = async (id) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce concours blanc ?")) return;
     try {
-      await axios.delete(`http://localhost:8081/api/concours-blancs/${id}`, { withCredentials: true });
+      await axios.delete(`/api/concours-blancs/${id}`, { withCredentials: true });
       alert("Concours blanc supprimé avec succès ! 🗑️");
       fetchConcours();
     } catch (err) {
@@ -221,77 +206,18 @@ export default function AdminConcours() {
   // 4bis. Basculer publication
   const handleTogglePublie = async (item) => {
     try {
-      await axios.patch(`http://localhost:8081/api/concours-blancs/${item.id}/toggle-publie`, {}, { withCredentials: true });
+      await axios.patch(`/api/concours-blancs/${item.id}/toggle-publie`, {}, { withCredentials: true });
       fetchConcours();
     } catch (err) {
       alert("Erreur lors du changement de statut.");
     }
   };
 
-  // 5. Gestion QCM
-  const handleOpenQcmManager = async (cb) => {
-    setQcmCurrentConcours(cb);
-    setQcmModalOpen(true);
-    setQcmLoading(true);
-    try {
-      const res = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}`, { withCredentials: true });
-      setQcmQuestions(res.data.questions || []);
-    } catch (err) {
-      console.error("Erreur chargement questions QCM:", err);
-      alert("Erreur lors du chargement des questions QCM.");
-    } finally {
-      setQcmLoading(false);
-    }
-  };
-
-  const handleForceExtractQcm = async () => {
-    if (!qcmCurrentConcours) return;
-    if (!window.confirm("Voulez-vous relancer l'extraction automatique des questions depuis le PDF ?")) return;
-    setQcmLoading(true);
-    try {
-      const res = await axios.post(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/extract`, {}, { withCredentials: true });
-      alert(res.data.message || "Extraction terminée !");
-      const qRes = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}`, { withCredentials: true });
-      setQcmQuestions(qRes.data.questions || []);
-      fetchConcours();
-    } catch (err) {
-      console.error("Erreur extraction QCM:", err);
-      alert("Erreur lors de l'extraction : " + (err.response?.data || err.message));
-    } finally {
-      setQcmLoading(false);
-    }
-  };
-
-  const handleQuestionChange = (qId, field, value) => {
-    setQcmQuestions(prev => prev.map(q => q.id === qId ? { ...q, [field]: value } : q));
-  };
-
-  const handleSaveQcmCorrections = async () => {
-    if (!qcmCurrentConcours) return;
-    setQcmSaving(true);
-    try {
-      const payload = qcmQuestions.map(q => ({
-        questionId: String(q.id),
-        correctChoiceLabel: q.correctChoiceLabel || '',
-        explanation: q.explanation || ''
-      }));
-      await axios.put(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/corrections-batch`, payload, { withCredentials: true });
-      alert("Toutes les corrections et explications ont été enregistrées avec succès ! ✅");
-      fetchConcours();
-    } catch (err) {
-      console.error("Erreur sauvegarde corrections:", err);
-      alert("Erreur lors de la sauvegarde : " + (err.response?.data || err.message));
-    } finally {
-      setQcmSaving(false);
-    }
-  };
-
   const getPdfUrl = (url) => {
     if (!url) return '#';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return `http://localhost:8081/uploads/${url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('/')) return normalizedUrl;
+    return `/uploads/${normalizedUrl}`;
   };
 
   return (
@@ -299,8 +225,8 @@ export default function AdminConcours() {
       {/* Header w Boutton Ajouter */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Gestion des Concours Blancs & QCM</h2>
-          <p className="text-sm text-gray-500 mt-1">Extraction automatique des questions et gestion des corrigés</p>
+          <h2 className="text-2xl font-bold text-gray-800">Gestion des Concours Blancs</h2>
+          <p className="text-sm text-gray-500 mt-1">Importation et gestion des fichiers HTML</p>
         </div>
         <button
           onClick={() => setIsOpen(true)}
@@ -390,7 +316,6 @@ export default function AdminConcours() {
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Matière</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Durée</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Statut</th>
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Questions QCM</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Fichier</th>
               <th className="px-5 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
             </tr>
@@ -398,7 +323,6 @@ export default function AdminConcours() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredList.length > 0 ? (
               filteredList.map((item) => {
-                const stats = qcmStats[item.id];
                 return (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-5 py-4 text-sm">
@@ -423,19 +347,6 @@ export default function AdminConcours() {
                       </button>
                     </td>
                     <td className="px-5 py-4 text-sm">
-                      {stats && stats.totalQuestions > 0 ? (
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                          stats.allCorrected ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          ⚡ {stats.totalQuestions} ({stats.correctedQuestions} corrigés)
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-gray-100 text-gray-500">
-                          {item.htmlUrl ? '🌐 HTML' : '📄 En attente'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-sm">
                       <div className="flex flex-col gap-1.5">
                         {item.pdfUrl && (
                           <a href={getPdfUrl(item.pdfUrl)} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline font-semibold flex items-center gap-1 text-xs">
@@ -457,12 +368,6 @@ export default function AdminConcours() {
                     </td>
                     <td className="px-5 py-4 text-sm text-center">
                       <div className="flex justify-center items-center gap-2 flex-wrap">
-                        <button
-                          onClick={() => handleOpenQcmManager(item)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded transition shadow-sm"
-                        >
-                          🎯 QCM
-                        </button>
                         <button
                           onClick={() => { setConcoursForHtml(item); setUploadHtmlModalOpen(true); }}
                           className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded transition shadow-sm"
@@ -598,167 +503,6 @@ export default function AdminConcours() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODAL GESTION QCM ET CORRIGÉ (ADMIN) --- */}
-      {qcmModalOpen && qcmCurrentConcours && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl shadow-xl max-h-[92vh] overflow-y-auto">
-            <div className="flex justify-between items-start pb-4 border-b">
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">🎯 Gestion du QCM & Corrigés</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  <strong>{qcmCurrentConcours.titre}</strong>
-                  {qcmCurrentConcours.ecole ? ` • ${qcmCurrentConcours.ecole}` : ''}
-                  {` • ${qcmCurrentConcours.matiere}`}
-                  {qcmCurrentConcours.annee ? ` (${qcmCurrentConcours.annee})` : ''}
-                  {` — ${qcmQuestions.length} question(s) détectée(s)`}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleForceExtractQcm}
-                  disabled={qcmLoading}
-                  className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-blue-100 transition"
-                  title="Relancer l'extraction automatique depuis le fichier PDF"
-                >
-                  🔄 Ré-extraire PDF
-                </button>
-                <button onClick={() => setQcmModalOpen(false)} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
-              </div>
-            </div>
-
-            {qcmLoading ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-3xl mb-2">⏳</div>
-                <p className="font-semibold text-sm">Chargement et analyse des questions QCM...</p>
-              </div>
-            ) : qcmQuestions.length === 0 ? (
-              <div className="text-center py-12 px-4 bg-gray-50 rounded-lg my-4 border border-dashed border-gray-300">
-                <div className="text-4xl mb-2">📄</div>
-                <h4 className="font-bold text-gray-800 mb-1">Aucune question QCM détectée</h4>
-                <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
-                  Le PDF ne semble pas contenir de questions au format QCM standard (Q1, Choix A, B, C, D...).
-                </p>
-                <button
-                  onClick={handleForceExtractQcm}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-700"
-                >
-                  🔄 Relancer l'extraction automatique
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4 my-4">
-                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-sm">
-                  💡 <strong>Instructions Admin :</strong> Si le corrigé n'a pas été détecté automatiquement dans le document, sélectionnez manuellement la <strong>bonne réponse</strong> (A, B, C, D) et rédigez une <strong>explication détaillée</strong>.
-                </div>
-
-                {qcmQuestions.map((q, idx) => {
-                  const hasCorrection = Boolean(q.correctChoiceLabel && q.correctChoiceLabel.trim());
-                  return (
-                    <div key={q.id || idx} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="bg-gray-800 text-white font-bold text-xs px-2.5 py-1 rounded-full">
-                          Question {q.questionNumber || idx + 1}
-                        </span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                          hasCorrection ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {hasCorrection ? `✅ Bonne réponse : ${q.correctChoiceLabel}` : '⚠️ Corrigé absent'}
-                        </span>
-                      </div>
-
-                      <p className="text-sm font-semibold text-gray-800 bg-gray-50 p-3 rounded mb-3 leading-relaxed">
-                        {q.questionText}
-                      </p>
-
-                      <div className="space-y-1.5 mb-3">
-                        {(q.choices || []).map((choice, cIdx) => {
-                          const isCorrect = q.correctChoiceLabel === choice.choiceLabel;
-                          return (
-                            <div
-                              key={choice.id || cIdx}
-                              className={`flex items-center gap-2.5 p-2 rounded border text-sm ${
-                                isCorrect ? 'bg-green-50 border-green-300 font-semibold text-green-900' : 'border-gray-200 text-gray-700'
-                              }`}
-                            >
-                              <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                                isCorrect ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
-                              }`}>
-                                {choice.choiceLabel}
-                              </span>
-                              <span>{choice.choiceText}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="bg-gray-50 p-3 rounded-md border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
-                        <div>
-                          <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Bonne réponse :
-                          </label>
-                          <select
-                            value={q.correctChoiceLabel || ''}
-                            onChange={(e) => handleQuestionChange(q.id, 'correctChoiceLabel', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-sm bg-white font-bold text-gray-800 outline-none"
-                          >
-                            <option value="">-- Non définie --</option>
-                            {(q.choices || []).map((c, cIdx) => (
-                              <option key={cIdx} value={c.choiceLabel}>Option {c.choiceLabel}</option>
-                            ))}
-                            {(!q.choices || q.choices.length === 0) && (
-                              <>
-                                <option value="A">Option A</option>
-                                <option value="B">Option B</option>
-                                <option value="C">Option C</option>
-                                <option value="D">Option D</option>
-                              </>
-                            )}
-                          </select>
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Explication détaillée de la correction :
-                          </label>
-                          <textarea
-                            rows={2}
-                            placeholder="Ex: Formule utilisée, démonstration ou rappel de cours..."
-                            value={q.explanation || ''}
-                            onChange={(e) => handleQuestionChange(q.id, 'explanation', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-sm outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <button
-                type="button"
-                onClick={() => setQcmModalOpen(false)}
-                className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 text-sm font-medium"
-              >
-                Fermer
-              </button>
-              {qcmQuestions.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleSaveQcmCorrections}
-                  disabled={qcmSaving}
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md text-sm font-bold flex items-center gap-2"
-                >
-                  {qcmSaving ? 'Enregistrement...' : '💾 Enregistrer toutes les corrections'}
-                </button>
-              )}
-            </div>
           </div>
         </div>
       )}

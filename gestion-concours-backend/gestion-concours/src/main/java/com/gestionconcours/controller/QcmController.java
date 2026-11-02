@@ -1,35 +1,22 @@
 package com.gestionconcours.controller;
 
-import com.gestionconcours.model.ConcoursBlanc;
-import com.gestionconcours.model.QcmChoice;
-import com.gestionconcours.model.QcmQuestion;
-import com.gestionconcours.repository.ConcoursBlancRepository;
-import com.gestionconcours.repository.QcmQuestionRepository;
-import com.gestionconcours.repository.QcmResponseRepository;
-import com.gestionconcours.service.AuthSessionService;
-import com.gestionconcours.model.QcmResponse;
-import com.gestionconcours.service.PdfQcmExtractorService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/qcm")
 @CrossOrigin(origins = "*")
 public class QcmController {
-
-    private final QcmQuestionRepository qcmQuestionRepository;
-    private final QcmResponseRepository qcmResponseRepository;
-    private final ConcoursBlancRepository concoursBlancRepository;
-    private final PdfQcmExtractorService pdfQcmExtractorService;
-    private final AuthSessionService authSessionService;
-    private final String UPLOAD_DIR = "uploads/";
-
+    private static final String UPLOAD_DIR = "uploads/";
     private static final String QCM_TRACKING_BRIDGE = """
             (() => {
               const messageType = 'econcourse-qcm-mistake';
@@ -43,6 +30,10 @@ public class QcmController {
                 const key = String(payload.questionId ?? payload.questionNumber ?? payload.questionText).trim();
                 mistakesMap.set(key, payload);
               };
+              const removeMistake = (questionId) => {
+                const key = String(questionId ?? '').trim();
+                if (key) mistakesMap.delete(key);
+              };
 
               const publish = (payload) => {
                 const key = [payload.questionId, payload.selectedChoiceLabel, payload.selectedChoiceText].join(':');
@@ -50,15 +41,38 @@ public class QcmController {
                 sent.add(key);
                 if (!payload.isCorrect) {
                   recordMistake(payload);
+                } else {
+                  removeMistake(payload.questionId ?? payload.questionNumber);
                 }
-                const questionCount = Array.isArray(getData()?.questions) ? getData().questions.length : null;
+                const questionCount = Array.isArray(getData()?.questions)
+                  ? getData().questions.length
+                  : getLegacyQuestions().length || null;
                 window.parent.postMessage({ type: messageType, attemptId, totalQuestions: questionCount, mistake: payload }, '*');
               };
 
               const getData = () => typeof QCM_DATA !== 'undefined' ? QCM_DATA : window.QCM_DATA;
               const getState = () => typeof S !== 'undefined' ? S : window.S;
+              const getLegacyQuestions = () => {
+                try { return typeof Q !== 'undefined' && Array.isArray(Q) ? Q : []; } catch { return []; }
+              };
+              const getLegacyAnswers = () => {
+                try { return typeof ans !== 'undefined' && Array.isArray(ans) ? ans : []; } catch { return []; }
+              };
+              const getLegacyCurrentIndex = () => {
+                try { return typeof cur !== 'undefined' && Number.isInteger(cur) ? cur : 0; } catch { return 0; }
+              };
+              const getLegacyExplanation = (question) => textOf([
+                question?.rappel ? 'Rappel de cours : ' + question.rappel : '',
+                question?.flash ? 'Réflexe concours : ' + question.flash : '',
+                Array.isArray(question?.steps) && question.steps.length ? 'Méthode académique : ' + question.steps.join(' ') : '',
+                question?.trap ? 'Piège classique : ' + question.trap : ''
+              ].filter(Boolean).join(' '));
               const getChoiceLabel = (choice) => String(choice?.k ?? choice?.choiceLabel ?? choice?.label ?? choice?.id ?? '').trim().toUpperCase();
               const getChoiceText = (choice) => textOf(choice?.t ?? choice?.choiceText ?? choice?.text ?? choice?.label ?? '');
+              const formatChoices = (choices) => (Array.isArray(choices) ? choices : [])
+                .map((choice, index) => `${String.fromCharCode(65 + index)}. ${getChoiceText(choice) || textOf(choice)}`)
+                .filter((choice) => !/^[A-Z]\\.\\s*$/.test(choice))
+                .join('\\n');
 
               const collectAllCurrentMistakes = () => {
                 const data = getData();
@@ -75,6 +89,7 @@ public class QcmController {
                         questionId: q.id ?? q.questionNumber ?? idx + 1,
                         questionNumber: q.questionNumber ?? q.id ?? idx + 1,
                         questionText: textOf(q.enonce ?? q.questionText ?? q.text ?? ''),
+                        choicesText: formatChoices(options),
                         selectedChoiceLabel: ans,
                         selectedChoiceText: textOf(selOpt?.t ?? selOpt?.choiceText ?? selOpt?.text ?? ans),
                         correctChoiceLabel: correctLabel,
@@ -86,6 +101,83 @@ public class QcmController {
                     }
                   });
                 }
+
+                const legacyQuestions = getLegacyQuestions();
+                const legacyAnswers = getLegacyAnswers();
+                if (legacyQuestions.length && Array.isArray(legacyAnswers)
+                  && legacyQuestions.every((question) => Array.isArray(question?.o) && Number.isInteger(question?.a))) {
+                  legacyQuestions.forEach((question, index) => {
+                    const rawAnswer = legacyAnswers[index];
+                    if (rawAnswer === null || rawAnswer === undefined || rawAnswer === '') {
+                      removeMistake(index + 1);
+                      return;
+                    }
+                    const selectedIndex = Number(rawAnswer);
+                    const correctIndex = Number(question.a);
+                    if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= question.o.length) return;
+                    if (selectedIndex === correctIndex) {
+                      removeMistake(index + 1);
+                      return;
+                    }
+                    const selectedLabel = String.fromCharCode(65 + selectedIndex);
+                    const correctLabel = String.fromCharCode(65 + correctIndex);
+                    recordMistake({
+                      questionId: index + 1,
+                      questionNumber: index + 1,
+                      questionText: textOf(question.q ?? question.questionText ?? question.text ?? ''),
+                      choicesText: formatChoices(question.o),
+                      selectedChoiceLabel: selectedLabel,
+                      selectedChoiceText: textOf(question.o[selectedIndex]),
+                      correctChoiceLabel: correctLabel,
+                      correctChoiceText: textOf(question.o[correctIndex]),
+                      explanation: getLegacyExplanation(question),
+                      chapter: textOf(question.t ?? '')
+                    });
+                  });
+                }
+                // Some uploaded QCMs keep answer state in a private closure. Recover
+                // those answers from the correction already rendered on screen.
+                document.querySelectorAll('.corr.ko').forEach((card, index) => {
+                  const qhead = card.querySelector('.qhead')?.innerText || '';
+                  const qtext = card.querySelector('.qtext, .question-text, .statement, [data-question-text]')?.innerText || '';
+                  const note = textOf(card.querySelector('.note')?.innerText || '');
+                  const explanationNode = card.querySelector('.expl, .explanation, .explication, .fb.ko');
+                  const explanation = textOf(explanationNode?.innerText || '');
+                  const numberMatch = qhead.match(/\\d+/);
+                  const questionNumber = numberMatch ? Number(numberMatch[0]) : index + 1;
+                  const question = Array.isArray(data?.questions)
+                    ? data.questions.find((item, questionIndex) => String(item.questionNumber ?? item.id ?? questionIndex + 1) === String(questionNumber)) || data.questions[questionNumber - 1]
+                    : null;
+                  const options = question?.options ?? question?.choices ?? [];
+                  const selectedNode = card.querySelector('.copt.bad, .bad, .incorrect, [data-correct="false"]');
+                  const correctNode = card.querySelector('.copt.good, .good, .correct, [data-correct="true"]');
+                  const labelFromNode = (node) => textOf(node?.querySelector('.k')?.innerText || node?.dataset?.k || node?.dataset?.answer || '').toUpperCase();
+                  const textFromNode = (node) => {
+                    if (!node) return '';
+                    const clone = node.cloneNode(true);
+                    clone.querySelectorAll('.k, .tag').forEach((child) => child.remove());
+                    return textOf(clone.innerText || clone.textContent || '');
+                  };
+                  const selectedFromNote = note.match(/Votre réponse\\s*:\\s*([A-Za-z0-9_-]+)/i)?.[1] || '';
+                  const correctFromNote = note.match(/Bonne réponse(?:\\s*\\([^)]*\\))?\\s*:\\s*([A-Za-z0-9_-]+)/i)?.[1] || '';
+                  const selectedLabel = String(labelFromNode(selectedNode) || state?.answers?.[question?.id] || selectedFromNote).toUpperCase();
+                  const correctLabel = String(labelFromNode(correctNode) || question?.correct || question?.correctChoiceLabel || question?.answer || correctFromNote).toUpperCase();
+                  const optionLabel = (choice) => String(choice?.k ?? choice?.choiceLabel ?? choice?.label ?? choice?.id ?? '').trim().toUpperCase();
+                  const selectedOption = options.find((choice) => optionLabel(choice) === selectedLabel);
+                  const correctOption = options.find((choice) => optionLabel(choice) === correctLabel);
+                  recordMistake({
+                    questionId: question?.id ?? question?.questionNumber ?? questionNumber,
+                    questionNumber: Number(question?.questionNumber ?? questionNumber) || questionNumber,
+                    questionText: textOf(question?.enonce ?? question?.questionText ?? question?.text ?? qtext),
+                    choicesText: formatChoices(options),
+                    selectedChoiceLabel: selectedLabel,
+                    selectedChoiceText: textOf(textFromNode(selectedNode) || selectedOption?.t || selectedOption?.choiceText || selectedOption?.text || ''),
+                    correctChoiceLabel: correctLabel,
+                    correctChoiceText: textOf(textFromNode(correctNode) || correctOption?.t || correctOption?.choiceText || correctOption?.text || ''),
+                    explanation: textOf(Array.isArray(question?.explication) ? question.explication.join(' ') : (question?.explication || question?.explanation || explanation)),
+                    chapter: textOf(data?.chapitre ?? data?.chapter ?? '')
+                  });
+                });
                 return Array.from(mistakesMap.values());
               };
 
@@ -108,6 +200,11 @@ public class QcmController {
                   }, 2500);
                 }
               };
+
+              window.addEventListener('message', (event) => {
+                if (event.source !== window.parent || event.data?.type !== 'econcourse-request-save-mistakes') return;
+                sendSaveAllMistakes(null);
+              });
 
               const injectSaveButtons = () => {
                 // 1. Bouton principal dans les actions de fin de test
@@ -133,21 +230,46 @@ public class QcmController {
                   singleBtn.style.cssText = 'margin-top: 10px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;';
                   singleBtn.onclick = () => {
                     const qhead = card.querySelector('.qhead')?.innerText || '';
-                    const qtext = card.querySelector('.qtext')?.innerText || '';
+                    const qtext = card.querySelector('.qtext, .question-text, .statement, [data-question-text]')?.innerText || '';
                     const note = card.querySelector('.note')?.innerText || '';
-                    const expl = card.querySelector('.expl')?.innerText || '';
+                    const expl = card.querySelector('.expl, .explanation, .explication, .fb.ko')?.innerText || '';
                     const qIdMatch = qhead.match(/\\d+/);
                     const qNum = qIdMatch ? parseInt(qIdMatch[0], 10) : 1;
+                    const data = getData();
+                    const state = getState();
+                    const questions = Array.isArray(data?.questions) ? data.questions : [];
+                    const question = questions.find((item, index) => String(item.questionNumber ?? item.id ?? index + 1) === String(qNum)) || questions[qNum - 1];
+                    const options = question?.options ?? question?.choices ?? [];
+                    const noteText = textOf(note);
+                    const selectedInNote = noteText.match(/Votre réponse\\s*:\\s*([A-Za-z0-9_-]+)/i)?.[1] || '';
+                    const correctInNote = noteText.match(/Bonne réponse(?:\\s*\\([^)]*\\))?\\s*:\\s*([A-Za-z0-9_-]+)/i)?.[1] || '';
+                    const choiceLabel = (choice) => String(choice?.k ?? choice?.choiceLabel ?? choice?.label ?? choice?.id ?? '').trim().toUpperCase();
+                    const cardChoiceLabel = (selectors) => {
+                      const node = card.querySelector(selectors);
+                      return textOf(node?.querySelector('.k')?.innerText || node?.dataset?.k || node?.dataset?.answer || '').toUpperCase();
+                    };
+                    const selectedLabel = String((question && state?.answers?.[question.id]) || selectedInNote || cardChoiceLabel('.copt.bad, .bad, .incorrect, [data-correct="false"]')).trim().toUpperCase();
+                    const correctLabel = String(question?.correct || question?.correctChoiceLabel || question?.answer || correctInNote || cardChoiceLabel('.copt.good, .good, .correct, [data-correct="true"]')).trim().toUpperCase();
+                    const selectedChoice = options.find((choice) => choiceLabel(choice) === selectedLabel);
+                    const correctChoice = options.find((choice) => choiceLabel(choice) === correctLabel);
+                    const cardChoiceText = (selectors) => {
+                      const node = card.querySelector(selectors);
+                      if (!node) return '';
+                      const clone = node.cloneNode(true);
+                      clone.querySelectorAll('.k, .tag').forEach((child) => child.remove());
+                      return textOf(clone.innerText || '');
+                    };
                     const mistake = {
-                      questionId: qNum,
-                      questionNumber: qNum,
-                      questionText: textOf(qtext),
-                      selectedChoiceLabel: 'RÉPONSE ÉTUDIANT',
-                      selectedChoiceText: textOf(note),
-                      correctChoiceLabel: 'BONNE RÉPONSE',
-                      correctChoiceText: '',
-                      explanation: textOf(expl),
-                      chapter: ''
+                      questionId: question?.id ?? question?.questionNumber ?? qNum,
+                      questionNumber: Number(question?.questionNumber ?? qNum) || qNum,
+                      questionText: textOf(question?.enonce ?? question?.questionText ?? question?.text ?? qtext),
+                      selectedChoiceLabel: selectedLabel || 'Réponse choisie',
+                      selectedChoiceText: textOf(selectedChoice?.t ?? selectedChoice?.choiceText ?? selectedChoice?.text ?? cardChoiceText('.copt.bad, .bad, .incorrect, [data-correct="false"]')),
+                      correctChoiceLabel: correctLabel || 'Bonne réponse',
+                      correctChoiceText: textOf(correctChoice?.t ?? correctChoice?.choiceText ?? correctChoice?.text ?? cardChoiceText('.copt.good, .good, .correct, [data-correct="true"]')),
+              choicesText: formatChoices(options),
+                      explanation: textOf((Array.isArray(question?.explication) ? question.explication.join(' ') : (question?.explication || question?.explanation)) || expl),
+                      chapter: textOf(data?.chapitre ?? data?.chapter ?? '')
                     };
                     window.parent.postMessage({
                       type: saveActionType,
@@ -164,11 +286,34 @@ public class QcmController {
               };
 
               document.addEventListener('click', (event) => {
-                const button = event.target.closest('button[data-k], button[data-answer], [data-choice]');
+                const button = event.target.closest('button[data-k], button[data-answer], [data-choice], button.opt');
                 if (!button) return;
                 const data = getData();
                 const state = getState();
-                if (!Array.isArray(data?.questions)) return;
+                if (!Array.isArray(data?.questions)) {
+                  const questions = getLegacyQuestions();
+                  const index = getLegacyCurrentIndex();
+                  const question = questions[index];
+                  if (!question || !Array.isArray(question.o) || !Number.isInteger(question.a)) return;
+                  const selectedLabel = String(button.querySelector('.l')?.innerText || '').trim().toUpperCase();
+                  const selectedIndex = selectedLabel.charCodeAt(0) - 65;
+                  if (!selectedLabel || selectedIndex < 0 || selectedIndex >= question.o.length) return;
+                  const correctIndex = Number(question.a);
+                  publish({
+                    questionId: index + 1,
+                    questionNumber: index + 1,
+                    questionText: textOf(question.q ?? question.questionText ?? question.text ?? ''),
+            choicesText: formatChoices(question.o),
+                    selectedChoiceLabel: selectedLabel,
+                    selectedChoiceText: textOf(question.o[selectedIndex]),
+                    correctChoiceLabel: String.fromCharCode(65 + correctIndex),
+                    correctChoiceText: textOf(question.o[correctIndex]),
+                    explanation: getLegacyExplanation(question),
+                    chapter: textOf(question.t ?? ''),
+                    isCorrect: selectedIndex === correctIndex
+                  });
+                  return;
+                }
                 const index = Number.isInteger(state?.cur) ? state.cur : 0;
                 const question = data.questions[index];
                 if (!question) return;
@@ -183,6 +328,7 @@ public class QcmController {
                   questionId: question.id ?? question.questionNumber ?? index + 1,
                   questionNumber: question.questionNumber ?? question.id ?? index + 1,
                   questionText: textOf(question.enonce ?? question.questionText ?? question.text ?? ''),
+          choicesText: formatChoices(options),
                   selectedChoiceLabel: selectedLabel,
                   selectedChoiceText: textOf(selected?.t ?? selected?.choiceText ?? selected?.text ?? button.innerText),
                   correctChoiceLabel: correctLabel,
@@ -201,7 +347,7 @@ public class QcmController {
               const observer = new MutationObserver(() => {
                 injectSaveButtons();
 
-                if (Array.isArray(getData()?.questions)) return;
+                if (Array.isArray(getData()?.questions) || getLegacyQuestions().length) return;
                 document.querySelectorAll('.bad, .incorrect, .wrong, .is-wrong, [data-correct="false"]').forEach((wrong) => {
                   if (wrong.dataset.econcourseTracked) return;
                   const container = wrong.closest('[data-question], .question, .qcm-question, .qbox, #qBody') || wrong.parentElement?.parentElement;
@@ -216,6 +362,8 @@ public class QcmController {
                     questionId: container.dataset.questionId ?? container.dataset.id ?? textOf(questionText).slice(0, 80),
                     questionNumber: container.dataset.questionNumber ?? '',
                     questionText: textOf(questionText),
+            choicesText: Array.from(container.querySelectorAll('.choice, .option, .opt, [data-choice]'))
+              .map((choice, index) => `${String.fromCharCode(65 + index)}. ${textOf(choice.innerText)}`).join('\\n'),
                     selectedChoiceLabel: String(selectedChoiceLabel || 'Réponse choisie').toUpperCase(),
                     selectedChoiceText: textOf(wrong.innerText),
                     correctChoiceLabel: String(correctChoiceLabel || 'Bonne réponse').toUpperCase(),
@@ -241,203 +389,6 @@ public class QcmController {
               });
             })();
             """;
-
-    public QcmController(QcmQuestionRepository qcmQuestionRepository,
-                          QcmResponseRepository qcmResponseRepository,
-                          ConcoursBlancRepository concoursBlancRepository,
-                          PdfQcmExtractorService pdfQcmExtractorService,
-                          AuthSessionService authSessionService) {
-        this.qcmQuestionRepository = qcmQuestionRepository;
-        this.qcmResponseRepository = qcmResponseRepository;
-        this.concoursBlancRepository = concoursBlancRepository;
-        this.pdfQcmExtractorService = pdfQcmExtractorService;
-        this.authSessionService = authSessionService;
-    }
-
-    @PostMapping("/concours-blanc/{id}/responses")
-    public ResponseEntity<?> recordResponse(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String authorization, @RequestBody Map<String, Object> body) {
-        var sessionUser = authSessionService.resolve(authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7) ? authorization.substring(7).trim() : null);
-        if (sessionUser.isEmpty()) return ResponseEntity.status(401).body("Session expirée. Veuillez vous reconnecter.");
-        Optional<ConcoursBlanc> optional = concoursBlancRepository.findById(id);
-        if (optional.isEmpty() || !optional.get().getPublie()) return ResponseEntity.notFound().build();
-        String attemptId = String.valueOf(body.getOrDefault("attemptId", "")).trim();
-        String questionKey = String.valueOf(body.getOrDefault("questionId", "")).trim();
-        String selected = String.valueOf(body.getOrDefault("selectedChoiceLabel", "")).trim().toUpperCase(Locale.ROOT);
-        String correct = String.valueOf(body.getOrDefault("correctChoiceLabel", "")).trim().toUpperCase(Locale.ROOT);
-        if (attemptId.isEmpty() || attemptId.length() > 100 || questionKey.isEmpty() || selected.isEmpty() || correct.isEmpty()) {
-            return ResponseEntity.badRequest().body("Réponse QCM incomplète.");
-        }
-        questionKey = questionKey.substring(0, Math.min(questionKey.length(), 255));
-        QcmResponse response = qcmResponseRepository
-                .findByConcoursBlancIdAndAttemptIdAndQuestionKey(id, attemptId, questionKey)
-                .orElseGet(QcmResponse::new);
-        response.setConcoursBlanc(optional.get());
-        response.setAttemptId(attemptId);
-        response.setStudentId(sessionUser.get().getId());
-        response.setQuestionKey(questionKey);
-        response.setQuestionNumber(parseInteger(body.get("questionNumber")));
-        response.setQuestionText(limit(String.valueOf(body.getOrDefault("questionText", "")), 10000));
-        response.setSelectedChoiceLabel(selected);
-        response.setCorrectChoiceLabel(correct);
-        response.setSelectedChoiceText(limit(String.valueOf(body.getOrDefault("selectedChoiceText", "")), 10000));
-        response.setCorrectChoiceText(limit(String.valueOf(body.getOrDefault("correctChoiceText", "")), 10000));
-        response.setExplanation(limit(String.valueOf(body.getOrDefault("explanation", "")), 20000));
-        response.setCorrect(selected.equals(correct));
-        QcmResponse saved = qcmResponseRepository.save(response);
-        return ResponseEntity.ok(Map.of("saved", true, "id", saved.getId(), "correct", saved.isCorrect()));
-    }
-
-    @GetMapping("/mes-resultats")
-    public ResponseEntity<?> getStudentResults(@RequestParam Long studentId) {
-        List<QcmResponse> responses = qcmResponseRepository.findByStudentIdOrderByAnsweredAtDesc(studentId);
-        Map<String, List<QcmResponse>> attempts = new HashMap<>();
-        responses.forEach(r -> attempts.computeIfAbsent(r.getConcoursBlanc().getId() + ":" + r.getAttemptId(), k -> new ArrayList<>()).add(r));
-        long correctAnswers = responses.stream().filter(QcmResponse::isCorrect).count();
-        long successfulAttempts = attempts.values().stream().filter(answerSet ->
-                answerSet.stream().filter(QcmResponse::isCorrect).count() * 100.0 / answerSet.size() >= 50).count();
-        double averageScore = attempts.values().stream().mapToDouble(answerSet ->
-                answerSet.stream().filter(QcmResponse::isCorrect).count() * 100.0 / answerSet.size()).average().orElse(0);
-
-        List<Map<String, Object>> mistakes = responses.stream().filter(r -> !r.isCorrect()).map(this::studentMistake).toList();
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("participations", attempts.size());
-        result.put("answeredQuestions", responses.size());
-        result.put("correctAnswers", correctAnswers);
-        result.put("incorrectAnswers", responses.size() - correctAnswers);
-        result.put("averageScore", Math.round(averageScore * 10.0) / 10.0);
-        result.put("successRate", attempts.isEmpty() ? 0 : Math.round(successfulAttempts * 1000.0 / attempts.size()) / 10.0);
-        result.put("mistakes", mistakes);
-        List<Map<String, Object>> attemptHistory = attempts.values().stream().map(answerSet -> {
-            QcmResponse first = answerSet.get(0);
-            long correctCount = answerSet.stream().filter(QcmResponse::isCorrect).count();
-            Map<String, Object> attempt = new LinkedHashMap<>();
-            attempt.put("attemptId", first.getAttemptId());
-            attempt.put("resourceId", first.getConcoursBlanc().getId());
-            attempt.put("resourceTitle", first.getConcoursBlanc().getTitre());
-            attempt.put("subject", first.getConcoursBlanc().getMatiere());
-            attempt.put("answeredAt", answerSet.stream().map(QcmResponse::getAnsweredAt).max(Comparator.naturalOrder()).orElse(first.getAnsweredAt()));
-            attempt.put("correctAnswers", correctCount);
-            attempt.put("totalQuestions", answerSet.size());
-            attempt.put("score", Math.round(correctCount * 1000.0 / answerSet.size()) / 10.0);
-            return attempt;
-        }).sorted((a, b) -> ((Comparable) b.get("answeredAt")).compareTo(a.get("answeredAt"))).toList();
-        result.put("attemptHistory", attemptHistory);
-        result.put("responses", responses.stream().map(response -> {
-            Map<String, Object> item = studentMistake(response);
-            item.put("correct", response.isCorrect());
-            return item;
-        }).toList());
-        return ResponseEntity.ok(result);
-    }
-
-    @PatchMapping("/mes-erreurs/{responseId}/reviewed")
-    public ResponseEntity<?> setMistakeReviewed(
-            @PathVariable Long responseId,
-            @RequestParam Long studentId,
-            @RequestBody Map<String, Boolean> body) {
-        Optional<QcmResponse> optional = qcmResponseRepository.findByIdAndStudentIdAndCorrectFalse(responseId, studentId);
-        if (optional.isEmpty()) return ResponseEntity.notFound().build();
-        QcmResponse response = optional.get();
-        response.setReviewed(Boolean.TRUE.equals(body.get("reviewed")));
-        qcmResponseRepository.save(response);
-        return ResponseEntity.ok(Map.of("id", responseId, "reviewed", response.isReviewed()));
-    }
-
-    private Map<String, Object> studentMistake(QcmResponse response) {
-        Map<String, Object> item = new LinkedHashMap<>();
-        ConcoursBlanc concours = response.getConcoursBlanc();
-        item.put("id", "db-" + response.getId());
-        item.put("databaseId", response.getId());
-        item.put("sourceType", "Concours blanc");
-        item.put("resourceId", concours.getId());
-        item.put("resourceTitle", concours.getTitre());
-        item.put("subject", concours.getMatiere());
-        item.put("chapter", concours.getChapitre());
-        item.put("attemptId", response.getAttemptId());
-        item.put("questionId", response.getQuestionKey());
-        item.put("questionNumber", response.getQuestionNumber());
-        item.put("questionText", response.getQuestionText());
-        item.put("selectedChoiceLabel", response.getSelectedChoiceLabel());
-        item.put("selectedChoiceText", response.getSelectedChoiceText());
-        item.put("correctChoiceLabel", response.getCorrectChoiceLabel());
-        item.put("correctChoiceText", response.getCorrectChoiceText());
-        item.put("explanation", response.getExplanation());
-        item.put("occurredAt", response.getAnsweredAt());
-        item.put("reviewed", response.isReviewed());
-        return item;
-    }
-
-    @GetMapping("/concours-blancs/stats")
-    public ResponseEntity<?> getConcoursBlancAnalytics(
-            @RequestParam(required = false) String matiere,
-            @RequestParam(required = false) String chapitre) {
-        List<ConcoursBlanc> concours = concoursBlancRepository.findAll().stream()
-                .filter(cb -> matiere == null || matiere.isBlank() || matiere.equals(cb.getMatiere()))
-                .filter(cb -> chapitre == null || chapitre.isBlank() || chapitre.equals(cb.getChapitre()))
-                .toList();
-        Set<Long> ids = new HashSet<>();
-        concours.forEach(cb -> ids.add(cb.getId()));
-        List<QcmResponse> responses = qcmResponseRepository.findAllByOrderByAnsweredAtDesc().stream()
-                .filter(r -> ids.contains(r.getConcoursBlanc().getId())).toList();
-        Map<String, List<QcmResponse>> attempts = new HashMap<>();
-        responses.forEach(r -> attempts.computeIfAbsent(r.getConcoursBlanc().getId() + ":" + r.getAttemptId(), k -> new ArrayList<>()).add(r));
-        double averageScore = attempts.values().stream().mapToDouble(answerSet ->
-                answerSet.stream().filter(QcmResponse::isCorrect).count() * 100.0 / answerSet.size()).average().orElse(0);
-        long successfulAttempts = attempts.values().stream().filter(answerSet ->
-                answerSet.stream().filter(QcmResponse::isCorrect).count() * 100.0 / answerSet.size() >= 50).count();
-
-        Map<String, List<QcmResponse>> byQuestion = new LinkedHashMap<>();
-        responses.forEach(r -> byQuestion.computeIfAbsent(r.getConcoursBlanc().getId() + ":" + r.getQuestionKey(), k -> new ArrayList<>()).add(r));
-        List<Map<String, Object>> hardest = byQuestion.values().stream()
-                .sorted(Comparator.comparingDouble(list -> list.stream().filter(QcmResponse::isCorrect).count() * 1.0 / list.size()))
-                .limit(8).map(list -> questionSummary(list, false)).toList();
-        Map<String, List<QcmResponse>> errors = new LinkedHashMap<>();
-        responses.stream().filter(r -> !r.isCorrect()).forEach(r -> errors.computeIfAbsent(
-                r.getConcoursBlanc().getId() + ":" + r.getQuestionKey() + ":" + r.getSelectedChoiceLabel(), k -> new ArrayList<>()).add(r));
-        List<Map<String, Object>> frequentErrors = errors.values().stream()
-                .sorted(Comparator.comparingInt((List<QcmResponse> list) -> list.size()).reversed())
-                .limit(8).map(list -> questionSummary(list, true)).toList();
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalQcm", concours.size());
-        result.put("totalQuestions", concours.stream().mapToLong(cb -> qcmQuestionRepository.countByConcoursBlancId(cb.getId())).sum());
-        result.put("participations", attempts.size());
-        result.put("averageScore", Math.round(averageScore * 10.0) / 10.0);
-        result.put("successRate", attempts.isEmpty() ? 0 : Math.round(successfulAttempts * 1000.0 / attempts.size()) / 10.0);
-        result.put("hardestQuestions", hardest);
-        result.put("frequentErrors", frequentErrors);
-        result.put("hasResults", !responses.isEmpty());
-        return ResponseEntity.ok(result);
-    }
-
-    private Map<String, Object> questionSummary(List<QcmResponse> list, boolean includeChoice) {
-        QcmResponse first = list.get(0);
-        Map<String, Object> item = new LinkedHashMap<>();
-        item.put("titre", first.getConcoursBlanc().getTitre());
-        item.put("matiere", first.getConcoursBlanc().getMatiere());
-        item.put("chapitre", first.getConcoursBlanc().getChapitre());
-        item.put("questionNumber", first.getQuestionNumber());
-        item.put("questionText", first.getQuestionText());
-        item.put("responses", list.size());
-        item.put("errorRate", Math.round(list.stream().filter(r -> !r.isCorrect()).count() * 1000.0 / list.size()) / 10.0);
-        if (includeChoice) {
-            item.put("selectedChoiceLabel", first.getSelectedChoiceLabel());
-            item.put("selectedChoiceText", first.getSelectedChoiceText());
-        }
-        return item;
-    }
-
-    private Integer parseInteger(Object value) {
-        try { return value == null ? null : Integer.valueOf(String.valueOf(value)); }
-        catch (NumberFormatException ignored) { return null; }
-    }
-
-    private Long parseLong(Object value) {
-        try { return value == null ? null : Long.valueOf(String.valueOf(value)); }
-        catch (NumberFormatException ignored) { return null; }
-    }
-
-    private String limit(String value, int max) { return value.length() > max ? value.substring(0, max) : value; }
 
     @GetMapping(value = "/tracking-bridge.js", produces = "application/javascript")
     public ResponseEntity<String> getTrackingBridge() {
@@ -476,204 +427,5 @@ public class QcmController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Impossible d'ouvrir le fichier QCM suivi.");
         }
-    }
-
-    /**
-     * GET /api/qcm/concours-blanc/{id}
-     * Récupère toutes les questions QCM d'un concours blanc.
-     */
-    @GetMapping("/concours-blanc/{id}")
-    public ResponseEntity<?> getQuestionsByConcoursBlancId(@PathVariable Long id) {
-        Optional<ConcoursBlanc> optional = concoursBlancRepository.findById(id);
-        if (optional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        List<QcmQuestion> questions = qcmQuestionRepository.findByConcoursBlancIdOrderByQuestionNumberAsc(id);
-
-        // Construire la réponse avec les infos du concours
-        Map<String, Object> response = new LinkedHashMap<>();
-        ConcoursBlanc cb = optional.get();
-        response.put("concoursBlancId", cb.getId());
-        response.put("titre", cb.getTitre());
-        response.put("ecole", cb.getEcole());
-        response.put("matiere", cb.getMatiere());
-        response.put("chapitre", cb.getChapitre());
-        response.put("annee", cb.getAnnee());
-
-        List<Map<String, Object>> questionList = new ArrayList<>();
-        for (QcmQuestion q : questions) {
-            Map<String, Object> qMap = new LinkedHashMap<>();
-            qMap.put("id", q.getId());
-            qMap.put("questionNumber", q.getQuestionNumber());
-            qMap.put("questionText", q.getQuestionText());
-            qMap.put("correctChoiceLabel", q.getCorrectChoiceLabel());
-            qMap.put("explanation", q.getExplanation());
-
-            List<Map<String, Object>> choiceList = new ArrayList<>();
-            for (QcmChoice c : q.getChoices()) {
-                Map<String, Object> cMap = new LinkedHashMap<>();
-                cMap.put("id", c.getId());
-                cMap.put("choiceLabel", c.getChoiceLabel());
-                cMap.put("choiceText", c.getChoiceText());
-                choiceList.add(cMap);
-            }
-            qMap.put("choices", choiceList);
-            questionList.add(qMap);
-        }
-        response.put("questions", questionList);
-
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * GET /api/qcm/concours-blanc/{id}/stats
-     * Statistiques : nombre total de questions et nombre de questions corrigées.
-     */
-    @GetMapping("/concours-blanc/{id}/stats")
-    public ResponseEntity<?> getStatsByConcoursBlancId(@PathVariable Long id) {
-        if (!concoursBlancRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        long totalQuestions = qcmQuestionRepository.countByConcoursBlancId(id);
-        long correctedQuestions = qcmQuestionRepository.countCorrectedByConcoursBlancId(id);
-
-        Map<String, Object> stats = new LinkedHashMap<>();
-        stats.put("concoursBlancId", id);
-        stats.put("totalQuestions", totalQuestions);
-        stats.put("correctedQuestions", correctedQuestions);
-        stats.put("hasQuestions", totalQuestions > 0);
-        stats.put("allCorrected", totalQuestions > 0 && totalQuestions == correctedQuestions);
-
-        return ResponseEntity.ok(stats);
-    }
-
-    /**
-     * PUT /api/qcm/question/{id}/correction
-     * L'administrateur ajoute/modifie la bonne réponse et l'explication d'une question.
-     */
-    @PutMapping("/question/{id}/correction")
-    public ResponseEntity<?> updateCorrection(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
-
-        Optional<QcmQuestion> optional = qcmQuestionRepository.findById(id);
-        if (optional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        QcmQuestion question = optional.get();
-
-        String correctChoiceLabel = body.get("correctChoiceLabel");
-        String explanation = body.get("explanation");
-
-        if (correctChoiceLabel != null && !correctChoiceLabel.trim().isEmpty()) {
-            question.setCorrectChoiceLabel(correctChoiceLabel.trim().toUpperCase());
-        }
-        if (explanation != null) {
-            question.setExplanation(explanation.trim());
-        }
-
-        qcmQuestionRepository.save(question);
-
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("id", question.getId());
-        response.put("questionNumber", question.getQuestionNumber());
-        response.put("correctChoiceLabel", question.getCorrectChoiceLabel());
-        response.put("explanation", question.getExplanation());
-        response.put("message", "Correction mise à jour avec succès !");
-
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * POST /api/qcm/concours-blanc/{id}/extract
-     * Force la ré-extraction des questions QCM à partir du PDF d'un concours blanc.
-     */
-    @PostMapping("/concours-blanc/{id}/extract")
-    public ResponseEntity<?> forceExtract(@PathVariable Long id) {
-        Optional<ConcoursBlanc> optional = concoursBlancRepository.findById(id);
-        if (optional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        ConcoursBlanc cb = optional.get();
-        if (cb.getPdfUrl() == null || cb.getPdfUrl().isEmpty()) {
-            return ResponseEntity.badRequest().body("Ce concours blanc n'a pas de fichier PDF associé.");
-        }
-
-        try {
-            // Supprimer les anciennes questions avant de ré-extraire
-            qcmQuestionRepository.deleteChoicesByConcoursBlancId(id);
-            qcmQuestionRepository.deleteByConcoursBlancId(id);
-
-            // Extraire le nom du fichier depuis l'URL
-            String pdfFileName = cb.getPdfUrl().substring(cb.getPdfUrl().lastIndexOf("/") + 1);
-            File pdfFile = new File(UPLOAD_DIR, pdfFileName);
-
-            if (!pdfFile.exists()) {
-                return ResponseEntity.badRequest().body("Le fichier PDF n'existe pas sur le serveur: " + pdfFileName);
-            }
-
-            int count = pdfQcmExtractorService.extractAndSaveQuestions(pdfFile, cb);
-
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("concoursBlancId", id);
-            response.put("extractedQuestions", count);
-            response.put("message", count > 0
-                    ? count + " questions QCM extraites avec succès !"
-                    : "Aucune question QCM détectée dans ce PDF. Le format n'est peut-être pas standard.");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Erreur lors de l'extraction QCM: " + e.getMessage());
-        }
-    }
-
-    /**
-     * PUT /api/qcm/concours-blanc/{id}/corrections-batch
-     * Mise à jour en lot de toutes les corrections d'un concours blanc.
-     */
-    @PutMapping("/concours-blanc/{id}/corrections-batch")
-    public ResponseEntity<?> updateCorrectionsBatch(
-            @PathVariable Long id,
-            @RequestBody List<Map<String, String>> corrections) {
-
-        if (!concoursBlancRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        int updated = 0;
-        for (Map<String, String> correction : corrections) {
-            String questionIdStr = correction.get("questionId");
-            String correctChoiceLabel = correction.get("correctChoiceLabel");
-            String explanation = correction.get("explanation");
-
-            if (questionIdStr == null) continue;
-
-            try {
-                Long questionId = Long.parseLong(questionIdStr);
-                Optional<QcmQuestion> optQ = qcmQuestionRepository.findById(questionId);
-                if (optQ.isPresent()) {
-                    QcmQuestion q = optQ.get();
-                    if (correctChoiceLabel != null && !correctChoiceLabel.trim().isEmpty()) {
-                        q.setCorrectChoiceLabel(correctChoiceLabel.trim().toUpperCase());
-                    }
-                    if (explanation != null) {
-                        q.setExplanation(explanation.trim());
-                    }
-                    qcmQuestionRepository.save(q);
-                    updated++;
-                }
-            } catch (NumberFormatException ignored) {}
-        }
-
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("updatedQuestions", updated);
-        response.put("message", updated + " corrections mises à jour avec succès !");
-
-        return ResponseEntity.ok(response);
     }
 }

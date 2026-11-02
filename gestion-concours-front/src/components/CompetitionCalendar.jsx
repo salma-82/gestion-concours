@@ -4,7 +4,7 @@ import './CompetitionCalendar.css';
 import './CompetitionCalendarEvents.css';
 import { getStudentPlanningKey, readStudentPlanning } from '../studentProgress';
 
-const API = 'http://localhost:8081/api/calendrier';
+const API = '/api/calendrier';
 const eventTypes = [
   { value: 'REGISTRATION_START', label: 'Ouverture des inscriptions', color: 'blue' },
   { value: 'REGISTRATION_DEADLINE', label: 'Date limite d’inscription', color: 'orange' },

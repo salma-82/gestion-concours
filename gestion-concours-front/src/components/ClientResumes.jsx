@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
-const API = 'http://localhost:8081';
+const API = '';
 
 const MATIERES_CONFIG = [
   { 
@@ -284,13 +285,9 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
 
   const getFullUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      if (url.includes('localhost:8080') && API.includes('8081')) {
-        return url.replace('localhost:8080', 'localhost:8081');
-      }
-      return url;
-    }
-    return `${API}/${url.startsWith('/') ? url.substring(1) : url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+    return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
   const getPages = (resume) => {

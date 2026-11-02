@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 const valueOf = (value) => String(value || '').trim();
 
 export default function ClientCompetitions() {
@@ -16,15 +16,15 @@ export default function ClientCompetitions() {
   useEffect(() => {
     let active = true;
     const loadHistory = () => {
-      let studentId = null;
-      try { studentId = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
-      if (!studentId) {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
         setAttempts([]);
+        setError('Votre session a expiré. Reconnectez-vous pour consulter vos tentatives.');
         setLoading(false);
         return;
       }
       setLoading(true);
-      axios.get(`${API_BASE}/api/qcm/mes-concours`, { params: { studentId } })
+      axios.get(`${API_BASE}/api/qcm/mes-concours`, { headers: { Authorization: `Bearer ${token}` } })
         .then(({ data }) => { if (active) { setAttempts(Array.isArray(data?.attempts) ? data.attempts : []); setError(''); } })
         .catch(() => { if (active) setError('Impossible de charger vos tentatives pour le moment.'); })
         .finally(() => { if (active) setLoading(false); });

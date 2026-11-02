@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   // 1. Jbd les demandes d'inscription
   const fetchDemandes = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/api/admin/demandes-inscription');
+      const response = await axios.get('/api/admin/demandes-inscription');
       setDemandes(response.data);
     } catch (err) {
       console.error("Erreur lors du chargement des demandes", err);
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   // 2. Jbd Concours Blancs
   const fetchConcours = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/api/concours-blancs');
+      const response = await axios.get('/api/concours-blancs');
       setConcoursList(response.data);
     } catch (err) {
       console.error("Erreur concours", err);
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
     try {
       setSuccess('');
       setError('');
-      await axios.post(`http://localhost:8081/api/admin/accepter/${id}`);
+      await axios.post(`/api/admin/accepter/${id}`);
       setSuccess("تم قبول المستخدم وإضافته بنجاح لجدول المستخدمين! ✅");
       fetchDemandes(); // Refresh d la table
     } catch (err) {
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     try {
       setSuccess('');
       setError('');
-      await axios.delete(`http://localhost:8081/api/admin/refuser/${id}`);
+      await axios.delete(`/api/admin/refuser/${id}`);
       setSuccess("تم رفض وحذف الطلب ❌");
       fetchDemandes();
     } catch (err) {
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     const token = localStorage.getItem('authToken');
-    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/login');

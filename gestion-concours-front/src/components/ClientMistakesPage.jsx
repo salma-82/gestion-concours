@@ -4,10 +4,21 @@ import axios from 'axios';
 import MathContent from './MathContent';
 import { readStudentMistakes, deleteStudentMistake } from '../studentProgress';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 const isBlanc = (type) => String(type || '').toLowerCase().includes('blanc');
 const groupKey = (item) => `${item.resourceType || item.sourceType || ''}|${item.resourceId}|${item.attemptId || ''}`;
 const dateLabel = (date) => date ? new Date(date).toLocaleDateString('fr-FR') : '—';
+
+function ChoiceList({ value }) {
+  const choices = String(value || '').split(/\r?\n/).filter((choice) => choice.trim());
+  if (!choices.length) return null;
+  return <div style={{ marginTop: 12 }}>
+    <strong>Choix proposés</strong>
+    <ol style={{ margin: '6px 0 0', paddingLeft: 24 }}>
+      {choices.map((choice, index) => <li key={`${index}-${choice}`} style={{ margin: '4px 0' }}><MathContent>{choice.replace(/^[A-Z]\.\s*/, '')}</MathContent></li>)}
+    </ol>
+  </div>;
+}
 
 export default function ClientMistakesPage() {
   const [params] = useSearchParams();
@@ -30,9 +41,11 @@ export default function ClientMistakesPage() {
       return;
     }
     setLoading(true);
+    const token = localStorage.getItem('authToken');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const [historyResult, savedResult] = await Promise.allSettled([
-      axios.get(`${API_BASE}/api/qcm/mes-concours`, { params: { studentId: id } }),
-      axios.get(`${API_BASE}/api/student-mistakes`, { params: { studentId: id } })
+      axios.get(`${API_BASE}/api/qcm/mes-concours`, { headers }),
+      axios.get(`${API_BASE}/api/student-mistakes`, { params: { studentId: id }, headers })
     ]);
     setAttempts(historyResult.status === 'fulfilled' && Array.isArray(historyResult.value.data?.attempts)
       ? historyResult.value.data.attempts : []);
@@ -41,10 +54,27 @@ export default function ClientMistakesPage() {
     const savedLocal = readStudentMistakes().filter((item) => item.savedForReview);
     const merged = [...savedFromDb];
     savedLocal.forEach((local) => {
-      const found = merged.some((item) => String(item.resourceId) === String(local.resourceId)
+      const foundIndex = merged.findIndex((item) => String(item.resourceId) === String(local.resourceId)
         && String(item.attemptId || '') === String(local.attemptId || '')
         && String(item.questionId || '') === String(local.questionId || ''));
-      if (!found) merged.push(local);
+      if (foundIndex < 0) {
+        merged.push(local);
+        return;
+      }
+
+      // Keep details captured in this browser when an older database row for the
+      // same question was saved without its question, choices, or explanation.
+      const fromServer = merged[foundIndex];
+      merged[foundIndex] = {
+        ...fromServer,
+        questionText: fromServer.questionText || local.questionText,
+        choicesText: fromServer.choicesText || local.choicesText,
+        selectedChoiceLabel: fromServer.selectedChoiceLabel || local.selectedChoiceLabel,
+        selectedChoiceText: fromServer.selectedChoiceText || local.selectedChoiceText,
+        correctChoiceLabel: fromServer.correctChoiceLabel || local.correctChoiceLabel,
+        correctChoiceText: fromServer.correctChoiceText || local.correctChoiceText,
+        explanation: fromServer.explanation || local.explanation
+      };
     });
     setSavedMistakes(merged);
     setLoading(false);
@@ -94,6 +124,17 @@ export default function ClientMistakesPage() {
     setSavedMistakes((items) => items.filter((item) => item.id !== error.id && item.databaseId !== error.databaseId));
   };
 
+  const removeSavedGroup = async (group) => {
+    try {
+      await Promise.all(group.errors.map((error) => deleteStudentMistake(error.id || error.databaseId, studentId)));
+      const removedIds = new Set(group.errors.map((error) => String(error.id || error.databaseId || '')));
+      setSavedMistakes((items) => items.filter((item) => !removedIds.has(String(item.id || item.databaseId || ''))));
+    } catch (error) {
+      window.alert(error?.message || 'La suppression des erreurs a échoué.');
+      loadData();
+    }
+  };
+
   const page = { minHeight: '100%', padding: '24px 28px 40px', background: '#f3f6fb', color: '#0f172a', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" };
   const panel = { maxWidth: 1380, margin: '0 auto', overflow: 'hidden', background: '#fff', border: '1px solid #dbeafe', borderRadius: 18, boxShadow: '0 3px 14px rgba(37,99,235,.04)' };
   const header = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18, padding: '20px 24px', background: 'linear-gradient(100deg,#f8fbff,#eef6ff)', borderBottom: '1px solid #dbeafe' };
@@ -140,11 +181,14 @@ export default function ClientMistakesPage() {
                     <td style={td}>{group.chapter || '—'}</td>
                     <td style={td}>{dateLabel(group.savedAt)}</td>
                     <td style={{ ...td, fontWeight: 800 }}>{attempt ? `${attempt.correctAnswers}/${attempt.expectedQuestions || attempt.totalQuestions}` : '—'}</td>
-                    <td style={td}><button type="button" onClick={() => setExpanded((state) => ({ ...state, [group.key]: !state[group.key] }))} style={blueAction}>{expanded[group.key] ? 'Fermer' : 'Réviser'} · {group.errors.length}</button></td>
+                    <td style={td}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button type="button" onClick={() => setExpanded((state) => ({ ...state, [group.key]: !state[group.key] }))} style={blueAction}>{expanded[group.key] ? 'Fermer' : 'Réviser'} · {group.errors.length}</button>
+                      <button type="button" onClick={() => removeSavedGroup(group)} style={{ border: '1px solid #fecaca', borderRadius: 9, padding: '8px 11px', background: '#fff', color: '#dc2626', fontSize: 12, fontWeight: 750, cursor: 'pointer', whiteSpace: 'nowrap' }}>Supprimer</button>
+                    </div></td>
                   </tr>
                   {expanded[group.key] && group.errors.map((error, index) => <tr key={error.id || error.databaseId || `${group.key}-${index}`}><td colSpan="7" style={{ ...td, background: '#f8fbff', padding: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><strong>Question {error.questionNumber || index + 1}</strong><button type="button" onClick={() => removeSavedError(error)} style={{ border: '1px solid #fecaca', borderRadius: 8, padding: '6px 10px', color: '#dc2626', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Retirer</button></div>
-                    <div style={{ marginTop: 8 }}><MathContent>{error.questionText}</MathContent></div><p style={{ color: '#b91c1c' }}>Votre réponse : <MathContent>{`${error.selectedChoiceLabel || ''} ${error.selectedChoiceText || ''}`}</MathContent></p><p style={{ color: '#047857' }}>Bonne réponse : <MathContent>{`${error.correctChoiceLabel || ''} ${error.correctChoiceText || ''}`}</MathContent></p>{error.explanation && <details><summary>Correction</summary><MathContent>{error.explanation}</MathContent></details>}
+                    <div style={{ marginTop: 8 }}><MathContent>{error.questionText}</MathContent></div><ChoiceList value={error.choicesText} /><p style={{ color: '#b91c1c' }}>Votre réponse : <MathContent>{`${error.selectedChoiceLabel || ''} ${error.selectedChoiceText || ''}`}</MathContent></p><p style={{ color: '#047857' }}>Bonne réponse : <MathContent>{`${error.correctChoiceLabel || ''} ${error.correctChoiceText || ''}`}</MathContent></p>{error.explanation && <details open><summary>Correction et explication</summary><MathContent>{error.explanation}</MathContent></details>}
                   </td></tr>)}
                 </React.Fragment>;
               })}</tbody>
@@ -164,7 +208,7 @@ export default function ClientMistakesPage() {
                   <td style={td}><button type="button" onClick={() => setExpanded((state) => ({ ...state, [key]: !state[key] }))} style={blueAction}>{expanded[key] ? 'Fermer' : 'Réviser'}</button></td>
                 </tr>
                 {expanded[key] && attempt.errors.map((error, index) => <tr key={`${key}-${error.questionId}`}><td colSpan="8" style={{ ...td, background: '#f8fbff', padding: 16 }}>
-                  <strong>Question {error.questionNumber || index + 1}</strong><div style={{ marginTop: 8 }}><MathContent>{error.questionText}</MathContent></div><p style={{ color: '#b91c1c' }}>Votre réponse : <MathContent>{`${error.selectedChoiceLabel || ''} ${error.selectedChoiceText || ''}`}</MathContent></p><p style={{ color: '#047857' }}>Bonne réponse : <MathContent>{`${error.correctChoiceLabel || ''} ${error.correctChoiceText || ''}`}</MathContent></p>{error.explanation && <details><summary>Correction</summary><MathContent>{error.explanation}</MathContent></details>}
+                  <strong>Question {error.questionNumber || index + 1}</strong><div style={{ marginTop: 8 }}><MathContent>{error.questionText}</MathContent></div><ChoiceList value={error.choicesText} /><p style={{ color: '#b91c1c' }}>Votre réponse : <MathContent>{`${error.selectedChoiceLabel || ''} ${error.selectedChoiceText || ''}`}</MathContent></p><p style={{ color: '#047857' }}>Bonne réponse : <MathContent>{`${error.correctChoiceLabel || ''} ${error.correctChoiceText || ''}`}</MathContent></p>{error.explanation && <details open><summary>Correction et explication</summary><MathContent>{error.explanation}</MathContent></details>}
                 </td></tr>)}
               </React.Fragment>;
             })}</tbody>

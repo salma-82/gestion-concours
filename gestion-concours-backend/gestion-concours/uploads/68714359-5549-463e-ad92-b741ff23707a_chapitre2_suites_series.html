@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 2 : Suites et séries numériques, sommes et produits</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#1e4fa0;--border:#c9cce0;--title-bg:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#2f5fc0;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 18px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;font-size:.9rem;opacity:.75}
+.cols{max-width:1200px;margin:0 auto;column-width:340px;column-gap:20px}
+section{break-inside:avoid;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:#fff;font-size:1.05rem}
+.b{padding:8px 16px;overflow-x:auto}
+ul{margin:6px 0;padding-left:20px}li{margin:6px 0}
+h3{font-size:.98rem;margin:12px 0 2px;color:var(--blue)}
+table{border-collapse:collapse;margin:8px auto}td,th{border:1px solid var(--border);padding:4px 12px;text-align:center}
+</style></head><body>
+<header><h1>Chapitre 2 : Suites et séries numériques, sommes et produits</h1><p>Note : Sauf mention contraire, toutes les limites s’entendent lorsque \(n\to+\infty\).</p></header>
+<div class="cols">
+<section><h2>1- Suites géométriques &amp; arithmétiques</h2><div class="b"><p>Soit \((U_n)\) de premier terme \(U_0\) et \(0\le p\le n\).</p>
+<table><tr><th>Propriété</th><th>S. Géométrique</th><th>S. Arithmétique</th></tr>
+<tr><td>Définition</td><td>\(U_{n+1}=qU_n\)</td><td>\(U_{n+1}=U_n+r\)</td></tr>
+<tr><td>Terme \(U_n\)</td><td>\(U_n=U_p\cdot q^{n-p}\)</td><td>\(U_n=U_p+(n-p)r\)</td></tr>
+<tr><td>\(S_n\) (de \(U_0\))</td><td>\(U_0\frac{1-q^{n+1}}{1-q}\)</td><td>\(\frac{(n+1)(U_0+U_n)}{2}\)</td></tr>
+<tr><td>\(S_n\) (de \(U_p\))</td><td>\(U_p\frac{1-q^{n-p+1}}{1-q}\)</td><td>\(\frac{(n-p+1)(U_p+U_n)}{2}\)</td></tr>
+<tr><td>Relation</td><td>\(U_nU_{n+2}=U_{n+1}^2\)</td><td>\(U_n+U_{n+2}=2U_{n+1}\)</td></tr></table>
+<h3>Sommes classiques :</h3><ul><li>\(1+q+\dots+q^n=\frac{1-q^{n+1}}{1-q}\)</li><li>\(q^n+q^{n+1}+\dots+q^m=\frac{q^n-q^{m+1}}{1-q}\)</li><li>\(1+2+\dots+n=\frac{n(n+1)}2\)</li><li>\(n+(n+1)+\dots+m=\frac{(m-n+1)(n+m)}2\)</li></ul></div></section>
+<section><h2>2- Théorème d’encadrement</h2><div class="b"><ul><li>Si \(V_n\le U_n\le W_n\) et \(\lim V_n=\lim W_n=l\) \(\Rightarrow\lim U_n=l\)</li><li>Si \(|U_n-l|\le V_n\) et \(\lim V_n=0\) \(\Rightarrow\lim U_n=l\)</li><li>Si \(V_n\le U_n\) : \(\lim V_n=+\infty\Rightarrow\lim U_n=+\infty\) ; \(\lim U_n=-\infty\Rightarrow\lim V_n=-\infty\)</li></ul></div></section>
+<section><h2>3- Suites type \(V_n=f(U_n)\)</h2><div class="b"><p>Si \(f\) est continue en \(l\) et que \(\lim U_n=l\), alors : \[\lim V_n=f(l)\]</p></div></section>
+<section><h2>4- Suites type \(U_{n+1}=f(U_n)\)</h2><div class="b"><p>Si \(f\) est continue sur un intervalle \(I\) et que :</p><ul><li>\(U_0\in I\)</li><li>\(f(I)\subset I\) (intervalle stable)</li><li>\((U_n)\) converge vers une limite \(l\)</li></ul><p><b>Alors, \(l\) est solution de l’équation \(f(x)=x\).</b></p></div></section>
+<section><h2>5- Règle de d’Alembert</h2><div class="b"><p>Pour une suite \((U_n)\) strictement positive. On étudie la limite : \(\lim\frac{U_{n+1}}{U_n}=l\ge0\).</p><ul><li>Si \(l>1\) alors \(\lim U_n=+\infty\)</li><li>Si \(l<1\) alors \(\lim U_n=0\)</li><li>Si \(l=1\), on ne peut rien conclure.</li></ul></div></section>
+<section><h2>6- Moyenne de Cesàro</h2><div class="b"><p>Si \(\lim U_n=l\), alors : \[\lim\frac{U_1+U_2+\cdots+U_n}{n}=l\]</p></div></section>
+<section><h2>Symboles \(\Sigma\) et \(\Pi\)</h2><div class="b"><p>Pour \(n\in\mathbb N\) et \(c\) une constante réelle :</p><ul><li>\(\sum_{k=0}^n1=(n+1)\)</li><li>\(\sum_{k=0}^nc=c(n+1)\)</li><li>\(\prod_{k=1}^nc=c^n\)</li></ul></div></section>
+<section><h2>7- Sommes usuelles</h2><div class="b"><h3>Polynomiales</h3><ul><li>\(\sum_{k=1}^nk=\frac{n(n+1)}2\)</li><li>\(\sum_{k=n}^mk=\frac{(m-n+1)(n+m)}2\)</li><li>\(\sum_{k=0}^n(ak+b)=\frac{(n+1)(na+2b)}2\)</li><li>\(\sum_{k=1}^nk^2=\frac{n(n+1)(2n+1)}6\)</li><li>\(\sum_{k=1}^nk^3=\left[\frac{n(n+1)}2\right]^2\)</li></ul><h3>Géométriques</h3><ul><li>\(\sum_{k=0}^nq^k=\frac{1-q^{n+1}}{1-q}\) \((q\ne1)\)</li><li>\(\sum_{k=n}^mq^k=\frac{q^n-q^{m+1}}{1-q}\)</li><li>\(\sum_{k=1}^nkq^k=\frac{nq^{n+2}-(n+1)q^{n+1}+q}{(1-q)^2}\)</li></ul><h3>Télescopiques</h3><ul><li>\(\sum_{k=1}^n\frac1{k(k+1)}=1-\frac1{n+1}\)</li><li>\(\sum_{k=n}^m\frac1{k(k+1)}=\frac1n-\frac1{m+1}\)</li><li>\(\sum_{k=1}^n\frac1{k(k+1)(k+2)}=\frac{n(n+3)}{4(n+1)(n+2)}\)</li></ul><h3>Binomiales</h3><ul><li>\(\sum_{k=0}^nC_n^ka^kb^{n-k}=(a+b)^n\)</li><li>\(\sum_{k=0}^nC_n^ka^k=(a+1)^n\)</li><li>\(\sum_{k=0}^nC_n^k=2^n\)</li><li>\(\sum_{k=1}^nkC_n^k=n2^{n-1}\)</li><li>\(\sum_{k=1}^nk^2C_n^k=n(n+1)2^{n-2}\)</li><li>\(\sum_{k=0}^n(C_n^k)^2=C_{2n}^n\)</li></ul><h3>Limites célèbres</h3><ul><li>\(\lim\sum_{k=1}^n\frac1k=+\infty\)</li><li>\(\lim\sum_{k=n}^{2n}\frac1k=\ln(2)\)</li><li>\(\lim\sum_{k=1}^n\frac1{k^2}=\frac{\pi^2}6\)</li></ul></div></section>
+</div></body></html>

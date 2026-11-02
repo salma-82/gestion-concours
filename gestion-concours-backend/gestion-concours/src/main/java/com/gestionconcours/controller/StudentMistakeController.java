@@ -92,6 +92,7 @@ public class StudentMistakeController {
             mistake.setQuestionId(questionId);
             mistake.setQuestionNumber(parseInteger(m.get("questionNumber")));
             mistake.setQuestionText(stringOf(m.get("questionText")));
+            mistake.setChoicesText(stringOf(m.get("choicesText")));
             mistake.setSelectedChoiceLabel(stringOf(m.get("selectedChoiceLabel")));
             mistake.setSelectedChoiceText(stringOf(m.get("selectedChoiceText")));
             mistake.setCorrectChoiceLabel(stringOf(m.get("correctChoiceLabel")));

@@ -83,7 +83,7 @@ export default function Register() {
     if (formData.password.length < 4) { setError('Le mot de passe doit contenir au moins 4 caractères.'); return; }
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/register', {
+      const response = await axios.post('/api/auth/register', {
         username: formData.username.trim(), email: formData.email.trim(),
         telephone: formData.telephone.trim(), filiere: formData.filiere,
         password: formData.password, pack: formData.pack, role: 'CLIENT'
@@ -145,23 +145,23 @@ export default function Register() {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          border: 1px solid rgba(36,87,230,.2);
+          border: 1px solid rgba(11,45,99,.2);
           border-radius: 999px;
           background: rgba(255,255,255,.92);
-          color: #2457e6;
+          color: #0B2D63;
           font: 700 12.5px/1 inherit;
           cursor: pointer;
           transition: all .2s;
           text-decoration: none;
           backdrop-filter: blur(8px);
           z-index: 50;
-          box-shadow: 0 4px 14px rgba(36,87,230,.08);
+          box-shadow: 0 4px 14px rgba(11,45,99,.08);
         }
         .ecr-back:hover {
           background: #ffffff;
-          color: #173db4;
+          color: #08224B;
           transform: translateX(-2px);
-          box-shadow: 0 6px 18px rgba(36,87,230,.18);
+          box-shadow: 0 6px 18px rgba(11,45,99,.18);
         }
 
         /* ── Centered aside content ── */
@@ -240,11 +240,9 @@ export default function Register() {
           text-align: center;
         }
         .ecr-accent {
-          color: #2457e6;
-          background: linear-gradient(100deg,#1746c9 0%,#3876ff 48%,#754de8 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #0B2D63;
+          background: none;
+          -webkit-text-fill-color: #0B2D63;
         }
         .ecr-aside-desc {
           margin: 0 0 20px;
@@ -260,7 +258,7 @@ export default function Register() {
           width: 100%;
           max-width: 380px;
           margin: 0 0 24px;
-          padding: 14px 18px;
+          padding: 10px 16px;
           border-radius: 20px;
           background: rgba(255, 255, 255, .55);
           border: 1px solid rgba(255, 255, 255, .9);
@@ -268,24 +266,25 @@ export default function Register() {
           backdrop-filter: blur(10px);
           list-style: none;
           display: grid;
-          gap: 9px;
+          gap: 6px;
           text-align: left;
         }
         .ecr-features-card li {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           color: #334155;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
+          line-height: 1.3;
         }
         .ecr-feat-icon {
           display: inline-flex;
-          flex: 0 0 20px;
+          flex: 0 0 18px;
           align-items: center;
           justify-content: center;
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
           background: rgba(36, 87, 230, .12);
           color: #2457e6;
@@ -301,20 +300,20 @@ export default function Register() {
           gap: 6px;
           padding: 12px 26px;
           border-radius: 999px;
-          background: rgba(36, 87, 230, .08);
-          border: 1.5px solid rgba(36, 87, 230, .22);
-          color: #2457e6;
+          background: rgba(11, 45, 99, .08);
+          border: 1.5px solid rgba(11, 45, 99, .22);
+          color: #0B2D63;
           font-size: 13.5px;
           text-decoration: none;
           transition: all .22s cubic-bezier(.2,.8,.2,1);
-          box-shadow: 0 4px 14px rgba(36, 87, 230, .08);
+          box-shadow: 0 4px 14px rgba(11, 45, 99, .08);
         }
         .ecr-aside-switch:hover {
-          background: #2457e6;
+          background: #0B2D63;
           color: #ffffff;
-          border-color: #2457e6;
+          border-color: #0B2D63;
           transform: translateY(-2px);
-          box-shadow: 0 8px 22px rgba(36, 87, 230, .25);
+          box-shadow: 0 8px 22px rgba(11, 45, 99, .25);
         }
         .ecr-aside-switch strong { font-weight: 800; }
 
@@ -334,7 +333,7 @@ export default function Register() {
         /* ── Main ── */
         .ecr-main { flex:1;display:flex;align-items:center;justify-content:center;padding:clamp(24px,4vw,56px) clamp(20px,4vw,52px);background:radial-gradient(ellipse at 90% 5%,rgba(36,87,230,.06),transparent 35%),radial-gradient(ellipse at 5% 90%,rgba(36,87,230,.04),transparent 35%),linear-gradient(125deg,#fbfbfc 0%,#f6f8fc 100%);position:relative;z-index:1;overflow-y:auto; }
         .ecr-panel { width:100%;max-width:560px; }
-        .ecr-eyebrow { display:inline-block;margin-bottom:10px;color:#2457e6;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase; }
+        .ecr-eyebrow { display:inline-block;margin-bottom:10px;color:#0B2D63;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase; }
         .ecr-title { margin:0 0 10px;color:#14213d;font-family:Poppins,Inter,sans-serif;font-size:clamp(26px,2.8vw,34px);font-weight:900;line-height:1.12;letter-spacing:-.055em; }
         .ecr-subtitle { margin:0 0 26px;color:#5e6b85;font-size:15px;line-height:1.65; }
 
@@ -376,16 +375,16 @@ export default function Register() {
 
         /* ── Step indicator ── */
         .ecr-steps { display:none; }
-        .ecr-step-info { display:flex;align-items:center;gap:8px;margin-bottom:14px;color:#2457e6;font-size:12px;font-weight:800; }
+        .ecr-step-info { display:flex;align-items:center;gap:8px;margin-bottom:14px;color:#0B2D63;font-size:12px;font-weight:800; }
         .ecr-progress-track { width:100%;height:6px;margin:8px 0 18px;overflow:hidden;border-radius:999px;background:#e4eaf4; }
-        .ecr-progress-fill { display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2457e6,#4f7cff);transition:width .45s ease; }
-        .ecr-step-dot { width:8px;height:8px;border-radius:50%;background:#2457e6; }
+        .ecr-progress-fill { display:block;height:100%;border-radius:inherit;background:#0B2D63;transition:width .45s ease; }
+        .ecr-step-dot { width:8px;height:8px;border-radius:50%;background:#0B2D63; }
 
         /* ── Submit ── */
-        .ecr-submit { display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:4px;padding:14px 24px;border:none;border-radius:999px;background:#2457e6;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(36,87,230,.28);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,background .22s;position:relative;overflow:hidden; }
+        .ecr-submit { display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:4px;padding:14px 24px;border:none;border-radius:999px;background:#0B2D63;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(11,45,99,.28);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,background .22s;position:relative;overflow:hidden; }
         .ecr-submit::after { content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);transform:translateX(-100%);transition:transform .5s; }
         .ecr-submit:hover::after { transform:translateX(100%); }
-        .ecr-submit:hover:not(:disabled) { background:#173db4;transform:translateY(-2px);box-shadow:0 18px 34px rgba(36,87,230,.32); }
+        .ecr-submit:hover:not(:disabled) { background:#08224B;transform:translateY(-2px);box-shadow:0 18px 34px rgba(11,45,99,.32); }
         .ecr-submit:disabled { opacity:.72;cursor:wait; }
         .ecr-spinner { display:inline-block;width:17px;height:17px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:ecr-spin .7s linear infinite; }
         @keyframes ecr-spin { to{transform:rotate(360deg)} }
@@ -393,12 +392,12 @@ export default function Register() {
         /* ── Nav btn ── */
         .ecr-back-step { display:inline-flex;align-items:center;gap:6px;margin-top:4px;padding:10px 16px;border:1.5px solid #e4eaf4;border-radius:999px;background:#fff;color:#5e6b85;font:700 13px/1 inherit;cursor:pointer;transition:all .2s; }
         .ecr-back-step:hover { border-color:#2457e6;color:#2457e6; }
-        .ecr-next-btn { display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:14px 24px;border:none;border-radius:999px;background:#2457e6;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(36,87,230,.28);transition:transform .22s,box-shadow .22s,background .22s; }
-        .ecr-next-btn:hover { background:#173db4;transform:translateY(-2px); }
+        .ecr-next-btn { display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:14px 24px;border:none;border-radius:999px;background:#0B2D63;color:#fff;font:800 15px/1 inherit;cursor:pointer;box-shadow:0 12px 26px rgba(11,45,99,.28);transition:transform .22s,box-shadow .22s,background .22s; }
+        .ecr-next-btn:hover { background:#08224B;transform:translateY(-2px); }
 
         /* ── Switch text ── */
         .ecr-switch-text { margin:8px 0 0;text-align:center;color:#5e6b85;font-size:13px; }
-        .ecr-link { color:#2457e6;font-weight:700;text-decoration:none;transition:opacity .2s; }
+        .ecr-link { color:#0B2D63;font-weight:700;text-decoration:none;transition:opacity .2s; }
         .ecr-link:hover { opacity:.75; }
 
         /* ── Success panel ── */
@@ -410,7 +409,7 @@ export default function Register() {
         .ecr-summary span strong { color:#14213d; }
         .ecr-wa-btn { display:flex;min-height:56px;align-items:center;justify-content:center;gap:9px;padding:0 20px;border-radius:999px;background:#25D366;color:#fff;font:850 15px/1 inherit;text-decoration:none;box-shadow:0 10px 24px rgba(37,211,102,.28);transition:background .2s,transform .2s; }
         .ecr-wa-btn:hover { background:#128C7E;transform:translateY(-2px); }
-        .ecr-login-link { display:block;margin:4px auto 0;padding:10px 16px;border:0;background:transparent;color:#2457e6;font:700 14px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
+        .ecr-login-link { display:block;margin:4px auto 0;padding:10px 16px;border:0;background:transparent;color:#0B2D63;font:700 14px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
 
         /* ── Security ── */
         .ecr-security { display:flex;align-items:center;justify-content:center;gap:7px;margin-top:20px;color:#97a3b8;font-size:12px;font-weight:600; }
@@ -472,10 +471,11 @@ export default function Register() {
             </p>
 
             <ul className="ecr-features-card">
-              <li><span className="ecr-feat-icon">✓</span> QCM &amp; Annales officiels</li>
+              <li><span className="ecr-feat-icon">✓</span> Cours du Bac par option</li>
+              <li><span className="ecr-feat-icon">✓</span> Examens nationaux corrigés</li>
               <li><span className="ecr-feat-icon">✓</span> Résumés &amp; Fiches de révision</li>
-              <li><span className="ecr-feat-icon">✓</span> Concours blancs chronométrés</li>
-              <li><span className="ecr-feat-icon">✓</span> Statistiques &amp; progression</li>
+              <li><span className="ecr-feat-icon">✓</span> Concours blancs en QCM chronométrés</li>
+              <li><span className="ecr-feat-icon">✓</span> Concours officiels des grandes écoles en QCM interactifs</li>
             </ul>
 
             <Link to="/login" className="ecr-aside-switch">

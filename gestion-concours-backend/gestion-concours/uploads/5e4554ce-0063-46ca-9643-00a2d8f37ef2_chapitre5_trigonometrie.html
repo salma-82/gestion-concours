@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 5 : Trigonométrie et analyse de fonctions</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#1e4fa0;--border:#c9cce0;--title-bg:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#2f5fc0;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 18px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;font-size:.9rem;opacity:.75}
+.cols{max-width:1200px;margin:0 auto;column-width:340px;column-gap:20px}
+section{break-inside:avoid;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:#fff;font-size:1.05rem}
+.b{padding:8px 16px;overflow-x:auto}
+ul{margin:6px 0;padding-left:20px}li{margin:6px 0}
+h3{font-size:.98rem;margin:12px 0 2px;color:var(--blue)}
+table{border-collapse:collapse;margin:8px auto}td,th{border:1px solid var(--border);padding:4px 12px;text-align:center}
+</style></head><body>
+<header><h1>Chapitre 5 : Trigonométrie et analyse de fonctions</h1></header>
+<div class="cols">
+<section><h2>1. Formules de base</h2><div class="b"><ul><li><b>Relation fondamentale</b> : \(\sin^2\theta+\cos^2\theta=1\)</li><li><b>Tangente</b> : \(\tan\theta=\frac{\sin\theta}{\cos\theta}\)</li><li><b>Identité</b> : \(1+\tan^2\theta=\frac1{\cos^2\theta}\)</li><li><b>Encadrement</b> : \(-1\le\cos\theta\le1\) ; \(-1\le\sin\theta\le1\)</li><li><b>Périodicité</b> (\(k\in\mathbb Z\)) : \(\cos(\theta+2k\pi)=\cos\theta\) ; \(\sin(\theta+2k\pi)=\sin\theta\) ; \(\tan(\theta+k\pi)=\tan\theta\)</li></ul></div></section>
+<section><h2>2. Symétries et angles associés</h2><div class="b"><h3>Opposés et supplémentaires</h3><ul><li>\(\sin(-\theta)=-\sin\theta\) ; \(\cos(-\theta)=\cos\theta\)</li><li>\(\tan(-\theta)=-\tan\theta\)</li><li>\(\sin(\pi-\theta)=\sin\theta\) ; \(\cos(\pi-\theta)=-\cos\theta\)</li><li>\(\tan(\pi-\theta)=-\tan\theta\)</li><li>\(\sin(\pi+\theta)=-\sin\theta\) ; \(\cos(\pi+\theta)=-\cos\theta\)</li></ul><h3>Relations en \(\pi/2\) (angles complémentaires)</h3><ul><li>\(\sin(\frac\pi2-\theta)=\cos\theta\) ; \(\cos(\frac\pi2-\theta)=\sin\theta\)</li><li>\(\tan(\frac\pi2-\theta)=\frac1{\tan\theta}\)</li><li>\(\sin(\frac\pi2+\theta)=\cos\theta\) ; \(\cos(\frac\pi2+\theta)=-\sin\theta\)</li><li>\(\tan(\frac\pi2+\theta)=\frac{-1}{\tan\theta}\)</li></ul></div></section>
+<section><h2>3. Formules de transformation</h2><div class="b"><h3>Addition</h3><ul><li>\(\cos(a\pm b)=\cos a\cos b\mp\sin a\sin b\)</li><li>\(\sin(a\pm b)=\sin a\cos b\pm\cos a\sin b\)</li><li>\(\tan(a\pm b)=\frac{\tan a\pm\tan b}{1\mp\tan a\tan b}\)</li></ul><h3>Duplication</h3><ul><li>\(\sin(2a)=2\sin a\cos a\)</li><li>\(\cos(2a)=\cos^2a-\sin^2a=2\cos^2a-1=1-2\sin^2a\)</li><li>\(\tan(2a)=\frac{2\tan a}{1-\tan^2a}\)</li></ul><h3>Linéarisation</h3><ul><li>\(\cos^2a=\frac{1+\cos(2a)}2\) ; \(\sin^2a=\frac{1-\cos(2a)}2\)</li></ul></div></section>
+<section><h2>4. Transformations somme → produit</h2><div class="b"><ul><li>\(\cos p+\cos q=2\cos\frac{p+q}2\cos\frac{p-q}2\)</li><li>\(\cos p-\cos q=-2\sin\frac{p+q}2\sin\frac{p-q}2\)</li><li>\(\sin p+\sin q=2\sin\frac{p+q}2\cos\frac{p-q}2\)</li><li>\(\sin p-\sin q=2\cos\frac{p+q}2\sin\frac{p-q}2\)</li></ul></div></section>
+<section><h2>5. Équations (\(k\in\mathbb Z\))</h2><div class="b"><ul><li>\(\cos x=\cos\alpha\iff x=\alpha+2k\pi\) ou \(x=-\alpha+2k\pi\)</li><li>\(\sin x=\sin\alpha\iff x=\alpha+2k\pi\) ou \(x=\pi-\alpha+2k\pi\)</li><li>\(\tan x=\tan\alpha\iff x=\alpha+k\pi\)</li></ul></div></section>
+<section><h2>6. Analyse : limites et asymptotes</h2><div class="b"><ul><li><b>Asymptote verticale</b> : Si \(\lim_{x\to a}f(x)=\pm\infty\), alors \(x=a\) est A.V.</li><li><b>Asymptote horizontale</b> : Si \(\lim_{x\to\pm\infty}f(x)=a\), alors \(y=a\) est A.H.</li><li><b>Branche parabolique d’axe (Oy)</b> : Si \(\lim_{x\to\infty}\frac{f(x)}x=\pm\infty\).</li><li><b>Branche parabolique d’axe (Ox)</b> : Si \(\lim_{x\to\infty}\frac{f(x)}x=0\).</li><li><b>Asymptote oblique</b> (\(y=ax+b\)) : Si \(\lim_{x\to\infty}\frac{f(x)}x=a\ne0\) et \(\lim_{x\to\infty}[f(x)-ax]=b\).</li><li><b>Direction asymptotique</b> (\(y=ax\)) : Si \(\lim_{x\to\infty}\frac{f(x)}x=a\) et \(\lim_{x\to\infty}[f(x)-ax]=\pm\infty\).</li></ul></div></section>
+</div></body></html>

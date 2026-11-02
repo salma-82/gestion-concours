@@ -22,7 +22,7 @@ import {
 import { filterByStudentPack } from '../packAccess';
 import './ClientSummaryStatsDashboard.css';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = '';
 
 const COLORS = {
   purple: '#7c3aed',

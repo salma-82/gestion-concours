@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 7 : Géométrie analytique dans l’espace</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#1e4fa0;--border:#c9cce0;--title-bg:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#2f5fc0;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 18px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.5rem}header p{margin:4px 0 0;font-size:.9rem;opacity:.75}
+.cols{max-width:1200px;margin:0 auto;column-width:340px;column-gap:20px}
+section{break-inside:avoid;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:#fff;font-size:1.05rem}
+.b{padding:8px 16px;overflow-x:auto}
+ul{margin:6px 0;padding-left:20px}li{margin:6px 0}
+h3{font-size:.98rem;margin:12px 0 2px;color:var(--blue)}
+table{border-collapse:collapse;margin:8px auto}td,th{border:1px solid var(--border);padding:4px 12px;text-align:center}
+</style></head><body>
+<header><h1>Chapitre 7 : Géométrie analytique dans l’espace</h1></header>
+<div class="cols">
+<section><h2>1. Référentiel &amp; vecteurs coplanaires</h2><div class="b"><p>L’espace est muni d’un repère orthonormé \((O,\vec i,\vec j,\vec k)\). Soient \(\vec U(x;y;z)\), \(\vec V(x';y';z')\) et \(\vec W(x'';y'';z'')\).</p><ul><li>\(\vec U,\vec V,\vec W\) sont <b>coplanaires</b> \(\iff\exists(\alpha;\beta)\in\mathbb R^2:\vec W=\alpha\vec U+\beta\vec V\).</li><li>\(\vec U,\vec V,\vec W\) sont <b>coplanaires</b> \(\iff\det(\vec U;\vec V;\vec W)=0\).</li></ul><h3>Calcul du déterminant</h3>\[\det(\vec U,\vec V,\vec W)=\begin{vmatrix}x&x'&x''\\y&y'&y''\\z&z'&z''\end{vmatrix}=x\begin{vmatrix}y'&y''\\z'&z''\end{vmatrix}-y\begin{vmatrix}x'&x''\\z'&z''\end{vmatrix}+z\begin{vmatrix}x'&x''\\y'&y''\end{vmatrix}\]</div></section>
+<section><h2>2. Colinéarité de deux vecteurs</h2><div class="b"><p>Soient \(\vec U(x;y;z)\) et \(\vec V(x';y';z')\).</p><ul><li>\(\vec U\) et \(\vec V\) sont <b>colinéaires</b> \(\iff\exists\alpha\in\mathbb R:\vec U=\alpha\vec V\).</li><li>\(\vec U\) et \(\vec V\) sont <b>colinéaires</b> \(\iff\Delta_x=\Delta_y=\Delta_z=0\).</li></ul>\[\Delta_x=\begin{vmatrix}y&y'\\z&z'\end{vmatrix}\ ;\ \Delta_y=\begin{vmatrix}x&x'\\z&z'\end{vmatrix}\ ;\ \Delta_z=\begin{vmatrix}x&x'\\y&y'\end{vmatrix}\]</div></section>
+<section><h2>3. Produit scalaire</h2><div class="b"><p>Soient \(\vec U(x;y;z)\) et \(\vec V(x';y';z')\).</p><ul><li>\(\vec U\cdot\vec V=\|\vec U\|\times\|\vec V\|\times\cos(\vec U;\vec V)\).</li><li>\(\vec{AB}\cdot\vec{AC}=AB\times AC\times\cos(\vec{AB};\vec{AC})\).</li><li>Expression analytique : \(\vec U\cdot\vec V=xx'+yy'+zz'\).</li><li><b>Orthogonalité</b> : \(\vec U\perp\vec V\iff\vec U\cdot\vec V=0\).</li></ul></div></section>
+<section><h2>4. Norme, distance &amp; milieu</h2><div class="b"><p>Soient \(A(x_A;y_A;z_A)\) et \(B(x_B;y_B;z_B)\).</p><ul><li><b>Norme d’un vecteur</b> : \(\|\vec U\|=\sqrt{x^2+y^2+z^2}\).</li><li><b>Distance</b> \(AB\) : \(\sqrt{(x_B-x_A)^2+(y_B-y_A)^2+(z_B-z_A)^2}\).</li><li><b>Milieu</b> \(I\) de \([AB]\) : \(I\left(\frac{x_A+x_B}2;\frac{y_A+y_B}2;\frac{z_A+z_B}2\right)\).</li></ul></div></section>
+<section><h2>5. Équation d’un plan</h2><div class="b"><ul><li>Équation cartésienne générale : \((P):ax+by+cz+d=0\).</li><li>Le vecteur \(\vec n(a;b;c)\) est un <b>vecteur normal</b> à \((P)\).</li><li><b>Plan par un point \(A\) et un vecteur normal \(\vec n\)</b> : l’ensemble des points \(M(x;y;z)\) tels que \(\vec{AM}\cdot\vec n=0\).</li></ul><h3>Distance d’un point à un plan</h3><p>Soient \((P):ax+by+cz+d=0\) et \(A(x_A;y_A;z_A)\).</p>\[d(A;(P))=\frac{|ax_A+by_A+cz_A+d|}{\sqrt{a^2+b^2+c^2}}\]</div></section>
+<section><h2>6. Sphère dans l’espace</h2><div class="b"><ul><li><b>Via le centre \(\Omega(a;b;c)\) et le rayon \(r\)</b> : \((x-a)^2+(y-b)^2+(z-c)^2=r^2\).</li><li><b>Via son diamètre \([AB]\)</b> : \(M(x;y;z)\in(S)\iff\vec{AM}\cdot\vec{BM}=0\).</li></ul><h3>Forme générale étendue</h3><p>L’ensemble \((S):x^2+y^2+z^2+ax+by+cz+d=0\) est une sphère si \(a^2+b^2+c^2-4d>0\).</p><ul><li><b>Centre</b> : \(\Omega\left(-\frac a2;-\frac b2;-\frac c2\right)\).</li><li><b>Rayon</b> : \(r=\frac{\sqrt{a^2+b^2+c^2-4d}}2\).</li></ul></div></section>
+<section><h2>7. Position relative : sphère et plan</h2><div class="b"><p>Soit \((S)\) une sphère de centre \(\Omega\) et de rayon \(R\). Soit \((P)\) un plan et \(d=d(\Omega;(P))\).</p><ul><li><b>Si \(d=R\)</b> : \((S)\) est <b>tangente</b> à \((P)\) en un point \(H\).</li><li><b>Si \(d<R\)</b> : \((S)\) <b>coupe</b> \((P)\) selon un <b>cercle</b> \((\mathcal C)\) de centre \(H\) et de rayon \(r=\sqrt{R^2-d^2}\).</li></ul><h3>Détermination des coordonnées de \(H\)</h3><p>On résout le système (représentation paramétrique de la droite perpendiculaire \((\Omega H)\) intersectée avec le plan \((P)\)) :</p>\[\begin{cases}x=x_\Omega+at\\y=y_\Omega+bt\\z=z_\Omega+ct\\ax+by+cz+d=0\end{cases}\quad(t\in\mathbb R)\]</div></section>
+<section><h2>8. Position relative : sphère et droite</h2><div class="b"><p>Soit \((S)\) une sphère de centre \(\Omega\) et de rayon \(R\), et \((\Delta)\) la droite passant par \(A\) et de vecteur directeur \(\vec U(\alpha;\beta;\gamma)\).</p><h3>Détermination des points d’intersection</h3><p>On injecte la droite \((\Delta)\) dans l’équation de \((S)\) en résolvant le système suivant par substitution :</p>\[\begin{cases}x=x_A+\alpha t\\y=y_A+\beta t\\z=z_A+\gamma t\\(x-x_\Omega)^2+(y-y_\Omega)^2+(z-z_\Omega)^2=R^2\end{cases}\quad(t\in\mathbb R)\]</div></section>
+</div></body></html>

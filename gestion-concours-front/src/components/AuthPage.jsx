@@ -269,7 +269,7 @@ export default function AuthPage({ initialMode = 'login', onBackToHome }) {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/login', {
+      const response = await axios.post('/api/auth/login', {
         email: loginEmail,
         motDePasse: loginPassword,
       });
@@ -301,7 +301,7 @@ export default function AuthPage({ initialMode = 'login', onBackToHome }) {
       return;
     }
     try {
-      const res = await axios.post('http://localhost:8081/api/auth/register', {
+      const res = await axios.post('/api/auth/register', {
         username: regUsername.trim(),
         email: regEmail.trim(),
         telephone: regTelephone.trim(),

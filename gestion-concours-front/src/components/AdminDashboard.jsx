@@ -2,11 +2,27 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
-import ConcoursBlancStats from './ConcoursBlancStats';
 import AdminOverview from './AdminOverview';
 import CompetitionCalendar from './CompetitionCalendar';
 import MathContent from './MathContent';
 import { PACK_OPTIONS } from '../packAccess';
+import { toBackendResourceUrl } from '../backendResourceUrl';
+
+const EXAM_NATIONAL_SUBJECTS = ['Mathématiques', 'Physique - Chimie', 'SVT', 'Philosophie', 'Anglais'];
+
+const normalizeExamNationalSubject = (matiere, title = '') => {
+  const source = String(matiere || '').trim();
+  const resolve = (value) => {
+    const normalized = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (normalized.includes('math')) return 'Mathématiques';
+    if (normalized.includes('phys') || normalized.includes('chim')) return 'Physique - Chimie';
+    if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return 'SVT';
+    if (normalized.includes('philo')) return 'Philosophie';
+    if (normalized.includes('anglais') || normalized.includes('english')) return 'Anglais';
+    return '';
+  };
+  return resolve(source) || resolve(title) || (EXAM_NATIONAL_SUBJECTS.includes(source) ? source : '');
+};
 
 const BAC_MATIERES_CONFIG = {
   'Mathématiques': [
@@ -108,7 +124,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     const token = localStorage.getItem('authToken');
-    if (token) axios.post('http://localhost:8081/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
@@ -247,14 +263,6 @@ export default function AdminDashboard() {
   const [uploadingHtml, setUploadingHtml] = useState(false);
   const [previewConcoursHtml, setPreviewConcoursHtml] = useState(null);
 
-  // States pour la gestion QCM (Admin)
-  const [qcmModalOpen, setQcmModalOpen] = useState(false);
-  const [qcmCurrentConcours, setQcmCurrentConcours] = useState(null);
-  const [qcmQuestions, setQcmQuestions] = useState([]);
-  const [qcmLoading, setQcmLoading] = useState(false);
-  const [qcmSaving, setQcmSaving] = useState(false);
-  const [qcmStats, setQcmStats] = useState({});
-
   // ==================== STATES DYAL EXAMENS NATIONAUX ====================
   const [examensList, setExamensList] = useState([]);
   const [filteredExamens, setFilteredExamens] = useState([]);
@@ -279,63 +287,9 @@ export default function AdminDashboard() {
   const [examFileCorrection, setExamFileCorrection] = useState(null);
   const [loadingExam, setLoadingExam] = useState(false);
 
-  // ==================== STATES DYAL ERREURS ÉTUDIANTS ====================
-  const [adminMistakesList, setAdminMistakesList] = useState([]);
-  const [adminMistakesStats, setAdminMistakesStats] = useState({});
-  const [loadingAdminMistakes, setLoadingAdminMistakes] = useState(false);
-  const [searchMistake, setSearchMistake] = useState('');
-  const [selectedStudentFilter, setSelectedStudentFilter] = useState('');
-  const [selectedMistakeSubject, setSelectedMistakeSubject] = useState('');
-  const [selectedMistakeStatus, setSelectedMistakeStatus] = useState('all');
-  const [mistakeActionMessage, setMistakeActionMessage] = useState('');
-
-  // --- FETCH DATA ---
-  const fetchAdminMistakes = async () => {
-    try {
-      setLoadingAdminMistakes(true);
-      const res = await axios.get('http://localhost:8081/api/student-mistakes/admin/all', { withCredentials: true });
-      if (res.data) {
-        setAdminMistakesList(Array.isArray(res.data.mistakes) ? res.data.mistakes : []);
-        setAdminMistakesStats(res.data.stats || {});
-      }
-    } catch (err) {
-      console.error("Erreur fetch admin mistakes:", err);
-    } finally {
-      setLoadingAdminMistakes(false);
-    }
-  };
-
-  const handleAdminDeleteMistake = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette erreur sauvegardée ?")) {
-      return;
-    }
-    try {
-      await axios.delete(`http://localhost:8081/api/student-mistakes/admin/${id}`, { withCredentials: true });
-      setMistakeActionMessage("✓ Erreur supprimée avec succès.");
-      setTimeout(() => setMistakeActionMessage(''), 3000);
-      fetchAdminMistakes();
-    } catch (err) {
-      alert("Erreur lors de la suppression de l'erreur.");
-    }
-  };
-
-  const handleAdminDeleteStudentAllMistakes = async (studentId, studentName) => {
-    if (!window.confirm(`Supprimer TOUTES les erreurs sauvegardées par ${studentName || 'cet étudiant'} ?`)) {
-      return;
-    }
-    try {
-      await axios.delete(`http://localhost:8081/api/student-mistakes/admin/student/${studentId}`, { withCredentials: true });
-      setMistakeActionMessage(`✓ Toutes les erreurs de ${studentName || 'cet étudiant'} ont été supprimées.`);
-      setTimeout(() => setMistakeActionMessage(''), 3000);
-      fetchAdminMistakes();
-    } catch (err) {
-      alert("Erreur lors de la suppression des erreurs de l'étudiant.");
-    }
-  };
-
   const fetchDemandes = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/admin/demandes-inscription', { withCredentials: true });
+      const res = await axios.get('/api/admin/demandes-inscription', { withCredentials: true });
       setDemandesList(Array.isArray(res.data) ? res.data : []);
     } catch (err) { console.error("Erreur demandes:", err); }
   };
@@ -343,7 +297,7 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       setUsersError('');
-      const res = await axios.get('http://localhost:8081/api/admin/users', { withCredentials: true });
+      const res = await axios.get('/api/admin/users', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setUsersList(data);
       setFilteredUsers(data);
@@ -355,7 +309,7 @@ export default function AdminDashboard() {
 
   const fetchRealConcours = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/concours', { withCredentials: true });
+      const res = await axios.get('/api/concours', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setRealConcoursList(data);
       setFilteredRealConcours(data);
@@ -367,7 +321,7 @@ export default function AdminDashboard() {
 
   const fetchResumes = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/resumes', { withCredentials: true });
+      const res = await axios.get('/api/resumes', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setResumesList(data);
       setFilteredResumes(data);
@@ -380,7 +334,7 @@ export default function AdminDashboard() {
 
   const fetchConcours = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/concours-blancs', { withCredentials: true });
+      const res = await axios.get('/api/concours-blancs', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setConcoursList(data);
       setFilteredConcours(data);
@@ -389,21 +343,13 @@ export default function AdminDashboard() {
       setConEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
       setConAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
 
-      // Charger les stats QCM pour chaque concours blanc
-      const statsMap = {};
-      await Promise.all(data.map(async (cb) => {
-        try {
-          const sRes = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}/stats`, { withCredentials: true });
-          statsMap[cb.id] = sRes.data;
-        } catch (sErr) {}
-      }));
-      setQcmStats(statsMap);
+
     } catch (err) { console.error("Erreur concours:", err); }
   };
 
   const fetchExamens = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/examens-nationaux', { withCredentials: true });
+      const res = await axios.get('/api/examens-nationaux', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setExamensList(data);
       setFilteredExamens(data);
@@ -415,7 +361,7 @@ export default function AdminDashboard() {
 
   const fetchCoursBac = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/cours-bac', { withCredentials: true });
+      const res = await axios.get('/api/cours-bac', { withCredentials: true });
       const data = Array.isArray(res.data) ? res.data : [];
       setCoursBacList(data);
       setFilteredCoursBac(data);
@@ -436,15 +382,14 @@ export default function AdminDashboard() {
       fetchResumes(),
       fetchCoursBac(),
       fetchConcours(),
-      fetchExamens(),
-      fetchAdminMistakes()
+      fetchExamens()
     ]).finally(() => setDashboardLoading(false));
   }, []);
 
   // --- ACTIONS: ACCEPTER / REFUSER ---
   const handleAccepter = async (id) => {
     try {
-      await axios.post(`http://localhost:8081/api/admin/accepter/${id}`, {}, { withCredentials: true });
+      await axios.post(`/api/admin/accepter/${id}`, {}, { withCredentials: true });
       alert("Utilisateur accepté et ajouté au système avec succès ! ✅");
       fetchDemandes();
       fetchUsers();
@@ -455,7 +400,7 @@ export default function AdminDashboard() {
 
   const handleRefuser = async (id) => {
     try {
-      await axios.delete(`http://localhost:8081/api/admin/refuser/${id}`, { withCredentials: true });
+      await axios.delete(`/api/admin/refuser/${id}`, { withCredentials: true });
       alert("Demande refusée ❌");
       fetchDemandes();
     } catch (err) {
@@ -482,7 +427,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      await axios.post('http://localhost:8081/api/concours', formData, {
+      await axios.post('/api/concours', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -524,7 +469,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      await axios.put(`http://localhost:8081/api/concours/${editingRealConcoursId}`, formData, {
+      await axios.put(`/api/concours/${editingRealConcoursId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -540,7 +485,7 @@ export default function AdminDashboard() {
   const handleDeleteRealConcours = async (id) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce concours ?")) return;
     try {
-      await axios.delete(`http://localhost:8081/api/concours/${id}`, { withCredentials: true });
+      await axios.delete(`/api/concours/${id}`, { withCredentials: true });
       alert("Concours supprimé avec succès ! 🗑️");
       fetchRealConcours();
     } catch (err) {
@@ -694,7 +639,7 @@ export default function AdminDashboard() {
     formData.append('file', coursHtmlFile);
 
     try {
-      await axios.post('http://localhost:8081/api/cours-bac', formData, {
+      await axios.post('/api/cours-bac', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -730,7 +675,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      await axios.put(`http://localhost:8081/api/cours-bac/${editingCoursId}`, formData, {
+      await axios.put(`/api/cours-bac/${editingCoursId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -746,7 +691,7 @@ export default function AdminDashboard() {
   const handleDeleteCoursBac = async (id) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce cours BAC de la table COURS_BAC ?")) return;
     try {
-      await axios.delete(`http://localhost:8081/api/cours-bac/${id}`, { withCredentials: true });
+      await axios.delete(`/api/cours-bac/${id}`, { withCredentials: true });
       alert("Cours BAC supprimé avec succès ! 🗑️");
       fetchCoursBac();
     } catch (err) {
@@ -770,7 +715,7 @@ export default function AdminDashboard() {
     formData.append('file', resFile);
 
     try {
-      await axios.post('http://localhost:8081/api/resumes', formData, {
+      await axios.post('/api/resumes', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -806,7 +751,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      await axios.put(`http://localhost:8081/api/resumes/${editingResumeId}`, formData, {
+      await axios.put(`/api/resumes/${editingResumeId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -822,7 +767,7 @@ export default function AdminDashboard() {
   const handleDeleteResume = async (id) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce résumé / cette astuce ?")) return;
     try {
-      await axios.delete(`http://localhost:8081/api/resumes/${id}`, { withCredentials: true });
+      await axios.delete(`/api/resumes/${id}`, { withCredentials: true });
       alert("Résumé / Astuce supprimé avec succès ! 🗑️");
       fetchResumes();
     } catch (err) {
@@ -851,7 +796,7 @@ export default function AdminDashboard() {
     formData.append('file', conHtmlFile);
 
     try {
-      await axios.post('http://localhost:8081/api/concours-blancs', formData, {
+      await axios.post('/api/concours-blancs', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -876,7 +821,7 @@ export default function AdminDashboard() {
     formData.append('file', standaloneHtmlFile);
 
     try {
-      await axios.post(`http://localhost:8081/api/concours-blancs/${concoursForHtml.id}/upload-html`, formData, {
+      await axios.post(`/api/concours-blancs/${concoursForHtml.id}/upload-html`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
@@ -896,7 +841,7 @@ export default function AdminDashboard() {
   const handleDeleteConcoursBlanc = async (id) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce concours blanc ?")) return;
     try {
-      await axios.delete(`http://localhost:8081/api/concours-blancs/${id}`, { withCredentials: true });
+      await axios.delete(`/api/concours-blancs/${id}`, { withCredentials: true });
       alert("Concours blanc supprimé avec succès ! 🗑️");
       fetchConcours();
     } catch (err) {
@@ -904,130 +849,11 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- GESTION DU QCM (ADMIN) ---
-  const handleOpenQcmManager = async (cb) => {
-    setQcmCurrentConcours(cb);
-    setQcmModalOpen(true);
-    setQcmLoading(true);
-    try {
-      const res = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${cb.id}`, { withCredentials: true });
-      setQcmQuestions(res.data.questions || []);
-    } catch (err) {
-      console.error("Erreur chargement questions QCM:", err);
-      alert("Erreur lors du chargement des questions QCM.");
-    } finally {
-      setQcmLoading(false);
-    }
-  };
-
-  const handleForceExtractQcm = async () => {
-    if (!qcmCurrentConcours) return;
-    if (!window.confirm("Voulez-vous relancer l'extraction automatique des questions depuis le PDF ? Cela mettra à jour la liste des questions.")) return;
-    setQcmLoading(true);
-    try {
-      const res = await axios.post(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/extract`, {}, { withCredentials: true });
-      alert(res.data.message || "Extraction terminée !");
-      const qRes = await axios.get(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}`, { withCredentials: true });
-      setQcmQuestions(qRes.data.questions || []);
-      fetchConcours();
-    } catch (err) {
-      console.error("Erreur extraction QCM:", err);
-      alert("Erreur lors de l'extraction : " + (err.response?.data || err.message));
-    } finally {
-      setQcmLoading(false);
-    }
-  };
-
-  const handleQuestionChange = (qId, field, value) => {
-    setQcmQuestions(prev => prev.map(q => q.id === qId ? { ...q, [field]: value } : q));
-  };
-
-  const handleSaveQcmCorrections = async () => {
-    if (!qcmCurrentConcours) return;
-    setQcmSaving(true);
-    try {
-      const payload = qcmQuestions.map(q => ({
-        questionId: String(q.id),
-        correctChoiceLabel: q.correctChoiceLabel || '',
-        explanation: q.explanation || ''
-      }));
-      await axios.put(`http://localhost:8081/api/qcm/concours-blanc/${qcmCurrentConcours.id}/corrections-batch`, payload, { withCredentials: true });
-      alert("Toutes les corrections et explications ont été enregistrées avec succès ! ✅");
-      fetchConcours();
-    } catch (err) {
-      console.error("Erreur sauvegarde corrections:", err);
-      alert("Erreur lors de la sauvegarde : " + (err.response?.data || err.message));
-    } finally {
-      setQcmSaving(false);
-    }
-  };
-
-  // --- ACTIONS EXAMENS NATIONAUX: AJOUT / MODIFICATION / SUPPRESSION ---
-  const handleExamSubmit = async (e) => {
-    e.preventDefault();
-    setLoadingExam(true);
-    const formData = new FormData();
-    formData.append('titre', examTitre);
-    formData.append('matiere', examMatiere);
-    formData.append('optionBac', examOption);
-    formData.append('session', examSession);
-    formData.append('annee', examAnnee);
-    if (examFileSujet) formData.append('fileSujet', examFileSujet);
-    if (examFileCorrection) formData.append('fileCorrection', examFileCorrection);
-
-    try {
-      if (editingExamId) {
-        await axios.put(`http://localhost:8081/api/examens-nationaux/${editingExamId}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true
-        });
-        alert('Examen National modifié avec succès ! ✏️');
-      } else {
-        await axios.post('http://localhost:8081/api/examens-nationaux', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true
-        });
-        alert('Examen National ajouté avec succès ! 🎓');
-      }
-      setIsExamModalOpen(false);
-      setEditingExamId(null);
-      fetchExamens();
-      setExamTitre(''); setExamMatiere(''); setExamOption('Sciences Mathématiques A'); setExamSession('Normale'); setExamAnnee('2024'); setExamFileSujet(null); setExamFileCorrection(null);
-    } catch (err) {
-      alert("Erreur lors de l'enregistrement de l'examen national !");
-    } finally { setLoadingExam(false); }
-  };
-
-  const handleEditExam = (exam) => {
-    setEditingExamId(exam.id);
-    setExamTitre(exam.titre || '');
-    setExamMatiere(exam.matiere || '');
-    setExamOption(exam.optionBac || 'Sciences Mathématiques A');
-    setExamSession(exam.session || 'Normale');
-    setExamAnnee(exam.annee ? String(exam.annee) : '2024');
-    setExamFileSujet(null);
-    setExamFileCorrection(null);
-    setIsExamModalOpen(true);
-  };
-
-  const handleDeleteExam = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet examen national ?")) return;
-    try {
-      await axios.delete(`http://localhost:8081/api/examens-nationaux/${id}`, { withCredentials: true });
-      alert("Examen national supprimé avec succès ! 🗑️");
-      fetchExamens();
-    } catch (err) {
-      alert("Erreur lors de la suppression de l'examen !");
-    }
-  };
-
   const getPdfUrl = (url) => {
     if (!url) return '#';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      if (url.includes('localhost:8080')) return url.replace('localhost:8080', 'localhost:8081');
-      return url;
-    }
-    return `http://localhost:8081/uploads/${url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('/')) return normalizedUrl;
+    return `/uploads/${normalizedUrl}`;
   };
 
   const formatDate = (dateString) => {
@@ -1533,44 +1359,7 @@ export default function AdminDashboard() {
     { key: 'coursBac', icon: '📖', label: 'Cours BAC (COURS_BAC)', count: coursBacList.length, countType: 'default', onClick: () => { setActiveTab('coursBac'); fetchCoursBac(); } },
     { key: 'resumes', icon: '💡', label: 'Résumés & Astuces', count: resumesList.length, countType: 'default', onClick: () => { setActiveTab('resumes'); fetchResumes(); } },
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
-    { key: 'studentMistakes', icon: '❌', label: 'Erreurs Étudiants', count: adminMistakesList.length || null, countType: 'default', onClick: () => { setActiveTab('studentMistakes'); fetchAdminMistakes(); } },
   ];
-
-  const uniqueMistakeStudents = useMemo(() => {
-    const map = new Map();
-    adminMistakesList.forEach((m) => {
-      if (m.studentId && !map.has(m.studentId)) {
-        map.set(m.studentId, {
-          id: m.studentId,
-          name: m.studentName || `Étudiant #${m.studentId}`,
-          email: m.studentEmail || ''
-        });
-      }
-    });
-    return Array.from(map.values());
-  }, [adminMistakesList]);
-
-  const uniqueMistakeSubjects = useMemo(() => {
-    const set = new Set();
-    adminMistakesList.forEach((m) => { if (m.subject) set.add(m.subject); });
-    return Array.from(set);
-  }, [adminMistakesList]);
-
-  const filteredAdminMistakes = useMemo(() => {
-    return adminMistakesList.filter((m) => {
-      if (selectedStudentFilter && String(m.studentId) !== String(selectedStudentFilter)) return false;
-      if (selectedMistakeSubject && m.subject !== selectedMistakeSubject) return false;
-      if (selectedMistakeStatus === 'reviewed' && !m.reviewed) return false;
-      if (selectedMistakeStatus === 'pending' && m.reviewed) return false;
-      if (searchMistake.trim()) {
-        const q = searchMistake.toLowerCase();
-        const studentInfo = `${m.studentName || ''} ${m.studentEmail || ''}`.toLowerCase();
-        const contentInfo = `${m.questionText || ''} ${m.resourceTitle || ''} ${m.subject || ''} ${m.chapter || ''}`.toLowerCase();
-        if (!studentInfo.includes(q) && !contentInfo.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [adminMistakesList, selectedStudentFilter, selectedMistakeSubject, selectedMistakeStatus, searchMistake]);
 
   return (
     <div style={styles.wrapper}>
@@ -1642,7 +1431,6 @@ export default function AdminDashboard() {
             exams={examensList}
             courses={coursBacList}
             resumes={resumesList}
-            studentMistakesCount={adminMistakesList.length}
             loading={dashboardLoading}
             onNavigate={setActiveTab}
           />
@@ -2566,7 +2354,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'concoursStats' && <ConcoursBlancStats />}
         {activeTab === 'calendar' && <CompetitionCalendar admin />}
 
         {/* ==================== SECTION: CONCOURS BLANCS ==================== */}
@@ -2707,383 +2494,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ==================== SECTION: ERREURS ÉTUDIANTS ==================== */}
-        {activeTab === 'studentMistakes' && (
-          <div style={styles.card}>
-            <div style={{ ...styles.headerRow, alignItems: 'flex-start' }}>
-              <div>
-                <h2 style={{ ...styles.cardTitle, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>❌</span> Erreurs QCM Sauvegardées par les Étudiants
-                </h2>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
-                  Consultez les questions incorrectes enregistrées par chaque candidat lors de ses entraînements, et gérez-les (suppression unitaire ou globale).
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                {selectedStudentFilter && (
-                  <button
-                    onClick={() => {
-                      const studentObj = uniqueMistakeStudents.find(s => String(s.id) === String(selectedStudentFilter));
-                      handleAdminDeleteStudentAllMistakes(selectedStudentFilter, studentObj?.name);
-                    }}
-                    style={{
-                      ...styles.btnDanger,
-                      padding: '8px 14px',
-                      fontSize: '12px',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    🗑️ Supprimer tout pour cet étudiant
-                  </button>
-                )}
-                <button
-                  onClick={fetchAdminMistakes}
-                  disabled={loadingAdminMistakes}
-                  style={{
-                    ...styles.btnPrimary,
-                    padding: '8px 14px',
-                    fontSize: '12px',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: loadingAdminMistakes ? 'wait' : 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>🔄</span> Actualiser
-                </button>
-              </div>
-            </div>
-
-            {mistakeActionMessage && (
-              <div style={{
-                margin: '16px 0',
-                padding: '12px 18px',
-                background: '#ecfdf5',
-                borderLeft: '4px solid #10b981',
-                borderRadius: '0 8px 8px 0',
-                color: '#065f46',
-                fontWeight: 700,
-                fontSize: '13px'
-              }}>
-                {mistakeActionMessage}
-              </div>
-            )}
-
-            {/* 4 Indicateurs Clés */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '14px',
-              margin: '20px 0'
-            }}>
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Total Erreurs Enregistrées</div>
-                <div style={{ fontSize: '26px', fontWeight: 850, color: '#0f172a', marginTop: '4px' }}>
-                  {adminMistakesStats.totalMistakes ?? adminMistakesList.length}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '2px' }}>Toutes épreuves confondues</div>
-              </div>
-
-              <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase' }}>Étudiants Concernés</div>
-                <div style={{ fontSize: '26px', fontWeight: 850, color: '#2563eb', marginTop: '4px' }}>
-                  {adminMistakesStats.uniqueStudents ?? uniqueMistakeStudents.length}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#60a5fa', marginTop: '2px' }}>Candidats ayant sauvegardé</div>
-              </div>
-
-              <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#c2410c', textTransform: 'uppercase' }}>En Attente de Révision</div>
-                <div style={{ fontSize: '26px', fontWeight: 850, color: '#ea580c', marginTop: '4px' }}>
-                  {adminMistakesStats.pendingCount ?? (adminMistakesList.filter(m => !m.reviewed).length)}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#fb923c', marginTop: '2px' }}>Non encore révisées</div>
-              </div>
-
-              <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '14px', padding: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>Questions Révisées</div>
-                <div style={{ fontSize: '26px', fontWeight: 850, color: '#059669', marginTop: '4px' }}>
-                  {adminMistakesStats.reviewedCount ?? (adminMistakesList.filter(m => m.reviewed).length)}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#34d399', marginTop: '2px' }}>Marquées révisées par le candidat</div>
-              </div>
-            </div>
-
-            {/* Barre de filtres */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px',
-              padding: '16px',
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '14px',
-              marginBottom: '20px'
-            }}>
-              <div>
-                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Recherche par mot-clé</label>
-                <input
-                  type="text"
-                  placeholder="Étudiant, email, énoncé..."
-                  value={searchMistake}
-                  onChange={(e) => setSearchMistake(e.target.value)}
-                  style={styles.input}
-                />
-              </div>
-
-              <div>
-                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Filtrer par Étudiant</label>
-                <select
-                  value={selectedStudentFilter}
-                  onChange={(e) => setSelectedStudentFilter(e.target.value)}
-                  style={styles.select}
-                >
-                  <option value="">Tous les étudiants ({uniqueMistakeStudents.length})</option>
-                  {uniqueMistakeStudents.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name} {st.email ? `(${st.email})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Filtrer par Matière</label>
-                <select
-                  value={selectedMistakeSubject}
-                  onChange={(e) => setSelectedMistakeSubject(e.target.value)}
-                  style={styles.select}
-                >
-                  <option value="">Toutes les matières</option>
-                  {uniqueMistakeSubjects.map((sub) => (
-                    <option key={sub} value={sub}>{sub}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ ...styles.filterLabel, fontSize: '11px' }}>Statut de révision</label>
-                <select
-                  value={selectedMistakeStatus}
-                  onChange={(e) => setSelectedMistakeStatus(e.target.value)}
-                  style={styles.select}
-                >
-                  <option value="all">Tous les statuts</option>
-                  <option value="pending">⏳ En attente de révision</option>
-                  <option value="reviewed">✓ Révisée par l'étudiant</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Liste des erreurs */}
-            {loadingAdminMistakes ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                Chargement des erreurs sauvegardées...
-              </div>
-            ) : filteredAdminMistakes.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '48px 24px',
-                border: '1px dashed #cbd5e1',
-                borderRadius: '14px',
-                color: '#64748b',
-                background: '#fafafa'
-              }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📂</div>
-                <div style={{ fontWeight: 700, fontSize: '15px', color: '#334155' }}>
-                  Aucune erreur sauvegardée ne correspond à vos filtres
-                </div>
-                <p style={{ margin: '6px 0 0', fontSize: '13px' }}>
-                  Les erreurs que les candidats enregistrent lors des QCM apparaîtront automatiquement ici.
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 750, color: '#475569' }}>
-                  {filteredAdminMistakes.length} question(s) enregistrée(s) trouvée(s) :
-                </div>
-
-                {filteredAdminMistakes.map((m) => (
-                  <article
-                    key={m.id}
-                    style={{
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '16px',
-                      background: m.reviewed ? '#fbfffc' : '#ffffff',
-                      borderColor: m.reviewed ? '#86efac' : '#e2e8f0',
-                      padding: '18px 22px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                      display: 'grid',
-                      gap: '12px'
-                    }}
-                  >
-                    {/* Header de la carte d'erreur */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          background: '#eff6ff',
-                          color: '#2563eb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          fontSize: '13px'
-                        }}>
-                          {(m.studentName || 'E').slice(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#0f172a' }}>
-                            {m.studentName || `Étudiant #${m.studentId}`}
-                          </div>
-                          <div style={{ fontSize: '11.5px', color: '#64748b' }}>
-                            {m.studentEmail || 'Email non renseigné'} · {m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR') : 'Date inconnue'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        {m.subject && (
-                          <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#eff6ff', color: '#1d4ed8' }}>
-                            📐 {m.subject}
-                          </span>
-                        )}
-                        {m.chapter && (
-                          <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#f5f3ff', color: '#6d28d9' }}>
-                            {m.chapter}
-                          </span>
-                        )}
-                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 9px', borderRadius: '999px', background: '#f1f5f9', color: '#334155' }}>
-                          {m.sourceType || m.resourceTitle || 'QCM'}
-                        </span>
-                        <span style={{
-                          fontSize: '11px',
-                          fontWeight: 800,
-                          padding: '4px 9px',
-                          borderRadius: '999px',
-                          background: m.reviewed ? '#ecfdf5' : '#fff7ed',
-                          color: m.reviewed ? '#047857' : '#c2410c',
-                          border: `1px solid ${m.reviewed ? '#a7f3d0' : '#fed7aa'}`
-                        }}>
-                          {m.reviewed ? '✓ Révisée par l\'étudiant' : '⏳ En attente de révision'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Énoncé de la question */}
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: 650,
-                      color: '#1e293b',
-                      lineHeight: 1.7,
-                      padding: '10px 14px',
-                      background: '#f8fafc',
-                      borderRadius: '10px',
-                      borderLeft: '4px solid #3b82f6'
-                    }}>
-                      <MathContent>{m.questionText}</MathContent>
-                    </div>
-
-                    {/* Comparatif des réponses */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
-                      <div style={{
-                        padding: '10px 14px',
-                        background: '#fff1f2',
-                        border: '1px solid #fecdd3',
-                        borderRadius: '10px',
-                        color: '#9f1239',
-                        fontSize: '12.5px',
-                        lineHeight: 1.6
-                      }}>
-                        <div style={{ fontSize: '10.5px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '3px' }}>
-                          ❌ Réponse sélectionnée par l'étudiant
-                        </div>
-                        <strong>{m.selectedChoiceLabel ? `${m.selectedChoiceLabel} - ` : ''}</strong>
-                        <MathContent>{m.selectedChoiceText || 'Non spécifiée'}</MathContent>
-                      </div>
-
-                      <div style={{
-                        padding: '10px 14px',
-                        background: '#ecfdf5',
-                        border: '1px solid #a7f3d0',
-                        borderRadius: '10px',
-                        color: '#065f46',
-                        fontSize: '12.5px',
-                        lineHeight: 1.6
-                      }}>
-                        <div style={{ fontSize: '10.5px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '3px' }}>
-                          ✅ Bonne réponse attendue
-                        </div>
-                        <strong>{m.correctChoiceLabel ? `${m.correctChoiceLabel} - ` : ''}</strong>
-                        <MathContent>{m.correctChoiceText || 'Non spécifiée'}</MathContent>
-                      </div>
-                    </div>
-
-                    {/* Explication */}
-                    {m.explanation && (
-                      <details style={{
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '10px',
-                        padding: '9px 13px',
-                        fontSize: '12px',
-                        color: '#475569'
-                      }}>
-                        <summary style={{ fontWeight: 800, color: '#334155', cursor: 'pointer' }}>
-                          💡 Explication détaillée du corrigé
-                        </summary>
-                        <div style={{ paddingTop: '8px', lineHeight: 1.8 }}>
-                          <MathContent>{m.explanation}</MathContent>
-                        </div>
-                      </details>
-                    )}
-
-                    {/* Actions de l'admin sur cette erreur */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', paddingTop: '4px' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleAdminDeleteMistake(m.id)}
-                        style={{
-                          padding: '7px 14px',
-                          border: '1px solid #fecaca',
-                          borderRadius: '8px',
-                          background: '#ffffff',
-                          color: '#dc2626',
-                          fontWeight: 750,
-                          fontSize: '11.5px',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.15s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#fef2f2';
-                          e.currentTarget.style.borderColor = '#f87171';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = '#ffffff';
-                          e.currentTarget.style.borderColor = '#fecaca';
-                        }}
-                      >
-                        🗑️ Supprimer de la base
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </main>
 
       {/* ======================== MODALS ======================== */}
@@ -3985,287 +3395,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Modal: Gestion du QCM et Corrections (Admin) */}
-      {qcmModalOpen && qcmCurrentConcours && (
-        <div style={styles.modalOverlay}>
-          <div style={{ ...styles.modalBox, maxWidth: '920px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ ...styles.modalHeader, alignItems: 'flex-start' }}>
-              <div>
-                <h3 style={styles.modalTitle}>🎯 Gestion du QCM & Corrigés</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
-                  <strong>{qcmCurrentConcours.titre}</strong>
-                  {qcmCurrentConcours.ecole ? ` • ${qcmCurrentConcours.ecole}` : ''}
-                  {` • ${qcmCurrentConcours.matiere}`}
-                  {qcmCurrentConcours.annee ? ` (${qcmCurrentConcours.annee})` : ''}
-                  {` — ${qcmQuestions.length} question(s) détectée(s)`}
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  type="button"
-                  onClick={handleForceExtractQcm}
-                  disabled={qcmLoading}
-                  style={{
-                    background: '#f8fafc',
-                    color: '#2563eb',
-                    border: '1px solid #bfdbfe',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                  title="Relancer l'extraction automatique depuis le fichier PDF"
-                >
-                  🔄 Ré-extraire PDF
-                </button>
-                <button onClick={() => setQcmModalOpen(false)} style={styles.modalClose}>&times;</button>
-              </div>
-            </div>
-
-            {qcmLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
-                <p style={{ fontSize: '14px', fontWeight: 600 }}>Chargement et analyse des questions QCM...</p>
-              </div>
-            ) : qcmQuestions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f8fafc', borderRadius: '10px', margin: '16px 0', border: '1px dashed #cbd5e1' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>📄</div>
-                <h4 style={{ margin: '0 0 8px', fontSize: '16px', color: '#1e293b' }}>Aucune question QCM détectée</h4>
-                <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto' }}>
-                  Le PDF ne semble pas contenir de questions au format QCM standard reconnu automatiquement (Q1, Question 1, etc. avec choix A, B, C, D).
-                </p>
-                <button
-                  onClick={handleForceExtractQcm}
-                  style={{
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔄 Tenter une ré-extraction automatique
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', margin: '16px 0' }}>
-                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '12px 16px', fontSize: '13px', color: '#1e40af' }}>
-                  💡 <strong>Instructions Admin :</strong> Définissez la <strong>bonne réponse</strong> (A, B, C, D...) pour chaque question et ajoutez une <strong>explication détaillée</strong> si le corrigé était absent. Cliquez sur <em>"Enregistrer les corrections"</em> ci-dessous pour valider.
-                </div>
-
-                {qcmQuestions.map((q, idx) => {
-                  const hasCorrection = Boolean(q.correctChoiceLabel && q.correctChoiceLabel.trim());
-                  return (
-                    <div
-                      key={q.id || idx}
-                      style={{
-                        background: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '10px',
-                        padding: '18px',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                      }}
-                    >
-                      {/* En-tête de la question */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{
-                            background: '#1e293b',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '12px',
-                            padding: '3px 10px',
-                            borderRadius: '999px'
-                          }}>
-                            Question {q.questionNumber || idx + 1}
-                          </span>
-                          <span style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            background: hasCorrection ? '#dcfce7' : '#fee2e2',
-                            color: hasCorrection ? '#15803d' : '#b91c1c'
-                          }}>
-                            {hasCorrection ? `✅ Bonne réponse : ${q.correctChoiceLabel}` : '⚠️ Corrigé absent'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Énoncé de la question */}
-                      <p style={{
-                        margin: '0 0 14px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: '#1e293b',
-                        lineHeight: 1.5,
-                        background: '#f8fafc',
-                        padding: '10px 14px',
-                        borderRadius: '6px'
-                      }}>
-                        {q.questionText}
-                      </p>
-
-                      {/* Choix de réponses */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', marginBottom: '16px' }}>
-                        {(q.choices || []).map((choice, cIdx) => {
-                          const isCorrect = q.correctChoiceLabel === choice.choiceLabel;
-                          return (
-                            <div
-                              key={choice.id || cIdx}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                padding: '8px 12px',
-                                borderRadius: '6px',
-                                background: isCorrect ? '#f0fdf4' : '#ffffff',
-                                border: `1px solid ${isCorrect ? '#86efac' : '#e2e8f0'}`,
-                                transition: 'all 0.15s ease'
-                              }}
-                            >
-                              <span style={{
-                                width: '26px',
-                                height: '26px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '50%',
-                                background: isCorrect ? '#22c55e' : '#f1f5f9',
-                                color: isCorrect ? '#ffffff' : '#334155',
-                                fontWeight: 700,
-                                fontSize: '12px'
-                              }}>
-                                {choice.choiceLabel}
-                              </span>
-                              <span style={{ fontSize: '13px', color: isCorrect ? '#14532d' : '#334155', fontWeight: isCorrect ? 600 : 400 }}>
-                                {choice.choiceText}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Configuration de la correction manuelle */}
-                      <div style={{
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        padding: '14px',
-                        display: 'grid',
-                        gridTemplateColumns: '200px 1fr',
-                        gap: '14px',
-                        alignItems: 'start'
-                      }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                            Bonne réponse :
-                          </label>
-                          <select
-                            value={q.correctChoiceLabel || ''}
-                            onChange={(e) => handleQuestionChange(q.id, 'correctChoiceLabel', e.target.value)}
-                            style={{
-                              width: '100%',
-                              padding: '8px 10px',
-                              borderRadius: '6px',
-                              border: '1px solid #cbd5e1',
-                              fontSize: '13px',
-                              background: '#ffffff',
-                              fontWeight: 700,
-                              color: q.correctChoiceLabel ? '#15803d' : '#64748b',
-                              outline: 'none'
-                            }}
-                          >
-                            <option value="">-- Non définie --</option>
-                            {(q.choices || []).map((c, cIdx) => (
-                              <option key={cIdx} value={c.choiceLabel}>
-                                Option {c.choiceLabel}
-                              </option>
-                            ))}
-                            {/* Fallback au cas où aucun choix n'est mappé */}
-                            {(!q.choices || q.choices.length === 0) && (
-                              <>
-                                <option value="A">Option A</option>
-                                <option value="B">Option B</option>
-                                <option value="C">Option C</option>
-                                <option value="D">Option D</option>
-                                <option value="E">Option E</option>
-                              </>
-                            )}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                            Explication détaillée de la correction :
-                          </label>
-                          <textarea
-                            rows={2}
-                            placeholder="Ex: En appliquant la formule d'Euler, on obtient... / Rappel de cours sur la dérivée..."
-                            value={q.explanation || ''}
-                            onChange={(e) => handleQuestionChange(q.id, 'explanation', e.target.value)}
-                            style={{
-                              width: '100%',
-                              padding: '8px 10px',
-                              borderRadius: '6px',
-                              border: '1px solid #cbd5e1',
-                              fontSize: '13px',
-                              outline: 'none',
-                              fontFamily: 'inherit',
-                              boxSizing: 'border-box',
-                              resize: 'vertical'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            <div style={{ ...styles.modalFooter, marginTop: '20px' }}>
-              <button
-                type="button"
-                onClick={() => setQcmModalOpen(false)}
-                style={styles.btnCancel}
-              >
-                Fermer
-              </button>
-              {qcmQuestions.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleSaveQcmCorrections}
-                  disabled={qcmSaving}
-                  style={{
-                    background: '#10b981',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    opacity: qcmSaving ? 0.7 : 1
-                  }}
-                >
-                  {qcmSaving ? 'Enregistrement...' : '💾 Enregistrer toutes les corrections'}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
       {/* Modal: Ajouter / Modifier un Examen National */}
       {isExamModalOpen && (
         <div style={styles.modalOverlay}>
@@ -4297,14 +3426,15 @@ export default function AdminDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>Matière</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Mathématiques, Physique..."
+                  <select
                     value={examMatiere}
                     onChange={(e) => setExamMatiere(e.target.value)}
                     required
-                    style={styles.formInput}
-                  />
+                    style={{ ...styles.formInput, background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    <option value="">Sélectionner une matière</option>
+                    {EXAM_NATIONAL_SUBJECTS.map((matiere) => <option key={matiere} value={matiere}>{matiere}</option>)}
+                  </select>
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>Année</label>

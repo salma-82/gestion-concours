@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { recordStudentActivity } from '../studentProgress';
+import {
+  fetchStudentActivityCompletionMap,
+  getStudentActivityStatusKey,
+  recordStudentActivity,
+  setStudentActivityCompleted
+} from '../studentProgress';
 import { filterByStudentPack } from '../packAccess';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
+import { toBackendResourceUrl } from '../backendResourceUrl';
 
-const API = 'http://localhost:8081';
+const API = '';
 
 /* ─────────────────────────────────────────────
    CONFIGURATION DES 3 MATIÈRES
@@ -132,8 +138,36 @@ export default function ClientResumesPage() {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [completionStatuses, setCompletionStatuses] = useState({});
+  const [completingActivityKey, setCompletingActivityKey] = useState('');
+  const [completionErrorKey, setCompletionErrorKey] = useState('');
 
   const iframeRef = useRef(null);
+
+  const activeResumeStatusKey = activeResume?.id
+    ? getStudentActivityStatusKey('Résumé', activeResume.id)
+    : '';
+  const activeResumeCompleted = completionStatuses[activeResumeStatusKey] === true;
+
+  const handleCompleteResume = async (event, resume) => {
+    event?.stopPropagation();
+    if (!resume?.id) return;
+    const statusKey = getStudentActivityStatusKey('Résumé', resume.id);
+    if (completionStatuses[statusKey] === true || completingActivityKey === statusKey) return;
+
+    setCompletingActivityKey(statusKey);
+    setCompletionErrorKey('');
+    try {
+      const saved = await setStudentActivityCompleted(`Résumé:${resume.id}`, true);
+      if (!saved) throw new Error('Impossible d’enregistrer la progression.');
+      setCompletionStatuses((current) => ({ ...current, [statusKey]: true }));
+    } catch (saveError) {
+      console.error('Erreur lors de l’enregistrement de la progression du résumé:', saveError);
+      setCompletionErrorKey(statusKey);
+    } finally {
+      setCompletingActivityKey('');
+    }
+  };
 
   useEffect(() => {
     const stage = activeResume ? 'reader' : (selectedMatiere ? 'chapitres' : 'matieres');
@@ -176,15 +210,20 @@ export default function ClientResumesPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    fetchStudentActivityCompletionMap()
+      .then((statuses) => { if (isMounted) setCompletionStatuses(statuses); })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   /* ─── Helpers ─── */
   const getFullUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      if (url.includes('localhost:8080') && API.includes('8081'))
-        return url.replace('localhost:8080', 'localhost:8081');
-      return url;
-    }
-    return `${API}/${url.startsWith('/') ? url.substring(1) : url}`;
+    const normalizedUrl = toBackendResourceUrl(url);
+    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+    return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
   const resumesForMatiere = (mat) => resumes.filter(r => matchMatiere(r.matiere, mat.id));
@@ -274,7 +313,7 @@ export default function ClientResumesPage() {
           STEP 1 : CHOIX DE LA MATIÈRE
       ───────────────────────────────────── */}
       {step === 'matieres' && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ width: 'calc(100% - min(6cm, 12vw))', maxWidth: 'calc(1200px - 6cm)', margin: '12px auto 0' }}>
           {/* Header */}
           <div style={{ marginBottom: '36px' }}>
             <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 900, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -392,8 +431,17 @@ export default function ClientResumesPage() {
           STEP 2 : CHAPITRES DE LA MATIÈRE
       ───────────────────────────────────── */}
       {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'grid', gridTemplateColumns: isSidebarCollapsed || !activeResume ? 'minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px' }}>
+          {activeResume && (
+            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', minWidth: 0, position: 'sticky', top: 0, zIndex: 30, padding: '7px 0', background: '#f8fafc' }}>
+              <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des chapitres' : 'Fermer le menu des chapitres'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '10px' }}>
+                {completionErrorKey === activeResumeStatusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
+                <button type="button" disabled={activeResumeCompleted || completingActivityKey === activeResumeStatusKey} onClick={(event) => handleCompleteResume(event, activeResume)} style={{ padding: '9px 16px', border: 0, borderRadius: '10px', background: activeResumeCompleted ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '12px', fontWeight: 750, cursor: activeResumeCompleted ? 'default' : 'pointer', opacity: completingActivityKey === activeResumeStatusKey ? 0.7 : 1 }}>{activeResumeCompleted ? '✓ Terminé' : completingActivityKey === activeResumeStatusKey ? 'Enregistrement…' : 'Terminer'}</button>
+              </div>
+            </div>
+          )}
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: activeResume ? 'none' : 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: activeResume ? '0 0 280px' : '1 1 auto', width: activeResume ? '280px' : 'calc(100% - min(6cm, 12vw))', marginInline: activeResume ? 0 : 'auto', minWidth: activeResume ? '220px' : 0, maxHeight: activeResume ? 'calc(100vh - 116px)' : 'none', overflowY: activeResume ? 'auto' : 'visible', background: activeResume ? '#ffffff' : 'transparent', border: activeResume ? '1px solid #dbeafe' : 'none', borderRadius: activeResume ? '16px' : 0, padding: activeResume ? '18px 16px' : 0, boxShadow: activeResume ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: activeResume ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {chapitresForMatiere(selectedMatiere).map((chapitre) => {
@@ -402,7 +450,18 @@ export default function ClientResumesPage() {
                 return <div key={chapitre.nom}>
                   <button type="button" onClick={() => goReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
                   {isActive && chapterResumes.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
-                    {chapterResumes.map((resume, index) => <button key={resume.id || index} type="button" onClick={() => openResume(resume)} style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>)}
+                    {chapterResumes.map((resume, index) => {
+                      const statusKey = getStudentActivityStatusKey('Résumé', resume.id);
+                      const isCompleted = completionStatuses[statusKey] === true;
+                      return <div key={resume.id || index} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                        <button type="button" onClick={() => openResume(resume)} style={{ flex: '1 1 150px', padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>
+                        <span style={{ padding: '4px 8px', borderRadius: '999px', background: isCompleted ? '#dcfce7' : '#fef3c7', color: isCompleted ? '#15803d' : '#92400e', fontSize: '10px', fontWeight: 750, whiteSpace: 'nowrap' }}>{isCompleted ? 'Terminé' : 'En cours'}</span>
+                        <button type="button" disabled={isCompleted || completingActivityKey === statusKey} onClick={(event) => handleCompleteResume(event, resume)} style={{ padding: '6px 9px', border: 0, borderRadius: '8px', background: isCompleted ? '#16a34a' : '#eff6ff', color: isCompleted ? '#fff' : '#1d4ed8', fontSize: '10px', fontWeight: 750, cursor: isCompleted ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
+                          {isCompleted ? '✓ Terminé' : completingActivityKey === statusKey ? 'Enregistrement…' : 'Terminer'}
+                        </button>
+                        {completionErrorKey === statusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '10px' }}>Erreur d’enregistrement.</span>}
+                      </div>;
+                    })}
                   </div>}
                 </div>;
               })}
@@ -410,18 +469,27 @@ export default function ClientResumesPage() {
           </aside>}
           <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeResume && (
-              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#1e293b', fontWeight: 750 }}>{activeResume.titre || selectedChapitre}</div>
-                {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
-                  <iframe src={getFullUrl(activeResume.htmlUrl)} title={activeResume.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms" style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block', background: '#ffffff' }} />
+              <>
+                <div style={activeResume.htmlUrl ? { overflow: 'visible' } : { background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                {activeResume.htmlUrl ? (
+                  <AutoHeightHtmlFrame
+                    src={getFullUrl(activeResume.htmlUrl)}
+                    title={activeResume.titre || selectedChapitre}
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                    integrated
+                    style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block', background: 'transparent' }}
+                  />
                 ) : activeResume.pdfUrl ? (
                   <iframe src={getFullUrl(activeResume.pdfUrl)} title={activeResume.titre || selectedChapitre} style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block' }} />
                 ) : activeResume.pageImages?.length ? (
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                     {activeResume.pageImages.map((url, index) => <img key={`${url}-${index}`} src={getFullUrl(url)} alt={`Page ${index + 1}`} style={{ width: '100%', maxWidth: '950px', height: 'auto', borderRadius: '10px' }} />)}
                   </div>
+                ) : activeResume.contenu?.trim() ? (
+                  <div style={{ padding: '24px', color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{activeResume.contenu}</div>
                 ) : <div style={{ padding: '48px 24px', color: '#64748b', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
-              </div>
+                </div>
+              </>
             )}
             <div style={{ display: 'none' }}>
               <div style={{ marginBottom: '20px' }}>

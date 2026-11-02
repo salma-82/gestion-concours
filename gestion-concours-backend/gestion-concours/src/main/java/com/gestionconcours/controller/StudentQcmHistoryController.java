@@ -1,8 +1,6 @@
 package com.gestionconcours.controller;
 
 import com.gestionconcours.model.StudentQcmAnswer;
-import com.gestionconcours.model.QcmResponse;
-import com.gestionconcours.repository.QcmResponseRepository;
 import com.gestionconcours.repository.StudentQcmAnswerRepository;
 import com.gestionconcours.model.User;
 import com.gestionconcours.model.Concours;
@@ -20,14 +18,12 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 public class StudentQcmHistoryController {
     private final StudentQcmAnswerRepository repository;
-    private final QcmResponseRepository legacyRepository;
     private final AuthSessionService authSessionService;
     private final ConcoursRepository concoursRepository;
     private final ConcoursBlancRepository concoursBlancRepository;
 
-    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, QcmResponseRepository legacyRepository, AuthSessionService authSessionService, ConcoursRepository concoursRepository, ConcoursBlancRepository concoursBlancRepository) {
+    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, AuthSessionService authSessionService, ConcoursRepository concoursRepository, ConcoursBlancRepository concoursBlancRepository) {
         this.repository = repository;
-        this.legacyRepository = legacyRepository;
         this.authSessionService = authSessionService;
         this.concoursRepository = concoursRepository;
         this.concoursBlancRepository = concoursBlancRepository;
@@ -92,6 +88,7 @@ public class StudentQcmHistoryController {
         answer.setQuestionKey(questionKey.substring(0, Math.min(255, questionKey.length())));
         answer.setQuestionNumber(asInteger(body.get("questionNumber")));
         answer.setQuestionText(value(body.get("questionText")));
+        answer.setChoicesText(value(body.get("choicesText")));
         answer.setSelectedChoiceLabel(selected);
         answer.setCorrectChoiceLabel(correct);
         answer.setSelectedChoiceText(value(body.get("selectedChoiceText")));
@@ -108,35 +105,6 @@ public class StudentQcmHistoryController {
         if (sessionUser.isEmpty()) return ResponseEntity.status(401).body("Session expirée. Veuillez vous reconnecter.");
         Long studentId = sessionUser.get().getId();
         List<StudentQcmAnswer> answers = new ArrayList<>(repository.findByStudentIdOrderByAnsweredAtDesc(studentId));
-        Set<String> savedKeys = new HashSet<>();
-        answers.forEach(answer -> savedKeys.add(historyKey(answer.getResourceType(), answer.getResourceId(), answer.getAttemptId(), answer.getQuestionKey())));
-        for (QcmResponse legacy : legacyRepository.findByStudentIdOrderByAnsweredAtDesc(studentId)) {
-            if (legacy.getConcoursBlanc() == null) continue;
-            String resourceId = String.valueOf(legacy.getConcoursBlanc().getId());
-            String key = historyKey("Concours blanc", resourceId, legacy.getAttemptId(), legacy.getQuestionKey());
-            if (!savedKeys.add(key)) continue;
-            StudentQcmAnswer answer = new StudentQcmAnswer();
-            answer.setStudentId(studentId);
-            answer.setResourceType("Concours blanc");
-            answer.setResourceId(resourceId);
-            answer.setResourceTitle(legacy.getConcoursBlanc().getTitre());
-            answer.setSchool(legacy.getConcoursBlanc().getEcole());
-            answer.setSubject(legacy.getConcoursBlanc().getMatiere());
-            answer.setChapter(legacy.getConcoursBlanc().getChapitre());
-            answer.setYear(legacy.getConcoursBlanc().getAnnee());
-            answer.setAttemptId(legacy.getAttemptId());
-            answer.setQuestionKey(legacy.getQuestionKey());
-            answer.setQuestionNumber(legacy.getQuestionNumber());
-            answer.setQuestionText(legacy.getQuestionText());
-            answer.setSelectedChoiceLabel(legacy.getSelectedChoiceLabel());
-            answer.setSelectedChoiceText(legacy.getSelectedChoiceText());
-            answer.setCorrectChoiceLabel(legacy.getCorrectChoiceLabel());
-            answer.setCorrectChoiceText(legacy.getCorrectChoiceText());
-            answer.setExplanation(legacy.getExplanation());
-            answer.setCorrect(legacy.isCorrect());
-            answer.setAnsweredAt(legacy.getAnsweredAt());
-            answers.add(answer);
-        }
         Map<String, List<StudentQcmAnswer>> grouped = new LinkedHashMap<>();
         answers.forEach(answer -> grouped.computeIfAbsent(
                 answer.getResourceType() + "|" + answer.getResourceId() + "|" + answer.getAttemptId(),
@@ -173,6 +141,7 @@ public class StudentQcmHistoryController {
         view.put("questionId", answer.getQuestionKey());
         view.put("questionNumber", answer.getQuestionNumber());
         view.put("questionText", answer.getQuestionText());
+        view.put("choicesText", answer.getChoicesText());
         view.put("selectedChoiceLabel", answer.getSelectedChoiceLabel());
         view.put("selectedChoiceText", answer.getSelectedChoiceText());
         view.put("correctChoiceLabel", answer.getCorrectChoiceLabel());
@@ -184,7 +153,6 @@ public class StudentQcmHistoryController {
 
     private String value(Object value) { return value == null ? "" : String.valueOf(value).trim(); }
     private String bearerToken(String authorization) { return authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7) ? authorization.substring(7).trim() : null; }
-    private String historyKey(String type, String resource, String attempt, String question) { return type + "|" + resource + "|" + attempt + "|" + question; }
     private Long asLong(Object value) { try { return value == null ? null : Long.valueOf(String.valueOf(value)); } catch (NumberFormatException ignored) { return null; } }
     private Integer asInteger(Object value) { try { return value == null || String.valueOf(value).isBlank() ? null : Integer.valueOf(String.valueOf(value)); } catch (NumberFormatException ignored) { return null; } }
 }

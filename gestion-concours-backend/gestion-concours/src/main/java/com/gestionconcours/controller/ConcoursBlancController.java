@@ -2,9 +2,7 @@ package com.gestionconcours.controller;
 
 import com.gestionconcours.model.ConcoursBlanc;
 import com.gestionconcours.repository.ConcoursBlancRepository;
-import com.gestionconcours.repository.QcmQuestionRepository;
 import com.gestionconcours.repository.StudentActivityEventRepository;
-import com.gestionconcours.service.PdfQcmExtractorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -23,20 +21,11 @@ import java.util.*;
 public class ConcoursBlancController {
 
     private final ConcoursBlancRepository concoursBlancRepository;
-    private final PdfQcmExtractorService pdfQcmExtractorService;
-    private final QcmQuestionRepository qcmQuestionRepository;
-    private final com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository;
     private final StudentActivityEventRepository studentActivityEventRepository;
 
     public ConcoursBlancController(ConcoursBlancRepository concoursBlancRepository,
-                                    PdfQcmExtractorService pdfQcmExtractorService,
-                                    QcmQuestionRepository qcmQuestionRepository,
-                                    com.gestionconcours.repository.QcmResponseRepository qcmResponseRepository,
                                     StudentActivityEventRepository studentActivityEventRepository) {
         this.concoursBlancRepository = concoursBlancRepository;
-        this.pdfQcmExtractorService = pdfQcmExtractorService;
-        this.qcmQuestionRepository = qcmQuestionRepository;
-        this.qcmResponseRepository = qcmResponseRepository;
         this.studentActivityEventRepository = studentActivityEventRepository;
     }
 
@@ -184,9 +173,6 @@ public class ConcoursBlancController {
             // publie flag already forced above if HTML provided
             concours.setPublie(publie != null ? publie : false);
 
-            Path pdfSavedPath = null;
-            Path htmlSavedPath = null;
-
             // Traitement du fichier principal (PDF ou HTML)
             if (file != null && !file.isEmpty()) {
                 String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document";
@@ -202,11 +188,9 @@ public class ConcoursBlancController {
                 if (ext.equals(".html") || ext.equals(".htm")) {
                     concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
                     concours.setFileType("HTML");
-                    htmlSavedPath = destPath;
                 } else {
                     concours.setPdfUrl("http://localhost:8081/uploads/" + fileName);
                     concours.setFileType("PDF");
-                    pdfSavedPath = destPath;
                 }
             }
 
@@ -219,8 +203,6 @@ public class ConcoursBlancController {
                 Files.write(destHtmlPath, htmlFile.getBytes());
 
                 concours.setHtmlUrl("http://localhost:8081/uploads/" + htmlName);
-                htmlSavedPath = destHtmlPath;
-
                 if (concours.getPdfUrl() != null && !concours.getPdfUrl().isEmpty()) {
                     concours.setFileType("BOTH");
                 } else {
@@ -229,27 +211,6 @@ public class ConcoursBlancController {
             }
 
             ConcoursBlanc saved = concoursBlancRepository.save(concours);
-
-            // Extraction automatique des questions QCM depuis PDF
-            int extractedCount = 0;
-            if (pdfSavedPath != null) {
-                try {
-                    extractedCount = pdfQcmExtractorService.extractAndSaveQuestions(pdfSavedPath.toFile(), saved);
-                    System.out.println("[ConcoursBlancController] " + extractedCount + " questions QCM extraites du PDF.");
-                } catch (Exception extractErr) {
-                    System.err.println("[ConcoursBlancController] Erreur extraction QCM PDF: " + extractErr.getMessage());
-                }
-            }
-
-            // Si aucune question extraite du PDF, tenter depuis HTML
-            if (extractedCount == 0 && htmlSavedPath != null) {
-                try {
-                    int htmlCount = pdfQcmExtractorService.extractAndSaveQuestionsFromHtml(htmlSavedPath.toFile(), saved);
-                    System.out.println("[ConcoursBlancController] " + htmlCount + " questions QCM extraites du HTML.");
-                } catch (Exception htmlExtractErr) {
-                    System.err.println("[ConcoursBlancController] Erreur extraction QCM HTML: " + htmlExtractErr.getMessage());
-                }
-            }
 
             return ResponseEntity.ok(saved);
         } catch (IOException e) {
@@ -380,16 +341,6 @@ public class ConcoursBlancController {
 
             ConcoursBlanc saved = concoursBlancRepository.save(concours);
 
-            try {
-                int count = qcmQuestionRepository.findByConcoursBlancIdOrderByQuestionNumberAsc(id).size();
-                if (count == 0) {
-                    int htmlCount = pdfQcmExtractorService.extractAndSaveQuestionsFromHtml(filePath.toFile(), saved);
-                    System.out.println("[ConcoursBlancController] " + htmlCount + " questions QCM extraites du HTML.");
-                }
-            } catch (Exception ex) {
-                System.err.println("[ConcoursBlancController] Erreur extraction HTML: " + ex.getMessage());
-            }
-
             return ResponseEntity.ok(saved);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Erreur lors de l'enregistrement du fichier HTML: " + e.getMessage());
@@ -406,9 +357,6 @@ public class ConcoursBlancController {
             return ResponseEntity.notFound().build();
         }
         studentActivityEventRepository.deleteByConcoursBlancId(id);
-        qcmQuestionRepository.deleteChoicesByConcoursBlancId(id);
-        qcmQuestionRepository.deleteByConcoursBlancId(id);
-        qcmResponseRepository.deleteByConcoursBlancId(id);
         concoursBlancRepository.deleteById(id);
         return ResponseEntity.ok("Concours blanc supprimé avec succès !");
     }
