@@ -16,7 +16,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { isNationalExamActivityEvent, isNationalExamCorrectionEvent } from '../studentDashboardStats';
 import './ClientNationalExamStatsDashboard.css';
+import './ClientStatsDashboardTheme.css';
 
 const API_BASE = '';
 const PAGE_SIZE = 8;
@@ -35,7 +37,6 @@ const normalize = (value) => String(value || '')
   .replace(/[\u0300-\u036f]/g, '')
   .toLocaleLowerCase('fr-FR');
 
-const isExamEvent = (event) => normalize(event?.type).replace(/[_-]/g, ' ').includes('examen national');
 const eventKind = (event) => String(event?.eventType || '').toUpperCase();
 const resourceParts = (event) => {
   const rawId = String(event?.resourceId || '');
@@ -109,7 +110,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
     return () => { active = false; };
   }, [catalogRetry]);
 
-  const examEvents = useMemo(() => (Array.isArray(events) ? events : []).filter(isExamEvent), [events]);
+  const examEvents = useMemo(() => (Array.isArray(events) ? events : []).filter(isNationalExamActivityEvent), [events]);
   const byId = useMemo(() => new Map(catalog.map((exam) => [String(exam.id), exam])), [catalog]);
   const years = useMemo(() => [...new Set(catalog.map((exam) => String(exam.annee || '')).filter(Boolean))]
     .sort((a, b) => Number(b) - Number(a)), [catalog]);
@@ -126,7 +127,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   const visibleEvents = useMemo(() => examEvents.filter((event) => visibleIds.has(examIdOf(event))), [examEvents, visibleIds]);
   const viewEvents = useMemo(() => visibleEvents.filter((event) => eventKind(event) === 'VIEW'), [visibleEvents]);
   const subjectViewEvents = useMemo(() => viewEvents.filter((event) => documentOf(event) !== 'correction'), [viewEvents]);
-  const correctionViewEvents = useMemo(() => viewEvents.filter((event) => documentOf(event) === 'correction'), [viewEvents]);
+  const correctionActivityEvents = useMemo(() => visibleEvents.filter(isNationalExamCorrectionEvent), [visibleEvents]);
 
   // Completion is a manual state. Keep only the latest COMPLETE/UNCOMPLETE event per document.
   const completionByExam = useMemo(() => {
@@ -153,9 +154,9 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   }, [examEvents]);
 
   const startedIds = useMemo(() => new Set(subjectViewEvents.map(examIdOf).filter(Boolean)), [subjectViewEvents]);
-  const correctionIds = useMemo(() => new Set(correctionViewEvents
+  const correctionIds = useMemo(() => new Set(correctionActivityEvents
     .filter((event) => hasCorrection(byId.get(examIdOf(event))))
-    .map(examIdOf).filter(Boolean)), [correctionViewEvents, byId]);
+    .map(examIdOf).filter(Boolean)), [correctionActivityEvents, byId]);
   const workedSubjects = useMemo(() => new Set(subjectViewEvents.map((event) => {
     const exam = byId.get(examIdOf(event));
     return normalize(exam?.matiere || event.subject);
@@ -239,7 +240,10 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
       const kind = eventKind(event);
       if (kind === 'VIEW' && documentOf(event) === 'correction') bucket.corrections.add(id);
       else if (kind === 'VIEW') bucket.exams.add(id);
-      else if (kind === 'COMPLETE') bucket.completed.add(id);
+      if (kind === 'COMPLETE') {
+        bucket.completed.add(id);
+        if (documentOf(event) === 'correction') bucket.corrections.add(id);
+      }
     });
     return buckets.map((bucket) => ({
       label: bucket.label,
@@ -368,16 +372,6 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
     return items.slice(0, 3);
   }, [startedIds, completionByExam, correctionSummary.pending, subjectData, visibleCatalog, navigate]);
 
-  const resetFilters = () => {
-    setYear('all');
-    setSubject('all');
-    setOption('all');
-    setPeriod('all');
-    setSearch('');
-    setStatusFilter('all');
-    setCorrectionFilter('all');
-    setCurrentPage(1);
-  };
   const openExam = (exam, document = 'sujet') => {
     const params = new URLSearchParams();
     if (exam.optionBac) params.set('filiere', exam.optionBac);
@@ -387,28 +381,18 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   };
 
   return (
-    <section className="national-exam-stats" aria-labelledby="national-exam-stats-title">
+    <section className="national-exam-stats" aria-label="Suivi des examens nationaux">
       <header className="national-exam-hero">
         <div>
           <span className="national-exam-eyebrow">SUIVI DES EXAMENS NATIONAUX</span>
-          <h1 id="national-exam-stats-title">Statistiques des examens</h1>
-          <p>Une vue claire de vos examens travaillés, des corrections consultées et de votre progression.</p>
         </div>
-        <button className="national-exam-primary-link" type="button" onClick={() => navigate('/client-examens')}>
-          Parcourir les examens <span aria-hidden="true">→</span>
-        </button>
       </header>
 
-      <section className="national-exam-filter-panel" aria-label="Filtres des statistiques">
-        <div className="national-exam-panel-heading">
-          <div><span className="national-exam-kicker">AFFINER L’ANALYSE</span><h2>Filtres</h2></div>
-          <button className="national-exam-reset" type="button" onClick={resetFilters}>Réinitialiser</button>
-        </div>
-        <div className="national-exam-filters">
+      <section className="national-exam-filter-panel" aria-label="Filtres des examens">
+        <div className="national-exam-filters" role="group">
           <label>Année<select value={year} onChange={(event) => { setYear(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les années</option>{years.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
           <label>Matière<select value={subject} onChange={(event) => { setSubject(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les matières</option>{subjects.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
           <label>Option du Bac<select value={option} onChange={(event) => { setOption(event.target.value); setCurrentPage(1); }}><option value="all">Toutes les options</option>{options.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
-          <button className="national-exam-reset national-exam-reset-mobile" type="button" onClick={resetFilters}>Effacer les filtres</button>
         </div>
       </section>
 

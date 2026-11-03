@@ -19,6 +19,7 @@ import {
   ReferenceLine
 } from 'recharts';
 import './ClientContestStatsDashboard.css';
+import './ClientStatsDashboardTheme.css';
 
 // Palette de couleurs premium
 const COLORS = {
@@ -30,6 +31,20 @@ const COLORS = {
   cyan: '#06b6d4',
   muted: '#94a3b8',
   slate: '#0f172a',
+};
+
+const normalizeFilterValue = (value) => String(value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .trim()
+  .toLocaleLowerCase('fr');
+
+const getAttemptYear = (attempt) => {
+  const explicitYear = String(attempt?.year || '').trim();
+  if (explicitYear) return explicitYear;
+
+  const answeredAt = new Date(attempt?.answeredAt);
+  return Number.isNaN(answeredAt.getTime()) ? '' : String(answeredAt.getFullYear());
 };
 
 const formatDate = (val) => {
@@ -67,13 +82,14 @@ export default function ClientContestStatsDashboard({
   // 1. ÉTATS DES FILTRES
   // --------------------------------------------------------------------------
   const [selectedSchool, setSelectedSchool] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('all'); // '7', '30', '90', '180', 'all'
   const [searchTable, setSearchTable] = useState('');
   const [tableYearFilter, setTableYearFilter] = useState('');
   const [tableSort, setTableSort] = useState('date-desc'); // 'date-desc', 'score-desc', 'score-asc'
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedChapterSubject, setSelectedChapterSubject] = useState('ALL');
+  const [selectedAccuracySubject, setSelectedAccuracySubject] = useState('ALL');
   const [selectedAttemptModal, setSelectedAttemptModal] = useState(null);
 
   // Extraire uniquement les concours réels (exclure les concours blancs)
@@ -105,14 +121,28 @@ export default function ClientContestStatsDashboard({
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
   }, [allRealAttempts]);
 
-  // Années disponibles
+  // Années du catalogue et des tentatives, adaptées à l'école sélectionnée.
   const availableYears = useMemo(() => {
     const set = new Set();
-    allRealAttempts.forEach((a) => {
-      if (a.year) set.add(String(a.year));
+
+    schoolCatalog.forEach((contest) => {
+      const school = contest.ecole || contest.school || contest.name;
+      if (selectedSchool && normalizeFilterValue(school) !== normalizeFilterValue(selectedSchool)) return;
+
+      const year = contest.annee ?? contest.year;
+      if (year !== null && year !== undefined && String(year).trim()) set.add(String(year).trim());
     });
-    return Array.from(set).sort((a, b) => Number(b) - Number(a));
-  }, [allRealAttempts]);
+
+    allRealAttempts.forEach((a) => {
+      if (selectedSchool && normalizeFilterValue(a.school) !== normalizeFilterValue(selectedSchool)) return;
+      const year = getAttemptYear(a);
+      if (year) set.add(year);
+    });
+    return Array.from(set).sort((a, b) => {
+      const yearDifference = Number.parseInt(b, 10) - Number.parseInt(a, 10);
+      return Number.isNaN(yearDifference) ? b.localeCompare(a, 'fr') : yearDifference;
+    });
+  }, [schoolCatalog, allRealAttempts, selectedSchool]);
 
   // --------------------------------------------------------------------------
   // 2. FILTRAGE DYNAMIQUE DES TENTATIVES
@@ -121,7 +151,11 @@ export default function ClientContestStatsDashboard({
     const now = Date.now();
     return allRealAttempts.filter((att) => {
       // Filtre école
-      if (selectedSchool && String(att.school || '').toLowerCase() !== selectedSchool.toLowerCase()) {
+      if (selectedSchool && normalizeFilterValue(att.school) !== normalizeFilterValue(selectedSchool)) {
+        return false;
+      }
+      // Filtre année
+      if (selectedYear && getAttemptYear(att) !== selectedYear) {
         return false;
       }
       // Filtre matière
@@ -138,16 +172,7 @@ export default function ClientContestStatsDashboard({
       }
       return true;
     });
-  }, [allRealAttempts, selectedSchool, selectedSubject, selectedPeriod]);
-
-  // Réinitialiser les filtres
-  const handleResetFilters = () => {
-    setSelectedSchool('');
-    setSelectedSubject('');
-    setSelectedPeriod('all');
-    setSearchTable('');
-    setTableYearFilter('');
-  };
+  }, [allRealAttempts, selectedSchool, selectedYear, selectedSubject, selectedPeriod]);
 
   // --------------------------------------------------------------------------
   // 3. CALCUL DES 6 KPIS PRINCIPAUX
@@ -448,46 +473,46 @@ export default function ClientContestStatsDashboard({
   }, [filteredAttempts, subjectPerformanceData, schoolPerformanceData, kpiData]);
 
   // --------------------------------------------------------------------------
-  // 11. ANALYSE DÉTAILLÉE PAR CHAPITRE
+  // 11. ANALYSE DÉTAILLÉE PAR MATIÈRE
   // --------------------------------------------------------------------------
-  const chaptersData = useMemo(() => {
+  const subjectAccuracyData = useMemo(() => {
     const map = new Map();
 
     filteredAttempts.forEach((att) => {
       const answers = Array.isArray(att.answers) ? att.answers : [];
+      const subject = String(att.subject || 'Matière générale').trim();
+      const key = subject.toLocaleLowerCase();
+
+      if (!answers.length) return;
+
+      const current = map.get(key) || {
+        subject,
+        total: 0,
+        correct: 0,
+      };
+
       answers.forEach((ans) => {
-        const chap = (ans.chapter || att.chapter || 'Général').trim();
-        const mat = (att.subject || 'Autres').trim();
-        const key = `${mat}:::${chap}`;
-
-        const cur = map.get(key) || {
-          chapter: chap,
-          subject: mat,
-          total: 0,
-          correct: 0,
-        };
-
-        cur.total += 1;
-        if (ans.correct) cur.correct += 1;
-        map.set(key, cur);
+        current.total += 1;
+        if (ans.correct) current.correct += 1;
       });
+
+      map.set(key, current);
     });
 
-    const list = Array.from(map.values()).map((c) => ({
-      ...c,
-      incorrect: Math.max(0, c.total - c.correct),
-      rate: c.total ? Math.round((c.correct / c.total) * 100) : 0,
-    }));
-
-    return list.sort((a, b) => b.rate - a.rate);
+    return Array.from(map.values()).map((item) => ({
+      ...item,
+      incorrect: Math.max(0, item.total - item.correct),
+      rate: item.total ? Math.round((item.correct / item.total) * 100) : 0,
+    })).sort((a, b) => a.subject.localeCompare(b.subject, 'fr'));
   }, [filteredAttempts]);
 
-  const filteredChapters = useMemo(() => {
-    if (selectedChapterSubject === 'ALL') return chaptersData;
-    return chaptersData.filter((c) =>
-      c.subject.toLowerCase().includes(selectedChapterSubject.toLowerCase())
-    );
-  }, [chaptersData, selectedChapterSubject]);
+  const accuracySubjects = useMemo(() => subjectAccuracyData.map((item) => item.subject), [subjectAccuracyData]);
+  const activeAccuracySubject = accuracySubjects.includes(selectedAccuracySubject) ? selectedAccuracySubject : 'ALL';
+
+  const filteredSubjectAccuracy = useMemo(() => {
+    if (activeAccuracySubject === 'ALL') return subjectAccuracyData;
+    return subjectAccuracyData.filter((item) => item.subject === activeAccuracySubject);
+  }, [subjectAccuracyData, activeAccuracySubject]);
 
   // --------------------------------------------------------------------------
   // 12. HISTORIQUE AVEC RECHERCHE, TRI ET PAGINATION
@@ -541,14 +566,14 @@ export default function ClientContestStatsDashboard({
   const recommendations = useMemo(() => {
     const list = [];
 
-    // Reco 1 : Chapitre le plus faible
-    if (chaptersData.length > 0) {
-      const weakest = [...chaptersData].sort((a, b) => a.rate - b.rate)[0];
+    // Reco 1 : Matière la plus faible
+    if (subjectAccuracyData.length > 0) {
+      const weakest = [...subjectAccuracyData].sort((a, b) => a.rate - b.rate)[0];
       if (weakest && weakest.rate < 70) {
         list.push({
           icon: '🎯',
-          title: `Réviser : ${weakest.chapter}`,
-          desc: `Votre taux de réussite sur ce chapitre est de seulement ${weakest.rate}% (${weakest.incorrect} erreur(s)).`,
+          title: `Réviser : ${weakest.subject}`,
+          desc: `Votre taux de réussite dans cette matière est de ${weakest.rate}% (${weakest.incorrect} erreur(s)).`,
           actionLabel: `Consulter les cours de ${weakest.subject}`,
           onClick: () => navigate('/client-cours'),
         });
@@ -602,7 +627,7 @@ export default function ClientContestStatsDashboard({
     }
 
     return list.slice(0, 3);
-  }, [chaptersData, filteredAttempts, kpiData, schoolPerformanceData, navigate]);
+  }, [subjectAccuracyData, filteredAttempts, kpiData, schoolPerformanceData, navigate]);
 
   const hasData = filteredAttempts.length > 0;
 
@@ -617,15 +642,6 @@ export default function ClientContestStatsDashboard({
             <span className="contest-stats-eyebrow">
               <span>📊</span> ANALYSE DES PERFORMANCES
             </span>
-            <h1 className="contest-stats-title">Statistiques des concours</h1>
-            <p className="contest-stats-subtitle">
-              Suivez vos performances, analysez vos résultats et mesurez votre progression
-              dans les concours des différentes écoles.
-            </p>
-          </div>
-          <div className="contest-stats-live-badge">
-            <span className="contest-stats-live-dot" />
-            <span>Données synchronisées</span>
           </div>
         </div>
 
@@ -638,6 +654,8 @@ export default function ClientContestStatsDashboard({
               value={selectedSchool}
               onChange={(e) => {
                 setSelectedSchool(e.target.value);
+                setSelectedYear('');
+                setTableYearFilter('');
                 setCurrentPage(1);
               }}
             >
@@ -650,7 +668,26 @@ export default function ClientContestStatsDashboard({
             </select>
           </div>
 
-          {/* Filtre 2 : Matière */}
+          {/* Filtre 2 : Année */}
+          <div className="contest-filter-field">
+            <label>Année</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => {
+                setSelectedYear(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="">Toutes les années</option>
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtre 3 : Matière */}
           <div className="contest-filter-field">
             <label>Matière</label>
             <select
@@ -669,7 +706,7 @@ export default function ClientContestStatsDashboard({
             </select>
           </div>
 
-          {/* Filtre 3 : Période */}
+          {/* Filtre 4 : Période */}
           <div className="contest-filter-field">
             <label>Période</label>
             <select
@@ -687,17 +724,6 @@ export default function ClientContestStatsDashboard({
             </select>
           </div>
 
-          {/* Bouton réinitialiser */}
-          <div className="contest-filter-actions">
-            <button
-              type="button"
-              className="contest-filter-reset-btn"
-              onClick={handleResetFilters}
-              title="Réinitialiser tous les filtres"
-            >
-              <span>↺</span> Réinitialiser les filtres
-            </button>
-          </div>
         </div>
       </header>
 
@@ -873,7 +899,7 @@ export default function ClientContestStatsDashboard({
 
               <div style={{ width: '100%', height: 108 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={scoreEvolutionData} margin={{ top: 8, right: 12, left: -10, bottom: 2 }}>
+                  <LineChart data={scoreEvolutionData} margin={{ top: 8, right: 12, left: 8, bottom: 2 }}>
                     <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
                     <XAxis
                       dataKey="name"
@@ -887,7 +913,8 @@ export default function ClientContestStatsDashboard({
                       tickFormatter={(v) => `${v}%`}
                       axisLine={false}
                       tickLine={false}
-                      width={38}
+                      width={54}
+                      tickMargin={8}
                     />
                     <Tooltip
                       content={({ active, payload }) => {
@@ -1103,10 +1130,13 @@ export default function ClientContestStatsDashboard({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={schoolPerformanceData}
-                    margin={{ top: 12, right: 16, left: -10, bottom: 8 }}
+                    margin={{ top: 12, right: 16, left: 8, bottom: 8 }}
                     onClick={(state) => {
                       if (state && state.activeLabel) {
-                        setSelectedSchool((prev) => (prev === state.activeLabel ? '' : state.activeLabel));
+                        setSelectedSchool(selectedSchool === state.activeLabel ? '' : state.activeLabel);
+                        setSelectedYear('');
+                        setTableYearFilter('');
+                        setCurrentPage(1);
                       }
                     }}
                   >
@@ -1121,7 +1151,8 @@ export default function ClientContestStatsDashboard({
                       tickFormatter={(v) => `${v}%`}
                       tick={{ fill: '#64748b', fontSize: 11 }}
                       axisLine={false}
-                      width={42}
+                      width={54}
+                      tickMargin={8}
                     />
                     <Tooltip
                       formatter={(val, name, item) => [
@@ -1172,7 +1203,7 @@ export default function ClientContestStatsDashboard({
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={passRateEvolutionData}
-                    margin={{ top: 12, right: 16, left: -10, bottom: 6 }}
+                    margin={{ top: 12, right: 16, left: 8, bottom: 6 }}
                   >
                     <defs>
                       <linearGradient id="passRateGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1187,7 +1218,8 @@ export default function ClientContestStatsDashboard({
                       tickFormatter={(v) => `${v}%`}
                       tick={{ fontSize: 11, fill: '#64748b' }}
                       axisLine={false}
-                      width={42}
+                      width={54}
+                      tickMargin={8}
                     />
                     <Tooltip
                       formatter={(val, name) => [
@@ -1229,11 +1261,11 @@ export default function ClientContestStatsDashboard({
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={contestComparisonData.data}
-                      margin={{ top: 12, right: 16, left: -10, bottom: 6 }}
+                      margin={{ top: 12, right: 16, left: 8, bottom: 6 }}
                     >
                       <CartesianGrid stroke="#f1f5f9" vertical={false} />
                       <XAxis dataKey="attemptLabel" tick={{ fontSize: 12, fontWeight: 700 }} />
-                      <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} width={42} />
+                      <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} width={54} tickMargin={8} />
                       <Tooltip formatter={(v) => [`${v}%`, 'Score']} />
                       <Bar dataKey="score" name="Score" fill="#7c3aed" radius={[8, 8, 0, 0]} barSize={36} />
                     </BarChart>
@@ -1313,70 +1345,69 @@ export default function ClientContestStatsDashboard({
           </div>
 
           {/* ------------------------------------------------------------------
-              7. ROW 5 : PERFORMANCE PAR CHAPITRE + QUESTIONS À REVOIR
+              7. ROW 5 : PERFORMANCE PAR MATIÈRE + QUESTIONS À REVOIR
               ------------------------------------------------------------------ */}
           <div className="contest-grid-row">
-            {/* Chapitres */}
+            {/* Performance par matière */}
             <article className="contest-panel-card contest-col-7">
               <div className="contest-panel-header">
                 <div className="contest-panel-header-left">
                   <span className="contest-panel-kicker">PRÉCISION THÉMATIQUE</span>
-                  <h2 className="contest-panel-title">Analyse des performances par chapitre</h2>
+                  <h2 className="contest-panel-title">Analyse des performances par matière</h2>
                   <p className="contest-panel-desc">
-                    Taux de réussite par chapitre évalué dans vos concours.
+                    Taux de réussite et réponses évaluées par matière dans vos concours.
                   </p>
                 </div>
               </div>
 
               {/* Filtres par matière */}
               <div className="contest-tabs-pills">
-                {['ALL', 'Mathématiques', 'Physique', 'SVT'].map((m) => (
+                {['ALL', ...accuracySubjects].map((m) => (
                   <button
                     key={m}
                     type="button"
-                    className={`contest-tab-pill ${selectedChapterSubject === m ? 'is-active' : ''}`}
-                    onClick={() => setSelectedChapterSubject(m)}
+                    className={`contest-tab-pill ${activeAccuracySubject === m ? 'is-active' : ''}`}
+                    onClick={() => setSelectedAccuracySubject(m)}
                   >
-                    {m === 'ALL' ? 'Tous les chapitres' : m}
+                    {m === 'ALL' ? 'Toutes les matières' : m}
                   </button>
                 ))}
               </div>
 
-              <div className="contest-chapter-list">
-                {filteredChapters.length > 0 ? (
-                  filteredChapters.map((chap, idx) => (
-                    <div className="contest-chapter-item" key={idx}>
-                      <div className="contest-chapter-item-top">
-                        <span className="contest-chapter-name">{chap.chapter}</span>
+              <div className="contest-subject-list">
+                {filteredSubjectAccuracy.length > 0 ? (
+                  filteredSubjectAccuracy.map((subject) => (
+                    <div className="contest-subject-item" key={subject.subject}>
+                      <div className="contest-subject-item-top">
+                        <span className="contest-subject-name">{subject.subject}</span>
                         <strong
-                          className="contest-chapter-badge"
+                          className="contest-subject-badge"
                           style={{
-                            color: chap.rate >= 70 ? '#059669' : chap.rate >= 50 ? '#d97706' : '#dc2626',
+                            color: subject.rate >= 70 ? '#059669' : subject.rate >= 50 ? '#d97706' : '#dc2626',
                           }}
                         >
-                          {chap.rate}%
+                          {subject.rate}%
                         </strong>
                       </div>
-                      <div className="contest-chapter-track">
+                      <div className="contest-subject-track">
                         <div
-                          className="contest-chapter-fill"
+                          className="contest-subject-fill"
                           style={{
-                            width: `${chap.rate}%`,
-                            background: chap.rate >= 70 ? '#10b981' : chap.rate >= 50 ? '#f59e0b' : '#ef4444',
+                            width: `${subject.rate}%`,
+                            background: subject.rate >= 70 ? '#10b981' : subject.rate >= 50 ? '#f59e0b' : '#ef4444',
                           }}
                         />
                       </div>
-                      <div className="contest-chapter-meta">
-                        <span>{chap.subject}</span>
+                      <div className="contest-subject-meta">
                         <span>
-                          {chap.correct} correcte(s) / {chap.total} question(s) ({chap.incorrect} erreur(s))
+                          {subject.correct} correcte(s) / {subject.total} question(s) ({subject.incorrect} erreur(s))
                         </span>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div style={{ textAlign: 'center', padding: '30px 0', color: '#64748b' }}>
-                    Aucun chapitre évalué dans cette matière pour le moment.
+                    Aucune réponse évaluée par matière pour le moment.
                   </div>
                 )}
               </div>
@@ -1626,7 +1657,6 @@ export default function ClientContestStatsDashboard({
               {recommendations.map((rec, idx) => (
                 <div className="contest-recommendation-card" key={idx}>
                   <div className="contest-recommendation-top">
-                    <div className="contest-recommendation-icon">{rec.icon}</div>
                     <div className="contest-recommendation-copy">
                       <h4>{rec.title}</h4>
                       <p>{rec.desc}</p>

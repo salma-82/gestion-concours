@@ -8,6 +8,7 @@ import ClientNationalExamStatsDashboard from './ClientNationalExamStatsDashboard
 import ClientCourseStatsDashboard from './ClientCourseStatsDashboard';
 import ClientSummaryStatsDashboard from './ClientSummaryStatsDashboard';
 import ClientGeneralStatsDashboard from './ClientGeneralStatsDashboard';
+import './StatsKpiCards.css';
 import {
   fetchStudentActivityEvents,
   setStudentActivityCompleted

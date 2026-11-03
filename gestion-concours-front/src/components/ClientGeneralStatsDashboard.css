@@ -41,6 +41,10 @@
   box-shadow: 0 2px 5px rgba(2, 132, 199, 0.07), inset 0 1px 0 #ffffff;
 }
 
+.general-stats-header > div > .general-stats-eyebrow {
+  margin: 6px 0 0;
+}
+
 .general-stats-header h1 {
   margin: 0;
   color: #1e293b;
@@ -243,7 +247,7 @@
 
 .general-stats-kpi-label {
   overflow: hidden;
-  color: #64748b;
+  color: #0f172a;
   font-size: 11px;
   font-weight: 750;
   text-overflow: ellipsis;
@@ -279,11 +283,6 @@
 
 .general-stats-comparison small {
   font-size: inherit;
-}
-
-.general-stats-comparison .is-positive {
-  color: #16a34a;
-  font-weight: 750;
 }
 
 .general-stats-comparison .is-negative {
@@ -998,12 +997,6 @@
   border-radius: 14px;
   background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%);
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.general-stats-recommendation > span {
-  color: #d97706;
-  font-size: 15px;
-  line-height: 1;
 }
 
 .general-stats-recommendation p {

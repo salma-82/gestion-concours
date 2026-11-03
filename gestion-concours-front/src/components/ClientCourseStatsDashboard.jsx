@@ -19,6 +19,7 @@ import {
   ReferenceLine
 } from 'recharts';
 import './ClientCourseStatsDashboard.css';
+import './ClientStatsDashboardTheme.css';
 
 const COLORS = {
   primary: '#2563eb',
@@ -323,60 +324,6 @@ export default function ClientCourseStatsDashboard({
     };
   }, [allCourseActivities, programChapters]);
 
-  // --------------------------------------------------------------------------
-  // 7. STUDY STREAKS (SÉRIE D'APPRENTISSAGE)
-  // --------------------------------------------------------------------------
-  const streakStats = useMemo(() => {
-    const daysSet = new Set();
-    allCourseActivities.forEach((act) => {
-      Object.entries(act.durationByDay || {}).forEach(([day, sec]) => {
-        if (Number(sec) > 0) daysSet.add(day);
-      });
-      if (act.lastViewedAt) {
-        const d = new Date(act.lastViewedAt);
-        if (!isNaN(d.getTime())) {
-          daysSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-        }
-      }
-    });
-
-    const daysSorted = Array.from(daysSet).sort();
-
-    // Calculate current streak
-    let currentStreak = 0;
-    const cursor = new Date();
-    cursor.setHours(0, 0, 0, 0);
-    const formatDateKey = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-
-    let checkKey = formatDateKey(cursor);
-    if (!daysSet.has(checkKey)) {
-      cursor.setDate(cursor.getDate() - 1);
-      checkKey = formatDateKey(cursor);
-    }
-    while (daysSet.has(checkKey)) {
-      currentStreak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-      checkKey = formatDateKey(cursor);
-    }
-
-    // Calculate best streak
-    let bestStreak = 0;
-    let running = 0;
-    let prev = null;
-    daysSorted.forEach((day) => {
-      const curDate = new Date(`${day}T00:00:00Z`);
-      const prevDate = prev ? new Date(`${prev}T00:00:00Z`) : null;
-      if (prevDate && (curDate - prevDate) / 86400000 === 1) {
-        running += 1;
-      } else {
-        running = 1;
-      }
-      bestStreak = Math.max(bestStreak, running);
-      prev = day;
-    });
-
-    return { currentStreak, bestStreak, totalActiveDays: daysSet.size };
-  }, [allCourseActivities]);
 
   // --------------------------------------------------------------------------
   // 8. CHART 1: ÉVOLUTION DU TEMPS CONSACRÉ AUX COURS (DAILY STUDY TIME)
@@ -589,18 +536,6 @@ export default function ClientCourseStatsDashboard({
     return sessionsTableData.slice(start, start + itemsPerPage);
   }, [sessionsTableData, currentPage]);
 
-  const handleResetFilters = () => {
-    setSelectedSubject('');
-    setSelectedChapter('');
-    setSelectedPeriod('all');
-    setSelectedStatus('all');
-    setSearchTable('');
-    setTableSubjectFilter('');
-    setTableStatusFilter('all');
-    setTableSort('date-desc');
-    setCurrentPage(1);
-  };
-
   // --------------------------------------------------------------------------
   // RENDER EMPTY STATE IF NO CATALOG AND NO ACTIVITY
   // --------------------------------------------------------------------------
@@ -611,10 +546,6 @@ export default function ClientCourseStatsDashboard({
           <div className="course-stats-header-top">
             <div>
               <span className="course-stats-eyebrow">DASHBOARD COURS</span>
-              <h1 className="course-stats-title">Statistiques des Cours du Bac</h1>
-              <p className="course-stats-subtitle">
-                Suivez votre temps d'étude, la progression de votre programme et l'avancement de vos chapitres de révision.
-              </p>
             </div>
           </div>
         </section>
@@ -646,14 +577,6 @@ export default function ClientCourseStatsDashboard({
         <div className="course-stats-header-top">
           <div>
             <span className="course-stats-eyebrow">SUIVI PÉDAGOGIQUE DU BAC</span>
-            <h1 className="course-stats-title">Statistiques des Cours du Bac</h1>
-            <p className="course-stats-subtitle">
-              Mesurez votre assiduité, visualisez votre couverture du programme et optimisez votre planning de révision par matière.
-            </p>
-          </div>
-          <div className="course-stats-live-badge">
-            <span className="course-stats-live-dot" />
-            <span>Programme synchronisé</span>
           </div>
         </div>
 
@@ -718,42 +641,6 @@ export default function ClientCourseStatsDashboard({
             </select>
           </div>
 
-          {/* Reset */}
-          <button
-            type="button"
-            className="course-filter-reset-btn"
-            onClick={handleResetFilters}
-            title="Réinitialiser tous les filtres"
-          >
-            <span>↺</span> Réinitialiser
-          </button>
-        </div>
-      </section>
-
-      {/* --------------------------------------------------------------------
-         2. SÉRIE DE RÉVISION (STREAK BANNER)
-         -------------------------------------------------------------------- */}
-      <section className="course-streak-banner">
-        <div className="course-streak-left">
-          <div className="course-streak-icon">🔥</div>
-          <div className="course-streak-text">
-            <h4>Rythme & Régularité d'apprentissage</h4>
-            <p>La régularité est la clé de la réussite au Baccalauréat et aux concours nationaux.</p>
-          </div>
-        </div>
-        <div className="course-streak-pills">
-          <div className="course-streak-pill">
-            <span>Série actuelle :</span>
-            <strong>{streakStats.currentStreak} jour{streakStats.currentStreak > 1 ? 's' : ''}</strong>
-          </div>
-          <div className="course-streak-pill">
-            <span>Record :</span>
-            <strong>{streakStats.bestStreak} jour{streakStats.bestStreak > 1 ? 's' : ''}</strong>
-          </div>
-          <div className="course-streak-pill">
-            <span>Jours actifs :</span>
-            <strong>{streakStats.totalActiveDays} j</strong>
-          </div>
         </div>
       </section>
 
@@ -863,8 +750,8 @@ export default function ClientCourseStatsDashboard({
             </span>
           </div>
 
-          <div className="course-panel-body" style={{ minHeight: 300 }}>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="course-panel-body" style={{ minHeight: 230 }}>
+            <ResponsiveContainer width="100%" height={230}>
               <AreaChart data={studyTimeTrendData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                 <defs>
                   <linearGradient id="courseTimeGrad" x1="0" y1="0" x2="0" y2="1">
@@ -932,7 +819,7 @@ export default function ClientCourseStatsDashboard({
           <div className="course-panel-body">
             <div className="course-donut-wrapper">
               <div className="course-donut-chart-container">
-                <ResponsiveContainer width={220} height={220}>
+                <ResponsiveContainer width={184} height={184}>
                   <PieChart>
                     <Pie
                       data={chaptersDistributionData}
@@ -940,8 +827,8 @@ export default function ClientCourseStatsDashboard({
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      innerRadius={65}
-                      outerRadius={95}
+                      innerRadius={53}
+                      outerRadius={79}
                       paddingAngle={3}
                       stroke="none"
                     >
@@ -1002,9 +889,9 @@ export default function ClientCourseStatsDashboard({
             </div>
           </div>
 
-          <div className="course-panel-body" style={{ minHeight: 280 }}>
+          <div className="course-panel-body" style={{ minHeight: 220 }}>
             {subjectProgressData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart
                   data={subjectProgressData}
                   layout="vertical"
@@ -1048,9 +935,9 @@ export default function ClientCourseStatsDashboard({
             <span className="course-count-badge">Temps réel</span>
           </div>
 
-          <div className="course-panel-body" style={{ minHeight: 280 }}>
+          <div className="course-panel-body" style={{ minHeight: 220 }}>
             {subjectTimeComparisonData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={subjectTimeComparisonData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="subject" stroke="#334155" fontSize={11.5} fontWeight={700} tickLine={false} />
@@ -1081,7 +968,6 @@ export default function ClientCourseStatsDashboard({
         {/* Matières les plus étudiées */}
         <div className="course-insight-card is-strength">
           <div className="course-insight-head">
-            <div className="course-insight-head-icon">🏆</div>
             <div className="course-insight-head-text">
               <h3>Matières les plus étudiées</h3>
               <p>Disciplines où votre investissement en temps est le plus fort</p>
@@ -1111,7 +997,6 @@ export default function ClientCourseStatsDashboard({
         {/* Matières nécessitant de l'attention */}
         <div className="course-insight-card is-improvement">
           <div className="course-insight-head">
-            <div className="course-insight-head-icon">⚡</div>
             <div className="course-insight-head-text">
               <h3>Matières à prioriser</h3>
               <p>Matières du programme avec le moins d'avancement</p>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { recordStudentActivity, setStudentActivityCompleted } from '../studentProgress';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { readStudentProgress, recordStudentActivity, setStudentActivityCompleted } from '../studentProgress';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
 import { toBackendResourceUrl } from '../backendResourceUrl';
 
@@ -161,7 +161,6 @@ const EXAM_MATIERES = [
 ];
 
 export default function ClientExamens() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filiereParam = searchParams.get('filiere') || '';
   const requestedExamId = searchParams.get('examId') || '';
@@ -202,7 +201,15 @@ export default function ClientExamens() {
   const [viewMode, setViewMode] = useState('scroll'); // 'scroll' ou 'single'
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showThumbnails, setShowThumbnails] = useState(true);
+  const [isFinishingExam, setIsFinishingExam] = useState(false);
+  const [finishExamError, setFinishExamError] = useState('');
+  const [completedActivityIds, setCompletedActivityIds] = useState(() => new Set(
+    readStudentProgress().filter((activity) => activity.completed).map((activity) => activity.id)
+  ));
   const openedExamRequestRef = useRef('');
+
+  const activeActivityId = activeExam ? `Examen national:${activeExam.id}:${activeDocType}` : '';
+  const activeExamCompleted = completedActivityIds.has(activeActivityId);
 
   useEffect(() => {
     const stage = activeExam ? activeDocType : 'selection';
@@ -283,6 +290,21 @@ export default function ClientExamens() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [selectedMatiereCard]);
 
+  const handleSelectDocument = (type) => {
+    if (!activeExam || activeDocType === type) return;
+    setActiveDocType(type);
+    recordStudentActivity({
+      type: 'Examen national',
+      resourceId: `${activeExam.id}:${type}`,
+      title: activeExam.titre || activeExam.title || `${type === 'correction' ? 'Correction' : 'Épreuve'} ${activeExam.annee || ''}`.trim(),
+      subject: getExamMatiere(activeExam) || selectedMatiereCard || '',
+      chapter: activeExam.annee ? String(activeExam.annee) : ''
+    });
+    setCurrentPage(1);
+    setZoomLevel(100);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     if (!requestedExamId) {
       openedExamRequestRef.current = '';
@@ -303,10 +325,22 @@ export default function ClientExamens() {
   };
 
   const handleFinishExam = async () => {
-    if (!activeExam) return;
-    const activityId = `Examen national:${activeExam.id}:${activeDocType}`;
-    await setStudentActivityCompleted(activityId, true);
-    navigate('/client-dashboard?mode=exams');
+    if (!activeExam || isFinishingExam || activeExamCompleted) return;
+    const activityId = activeActivityId;
+    setIsFinishingExam(true);
+    setFinishExamError('');
+    try {
+      const saved = await setStudentActivityCompleted(activityId, true);
+      if (!saved) {
+        setFinishExamError('La fin de l’examen n’a pas pu être enregistrée. Réessayez.');
+        return;
+      }
+      setCompletedActivityIds((current) => new Set(current).add(activityId));
+    } catch {
+      setFinishExamError('La fin de l’examen n’a pas pu être enregistrée. Réessayez.');
+    } finally {
+      setIsFinishingExam(false);
+    }
   };
 
   const getMatiereBadgeStyle = (matiere) => {
@@ -389,9 +423,10 @@ export default function ClientExamens() {
           {activeExam && <div style={{ ...(activeExam && !isSidebarCollapsed ? { gridColumn: '1 / -1', gridRow: '1' } : {}), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', width: '100%', position: 'sticky', top: 0, zIndex: 40, background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none', padding: 0 }}>
             <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des examens' : 'Fermer le menu des examens'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '48px', height: '48px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '12px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '8px', marginLeft: 'auto' }}>
-              <button type="button" onClick={() => setActiveDocType('sujet')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'sujet' ? '#2563eb' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff', color: activeDocType === 'sujet' ? '#2563eb' : '#475569', fontWeight: 700, cursor: 'pointer' }}>Sujet</button>
-              <button type="button" disabled={!activeExam.pdfCorrectionUrl && !activeExam.correctionPageImages?.length} onClick={() => setActiveDocType('correction')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'correction' ? '#059669' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff', color: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? '#059669' : '#94a3b8', fontWeight: 700, cursor: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? 'pointer' : 'not-allowed' }}>Corrigé</button>
-              <button type="button" onClick={handleFinishExam} style={{ padding: '10px 16px', border: '1px solid #1d4ed8', borderRadius: '9px', background: '#2563eb', color: '#ffffff', fontWeight: 750, cursor: 'pointer', boxShadow: '0 3px 10px rgba(37,99,235,0.2)' }}>Terminer</button>
+              <button type="button" onClick={() => handleSelectDocument('sujet')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'sujet' ? '#2563eb' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff', color: activeDocType === 'sujet' ? '#2563eb' : '#475569', fontWeight: 700, cursor: 'pointer' }}>Sujet</button>
+              <button type="button" disabled={!activeExam.pdfCorrectionUrl && !activeExam.correctionPageImages?.length} onClick={() => handleSelectDocument('correction')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'correction' ? '#059669' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff', color: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? '#059669' : '#94a3b8', fontWeight: 700, cursor: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? 'pointer' : 'not-allowed' }}>Corrigé</button>
+              <button type="button" onClick={handleFinishExam} disabled={isFinishingExam || activeExamCompleted} style={{ padding: '10px 16px', border: `1px solid ${activeExamCompleted ? '#059669' : '#1d4ed8'}`, borderRadius: '9px', background: activeExamCompleted ? '#059669' : '#2563eb', color: '#ffffff', fontWeight: 750, cursor: isFinishingExam ? 'wait' : activeExamCompleted ? 'default' : 'pointer', opacity: isFinishingExam ? 0.72 : 1, boxShadow: '0 3px 10px rgba(37,99,235,0.2)' }}>{isFinishingExam ? 'Enregistrement…' : activeExamCompleted ? 'Terminé ✓' : 'Terminer'}</button>
+              {finishExamError && <span role="alert" style={{ color: '#b91c1c', fontSize: '12px', fontWeight: 600 }}>{finishExamError}</span>}
             </div>
           </div>}
           <main style={{ ...(activeExam && !isSidebarCollapsed ? { gridColumn: '2', gridRow: '2' } : {}), flex: '1 1 auto', width: '100%', minWidth: 0 }}>
@@ -503,7 +538,7 @@ export default function ClientExamens() {
             {/* Sélecteur Sujet / Corrigé discret à droite */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <button
-                onClick={() => setActiveDocType('sujet')}
+                onClick={() => handleSelectDocument('sujet')}
                 style={{
                   padding: '5px 14px',
                   borderRadius: '8px',
@@ -524,7 +559,7 @@ export default function ClientExamens() {
               <button
                 onClick={() => {
                   if (activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0)) {
-                    setActiveDocType('correction');
+                    handleSelectDocument('correction');
                   }
                 }}
                 disabled={!activeExam.pdfCorrectionUrl && (!activeExam.correctionPageImages || activeExam.correctionPageImages.length === 0)}

@@ -1,0 +1,523 @@
+/* Shared visual language for the five category statistics dashboards. */
+:is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root
+) {
+  --stats-ink: #1e293b;
+  --stats-muted: #64748b;
+  --stats-line: rgba(226, 232, 240, 0.88);
+  --stats-surface: #fff;
+  --stats-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05),
+    0 8px 10px -6px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  width: min(100%, 1460px);
+  max-width: 1460px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 8px 0 24px;
+  box-sizing: border-box;
+  color: var(--stats-ink);
+  font-family: 'Inter', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root
+) *,
+:is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root
+) *::before,
+:is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root
+) *::after {
+  box-sizing: border-box;
+}
+
+/* Header hierarchy */
+:is(.contest-stats-header, .mock-exam-header, .course-stats-header, .summary-stats-header) {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 6px 4px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(
+  .contest-stats-header-top,
+  .mock-exam-header-top,
+  .course-stats-header-top,
+  .summary-stats-header-top,
+  .national-exam-hero
+) {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 12px;
+}
+
+:is(.contest-stats-eyebrow, .mock-exam-eyebrow, .course-stats-eyebrow, .summary-stats-eyebrow, .national-exam-eyebrow) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 7px;
+  padding: 4px 10px;
+  border: 1px solid rgba(186, 230, 253, 0.9);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #eff6ff 0%, #e0f2fe 100%);
+  color: #0284c7;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.07), inset 0 1px 0 #fff;
+}
+
+:is(.contest-panel-kicker, .mock-exam-panel-kicker, .course-panel-kicker, .summary-panel-kicker, .national-exam-kicker) {
+  color: #0284c7;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+:is(.contest-stats-title, .mock-exam-title, .course-stats-title, .summary-stats-title, .national-exam-hero h1) {
+  margin: 0;
+  color: #1e293b;
+  font-size: clamp(26px, 2.5vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+}
+
+:is(.contest-stats-subtitle, .mock-exam-subtitle, .course-stats-subtitle, .summary-stats-subtitle, .national-exam-hero p) {
+  max-width: 780px;
+  margin: 7px 0 0;
+  color: var(--stats-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Filter panels and controls */
+:is(.contest-stats-filters-bar, .mock-exam-filters-bar, .course-stats-filters-bar, .summary-stats-filters-bar, .national-exam-filter-panel) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--stats-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  box-shadow: var(--stats-shadow);
+}
+
+:is(.contest-filter-field, .mock-exam-filter-field, .course-filter-field, .summary-filter-field, .national-exam-filters label, .national-exam-period) {
+  color: var(--stats-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+:is(.contest-filter-field label, .mock-exam-filter-field label, .course-filter-field label, .summary-filter-field label, .national-exam-filters label, .national-exam-period) {
+  color: var(--stats-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+:is(.contest-stats-filters-bar, .mock-exam-filters-bar, .course-stats-filters-bar, .summary-stats-filters-bar, .national-exam-filter-panel) :is(select, input),
+:is(.contest-filter-field, .mock-exam-filter-field, .course-filter-field, .summary-filter-field) :is(select, input),
+:is(.national-exam-filters, .national-exam-period) select {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: 0;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  color: #1e293b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), inset 0 1px 0 #fff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+:is(.contest-stats-filters-bar, .mock-exam-filters-bar, .course-stats-filters-bar, .summary-stats-filters-bar, .national-exam-filter-panel) :is(select, input):focus,
+:is(.contest-filter-field, .mock-exam-filter-field, .course-filter-field, .summary-filter-field) :is(select, input):focus,
+:is(.national-exam-filters, .national-exam-period) select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), inset 0 1px 0 #fff;
+}
+
+/* KPI grids share the same four-column rhythm and card treatment. */
+:is(.contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 14px;
+}
+
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi) {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  min-width: 0;
+  min-height: 96px;
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid var(--stats-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #fafbfc 100%);
+  box-shadow: var(--stats-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.08), 0 10px 14px -6px rgba(15, 23, 42, 0.04), inset 0 1px 0 #fff;
+}
+
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi)::after {
+  position: absolute;
+  z-index: 0;
+  right: -25px;
+  bottom: -36px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.055);
+  content: '';
+  pointer-events: none;
+}
+
+:is(.contest-kpi-icon, .mock-exam-kpi-icon, .course-kpi-icon, .summary-kpi-icon, .national-exam-kpi-icon) {
+  z-index: 1;
+  display: grid;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 11px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 17px;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04), inset 0 1px 0 #fff;
+}
+
+:is(.contest-kpi-icon, .mock-exam-kpi-icon, .course-kpi-icon, .summary-kpi-icon, .national-exam-kpi-icon) svg {
+  width: 19px;
+  height: 19px;
+}
+
+:is(.contest-kpi-top, .contest-kpi-body, .mock-exam-kpi-top, .mock-exam-kpi-main, .course-kpi-top, .course-kpi-main, .summary-kpi-top, .summary-kpi-main) {
+  display: contents;
+}
+
+:is(.contest-kpi-label, .mock-exam-kpi-title, .course-kpi-title, .summary-kpi-title, .national-exam-kpi-label) {
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+:is(.contest-kpi-value, .mock-exam-kpi-value, .course-kpi-value, .summary-kpi-value, .national-exam-kpi) > strong,
+:is(.contest-kpi-value, .mock-exam-kpi-value, .course-kpi-value, .summary-kpi-value) {
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  min-width: 0;
+  margin: 2px 0 0;
+  color: #0f172a;
+  font-size: clamp(20px, 1.8vw, 25px);
+  font-weight: 850;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+:is(.contest-kpi-note, .contest-kpi-badge, .mock-exam-kpi-note, .mock-exam-kpi-badge, .course-kpi-note, .course-kpi-badge, .summary-kpi-note, .summary-kpi-badge, .national-exam-kpi small) {
+  z-index: 1;
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: #718096;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Shared chart, analysis, history, and recommendation surfaces. */
+:is(.contest-panel-card, .mock-exam-panel-card, .course-panel-card, .summary-panel-card, .national-exam-panel, .national-exam-history, .contest-insight-card, .mock-exam-insight-card, .summary-insight-card) {
+  min-width: 0;
+  margin-bottom: 0 !important;
+  padding: 14px;
+  border: 1px solid var(--stats-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #fbfcfe 100%);
+  box-shadow: var(--stats-shadow);
+}
+
+:is(.contest-panel-header, .mock-exam-panel-header, .course-panel-header, .summary-panel-header, .national-exam-panel-heading, .national-exam-section-title) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+:is(.contest-panel-title, .mock-exam-panel-title, .course-panel-title, .summary-panel-title, .national-exam-panel-heading h2, .national-exam-panel-heading h3, .national-exam-section-title h2) {
+  margin: 3px 0 0;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+}
+
+:is(.contest-panel-desc, .mock-exam-panel-subtitle, .course-panel-subtitle, .summary-panel-subtitle, .national-exam-section-title p) {
+  margin: 4px 0 0;
+  color: var(--stats-muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='-col-']) {
+  min-width: 0;
+}
+
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-12']) { grid-column: span 12; }
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-8']) { grid-column: span 8; }
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-7']) { grid-column: span 7; }
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-6']) { grid-column: span 6; }
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-5']) { grid-column: span 5; }
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-4']) { grid-column: span 4; }
+
+:is(.contest-insights-grid, .mock-exam-insights-grid, .course-insights-grid, .summary-insights-grid, .national-exam-recommendation-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 12px !important;
+}
+
+:is(.contest-recommendations-grid, .mock-exam-recommendations-grid, .course-recommendations-grid, .summary-recommendations-grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+:is(.contest-recommendation-card, .mock-exam-recommendation-card, .course-recommendation-card, .summary-recommendation-card, .national-exam-recommendation-grid article) {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--stats-line);
+  border-radius: 13px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.035), inset 0 1px 0 #fff;
+}
+
+/* History tables keep their existing filters, actions, and pagination. */
+:is(.contest-table-container, .mock-exam-table-container, .course-table-container, .summary-table-container, .national-exam-table-scroll) {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e8edf4;
+  border-radius: 12px;
+  background: #fff;
+}
+
+:is(.contest-table, .mock-exam-table, .course-table, .summary-table, .national-exam-history table) {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  text-align: left;
+}
+
+:is(.contest-table, .mock-exam-table, .course-table, .summary-table, .national-exam-history table) th {
+  padding: 10px 11px;
+  background: #f7f9fc;
+  color: #728197;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.contest-table, .mock-exam-table, .course-table, .summary-table, .national-exam-history table) td {
+  padding: 11px;
+  border-top: 1px solid #edf1f6;
+  color: #52647d;
+  font-size: 10px;
+}
+
+:is(.contest-table-toolbar, .mock-exam-table-toolbar, .course-table-toolbar, .summary-table-toolbar, .national-exam-table-filters) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 10px 0;
+}
+
+:is(.contest-search-input, .mock-exam-search-input, .course-search-input, .summary-search-input, .national-exam-table-filters input),
+:is(.mock-exam-table-select, .course-table-select, .summary-table-select) {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #d7e0ea;
+  border-radius: 9px;
+  outline: 0;
+  background: #fff;
+  color: #1e293b;
+  font: inherit;
+  font-size: 11px;
+}
+
+:is(.contest-pagination, .mock-exam-pagination, .course-pagination, .summary-pagination, .national-exam-pagination) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 11px;
+  color: #718096;
+  font-size: 10px;
+}
+
+:is(.contest-page-btn, .mock-exam-page-btn, .course-page-btn, .summary-page-btn, .national-exam-pagination button) {
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid #dfe7f1;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+:is(.contest-page-btn.is-active, .mock-exam-page-btn.is-active, .course-page-btn.is-active, .summary-page-btn.is-active) {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .national-exam-stats, .summary-stats-root) :is(button, a) {
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+@media (max-width: 1320px) {
+  :is(.contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  :is(.national-exam-chart-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  :is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .national-exam-stats, .summary-stats-root) {
+    padding: 4px 0 24px;
+  }
+
+  :is(.contest-stats-header-top, .mock-exam-header-top, .course-stats-header-top, .summary-stats-header-top, .national-exam-hero) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  :is(.contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  :is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='-col-']) {
+    grid-column: span 1;
+  }
+
+  :is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='col-12']) {
+    grid-column: 1 / -1;
+  }
+
+  :is(.contest-recommendations-grid, .mock-exam-recommendations-grid, .course-recommendations-grid, .summary-recommendations-grid, .national-exam-recommendation-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  :is(.contest-stats-title, .mock-exam-title, .course-stats-title, .summary-stats-title, .national-exam-hero h1) {
+    font-size: 26px;
+  }
+
+  :is(.contest-stats-header, .mock-exam-header, .course-stats-header, .summary-stats-header, .national-exam-hero) {
+    padding-inline: 2px;
+  }
+
+  :is(.contest-stats-filters-bar, .mock-exam-filters-bar, .course-stats-filters-bar, .summary-stats-filters-bar, .national-exam-filter-panel) {
+    gap: 8px;
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  :is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row, .contest-insights-grid, .mock-exam-insights-grid, .course-insights-grid, .summary-insights-grid, .national-exam-chart-grid, .national-exam-recommendation-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row) > :is([class*='-col-']) {
+    grid-column: 1 / -1;
+  }
+
+  :is(.contest-recommendations-grid, .mock-exam-recommendations-grid, .course-recommendations-grid, .summary-recommendations-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.contest-pagination, .mock-exam-pagination, .course-pagination, .summary-pagination, .national-exam-pagination) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

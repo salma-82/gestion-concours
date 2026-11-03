@@ -22,6 +22,21 @@ const categoryForMode = {
 
 export const normalizeActivityCategory = (type) => CATEGORY_BY_TYPE[String(type || '').trim().toLocaleLowerCase('fr-FR')] || '';
 
+export const isNationalExamActivityEvent = (event) =>
+  normalizeActivityCategory(event?.type) === 'Examen national';
+
+export const isNationalExamCorrectionEvent = (event) => {
+  if (!isNationalExamActivityEvent(event) || !['VIEW', 'COMPLETE'].includes(String(event?.eventType || '').toUpperCase())) return false;
+  const resourceSuffix = String(event?.resourceId || '').split(':').slice(1).join(':');
+  const document = [event?.resourceVariant, event?.documentType, resourceSuffix, event?.title]
+    .filter(Boolean)
+    .join(' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('fr-FR');
+  return document.includes('correction') || document.includes('corrige');
+};
+
 export const aggregateStudentActivityEvents = (events = []) => {
   const groups = new Map();
   const validEvents = (Array.isArray(events) ? events : []).filter((event) => normalizeActivityCategory(event.type))

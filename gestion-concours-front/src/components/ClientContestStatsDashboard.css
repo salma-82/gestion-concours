@@ -70,34 +70,6 @@
   max-width: 780px;
 }
 
-.contest-stats-live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #475569;
-}
-
-.contest-stats-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
 /* Filters row */
 .contest-stats-filters-bar {
   display: flex;
@@ -147,35 +119,6 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.contest-filter-actions {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  margin-top: auto;
-}
-
-.contest-filter-reset-btn {
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 12px;
-  border: 1.5px solid #cbd5e1;
-  background: #ffffff;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.contest-filter-reset-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #94a3b8;
-}
-
 /* --------------------------------------------------------------------------
    2. MAIN KPI STAT CARDS (6 CARDS GRID)
    -------------------------------------------------------------------------- */
@@ -221,11 +164,6 @@
   line-height: 1.3;
 }
 
-.contest-stats-live-badge {
-  padding: 4px 9px;
-  font-size: 11px;
-}
-
 .contest-stats-filters-bar {
   gap: 7px;
   padding: 8px 11px;
@@ -240,8 +178,7 @@
   font-size: 10px;
 }
 
-.contest-filter-field select,
-.contest-filter-reset-btn {
+.contest-filter-field select {
   height: 32px;
 }
 
@@ -437,8 +374,8 @@
 
 .contest-kpi-label {
   font-size: 12.5px;
-  font-weight: 700;
-  color: #64748b;
+  font-weight: 800;
+  color: #000;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -789,7 +726,7 @@
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
-.contest-chapter-list {
+.contest-subject-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -798,7 +735,7 @@
   padding-right: 4px;
 }
 
-.contest-chapter-item {
+.contest-subject-item {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -809,32 +746,32 @@
   transition: all 0.2s ease;
 }
 
-.contest-chapter-item:hover {
+.contest-subject-item:hover {
   background: #ffffff;
   border-color: #cbd5e1;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
 }
 
-.contest-chapter-item-top {
+.contest-subject-item-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.contest-chapter-name {
+.contest-subject-name {
   font-size: 14px;
   font-weight: 750;
   color: #1e293b;
 }
 
-.contest-chapter-badge {
+.contest-subject-badge {
   font-size: 13px;
   font-weight: 800;
   color: #2563eb;
 }
 
-.contest-chapter-track {
+.contest-subject-track {
   width: 100%;
   height: 8px;
   background: #e2e8f0;
@@ -843,13 +780,13 @@
   position: relative;
 }
 
-.contest-chapter-fill {
+.contest-subject-fill {
   height: 100%;
   border-radius: 999px;
   transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.contest-chapter-meta {
+.contest-subject-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1128,19 +1065,6 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-}
-
-.contest-recommendation-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  background: #eff6ff;
-  color: #2563eb;
-  flex-shrink: 0;
 }
 
 .contest-recommendation-copy h4 {
@@ -1486,10 +1410,6 @@
   line-height: 1.4;
 }
 
-.contest-stats-live-badge {
-  padding: 5px 11px;
-}
-
 .contest-stats-filters-bar {
   gap: 9px;
   padding: 10px 14px;
@@ -1500,8 +1420,7 @@
   gap: 4px;
 }
 
-.contest-filter-field select,
-.contest-filter-reset-btn {
+.contest-filter-field select {
   height: 36px;
 }
 

@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { filterByStudentPack } from '../packAccess';
 import './ClientSummaryStatsDashboard.css';
+import './ClientStatsDashboardTheme.css';
 
 const API_BASE = '';
 
@@ -541,18 +542,6 @@ export default function ClientSummaryStatsDashboard({
     return sessionsTableData.slice(start, start + itemsPerPage);
   }, [sessionsTableData, currentPage]);
 
-  const handleResetFilters = () => {
-    setSelectedSubject('');
-    setSelectedChapter('');
-    setSelectedPeriod('all');
-    setSelectedStatus('all');
-    setSearchTable('');
-    setTableSubjectFilter('');
-    setTableStatusFilter('all');
-    setTableSort('date-desc');
-    setCurrentPage(1);
-  };
-
   // --------------------------------------------------------------------------
   // RENDER EMPTY STATE IF NO DATA
   // --------------------------------------------------------------------------
@@ -563,10 +552,6 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-stats-header-top">
             <div>
               <span className="summary-stats-eyebrow">DASHBOARD RÉSUMÉS</span>
-              <h1 className="summary-stats-title">Statistiques des Résumés & Fiches</h1>
-              <p className="summary-stats-subtitle">
-                Suivez vos lectures de fiches synthétiques, visualisez vos matières préférées et accédez à vos résumés favoris.
-              </p>
             </div>
           </div>
         </section>
@@ -598,14 +583,6 @@ export default function ClientSummaryStatsDashboard({
         <div className="summary-stats-header-top">
           <div>
             <span className="summary-stats-eyebrow">FICHES DE SYNTHÈSE</span>
-            <h1 className="summary-stats-title">Statistiques des Résumés</h1>
-            <p className="summary-stats-subtitle">
-              Mesurez vos révisions, suivez vos fiches maîtrisées et identifiez les chapitres à relire pour vos épreuves.
-            </p>
-          </div>
-          <div className="summary-stats-live-badge">
-            <span className="summary-stats-live-dot" />
-            <span>Fiches synchronisées</span>
           </div>
         </div>
 
@@ -671,15 +648,6 @@ export default function ClientSummaryStatsDashboard({
             </select>
           </div>
 
-          {/* Reset button */}
-          <button
-            type="button"
-            className="summary-filter-reset-btn"
-            onClick={handleResetFilters}
-            title="Réinitialiser tous les filtres"
-          >
-            <span>↺</span> Réinitialiser
-          </button>
         </div>
       </section>
 
@@ -995,7 +963,6 @@ export default function ClientSummaryStatsDashboard({
         {/* Fiches les plus consultées */}
         <div className="summary-insight-card is-top">
           <div className="summary-insight-head">
-            <div className="summary-insight-head-icon">🔥</div>
             <div className="summary-insight-head-text">
               <h3>Fiches les plus consultées</h3>
               <p>Résumés sur lesquels vous revenez le plus souvent</p>
@@ -1025,7 +992,6 @@ export default function ClientSummaryStatsDashboard({
         {/* Fiches à découvrir */}
         <div className="summary-insight-card is-discover">
           <div className="summary-insight-head">
-            <div className="summary-insight-head-icon">💡</div>
             <div className="summary-insight-head-text">
               <h3>Fiches à découvrir</h3>
               <p>Résumés disponibles non encore consultés dans votre programme</p>

@@ -22,6 +22,7 @@ import {
 import MathContent from './MathContent';
 import { readStudentMistakes } from '../studentProgress';
 import './ClientMockExamStatsDashboard.css';
+import './ClientStatsDashboardTheme.css';
 
 const API_BASE = '';
 
@@ -613,19 +614,6 @@ export default function ClientMockExamStatsDashboard({
     return groupedTableData.slice(start, start + itemsPerPage);
   }, [groupedTableData, currentPage]);
 
-  const handleResetFilters = () => {
-    setSelectedSubject('');
-    setSelectedChapter('');
-    setSelectedPeriod('all');
-    setSelectedMockExamId('');
-    setLatestAttemptOnly(false);
-    setSearchTable('');
-    setTableSubjectFilter('');
-    setTablePeriodFilter('all');
-    setTableSort('date-desc');
-    setCurrentPage(1);
-  };
-
   // --------------------------------------------------------------------------
   // 15. PERSONALIZED RECOMMENDATIONS GENERATOR
   // --------------------------------------------------------------------------
@@ -704,10 +692,6 @@ export default function ClientMockExamStatsDashboard({
           <div className="mock-exam-header-top">
             <div>
               <span className="mock-exam-eyebrow">DASHBOARD ANALYTICS</span>
-              <h1 className="mock-exam-title">Statistiques des concours blancs</h1>
-              <p className="mock-exam-subtitle">
-                Analysez vos résultats, suivez votre progression et identifiez les chapitres à améliorer grâce à vos performances aux concours blancs.
-              </p>
             </div>
           </div>
         </section>
@@ -739,14 +723,6 @@ export default function ClientMockExamStatsDashboard({
         <div className="mock-exam-header-top">
           <div>
             <span className="mock-exam-eyebrow">ANALYSE DES SIMULATIONS</span>
-            <h1 className="mock-exam-title">Statistiques des concours blancs</h1>
-            <p className="mock-exam-subtitle">
-              Analysez vos résultats, suivez votre progression et identifiez les chapitres à améliorer grâce à vos performances aux concours blancs.
-            </p>
-          </div>
-          <div className="mock-exam-live-badge">
-            <span className="mock-exam-live-dot" />
-            <span>Données synchronisées</span>
           </div>
         </div>
 
@@ -826,15 +802,6 @@ export default function ClientMockExamStatsDashboard({
             </select>
           </div>
 
-          {/* Reset button */}
-          <button
-            type="button"
-            className="mock-exam-filter-reset-btn"
-            onClick={handleResetFilters}
-            title="Réinitialiser tous les filtres"
-          >
-            <span>↺</span> Réinitialiser
-          </button>
         </div>
       </section>
 
@@ -936,7 +903,7 @@ export default function ClientMockExamStatsDashboard({
       {/* --------------------------------------------------------------------
          3. MAIN CHARTS: LINE CHART (SCORE EVOLUTION) & DOUGHNUT CHART
          -------------------------------------------------------------------- */}
-      <div className="mock-exam-grid-row">
+      <div className="mock-exam-grid-row mock-exam-chart-overview">
         {/* Grand Line Chart (Span 8) */}
         <div className="mock-exam-panel-card mock-col-8">
           <div className="mock-exam-panel-header">
@@ -947,9 +914,9 @@ export default function ClientMockExamStatsDashboard({
             </div>
             <span className="mock-exam-count-badge">{scoreEvolutionData.length} tentatives</span>
           </div>
-          <div className="mock-exam-panel-body" style={{ minHeight: 320 }}>
+          <div className="mock-exam-panel-body" style={{ minHeight: 240 }}>
             {scoreEvolutionData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={scoreEvolutionData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis
@@ -1031,7 +998,7 @@ export default function ClientMockExamStatsDashboard({
           <div className="mock-exam-panel-body">
             <div className="mock-exam-donut-wrapper">
               <div className="mock-exam-donut-chart-container">
-                <ResponsiveContainer width={220} height={220}>
+                <ResponsiveContainer width={180} height={180}>
                   <PieChart>
                     <Pie
                       data={doughnutData}
@@ -1039,8 +1006,8 @@ export default function ClientMockExamStatsDashboard({
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      innerRadius={65}
-                      outerRadius={95}
+                      innerRadius={52}
+                      outerRadius={78}
                       paddingAngle={3}
                       stroke="none"
                     >
@@ -1095,9 +1062,9 @@ export default function ClientMockExamStatsDashboard({
               <p className="mock-exam-panel-subtitle">Score moyen et taux de réussite dans les concours blancs</p>
             </div>
           </div>
-          <div className="mock-exam-panel-body" style={{ minHeight: 280 }}>
+          <div className="mock-exam-panel-body" style={{ minHeight: 210 }}>
             {subjectPerformanceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={210}>
                 <BarChart
                   data={subjectPerformanceData}
                   layout="vertical"
@@ -1135,9 +1102,9 @@ export default function ClientMockExamStatsDashboard({
             </div>
             <span className="mock-exam-count-badge">Tendance</span>
           </div>
-          <div className="mock-exam-panel-body" style={{ minHeight: 280 }}>
+          <div className="mock-exam-panel-body" style={{ minHeight: 210 }}>
             {successRateTrendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={210}>
                 <AreaChart data={successRateTrendData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                   <defs>
                     <linearGradient id="mockRateGrad" x1="0" y1="0" x2="0" y2="1">
@@ -1202,10 +1169,10 @@ export default function ClientMockExamStatsDashboard({
       </div>
 
       {/* --------------------------------------------------------------------
-         5. THIRD ROW: ATTEMPTS COMPARISON (FOR SAME MOCK EXAM) (Span 12)
+         5. ATTEMPTS COMPARISON WITH SIDE-BY-SIDE INSIGHTS
          -------------------------------------------------------------------- */}
-      <div className="mock-exam-grid-row">
-        <div className="mock-exam-panel-card mock-col-12">
+      <div className="mock-exam-comparison-insights-layout">
+        <div className="mock-exam-panel-card mock-exam-comparison-panel">
           <div className="mock-exam-panel-header">
             <div className="mock-exam-panel-heading-copy">
               <span className="mock-exam-panel-kicker">HISTORIQUE PAR ÉPREUVE</span>
@@ -1214,7 +1181,7 @@ export default function ClientMockExamStatsDashboard({
             </div>
             {bestComparisonScore !== null && (
               <div className="mock-exam-best-score-badge">
-                <span>🏆 Meilleur score :</span>
+                <span>Meilleur score :</span>
                 <strong>{bestComparisonScore}%</strong>
               </div>
             )}
@@ -1239,8 +1206,8 @@ export default function ClientMockExamStatsDashboard({
             </div>
 
             {comparisonDataWithBest.length > 0 ? (
-              <div style={{ width: '100%', height: 260 }}>
-                <ResponsiveContainer width="100%" height={260}>
+              <div style={{ width: '100%', height: 200 }}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={comparisonDataWithBest} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                     <XAxis dataKey="label" stroke="#334155" fontSize={12} fontWeight={700} tickLine={false} />
@@ -1293,16 +1260,14 @@ export default function ClientMockExamStatsDashboard({
             )}
           </div>
         </div>
-      </div>
 
       {/* --------------------------------------------------------------------
-         6. STRENGTHS & POINTS TO IMPROVE (2 CARDS SIDE-BY-SIDE)
+         6. STRENGTHS & POINTS TO IMPROVE (SIDE COLUMN)
          -------------------------------------------------------------------- */}
       <section className="mock-exam-insights-grid">
         {/* Points Forts */}
         <div className="mock-exam-insight-card is-strength">
           <div className="mock-exam-insight-head">
-            <div className="mock-exam-insight-head-icon">✓</div>
             <div className="mock-exam-insight-head-text">
               <h3>Points forts</h3>
               <p>Chapitres et matières les mieux maîtrisés (&ge; 65%)</p>
@@ -1330,7 +1295,6 @@ export default function ClientMockExamStatsDashboard({
         {/* À Améliorer */}
         <div className="mock-exam-insight-card is-improvement">
           <div className="mock-exam-insight-head">
-            <div className="mock-exam-insight-head-icon">⚡</div>
             <div className="mock-exam-insight-head-text">
               <h3>À améliorer</h3>
               <p>Chapitres nécessitant des révisions ciblées</p>
@@ -1357,6 +1321,7 @@ export default function ClientMockExamStatsDashboard({
           </div>
         </div>
       </section>
+      </div>
 
       {/* --------------------------------------------------------------------
          7. DETAILED PERFORMANCE BY CHAPTER (WITH SUBJECT TABS)
@@ -1481,8 +1446,8 @@ export default function ClientMockExamStatsDashboard({
 
             {/* Horizontal Bar Chart of Errors per Chapter */}
             {errorChaptersData.length > 0 ? (
-              <div style={{ width: '100%', height: 230 }}>
-                <ResponsiveContainer width="100%" height={230}>
+              <div style={{ width: '100%', height: 180 }}>
+                <ResponsiveContainer width="100%" height={180}>
                   <BarChart
                     data={errorChaptersData}
                     layout="vertical"
@@ -1780,7 +1745,6 @@ export default function ClientMockExamStatsDashboard({
               {recommendations.map((rec) => (
                 <div key={rec.id} className="mock-exam-recommendation-card">
                   <div className="mock-exam-recommendation-top">
-                    <div className="mock-exam-recommendation-icon">{rec.icon}</div>
                     <h3 className="mock-exam-recommendation-title">{rec.title}</h3>
                   </div>
                   <p className="mock-exam-recommendation-desc">{rec.desc}</p>

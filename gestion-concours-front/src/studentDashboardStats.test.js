@@ -4,6 +4,8 @@ import {
   aggregateStudentActivityEvents,
   buildActivityTrend,
   filterDashboardActivities,
+  isNationalExamActivityEvent,
+  isNationalExamCorrectionEvent,
   summarizeDashboardActivities
 } from './studentDashboardStats.js';
 
@@ -33,6 +35,27 @@ test('recognizes all five tracked content categories and filters each dashboard'
   const modes = ['contests', 'mock-exams', 'courses', 'exams', 'summaries'];
   assert.deepEqual(modes.map((mode) => filterDashboardActivities(activities, { mode }).length), [1, 1, 1, 1, 1]);
   assert.deepEqual(activities.map((item) => item.type).sort(), ['Concours', 'Concours blanc', 'Cours', 'Examen national', 'Résumé'].sort());
+});
+
+test('recognizes canonical exam activity events returned by the server', () => {
+  const events = [
+    { type: 'EXAMEN', resourceId: '22', resourceVariant: 'sujet', eventType: 'VIEW' },
+    { type: 'EXAMEN', resourceId: '22', resourceVariant: 'sujet', eventType: 'COMPLETE' },
+    { type: 'Examen national', resourceId: '23', eventType: 'VIEW' },
+    { type: 'COURS', resourceId: '8', eventType: 'COMPLETE' }
+  ];
+
+  assert.deepEqual(events.filter(isNationalExamActivityEvent), events.slice(0, 3));
+});
+
+test('counts a completed correction as consulted, but not a completed subject', () => {
+  const events = [
+    { type: 'EXAMEN', resourceId: '22:correction', eventType: 'COMPLETE' },
+    { type: 'EXAMEN', resourceId: '23', resourceVariant: 'correction', eventType: 'VIEW' },
+    { type: 'EXAMEN', resourceId: '24:sujet', eventType: 'COMPLETE' },
+    { type: 'COURS', resourceId: '25:correction', eventType: 'COMPLETE' }
+  ];
+  assert.deepEqual(events.filter(isNationalExamCorrectionEvent), events.slice(0, 2));
 });
 
 test('keeps exam subjects and corrections as separate tracked resources', () => {

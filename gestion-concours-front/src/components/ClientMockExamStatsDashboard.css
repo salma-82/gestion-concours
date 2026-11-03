@@ -22,11 +22,11 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  padding: 8px 0 24px;
-  margin-bottom: 24px;
+  padding: 8px 0 10px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 12px;
 }
 
 .mock-exam-header-top {
@@ -70,41 +70,13 @@
   max-width: 780px;
 }
 
-.mock-exam-live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.mock-exam-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-  animation: pulse-dot 2s infinite ease-in-out;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.8; }
-}
-
 /* Filters Bar */
 .mock-exam-filters-bar {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 14px;
-  padding: 16px 20px;
+  gap: 10px;
+  padding: 8px 16px;
   border-radius: 18px;
   border: 1px solid rgba(226, 232, 240, 0.85);
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -114,7 +86,7 @@
 .mock-exam-filter-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex: 1 1 170px;
   min-width: 150px;
 }
@@ -132,8 +104,8 @@
 
 .mock-exam-filter-field select,
 .mock-exam-filter-field input {
-  height: 42px;
-  padding: 0 14px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
   background: #f8fafc;
@@ -152,30 +124,6 @@
   border-color: #2563eb;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-.mock-exam-filter-reset-btn {
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 12px;
-  border: 1.5px dashed #cbd5e1;
-  background: transparent;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.mock-exam-filter-reset-btn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-  color: #0f172a;
 }
 
 /* --------------------------------------------------------------------------
@@ -200,6 +148,13 @@
   transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
   position: relative;
   overflow: hidden;
+}
+
+/* Compact the analytics summary cards; shared KPI styles set a 96px minimum. */
+.mock-exam-stats-root .mock-exam-kpi-card {
+  min-height: 70px;
+  padding: 8px 12px;
+  gap: 4px;
 }
 
 .mock-exam-kpi-card:hover {
@@ -346,8 +301,32 @@
 .mock-exam-grid-row {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.mock-exam-comparison-insights-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.mock-exam-comparison-panel {
+  min-width: 0;
+}
+
+.mock-exam-comparison-insights-layout .mock-exam-insights-grid {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: stretch;
+  gap: 12px;
+  margin: 0;
+}
+
+.mock-exam-comparison-insights-layout .mock-exam-insight-card {
+  padding: 16px;
+  gap: 10px;
 }
 
 .mock-col-12 { grid-column: span 12; }
@@ -363,7 +342,7 @@
   border-radius: 20px;
   border: 1px solid rgba(226, 232, 240, 0.85);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 24px 26px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -377,8 +356,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -433,6 +412,24 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+}
+
+/* Keep the overview doughnut compact beside its legend. */
+.mock-exam-chart-overview .mock-exam-donut-wrapper {
+  gap: 12px;
+}
+
+.mock-exam-chart-overview .mock-exam-donut-chart-container {
+  width: 180px;
+  height: 180px;
+}
+
+.mock-exam-chart-overview .mock-exam-donut-legend-list {
+  gap: 8px;
+}
+
+.mock-exam-chart-overview .mock-exam-donut-legend-item {
+  padding: 7px 10px;
 }
 
 /* --------------------------------------------------------------------------
@@ -554,14 +551,14 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .mock-exam-comparison-select {
   max-width: 340px;
-  height: 38px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 10px;
   border-radius: 10px;
   border: 1.5px solid #cbd5e1;
   background: #f8fafc;
@@ -625,20 +622,6 @@
   align-items: center;
   gap: 12px;
 }
-
-.mock-exam-insight-head-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.is-strength .mock-exam-insight-head-icon { background: #dcfce7; color: #15803d; }
-.is-improvement .mock-exam-insight-head-icon { background: #ffedd5; color: #c2410c; }
 
 .mock-exam-insight-head-text h3 {
   margin: 0;
@@ -821,12 +804,12 @@
 .mock-exam-mistakes-overview {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .mock-exam-mistake-stat-pill {
-  padding: 14px 18px;
+  padding: 10px 12px;
   border-radius: 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -844,7 +827,7 @@
 }
 
 .mock-exam-mistake-stat-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 850;
   color: #0f172a;
 }
@@ -857,18 +840,18 @@
 .mock-exam-saved-distinction {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .mock-exam-saved-card {
-  padding: 18px 20px;
+  padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
 }
 
 .mock-exam-saved-badge {
@@ -888,7 +871,7 @@
 .mock-exam-saved-badge.manual { background: #eff6ff; color: #1d4ed8; }
 
 .mock-exam-saved-count {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 850;
   color: #0f172a;
   line-height: 1;
@@ -904,11 +887,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 22px;
+  padding: 12px 16px;
   border-radius: 16px;
   background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
   border: 1px solid #dbeafe;
-  margin-top: 10px;
+  margin-top: 6px;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -930,7 +913,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 12px;
   background: #2563eb;
   color: #ffffff;
@@ -958,8 +941,8 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .mock-exam-table-filters {
@@ -970,8 +953,8 @@
 }
 
 .mock-exam-search-input {
-  height: 40px;
-  padding: 0 14px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: 10px;
   border: 1.5px solid #cbd5e1;
   background: #f8fafc;
@@ -989,8 +972,8 @@
 }
 
 .mock-exam-table-select {
-  height: 40px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 10px;
   border-radius: 10px;
   border: 1.5px solid #cbd5e1;
   background: #f8fafc;
@@ -1026,13 +1009,13 @@
   font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 13px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .mock-exam-table td {
-  padding: 14px 16px;
+  padding: 9px 12px;
   border-bottom: 1px solid #f1f5f9;
   color: #1e293b;
   vertical-align: middle;
@@ -1160,17 +1143,17 @@
 .mock-exam-recommendations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .mock-exam-recommendation-card {
-  padding: 20px;
+  padding: 14px;
   border-radius: 16px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   transition: all 0.2s ease;
 }
 
@@ -1185,19 +1168,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.mock-exam-recommendation-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
 }
 
 .mock-exam-recommendation-title {
@@ -1534,6 +1504,9 @@
 }
 
 @media (max-width: 1080px) {
+  .mock-exam-comparison-insights-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .mock-col-8, .mock-col-7, .mock-col-6, .mock-col-5, .mock-col-4 {
     grid-column: span 12;
   }
@@ -1547,7 +1520,7 @@
 
 @media (max-width: 768px) {
   .mock-exam-header {
-    padding: 20px;
+    padding: 12px 12px 8px;
   }
   .mock-exam-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

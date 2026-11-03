@@ -45,9 +45,9 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7c3aed;
-  background: #f5f3ff;
-  border: 1px solid #ddd6fe;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
   padding: 4px 10px;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -68,43 +68,6 @@
   color: #64748b;
   line-height: 1.5;
   max-width: 780px;
-}
-
-.summary-stats-live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.summary-stats-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-  animation: pulse-summary-dot 2s infinite ease-in-out;
-}
-
-@keyframes pulse-summary-dot {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 0.8;
-  }
 }
 
 /* Filters Bar */
@@ -161,30 +124,6 @@
   border-color: #7c3aed;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
-}
-
-.summary-filter-reset-btn {
-  height: 42px;
-  padding: 0 18px;
-  border-radius: 12px;
-  border: 1.5px dashed #cbd5e1;
-  background: transparent;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.summary-filter-reset-btn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-  color: #0f172a;
 }
 
 /* --------------------------------------------------------------------------
@@ -403,7 +342,6 @@
 .summary-stats-eyebrow { margin-bottom: 5px; padding: 3px 8px; }
 .summary-stats-title { font-size: clamp(23px, 2.2vw, 29px); line-height: 1.12; }
 .summary-stats-subtitle { margin-top: 4px; font-size: 13px; line-height: 1.35; }
-.summary-stats-live-badge { padding: 5px 11px; }
 .summary-stats-filters-bar { gap: 10px; padding: 12px 15px; border-radius: 15px; }
 .summary-filter-field { gap: 4px; }
 .summary-kpi-grid { margin-top: 0; }
@@ -692,27 +630,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.summary-insight-head-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.is-top .summary-insight-head-icon {
-  background: #ede9fe;
-  color: #7c3aed;
-}
-
-.is-discover .summary-insight-head-icon {
-  background: #dbeafe;
-  color: #2563eb;
 }
 
 .summary-insight-head-text h3 {

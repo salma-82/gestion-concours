@@ -19,22 +19,18 @@
 .national-exam-eyebrow { display: inline-flex; margin-bottom: 8px; padding: 5px 9px; border: 1px solid #dbeafe; border-radius: 8px; background: #eff6ff; }
 .national-exam-hero h1 { margin: 0; color: var(--exam-ink); font-size: clamp(25px, 2.5vw, 33px); font-weight: 850; letter-spacing: -.04em; line-height: 1.2; }
 .national-exam-hero p, .national-exam-section-title p { margin: 7px 0 0; color: var(--exam-muted); font-size: 13px; line-height: 1.55; }
-.national-exam-primary-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; min-height: 42px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--exam-blue); box-shadow: 0 8px 18px rgba(37,99,235,.18); color: #fff; font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; transition: background .18s ease, transform .18s ease; }
-.national-exam-primary-link:hover { transform: translateY(-1px); background: #1d4ed8; }
 
 .national-exam-filter-panel, .national-exam-panel, .national-exam-history { border: 1px solid rgba(226,232,240,.9); border-radius: 18px; background: linear-gradient(180deg,#fff 0%,#fbfcfe 100%); box-shadow: 0 10px 25px -5px rgba(15,23,42,.05), inset 0 1px 0 rgba(255,255,255,.95); }
 .national-exam-filter-panel { margin-bottom: 14px; padding: 14px 16px; }
-.national-exam-panel-heading, .national-exam-section-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.national-exam-panel-heading { margin-bottom: 13px; }
-.national-exam-panel-heading h2, .national-exam-panel-heading h3, .national-exam-section-title h2 { margin: 4px 0 0; color: #172b4d; font-size: 17px; font-weight: 800; letter-spacing: -.025em; }
+.national-exam-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+.national-exam-panel-heading h2, .national-exam-panel-heading h3 { margin: 4px 0 0; color: #172b4d; font-size: 17px; font-weight: 800; letter-spacing: -.025em; }
 .national-exam-panel-heading h3 { font-size: 15px; }
-.national-exam-reset { min-height: 34px; padding: 0 11px; border: 1px solid #e2e8f0; border-radius: 9px; background: #f8fafc; color: #475569; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
-.national-exam-reset:hover { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
+.national-exam-section-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.national-exam-section-title h2 { margin: 4px 0 0; color: #172b4d; font-size: 17px; font-weight: 800; letter-spacing: -.025em; }
 .national-exam-filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .national-exam-filters label, .national-exam-period, .national-exam-table-filters label { display: grid; min-width: 0; gap: 6px; color: #64748b; font-size: 10px; font-weight: 750; }
 .national-exam-filters select, .national-exam-period select, .national-exam-table-filters input, .national-exam-table-filters select { width: 100%; min-width: 0; height: 40px; padding: 0 11px; border: 1px solid #dfe7f1; border-radius: 10px; outline: 0; background: #fff; color: #1e293b; font: inherit; font-size: 11px; font-weight: 600; }
 .national-exam-filters select:focus, .national-exam-period select:focus, .national-exam-table-filters input:focus, .national-exam-table-filters select:focus { border-color: #80aaff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.national-exam-reset-mobile { display: none; align-self: end; }
 .national-exam-alert { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px 15px; border: 1px solid #fed7aa; border-radius: 12px; background: #fffaf3; color: #9a4c12; font-size: 12px; }
 .national-exam-alert button { padding: 7px 10px; border: 0; border-radius: 8px; background: #ffedd5; color: #9a4c12; font: inherit; font-size: 11px; font-weight: 750; cursor: pointer; }
 
@@ -44,7 +40,7 @@
 .national-exam-kpi::after { position: absolute; right: -22px; bottom: -31px; width: 91px; height: 91px; border-radius: 50%; background: rgba(37,99,235,.055); content: ''; }
 .national-exam-kpi-icon { display: grid; width: 36px; height: 36px; grid-row: 1 / 3; place-items: center; border: 1px solid rgba(255,255,255,.95); border-radius: 11px; background: #dbeafe; color: var(--exam-blue); box-shadow: 0 3px 8px rgba(15,23,42,.045), inset 0 1px 0 #fff; }
 .national-exam-kpi-icon svg { width: 20px; height: 20px; }
-.national-exam-kpi-label { align-self: end; color: #64748b; font-size: 10px; font-weight: 750; line-height: 1.35; }
+.national-exam-kpi-label { align-self: end; color: #000; font-size: 10px; font-weight: 800; line-height: 1.35; }
 .national-exam-kpi strong { align-self: start; margin-top: 4px; color: var(--exam-ink); font-size: 28px; font-weight: 850; letter-spacing: -.05em; line-height: 1.05; }
 .national-exam-kpi small { z-index: 1; grid-column: 1 / -1; margin-top: 7px; color: #8190a5; font-size: 9px; line-height: 1.35; }
 .national-exam-kpi.is-green { border-color: #bbf7d0; background: linear-gradient(150deg,#f1fcf5 0%,#fff 76%); }.national-exam-kpi.is-green .national-exam-kpi-icon { background: #dcfce7; color: #059669; }.national-exam-kpi.is-green::after { background: rgba(16,185,129,.06); }
@@ -145,8 +141,7 @@
   .national-exam-kpi strong { font-size: 25px; }
   .national-exam-kpi small { font-size: 8px; }
   .national-exam-filters, .national-exam-table-filters, .national-exam-recommendation-grid { grid-template-columns: minmax(0,1fr); }
-  .national-exam-reset-mobile, .national-exam-search { display: grid; grid-column: auto; }
-  .national-exam-reset:not(.national-exam-reset-mobile) { display: none; }
+  .national-exam-search { display: grid; grid-column: auto; }
   .national-exam-line-chart { height: 190px; }
   .national-exam-legend { grid-template-columns: minmax(0,1fr); }
   .national-exam-chart-subject-chart { min-height: 200px; }

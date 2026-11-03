@@ -62,9 +62,10 @@ const typeMatches = (selected, actual) => selected === 'all' || selected === act
 function Comparison({ current, previous, suffix = '' }) {
   if (previous === null || previous === undefined) return <small>Aucune période de référence</small>;
   const difference = current - previous;
+  if (difference > 0) return null;
   if (!difference) return <small>Stable vs période précédente</small>;
-  return <small className={difference > 0 ? 'is-positive' : 'is-negative'}>
-    {difference > 0 ? '+' : ''}{new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(difference)}{suffix} vs période précédente
+  return <small className="is-negative">
+    {new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(difference)}{suffix} vs période précédente
   </small>;
 }
 
@@ -363,8 +364,8 @@ export default function ClientGeneralStatsDashboard({
     <main className="general-stats">
       <header className="general-stats-header">
         <div>
-          <span className="general-stats-eyebrow">CENTRE DE PILOTAGE</span>
           <h1>Bonjour {firstName}</h1>
+          <span className="general-stats-eyebrow">VUE GLOBALE</span>
         </div>
         <button type="button" className="general-stats-calendar" onClick={() => onNavigate('/client-calendrier')}>
           <span aria-hidden="true">▦</span> Mon calendrier
@@ -409,9 +410,9 @@ export default function ClientGeneralStatsDashboard({
           <div className="general-stats-panel-heading"><div><span className="general-stats-eyebrow">RÉSULTATS RÉELS</span><h2>Évolution des évaluations</h2><p>Chaque courbe représente son propre type d’évaluation. Les examens nationaux ne sont pas notés dans les données disponibles.</p></div><span className="general-stats-total-badge">{allScopedAttempts.length} tentatives</span></div>
           {schoolLoading ? <EmptyChart>Chargement des résultats enregistrés…</EmptyChart>
             : schoolError ? <EmptyChart>Résultats indisponibles pour le moment.</EmptyChart>
-              : scoreTrend.length ? <div className="general-stats-chart general-stats-main-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={scoreTrend} margin={{ top: 12, right: 12, bottom: 4, left: -18 }}>
+              : scoreTrend.length ? <div className="general-stats-chart general-stats-main-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={scoreTrend} margin={{ top: 12, right: 12, bottom: 4, left: 10 }}>
                 <defs><linearGradient id="generalMockFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7357e8" stopOpacity={0.18} /><stop offset="100%" stopColor="#7357e8" stopOpacity={0} /></linearGradient><linearGradient id="generalContestFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2563eb" stopOpacity={0.18} /><stop offset="100%" stopColor="#2563eb" stopOpacity={0} /></linearGradient></defs>
-                <CartesianGrid stroke="#e9eef6" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="shortDate" tick={{ fill: '#8190a5', fontSize: 11 }} minTickGap={24} /><YAxis domain={[0, 100]} tick={{ fill: '#8190a5', fontSize: 11 }} tickFormatter={(value) => `${value}%`} width={44} /><Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? `${payload[0].payload.exam} · ${payload[0].payload.date}` : ''} formatter={(value, name) => [`${value}%`, name]} />
+                <CartesianGrid stroke="#e9eef6" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="shortDate" tick={{ fill: '#8190a5', fontSize: 11 }} minTickGap={24} /><YAxis domain={[0, 100]} tick={{ fill: '#8190a5', fontSize: 11 }} tickFormatter={(value) => `${value}%`} width={54} tickMargin={8} /><Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? `${payload[0].payload.exam} · ${payload[0].payload.date}` : ''} formatter={(value, name) => [`${value}%`, name]} />
                 <Area type="monotone" dataKey={(row) => row.kind === 'Concours blanc' ? row.score : null} name="Concours blancs" stroke="#7357e8" strokeWidth={2.5} fill="url(#generalMockFill)" connectNulls activeDot={{ r: 5 }} />
                 <Area type="monotone" dataKey={(row) => row.kind === 'Concours des écoles' ? row.score : null} name="Concours des écoles" stroke="#2563eb" strokeWidth={2.5} fill="url(#generalContestFill)" connectNulls activeDot={{ r: 5 }} />
               </AreaChart></ResponsiveContainer></div> : <EmptyChart>Aucune note de concours ou de concours blanc n’est enregistrée sur cette période.</EmptyChart>}
@@ -463,7 +464,7 @@ export default function ClientGeneralStatsDashboard({
             <div className="general-stats-progress-track"><span style={{ width: `${completionPercent || 0}%` }} /></div>
             <div className="general-stats-goals-heading"><strong>Objectifs personnels</strong><button type="button" onClick={() => onNavigate('/client-calendrier')}>Ouvrir le calendrier →</button></div>
             {upcomingGoals.length ? <ul className="general-stats-goals-list">{upcomingGoals.map((goal) => <li key={goal.id}><span className="general-stats-goal-date">{dateLabel(`${goal.date}T00:00:00`)}</span><span><strong>{goal.title}</strong><small>{goal.subject || 'Objectif personnel'} · {new Date(`${goal.date}T00:00:00`).getTime() < new Date(new Date().toDateString()).getTime() ? 'date passée' : 'planifié'}</small></span></li>)}</ul> : <p className="general-stats-goals-empty">Aucun objectif personnel planifié. Ajoutez-en dans votre calendrier.</p>}
-            <div className="general-stats-recommendation"><span aria-hidden="true">✦</span><p>{recommendation}</p></div>
+            <div className="general-stats-recommendation"><p>{recommendation}</p></div>
             <small className="general-stats-footnote">Le calendrier ne stocke pas de statut d’accomplissement des objectifs.</small>
           </>}
         </article>
