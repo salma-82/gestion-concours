@@ -99,6 +99,32 @@ p {
   margin: 0;
 }
 
+/* Shared editorial identity from the homepage across the application. */
+:root {
+  --editorial-display: Didot, "Bodoni MT", "Times New Roman", Georgia, serif;
+  --editorial-ink: #252c42;
+  --editorial-coral: #f0aa60;
+  --heading: var(--editorial-display);
+  color-scheme: light;
+}
+
+body {
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(186, 205, 230, .3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(186, 205, 230, .3) 1px, transparent 1px),
+    linear-gradient(135deg, #fff 0%, #fbfcff 100%);
+  background-size: 112px 56px, 112px 56px, 100% 100%;
+  background-position: 40px 37px, 40px 37px, 0 0;
+  background-attachment: fixed;
+}
+
+#root :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--editorial-ink);
+  font-family: var(--editorial-display);
+  letter-spacing: -.025em;
+}
+
 code,
 .counter {
   font-family: var(--mono);

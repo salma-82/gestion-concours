@@ -874,29 +874,64 @@ const partnerLogos = [
             <path d="M159 19v7m-3.5-3.5h7" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
-        <h1 className="lp-hero-title">
-          Pr&eacute;parez vos <span className="lp-title-underlined">concours</span>,<br />
-          assurez votre <span className="lp-hero-gradient-text">avenir.</span>
-        </h1>
-        <p className="lp-hero-desc">La plateforme tout-en-un pour bien pr&eacute;parer vos concours au Maroc.</p>
+        <div className="lp-headline-composition">
+          <h1 className="lp-hero-title" aria-label="Préparez vos concours, assurez votre avenir.">
+            <span className="lp-headline-line lp-headline-line--first" aria-hidden="true">Préparez vos</span>
+            <span className="lp-headline-line lp-headline-line--second" aria-hidden="true">
+              <span className="lp-title-framed-word">concours,</span>
+            </span>
+          </h1>
 
-        <div className="lp-hero-actions">
-          <div className="lp-hero-cta">
-            <div
-              className="lp-hero-mascot-companion"
-              onClick={() => handleNav('register')}
-              role="button"
-              tabIndex={0}
-              title="Jarab fabor avec la mascotte ECONCOURS"
-              aria-label="Mascotte tenant son carnet de notes"
-            >
-              <LandingMascot className="lp-mascot-hero-note" holdingNotebook={true} />
+          <div className="lp-hero-actions">
+            <div className="lp-hero-cta">
+              <div
+                className="lp-hero-mascot-companion"
+                onClick={() => handleNav('register')}
+                role="button"
+                tabIndex={0}
+                title="Jarab fabor avec la mascotte ECONCOURS"
+                aria-label="Mascotte tenant son carnet de notes"
+              >
+                <LandingMascot className="lp-mascot-hero-note" holdingNotebook={true} />
+              </div>
+              <button className="lp-btn-hero-primary" type="button" onClick={() => handleScrollTo('methodologie')}>
+                <span>Jarab fabor</span>
+              </button>
             </div>
-            <button className="lp-btn-hero-primary" type="button" onClick={() => handleScrollTo('methodologie')}>
-              <span>Jarab fabor</span>
-            </button>
           </div>
+          <div className="lp-headline-continuation" aria-hidden="true">
+            <span className="lp-headline-line lp-headline-line--third">assurez votre</span>
+            <span className="lp-headline-line lp-headline-line--avenir">
+              <span className="lp-hero-gradient-text">avenir.</span>
+            </span>
+          </div>
+
+          <div className="lp-editorial-doodle lp-editorial-doodle--book" aria-hidden="true">
+            <svg viewBox="0 0 100 72" fill="none">
+              <path d="M10 12c14-3 27 0 39 8v43c-12-8-25-11-39-8V12Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+              <path d="M90 12c-14-3-27 0-41 8v43c13-8 26-11 41-8V12Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+              <path d="M17 22c9-1 17 1 24 5M17 30c9-1 17 1 24 5M17 38c9 0 17 2 24 6M83 22c-9-1-17 1-26 5M83 30c-9-1-17 1-26 5M83 38c-9 0-17 2-26 6" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
+              <path d="M49 20v43" stroke="currentColor" strokeWidth="1.3" />
+            </svg>
+          </div>
+          <div className="lp-editorial-doodle lp-editorial-doodle--plane" aria-hidden="true">
+            <svg viewBox="0 0 100 116" fill="none">
+              <path d="M8 13 89 40 27 56 8 13Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="m27 56 16 34 10-27 36-23M43 90l10-27" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M93 49c5 20 2 43-18 59" stroke="currentColor" strokeWidth="1.4" strokeDasharray="3 5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="lp-editorial-doodle lp-editorial-doodle--globe" aria-hidden="true">
+            <svg viewBox="0 0 100 130" fill="none">
+              <circle cx="50" cy="49" r="36" stroke="currentColor" strokeWidth="1.6" />
+              <ellipse cx="50" cy="49" rx="16" ry="36" stroke="currentColor" strokeWidth="1.35" />
+              <ellipse cx="50" cy="49" rx="29" ry="36" stroke="currentColor" strokeWidth="1.1" />
+              <path d="M15 41c21 7 49 7 70 0M16 56c21-7 47-7 68 0M50 13v72M50 85v18m-14 8 29-8m-32 14 39-10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </div>
+          <span className="lp-editorial-dot" aria-hidden="true" />
         </div>
+        <p className="lp-hero-desc">La plateforme tout-en-un pour bien pr&eacute;parer vos concours au Maroc.</p>
 
         <div className="lp-partner-strip" aria-label="Écoles préparées">
           <div className="lp-partner-logos lp-marquee-mask">
