@@ -34,12 +34,11 @@ body {
 .landing-root {
   position: relative;
   overflow: clip;
-  background-color: #f7f8fb;
+  background-color: #fff;
   background-image:
     linear-gradient(rgba(119, 145, 186, .075) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(119, 145, 186, .075) 1px, transparent 1px),
-    linear-gradient(125deg, #fbfbfc 0%, #f1f5fa 100%);
-  background-size: 32px 32px, 32px 32px, 100% 100%;
+    linear-gradient(90deg, rgba(119, 145, 186, .075) 1px, transparent 1px);
+  background-size: 42px 42px;
   color: var(--lp-ink);
   font-family: Inter, Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -1049,6 +1048,7 @@ body {
 }
 
 .lp-discount-badge {
+  margin-top: -8px;
   padding: 7px 10px;
   border-radius: 8px;
   background: #e7f8ef;
@@ -10112,5 +10112,449 @@ body > .lp-traveling-mascot {
 
 @media (prefers-reduced-motion: reduce) {
   #root .landing-root #methodologie .lp-roadmap-preview { transition: none; }
+}
+
+/* Replacement layout for the Grande École invitation section only. */
+#root .landing-root .lp-bottom-cta-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(54px, 8vh, 82px) 24px 32px;
+  background: #f7f6f4 !important;
+}
+
+#root .landing-root .lp-bottom-cta-section::before,
+#root .landing-root .lp-bottom-cta-section::after {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  width: 390px;
+  height: 390px;
+  border: 2px solid rgba(43, 87, 167, .07);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+#root .landing-root .lp-bottom-cta-section::before { top: -210px; right: -150px; left: auto; }
+#root .landing-root .lp-bottom-cta-section::after { right: auto; bottom: -250px; left: -120px; }
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card {
+  display: flex;
+  width: min(1380px, 100%);
+  max-width: 1380px;
+  min-height: 418px;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  padding: clamp(70px, 7vw, 88px) clamp(20px, 4vw, 56px) 26px;
+  overflow: hidden;
+  border: 1px solid #d8dfeb;
+  border-radius: 28px;
+  background: #fff;
+  color: #2e5aac;
+  box-shadow: 0 24px 50px rgba(30, 50, 100, .08);
+}
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-content {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker {
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 13px 20px;
+  border-color: #dfe7f5;
+  background: #f7f9fe;
+  color: #2e5aac;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker i { color: #f28a2e; }
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 {
+  max-width: 1000px;
+  margin: 0 auto;
+  color: #2e5aac;
+  font-family: Nunito, Inter, sans-serif;
+  font-size: clamp(42px, 4.2vw, 66px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 span {
+  background: none;
+  color: #f28a2e;
+  -webkit-text-fill-color: #f28a2e;
+}
+
+#root .landing-root .lp-bottom-cta-logos {
+  width: min(980px, 100%);
+  margin: 30px auto 0;
+}
+
+#root .landing-root .lp-bottom-cta-logo-viewport {
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+#root .landing-root .lp-bottom-cta-logo-track {
+  display: flex;
+  width: max-content;
+  animation: lp-bottom-cta-logo-scroll 26s linear infinite;
+  will-change: transform;
+}
+
+#root .landing-root .lp-bottom-cta-logos:hover .lp-bottom-cta-logo-track {
+  animation-play-state: paused;
+}
+
+#root .landing-root .lp-bottom-cta-logo-group {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 14px;
+  padding-right: 14px;
+}
+
+#root .landing-root .lp-bottom-cta-logo-item {
+  display: flex;
+  width: 180px;
+  min-height: 72px;
+  flex: 0 0 180px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border: 1px solid #e0e6f0;
+  border-radius: 999px;
+  background: #f7f9fe;
+  color: #2e5aac;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-bottom-cta-logo-item img {
+  display: block;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+}
+
+#root .landing-root .lp-bottom-cta-logo-item span {
+  color: #2e5aac;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+@keyframes lp-bottom-cta-logo-scroll {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-bottom-cta-section { padding: 44px 14px 24px; }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card {
+    min-height: 0;
+    padding: 54px 18px 22px;
+    border-radius: 24px;
+  }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker {
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 10px 13px;
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 {
+    font-size: clamp(34px, 7vw, 48px);
+  }
+  #root .landing-root .lp-bottom-cta-logos { margin-top: 26px; }
+  #root .landing-root .lp-bottom-cta-logo-item {
+    width: 154px;
+    min-height: 62px;
+    flex-basis: 154px;
+    gap: 9px;
+    padding: 6px 11px;
+  }
+  #root .landing-root .lp-bottom-cta-logo-item img {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  #root .landing-root .lp-bottom-cta-logo-item span { font-size: 15px; }
+}
+
+@media (max-width: 420px) {
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card { padding: 48px 12px 18px; }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 { font-size: 33px; }
+  #root .landing-root .lp-bottom-cta-logo-item { width: 140px; flex-basis: 140px; }
+}
+
+/* Carry the white square grid behind every homepage section. */
+#root .landing-root {
+  background-color: #fff !important;
+  background-image:
+    linear-gradient(rgba(119, 145, 186, .075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(119, 145, 186, .075) 1px, transparent 1px) !important;
+  background-size: 42px 42px !important;
+}
+
+#root .landing-root :is(
+  .lp-hero-section,
+  .lp-motivation-banner,
+  .lp-roadmap-section,
+  .lp-features-section,
+  .lp-three-steps-section,
+  .lp-pricing-section,
+  .lp-stats-section,
+  .lp-faq-section,
+  .lp-bottom-cta-section
+) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#root .landing-root .lp-stats-section { color: #14213d !important; }
+#root .landing-root .lp-stats-section .lp-stats-intro p,
+#root .landing-root .lp-stats-section .lp-stat-card > span { color: #5e6b85 !important; }
+#root .landing-root .lp-stats-section .lp-stat-card {
+  border-color: #e4eaf4 !important;
+  background: rgba(255, 255, 255, .84) !important;
+}
+#root .landing-root .lp-stats-section .lp-stat-card strong { color: #14213d !important; }
+#root .landing-root .lp-stats-section .stat-accent { color: #2457e6 !important; }
+
+@media (prefers-color-scheme: dark) {
+  #root .landing-root {
+    background-color: #101827 !important;
+    background-image:
+      linear-gradient(rgba(143, 176, 238, .09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(143, 176, 238, .09) 1px, transparent 1px) !important;
+  }
+  #root .landing-root .lp-stats-section { color: #eaf0ff !important; }
+  #root .landing-root .lp-stats-section .lp-stats-intro p,
+  #root .landing-root .lp-stats-section .lp-stat-card > span { color: #aebbd4 !important; }
+  #root .landing-root .lp-stats-section .lp-stat-card {
+    border-color: #2a3549 !important;
+    background: rgba(25, 36, 56, .84) !important;
+  }
+  #root .landing-root .lp-stats-section .lp-stat-card strong { color: #eaf0ff !important; }
+  #root .landing-root .lp-stats-section .stat-accent { color: #86a9ff !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root .landing-root .lp-bottom-cta-logo-track { animation: none; }
+}
+
+/* Match the feature section to the homepage grid background. */
+#root .landing-root section.lp-features-section.fk {
+  background: transparent !important;
+}
+
+#root .landing-root section.lp-features-section.fk::before {
+  display: none !important;
+}
+
+#root .landing-root #methodologie.lp-roadmap-section {
+  background: transparent !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  #root .landing-root .lp-bottom-cta-section { background: #12151c !important; }
+  #root .landing-root .lp-bottom-cta-section::before,
+  #root .landing-root .lp-bottom-cta-section::after { border-color: rgba(143, 176, 238, .1); }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card {
+    border-color: #2a3142;
+    background: #1a1f2b;
+    color: #eaf0ff;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, .32);
+  }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker,
+  #root .landing-root .lp-bottom-cta-logo-item {
+    border-color: #2a3142;
+    background: #222939;
+    color: #eaf0ff;
+  }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker { color: #eaf0ff; }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2,
+  #root .landing-root .lp-bottom-cta-logo-item span { color: #eaf0ff; }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 span { color: #f5a050; -webkit-text-fill-color: #f5a050; }
+}
+
+/* Keep the invitation content directly on the page and add its signup action. */
+#root .landing-root .lp-bottom-cta-section {
+  padding: clamp(62px, 9vh, 86px) 24px 48px;
+}
+
+#root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-bottom-cta-logos {
+  width: 100vw;
+  max-width: none;
+  margin: 44px calc(50% - 50vw) 0;
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-bottom-cta-section { padding: 48px 14px 32px; }
+  #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card { padding: 0; }
+  #root .landing-root .lp-bottom-cta-logos { margin: 34px calc(50% - 50vw) 0; }
+}
+
+/* Use nearly the full viewport width for the roadmap, keeping 2 cm side gutters. */
+#root .landing-root #methodologie.lp-roadmap-section {
+  padding-right: 2cm !important;
+  padding-left: 2cm !important;
+}
+
+#root .landing-root #methodologie .lp-roadmap-list {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+@media (max-width: 860px) {
+  #root .landing-root #methodologie.lp-roadmap-section {
+    padding-right: 18px !important;
+    padding-left: 18px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  #root .landing-root #methodologie.lp-roadmap-section {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+}
+
+/* Rework the proof points into the wide, left-to-right homepage layout. */
+#root .landing-root .lp-stats-section {
+  min-height: 507px;
+  padding: 110px 24px 140px;
+  color: #14213d !important;
+}
+
+#root .landing-root .lp-stats-inner {
+  width: 100%;
+  max-width: 1440px;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 30px;
+}
+
+#root .landing-root .lp-stats-intro h3 {
+  margin: 12px 0 16px;
+  color: #14213d;
+  font-size: clamp(32px, 2.75vw, 42px);
+  line-height: 1.22;
+  letter-spacing: -.035em;
+}
+
+#root .landing-root .lp-stats-intro p {
+  max-width: 430px;
+  color: #5e6b85 !important;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+#root .landing-root .lp-stats-section .lp-stat-card {
+  min-height: 124px;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 22px;
+  border-color: #e4eaf4 !important;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, .84) !important;
+  box-shadow: 0 12px 30px rgba(37, 55, 94, .06);
+}
+
+#root .landing-root .lp-stats-section .lp-stat-card strong {
+  color: #14213d !important;
+  font-size: clamp(38px, 3.2vw, 48px);
+  line-height: 1.1;
+}
+
+#root .landing-root .lp-stats-section .lp-stat-card > span {
+  color: #5e6b85 !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#root .landing-root .lp-stats-section .stat-accent {
+  color: #2457e6 !important;
+}
+
+@media (max-width: 1100px) {
+  #root .landing-root .lp-stats-inner {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  #root .landing-root .lp-stats-intro {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  #root .landing-root .lp-stats-intro p {
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 850px) {
+  #root .landing-root .lp-stats-section {
+    min-height: 0;
+    padding: 64px 18px;
+  }
+
+  #root .landing-root .lp-stats-inner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  #root .landing-root .lp-stats-intro {
+    grid-column: auto;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  #root .landing-root .lp-stats-section {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  #root .landing-root .lp-stats-section .lp-stat-card {
+    border-radius: 20px;
+    padding: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  #root .landing-root .lp-stats-section { color: #eaf0ff !important; }
+  #root .landing-root .lp-stats-intro h3,
+  #root .landing-root .lp-stats-section .lp-stat-card strong { color: #eaf0ff !important; }
+  #root .landing-root .lp-stats-section .lp-stats-intro p,
+  #root .landing-root .lp-stats-section .lp-stat-card > span { color: #aebbd4 !important; }
+  #root .landing-root .lp-stats-section .lp-stat-card {
+    border-color: #2a3549 !important;
+    background: rgba(25, 36, 56, .84) !important;
+  }
+  #root .landing-root .lp-stats-section .stat-accent { color: #86a9ff !important; }
 }
 

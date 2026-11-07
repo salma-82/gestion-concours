@@ -27,6 +27,13 @@ const ORBIT_CONFIG = {
   verticalOffsetPx: -30,
 };
 
+const bottomCtaLogos = [
+  { src: logoEnsaMarocImg, name: 'ENSA', alt: 'Logo ENSA Maroc' },
+  { src: logoEnsamiImg, name: 'ENSAM', alt: 'Logo ENSAM' },
+  { src: logoEncgImg, name: 'ENCG', alt: 'Logo ENCG' },
+  { src: logoFmpcImg, name: 'Médecine', alt: 'Logo de la Faculté de médecine et de pharmacie' },
+];
+
 const CARDS_DATA = [
   { name: 'ENSA', url: ensaImg, desc: 'Écoles Nationales des Sciences Appliquées' },
   { name: 'Médecine', url: medcineImg, desc: 'Facultés de Médecine et de Pharmacie' },
@@ -1624,36 +1631,36 @@ export default function LandingPage({ onNavigateToAuth }) {
               name: 'Médecine',
               pack: 'MEDECINE',
               description: 'Accès complet au concours de médecine',
-              price: '500',
+              price: '300',
               features: ['Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'ENSAM',
               pack: 'ENSAM',
               description: 'Accès complet au concours ENSAM',
-              price: '400',
+              price: '300',
               features: ['ENSAM', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'ENSA',
               pack: 'ENSA',
-              description: 'Accès complet ENSA',
-              price: '300',
+              description: 'Accès complet au concours ENSA',
+              price: '250',
               features: ['ENSA', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'Médecine + ENSA',
               pack: 'MEDECINE_ENSA',
               description: 'Les deux concours, un seul paiement',
-              price: '700',
-              saving: 'Économisez 100 DH vs les packs séparés',
-              features: ['ENSA', 'Médecine', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
+              price: '500',
+              saving: 'Économisez 50 DH vs les packs séparés',
+              features: ['Médecine', 'ENSA', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
               name: 'ENCG',
               pack: 'ENCG',
               description: 'Accès complet au concours ENCG',
-              price: '400',
+              price: '300',
               features: ['ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
             {
@@ -1661,6 +1668,7 @@ export default function LandingPage({ onNavigateToAuth }) {
               pack: 'PACK_COMPLET',
               description: 'Les trois concours — ENCG offert',
               price: '1000',
+              saving: 'Économisez 150 DH vs les packs séparés',
               featured: true,
               features: ['Médecine', 'ENSA', 'ENSAM', 'ENCG', 'QCM · Résumés · Cours', 'Examens chronométrés + mode révision'],
             },
@@ -1820,6 +1828,22 @@ export default function LandingPage({ onNavigateToAuth }) {
           <div className="lp-bottom-cta-content">
             <span className="lp-bottom-cta-kicker"><i aria-hidden="true">✦</i> TON PROCHAIN CHAPITRE COMMENCE ICI</span>
             <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
+          </div>
+          <div className="lp-bottom-cta-logos" aria-label="Écoles préparées">
+            <div className="lp-bottom-cta-logo-viewport">
+              <div className="lp-bottom-cta-logo-track">
+                {[0, 1].map((copy) => (
+                  <div className="lp-bottom-cta-logo-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+                    {bottomCtaLogos.map((logo) => (
+                      <div className="lp-bottom-cta-logo-item" key={logo.name}>
+                        <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                        <span>{logo.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
