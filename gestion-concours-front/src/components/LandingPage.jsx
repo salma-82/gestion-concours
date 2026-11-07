@@ -1160,7 +1160,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           <div className="lp-home-doodle lp-home-doodle--radian"><svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="45" r="31" fill="rgba(46,90,172,.07)" stroke="#2e5aac" strokeWidth="2.4"/><path d="M50 45 76 24M50 45h31" stroke="#ef8b2c" strokeWidth="2.2" strokeLinecap="round"/><circle cx="76" cy="24" r="3.5" fill="#ef8b2c"/><text x="50" y="95" textAnchor="middle">1 rad = 180&#176; / &#960;</text></svg></div>
           <div className="lp-home-doodle lp-home-doodle--probability"><svg viewBox="0 0 110 100" fill="none"><circle cx="54" cy="43" r="31" fill="#edf3ff" stroke="#2e5aac" strokeWidth="2.4"/><path d="M54 43V12a31 31 0 0 1 31 31H54Z" fill="#f59a22" stroke="#2e5aac" strokeWidth="2"/><path d="M54 43 29 61" stroke="#2e5aac" strokeWidth="2"/><text x="54" y="94" textAnchor="middle">P&#8321; + P&#8322; + P&#8323; = 1</text></svg></div>
           <div className="lp-home-doodle lp-home-doodle--circuit"><svg viewBox="0 0 150 70" fill="none"><path d="M8 42h12l8-26 11 46 11-43 11 43 11-43 11 23h48" stroke="#2e5aac" strokeWidth="2.3" strokeLinejoin="round"/><rect x="116" y="25" width="23" height="30" rx="4" fill="#f58a13"/></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--sine"><svg viewBox="0 0 150 70" fill="none"><path d="M5 40c15 0 15-31 30-31s15 62 30 62 15-62 30-62 15 62 30 62 15-31 20-31" stroke="#2e5aac" strokeWidth="2.5" strokeLinecap="round"/><circle cx="35" cy="10" r="3.5" fill="#ef8b2c"/><text x="78" y="69" textAnchor="middle">y = A sin(&#969;t)</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--sine"><svg viewBox="0 0 150 82" fill="none"><path d="M5 40c15 0 15-31 30-31s15 62 30 62 15-62 30-62 15 62 30 62 15-31 20-31" stroke="#2e5aac" strokeWidth="2.5" strokeLinecap="round"/><circle cx="35" cy="10" r="3.5" fill="#ef8b2c"/><text x="78" y="78" textAnchor="middle">y = A sin(&#969;t)</text></svg></div>
           <span className="lp-home-equation lp-home-equation--pressure">P = F / S</span>
         </div>
         <div className="lp-headline-composition">
@@ -1222,7 +1222,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             </li>
             <li className="is-upcoming">
               <span className="lp-process-marker" aria-hidden="true" />
-              <span className="lp-process-label">Examens blancs</span>
+              <span className="lp-process-label">Examens nationaux</span>
             </li>
             <li className="is-final">
               <span className="lp-process-marker" aria-hidden="true">

@@ -340,7 +340,7 @@ export default function Register() {
         /* ── Alerts ── */
         .ecr-alert { display:flex;align-items:flex-start;gap:10px;padding:12px 16px;margin-bottom:18px;border-radius:14px;font-size:13px;font-weight:600;line-height:1.5; }
         .ecr-alert--error { background:#fff2f2;border:1px solid #fecaca;color:#b91c1c; }
-        .ecr-alert--success { background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d; }
+        .ecr-alert--success { background:#eff6ff;border:1px solid #bfdbfe;color:#2457a7; }
 
         /* ── Form Grid ── */
         .ecr-form { display:grid;gap:16px; }
@@ -402,13 +402,13 @@ export default function Register() {
 
         /* ── Success panel ── */
         .ecr-success { display:grid;gap:18px;color:#14213d; }
-        .ecr-success-icon { display:grid;width:56px;height:56px;place-items:center;border-radius:50%;background:#dcfce7;color:#15803d;font-size:28px;font-weight:900; }
+        .ecr-success-icon { display:grid;width:56px;height:56px;place-items:center;border-radius:50%;background:#fff2df;color:#f28c1b;font-size:28px;font-weight:900; }
         .ecr-success-title { margin:0;font-family:Poppins,Inter,sans-serif;font-size:26px;font-weight:900;letter-spacing:-.04em; }
         .ecr-success-desc,.ecr-success-note { margin:0;color:#5e6b85;line-height:1.6; }
         .ecr-summary { display:grid;gap:7px;padding:16px;border-radius:16px;background:#f3f6fd;border:1px solid #e4eaf4;font-size:14px; }
         .ecr-summary span strong { color:#14213d; }
-        .ecr-wa-btn { display:flex;min-height:56px;align-items:center;justify-content:center;gap:9px;padding:0 20px;border-radius:999px;background:#25D366;color:#fff;font:850 15px/1 inherit;text-decoration:none;box-shadow:0 10px 24px rgba(37,211,102,.28);transition:background .2s,transform .2s; }
-        .ecr-wa-btn:hover { background:#128C7E;transform:translateY(-2px); }
+        .ecr-wa-btn { display:flex;min-height:56px;align-items:center;justify-content:center;gap:9px;padding:0 20px;border:1px solid #f28c1b;border-radius:999px;background:#2e5aac;color:#fff;font:850 15px/1 inherit;text-decoration:none;box-shadow:0 10px 24px rgba(46,90,172,.24);transition:background .2s,transform .2s; }
+        .ecr-wa-btn:hover { background:#244887;transform:translateY(-2px); }
         .ecr-login-link { display:block;margin:4px auto 0;padding:10px 16px;border:0;background:transparent;color:#0B2D63;font:700 14px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
 
         /* ── Security ── */
@@ -638,7 +638,6 @@ export default function Register() {
             {/* ── SUCCESS PANEL ── */}
             {step === 3 ? (
               <div className="ecr-success" role="status">
-                <div className="ecr-success-icon">✓</div>
                 <h2 className="ecr-success-title">Confirmez votre inscription</h2>
                 <p className="ecr-success-desc">
                   Votre demande a été envoyée. Pour activer votre compte, contactez ECONCOURS sur WhatsApp, confirmez le pack choisi et envoyez la preuve de paiement.
