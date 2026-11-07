@@ -735,7 +735,7 @@ button[aria-label="Ouvrir le menu des chapitres"] {
   border: 1px solid rgba(154, 193, 255, .28) !important;
   border-bottom: 1px solid rgba(154, 193, 255, .28) !important;
   border-radius: 999px;
-  background: #0B3675 !important;
+  background: #2e5aac !important;
   box-shadow: 0 12px 30px rgba(6, 51, 95, .24), inset 0 1px 0 rgba(255, 255, 255, .1) !important;
 }
 
@@ -928,7 +928,7 @@ button[aria-label="Ouvrir le menu des chapitres"] {
     padding: 12px;
     border: 1px solid rgba(190, 212, 246, .28);
     border-radius: 18px;
-    background: #24478d;
+    background: #2e5aac;
     box-shadow: 0 16px 30px rgba(8, 35, 78, .25);
   }
 
@@ -1223,14 +1223,18 @@ button[aria-label="Ouvrir le menu des chapitres"] {
 }
 
 button[aria-label^="Rouvrir le menu"],
-button[aria-label^="Ouvrir le menu des"] {
-  border-color: #06335f !important;
-  background: #06335f !important;
+button[aria-label^="Ouvrir le menu des"],
+button[aria-label^="Réduire le menu"],
+button[aria-label^="Fermer le menu"] {
+  border-color: #2e5aac !important;
+  background: #2e5aac !important;
   color: #ffffff !important;
 }
 
 button[aria-label^="Rouvrir le menu"]:hover,
-button[aria-label^="Ouvrir le menu des"]:hover {
-  background: #0a467d !important;
+button[aria-label^="Ouvrir le menu des"]:hover,
+button[aria-label^="Réduire le menu"]:hover,
+button[aria-label^="Fermer le menu"]:hover {
+  background: #244887 !important;
 }
 
