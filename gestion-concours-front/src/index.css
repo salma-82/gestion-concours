@@ -11,8 +11,8 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Nunito', sans-serif;
+  --heading: 'Nunito', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
@@ -54,7 +54,8 @@ body {
   margin: 0;
   background-color: #f8fafc;
   color: #0f172a;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -99,9 +100,9 @@ p {
   margin: 0;
 }
 
-/* Shared editorial identity from the homepage across the application. */
+/* Shared visual identity across the application. */
 :root {
-  --editorial-display: Didot, "Bodoni MT", "Times New Roman", Georgia, serif;
+  --editorial-display: 'Nunito', sans-serif;
   --editorial-ink: #252c42;
   --editorial-coral: #f0aa60;
   --heading: var(--editorial-display);
@@ -110,13 +111,7 @@ p {
 
 body {
   background-color: #fff;
-  background-image:
-    linear-gradient(rgba(186, 205, 230, .3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(186, 205, 230, .3) 1px, transparent 1px),
-    linear-gradient(135deg, #fff 0%, #fbfcff 100%);
-  background-size: 112px 56px, 112px 56px, 100% 100%;
-  background-position: 40px 37px, 40px 37px, 0 0;
-  background-attachment: fixed;
+  background-image: none;
 }
 
 #root :is(h1, h2, h3, h4, h5, h6) {
@@ -139,3 +134,57 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Keep one rounded sans-serif voice across the app despite older component overrides. */
+#root :not(svg):not(svg *):not(code):not(.counter) {
+  font-family: 'Nunito', sans-serif !important;
+}
+
+#root :is(h1, h2) {
+  font-weight: 900 !important;
+  letter-spacing: -.03em;
+}
+
+#root :is(h3, h4, h5, h6) {
+  font-weight: 800 !important;
+}
+
+#root :is(button, [role='button'], input[type='submit'], input[type='button'], a[class*='btn'], a[class*='cta']) {
+  border-radius: 9999px !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 800 !important;
+}
+
+/* Keep the landing-page header crisp and modern in Nunito. */
+#root .landing-root :is(.lp-wordmark, .lp-wordmark-prefix, .lp-wordmark-main) {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: -.04em;
+}
+
+#root .landing-root .lp-nav-links a {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: -.02em;
+}
+
+#root .landing-root .lp-nav-actions > .lp-btn-primary {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 800 !important;
+}
+
+#root .landing-root .lp-nav-actions > .lp-btn-try {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 800 !important;
+}
+
+#root .landing-root .lp-btn-hero-primary,
+#root .landing-root .lp-btn-hero-primary > span {
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 900 !important;
+}
+
+#root .landing-root .lp-btn-hero-primary > span {
+  -webkit-text-stroke: .3px currentColor;
+}
+

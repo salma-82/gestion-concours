@@ -141,7 +141,7 @@ export default function Login() {
         });
         googleButtonRef.current.innerHTML = '';
         const w = Math.min(360, Math.max(260, window.innerWidth - 60));
-        window.google.accounts.id.renderButton(googleButtonRef.current, { type: 'standard', theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', width: w, logo_alignment: 'left' });
+        window.google.accounts.id.renderButton(googleButtonRef.current, { type: 'standard', theme: 'outline', size: 'large', text: 'signin_with', shape: 'pill', width: w, logo_alignment: 'left' });
       } catch (err) { console.error('Google init error:', err); }
     };
     const existing = document.getElementById('google-identity-services');
@@ -205,6 +205,9 @@ export default function Login() {
 
   return (
     <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
       {/* ─── Scoped styles ─── */}
       <style>{`
         /* ── Grid/Grain overlay ── */
@@ -533,6 +536,98 @@ export default function Login() {
         @media (prefers-reduced-motion:reduce) {
           .ecl-root *,.ecl-root *::before,.ecl-root *::after { animation-duration:.01ms!important;transition-duration:.01ms!important; }
         }
+
+        /* Screenshot-matched split login layout; keep the existing owl mascot. */
+        .ecl-root { font-family:Nunito,Inter,system-ui,sans-serif; }
+        .ecl-aside {
+          flex:0 0 48%;
+          padding:44px 32px;
+          background:#f7f8fc;
+        }
+        .ecl-aside::before,
+        .ecl-aside::after {
+          content:'';
+          position:absolute;
+          border:2px solid rgba(43,87,167,.07);
+          border-radius:50%;
+          pointer-events:none;
+        }
+        .ecl-aside::before { width:430px;height:430px;top:-174px;left:-174px; }
+        .ecl-aside::after { width:360px;height:360px;inset:auto -145px -157px auto;background:none; }
+        .ecl-aside .ecauth-bg-decor-wrap { display:none; }
+        .ecl-aside-content { max-width:520px; }
+        .ecl-mascot-badge {
+          width:120px;height:120px;margin-bottom:28px;border:1px solid #e0e5ef;
+          border-radius:30px;background:#fff;box-shadow:0 12px 25px rgba(31,58,105,.06);
+          backdrop-filter:none;
+        }
+        .ecl-mascot-art { width:82px;height:90px; }
+        .ecl-aside-title {
+          margin:0 0 24px;color:#2b57a7;font-family:Nunito,Inter,system-ui,sans-serif;
+          font-size:clamp(28px,3vw,38px);line-height:1.12;letter-spacing:-.035em;
+        }
+        .ecl-accent { color:#f28a2e;-webkit-text-fill-color:#f28a2e; }
+        .ecl-aside-desc,.ecl-features-card { display:none; }
+        .ecl-school-pills {
+          display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:0 0 34px;
+        }
+        .ecl-school-pills span {
+          display:inline-flex;min-height:39px;align-items:center;justify-content:center;
+          padding:0 17px;border:1px solid #dfe5f0;border-radius:999px;background:#fff;
+          color:#2b57a7;font-size:14px;font-weight:900;letter-spacing:.08em;
+        }
+        .ecl-aside-switch {
+          min-height:62px;padding:12px 34px;border:1px solid #dfe5f0;background:#fff;
+          color:#2b57a7;font-size:16px;box-shadow:0 5px 16px rgba(31,58,105,.04);
+        }
+        .ecl-aside-switch:hover { border-color:#2b57a7;background:#2b57a7; }
+        .ecl-main { padding:clamp(28px,5vw,64px);background:#fff; }
+        .ecl-panel { max-width:520px; }
+        .ecl-eyebrow { display:none; }
+        .ecl-title {
+          margin:0 0 34px;color:#2b57a7;font-family:Nunito,Inter,system-ui,sans-serif;
+          font-size:clamp(36px,4vw,44px);line-height:1.12;letter-spacing:-.04em;text-align:center;
+        }
+        .ecl-subtitle { display:none; }
+        .ecl-google-btn {
+          min-height:64px;padding:12px 20px;border:1.5px solid #dfe5f0;border-radius:999px;
+          color:#2b57a7;font-size:17px;box-shadow:none;
+        }
+        .ecl-divider { gap:16px;margin:24px 0; }
+        .ecl-divider span { color:#5e6b85;font-size:14px;font-weight:700; }
+        .ecl-label { color:#2b57a7;font-size:16px;font-weight:800; }
+        .ecl-input {
+          min-height:68px;padding:14px 44px 14px 62px;border-color:#dfe5f0;
+          border-radius:23px;background:#f8f9fc;font-size:16px;
+        }
+        .ecl-forgot { color:#f28a2e; }
+        .ecl-submit {
+          min-height:72px;margin-top:8px;background:#2b57a7;font-size:19px;
+          box-shadow:0 16px 28px rgba(43,87,167,.28);
+        }
+        .ecl-submit:hover:not(:disabled) { background:#244a91; }
+        .ecl-switch-text,.ecl-security { display:none; }
+        @media (max-width:768px) {
+          .ecl-aside { flex:0 0 auto;min-height:0;padding:58px 20px 24px; }
+          .ecl-aside::after { display:none; }
+          .ecl-mascot-badge { width:92px;height:92px;margin-bottom:18px;border-radius:24px; }
+          .ecl-mascot-art { width:66px;height:72px; }
+          .ecl-aside-title { margin-bottom:16px;font-size:clamp(23px,5vw,30px); }
+          .ecl-school-pills { gap:6px;margin-bottom:18px; }
+          .ecl-school-pills span { min-height:32px;padding:0 11px;font-size:11px; }
+          .ecl-aside-switch { min-height:48px;padding:10px 20px;font-size:13px; }
+          .ecl-main { padding:28px 20px 40px; }
+          .ecl-title { margin-bottom:24px;font-size:34px; }
+          .ecl-google-btn { min-height:54px;font-size:15px; }
+          .ecl-input { min-height:58px; }
+          .ecl-submit { min-height:60px;font-size:17px; }
+        }
+        @media (max-width:480px) {
+          .ecl-aside { padding:54px 16px 22px; }
+          .ecl-school-pills { gap:5px; }
+          .ecl-school-pills span { padding:0 9px;font-size:10px; }
+          .ecl-main { padding:24px 16px 34px; }
+        }
       `}</style>
 
       <div className="ecl-root">
@@ -558,19 +653,14 @@ export default function Login() {
             </div>
 
             <h2 className="ecl-aside-title">
-              Bon retour sur <span className="ecl-accent">E-CONCOURS</span> !
+              Continue ta <span className="ecl-accent">préparation</span>
             </h2>
-            <p className="ecl-aside-desc">
-              Continuez votre préparation. Vos QCM, résumés et statistiques vous attendent.
-            </p>
-
-            <ul className="ecl-features-card">
-              <li><span className="ecl-feat-icon">✓</span> Cours du Bac par option</li>
-              <li><span className="ecl-feat-icon">✓</span> Examens nationaux corrigés</li>
-              <li><span className="ecl-feat-icon">✓</span> Résumés &amp; Fiches de révision</li>
-              <li><span className="ecl-feat-icon">✓</span> Concours blancs en QCM chronométrés</li>
-              <li><span className="ecl-feat-icon">✓</span> Concours officiels des grandes écoles en QCM interactifs</li>
-            </ul>
+            <div className="ecl-school-pills" aria-label="Écoles préparées">
+              <span>ENSA</span>
+              <span>ENSAM</span>
+              <span>ENCG</span>
+              <span>MÉDECINE</span>
+            </div>
 
             <Link to="/register" className="ecl-aside-switch">
               <span>Pas encore de compte ?</span>
@@ -583,7 +673,7 @@ export default function Login() {
         <main className="ecl-main">
           <div className="ecl-panel">
             <div className="ecl-eyebrow">CONNEXION</div>
-            <h1 className="ecl-title">Bon retour !</h1>
+            <h1 className="ecl-title">Connexion</h1>
             <p className="ecl-subtitle">Entrez vos identifiants pour accéder à votre espace.</p>
 
             {error && (
@@ -615,10 +705,10 @@ export default function Login() {
               </button>
             )}
 
-            <div className="ecl-divider"><span>ou avec votre email</span></div>
+            <div className="ecl-divider"><span>ou</span></div>
 
             <form className="ecl-form" onSubmit={handleLogin}>
-              <Field id="login-email" label="Adresse e-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" required
+              <Field id="login-email" label="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nom@exemple.com" required
                 icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="m2 7 10 7 10-7" /></svg>}
               />
               <Field id="login-password" label="Mot de passe" type="password" value={motDePasse} onChange={e => setMotDePasse(e.target.value)} placeholder="••••••••" required

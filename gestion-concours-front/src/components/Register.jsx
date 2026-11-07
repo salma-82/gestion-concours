@@ -439,6 +439,108 @@ export default function Register() {
         @media (prefers-reduced-motion:reduce) {
           .ecr-root *,.ecr-root *::before,.ecr-root *::after { animation-duration:.01ms!important;transition-duration:.01ms!important; }
         }
+
+        /* Registration page styled to match the split-screen auth reference. */
+        .ecr-root { font-family:Nunito,Inter,system-ui,sans-serif;color:#2b57a7;background:#fff; }
+        .ecr-grid,.ecr-grain { display:none; }
+        .ecr-aside {
+          flex:0 0 48%;
+          padding:44px 32px;
+          background:#f7f8fc;
+        }
+        .ecr-aside::before,
+        .ecr-aside::after {
+          content:'';
+          position:absolute;
+          border:2px solid rgba(43,87,167,.07);
+          border-radius:50%;
+          pointer-events:none;
+        }
+        .ecr-aside::before { width:430px;height:430px;top:-174px;left:-174px; }
+        .ecr-aside::after { width:360px;height:360px;inset:auto -145px -157px auto;background:none; }
+        .ecr-aside .ecr-bg-wrap { display:none; }
+        .ecr-aside-content { max-width:520px; }
+        .ecr-back {
+          min-height:46px;padding:0 18px;border-color:#dfe5f0;background:#fff;
+          color:#2b57a7;font-size:16px;box-shadow:none;backdrop-filter:none;
+        }
+        .ecr-mascot-badge {
+          width:120px;height:120px;margin-bottom:28px;border:1px solid #e0e5ef;
+          border-radius:30px;background:#fff;box-shadow:0 12px 25px rgba(31,58,105,.06);
+          backdrop-filter:none;
+        }
+        .ecr-mascot-art { width:82px;height:90px; }
+        .ecr-aside-title {
+          max-width:500px;margin:0 0 24px;color:#2b57a7;
+          font-family:Nunito,Inter,system-ui,sans-serif;
+          font-size:clamp(28px,3vw,38px);line-height:1.12;letter-spacing:-.035em;
+        }
+        .ecr-accent { color:#f28a2e;-webkit-text-fill-color:#f28a2e; }
+        .ecr-aside-desc,.ecr-features-card { display:none; }
+        .ecr-school-pills {
+          display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:0 0 34px;
+        }
+        .ecr-school-pills span {
+          display:inline-flex;min-height:39px;align-items:center;justify-content:center;
+          padding:0 17px;border:1px solid #dfe5f0;border-radius:999px;background:#fff;
+          color:#2b57a7;font-size:14px;font-weight:900;letter-spacing:.08em;
+        }
+        .ecr-aside-switch {
+          min-height:62px;padding:12px 34px;border:1px solid #dfe5f0;background:#fff;
+          color:#2b57a7;font-size:16px;box-shadow:0 5px 16px rgba(31,58,105,.04);
+        }
+        .ecr-aside-switch:hover { border-color:#2b57a7;background:#2b57a7; }
+        .ecr-main { padding:28px clamp(28px,5vw,64px) 0;background:#fff; }
+        .ecr-panel { max-width:520px; }
+        .ecr-eyebrow,.ecr-subtitle,.ecr-steps { display:none; }
+        .ecr-title {
+          margin:0 0 30px;color:#2b57a7;font-family:Nunito,Inter,system-ui,sans-serif;
+          font-size:clamp(36px,4vw,44px);line-height:1.12;letter-spacing:-.04em;text-align:center;
+        }
+        .ecr-progress-track { height:9px;margin:0 0 32px;background:#e4e7ef; }
+        .ecr-progress-fill { background:#2b57a7; }
+        .ecr-step-info { gap:12px;margin:0 0 28px;color:#2b57a7;font-size:16px;font-weight:900; }
+        .ecr-step-dot { width:13px;height:13px;background:#2b57a7; }
+        .ecr-form { gap:20px; }
+        .ecr-field { gap:10px; }
+        .ecr-label { color:#2b57a7;font-size:16px;font-weight:800; }
+        .ecr-input {
+          min-height:68px;padding:14px 44px 14px 62px;border-color:#dfe5f0;
+          border-radius:23px;background:#f8f9fc;color:#2b3e65;font-size:16px;
+        }
+        .ecr-input-icon { left:24px;color:#657595; }
+        .ecr-input-icon svg { width:20px;height:20px; }
+        .ecr-input::placeholder { color:#8b98b2; }
+        .ecr-input:focus { border-color:#2b57a7;box-shadow:0 0 0 4px rgba(43,87,167,.1); }
+        .ecr-next-btn,.ecr-submit {
+          min-height:72px;margin-top:8px;background:#2b57a7;font-size:19px;
+          box-shadow:0 16px 28px rgba(43,87,167,.28);
+        }
+        .ecr-next-btn:hover,.ecr-submit:hover:not(:disabled) { background:#244a91; }
+        .ecr-switch-text,.ecr-security { display:none; }
+        @media (max-width:820px) {
+          .ecr-aside { flex:0 0 auto;min-height:0;padding:58px 20px 24px; }
+          .ecr-aside::after { display:none; }
+          .ecr-mascot-badge { width:92px;height:92px;margin-bottom:18px;border-radius:24px; }
+          .ecr-mascot-art { width:66px;height:72px; }
+          .ecr-aside-title { margin-bottom:16px;font-size:clamp(23px,5vw,30px); }
+          .ecr-school-pills { gap:6px;margin-bottom:18px; }
+          .ecr-school-pills span { min-height:32px;padding:0 11px;font-size:11px; }
+          .ecr-aside-switch { min-height:48px;padding:10px 20px;font-size:13px; }
+          .ecr-main { padding:28px 20px 40px; }
+          .ecr-title { margin-bottom:24px;font-size:34px; }
+          .ecr-progress-track { margin-bottom:26px; }
+          .ecr-step-info { margin-bottom:22px;font-size:15px; }
+          .ecr-input { min-height:58px; }
+          .ecr-next-btn,.ecr-submit { min-height:60px;font-size:17px; }
+        }
+        @media (max-width:480px) {
+          .ecr-aside { padding:54px 16px 22px; }
+          .ecr-school-pills { gap:5px; }
+          .ecr-school-pills span { padding:0 9px;font-size:10px; }
+          .ecr-main { padding:24px 16px 34px; }
+          .ecr-title { font-size:30px; }
+        }
       `}</style>
 
       <div className="ecr-root">
@@ -466,17 +568,12 @@ export default function Register() {
             <h2 className="ecr-aside-title">
               Commence ta <span className="ecr-accent">réussite</span> aujourd'hui
             </h2>
-            <p className="ecr-aside-desc">
-              Rejoins des milliers d'étudiants qui préparent les concours ENSA, ENSAM, Médecine et plus encore.
-            </p>
-
-            <ul className="ecr-features-card">
-              <li><span className="ecr-feat-icon">✓</span> Cours du Bac par option</li>
-              <li><span className="ecr-feat-icon">✓</span> Examens nationaux corrigés</li>
-              <li><span className="ecr-feat-icon">✓</span> Résumés &amp; Fiches de révision</li>
-              <li><span className="ecr-feat-icon">✓</span> Concours blancs en QCM chronométrés</li>
-              <li><span className="ecr-feat-icon">✓</span> Concours officiels des grandes écoles en QCM interactifs</li>
-            </ul>
+            <div className="ecr-school-pills" aria-label="Écoles préparées">
+              <span>ENSA</span>
+              <span>ENSAM</span>
+              <span>ENCG</span>
+              <span>MÉDECINE</span>
+            </div>
 
             <Link to="/login" className="ecr-aside-switch">
               <span>Déjà un compte ?</span>
@@ -569,18 +666,18 @@ export default function Register() {
                       <label className="ecr-label" htmlFor="reg-username">Nom &amp; Prénom</label>
                       <div className="ecr-input-wrap">
                         <span className="ecr-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c.5-3.5 3.5-6 8-6s7.5 2.5 8 6" /></svg></span>
-                        <input id="reg-username" className="ecr-input" type="text" name="username" value={formData.username} onChange={handleChange} placeholder="Ex: Amine Benali" required />
+                        <input id="reg-username" className="ecr-input" type="text" name="username" value={formData.username} onChange={handleChange} placeholder="Amine Benali" required />
                       </div>
                     </div>
                     <div className="ecr-field">
-                      <label className="ecr-label" htmlFor="reg-email">Adresse e-mail</label>
+                      <label className="ecr-label" htmlFor="reg-email">E-mail</label>
                       <div className="ecr-input-wrap">
                         <span className="ecr-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="m2 7 10 7 10-7" /></svg></span>
                         <input id="reg-email" className="ecr-input" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="nom@exemple.com" required />
                       </div>
                     </div>
                     <div className="ecr-field">
-                      <label className="ecr-label" htmlFor="reg-phone">Numéro de téléphone</label>
+                      <label className="ecr-label" htmlFor="reg-phone">Téléphone</label>
                       <div className="ecr-input-wrap">
                         <span className="ecr-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.31 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.53 6.53l1.62-.93a2 2 0 0 1 2.11.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg></span>
                         <input id="reg-phone" className="ecr-input" type="tel" name="telephone" value={formData.telephone} onChange={handleChange} placeholder="06XXXXXXXX" />

@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -39,6 +40,40 @@ const CARDS_DATA = [
   { name: 'ENSA Maroc', url: ensaMarocImg, desc: 'Réseau ENSA Maroc' },
 ];
 
+const partnerLogos = [
+  { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
+  { src: logoEnsamiImg, alt: 'ENSAM' },
+  { src: logoFmpcImg, alt: 'Faculté de médecine et de pharmacie' },
+  { src: logoEncgImg, alt: 'ENCG' },
+];
+
+const FEATURE_SHOWCASE_ITEMS = [
+  {
+    id: 'dashboard',
+    icon: '📊',
+    title: 'Dashboard de progression',
+    description: 'Analyse tes résultats et suis ton évolution au fil des révisions.',
+  },
+  {
+    id: 'calendar',
+    icon: '📅',
+    title: 'Calendrier personnalisé',
+    description: 'Organise tes séances et tes objectifs de révision sur mesure.',
+  },
+  {
+    id: 'training',
+    icon: '🎯',
+    title: 'Entraînement personnalisé',
+    description: 'Entraîne-toi par matière, chapitre ou concours d’école ciblé.',
+  },
+  {
+    id: 'errors',
+    icon: '🔖',
+    title: 'Sauvegarde des erreurs',
+    description: 'Retrouve automatiquement les questions incorrectes et leurs corrections.',
+  },
+];
+
 const FEATURE_ICONS = {
   profile: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.5-3.3 3.1-5.5 7-5.5s6.5 2.2 7 5.5" /></>,
   calendar: <><rect x="3.5" y="5" width="17" height="16" rx="2.5" /><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01" /></>,
@@ -57,9 +92,47 @@ function FeatureIcon({ name }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{FEATURE_ICONS[name]}</svg>;
 }
 
-export function LandingMascot({ className = '', showCap = true, wave = false, holdingNotebook = false }) {
+const HERO_DECORATION_POSITIONS = {
+  nitrogen: { top: '44%', right: '4%', bottom: 'auto', left: 'auto' },
+  water: { top: '73%', left: '4%', right: 'auto', bottom: 'auto' },
+  flask: { top: '52%', left: '4%', right: 'auto', bottom: 'auto' },
+  parabola: { top: '67%', right: '14%', bottom: 'auto', left: 'auto' },
+  atom: { top: '35%', right: '14%', bottom: 'auto', left: 'auto' },
+  hexagon: { top: '53%', left: '14%', right: 'auto', bottom: 'auto' },
+  graphLeft: { top: '17%', left: '14%', right: 'auto', bottom: 'auto' },
+  graphRight: { top: '73%', right: '14%', bottom: 'auto', left: 'auto' },
+  books: { top: '8%', left: '14%', right: 'auto', bottom: 'auto' },
+  mitochondrionCool: { top: '85%', right: '14%', bottom: 'auto', left: 'auto' },
+  pi: { top: '33%', left: '14%', right: 'auto', bottom: 'auto' },
+  cell: { top: '26%', left: '4%', right: 'auto', bottom: 'auto' },
+};
+
+function createHeroDecorationPositions() {
+  const randomizePercent = (value, min, max) => {
+    if (typeof value !== 'string' || !value.endsWith('%')) return value;
+    const offset = (Math.random() - 0.5) * 7;
+    const nextValue = Math.max(min, Math.min(max, parseFloat(value) + offset));
+    return `${nextValue.toFixed(1)}%`;
+  };
+
+  return Object.fromEntries(
+    Object.entries(HERO_DECORATION_POSITIONS).map(([name, position]) => [
+      name,
+      {
+        ...position,
+        top: randomizePercent(position.top, 5, 91),
+        bottom: randomizePercent(position.bottom, 5, 91),
+        left: randomizePercent(position.left, 3, 18),
+        right: randomizePercent(position.right, 3, 18),
+      },
+    ]),
+  );
+}
+
+export function LandingMascot({ className = '', showCap = true, wave = false, holdingNotebook = false, gaze = 'center', brandCap = false, glasses = false }) {
   const mascotId = useId().replace(/:/g, '');
   const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}${holdingNotebook ? ' lp-mascot--holding-notebook' : ''}`.trim();
+  const pupilGazeTransform = gaze === 'left' ? 'translate(-5 -2)' : 'translate(0 0)';
   return (
     <svg className={mascotClassName} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
       <defs>
@@ -192,22 +265,36 @@ export function LandingMascot({ className = '', showCap = true, wave = false, ho
         <circle cx="146" cy="95" r="28" fill="#fff8eb" />
         <g className="lp-mascot-eye">
           <circle cx="94" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
-          <circle cx="96" cy="95" r="12" fill="#140b04" />
-          <circle cx="100" cy="90" r="4.5" fill="#fff" />
-          <circle cx="92" cy="98" r="2" fill="#fff" />
+          <g transform={pupilGazeTransform}>
+            <circle cx="96" cy="95" r="12" fill="#140b04" />
+            <circle cx="100" cy="90" r="4.5" fill="#fff" />
+            <circle cx="92" cy="98" r="2" fill="#fff" />
+          </g>
         </g>
         <g className="lp-mascot-eye">
           <circle cx="146" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
-          <circle cx="144" cy="95" r="12" fill="#140b04" />
-          <circle cx="148" cy="90" r="4.5" fill="#fff" />
-          <circle cx="140" cy="98" r="2" fill="#fff" />
+          <g transform={pupilGazeTransform}>
+            <circle cx="144" cy="95" r="12" fill="#140b04" />
+            <circle cx="148" cy="90" r="4.5" fill="#fff" />
+            <circle cx="140" cy="98" r="2" fill="#fff" />
+          </g>
         </g>
+        {glasses && (
+          <g className="lp-mascot-glasses" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="94" cy="95" r="26" stroke="#172d4f" strokeWidth="4.5" />
+            <circle cx="146" cy="95" r="26" stroke="#172d4f" strokeWidth="4.5" />
+            <circle cx="94" cy="95" r="22.5" stroke="#f4be57" strokeWidth="1.8" />
+            <circle cx="146" cy="95" r="22.5" stroke="#f4be57" strokeWidth="1.8" />
+            <path d="M120 91q-2-3-5-1m10 0q-3-2-5 1" stroke="#172d4f" strokeWidth="4" />
+            <path d="m68 90-7-2m111 2 7-2" stroke="#172d4f" strokeWidth="3.2" />
+          </g>
+        )}
         <path d="m114 102 12 0-6 18Z" fill="#ff7700" />
         {showCap && (
           <g transform="translate(0 -18)" filter={`url(#${mascotId}-softShadow)`}>
-            <rect x="94" y="42" width="52" height="18" rx="3" fill="#1e2b37" />
-            <polygon points="120,20 182,38 120,56 58,38" fill="#243342" />
-            <polygon points="120,20 182,38 120,41 58,38" fill="#324558" />
+            <rect x="94" y="42" width="52" height="18" rx="3" fill={brandCap ? '#244887' : '#1e2b37'} />
+            <polygon points="120,20 182,38 120,56 58,38" fill={brandCap ? '#244887' : '#243342'} />
+            <polygon points="120,20 182,38 120,41 58,38" fill={brandCap ? '#2e5aac' : '#324558'} />
             <circle cx="120" cy="38" r="4" fill="#ffaa00" />
             <path d="M120 38q40 4 45 27" stroke="#ffb700" strokeWidth="3" fill="none" strokeLinecap="round" />
             <path d="m161 65 8 0-2 13h-4Z" fill="#ffb700" />
@@ -218,23 +305,179 @@ export function LandingMascot({ className = '', showCap = true, wave = false, ho
   );
 }
 
+function RoadmapPreview({ step, onClick }) {
+  const previewContent = {
+    calendar: (
+      <>
+        <div className="lp-mock-calendar-head"><strong>Juin 2025</strong><span>‹　›</span></div>
+        <div className="lp-mock-calendar-grid lp-mock-weekdays">{'Lu Ma Me Je Ve Sa Di'.split(' ').map((day) => <span key={day}>{day}</span>)}</div>
+        <div className="lp-mock-calendar-grid">{Array.from({ length: 33 }, (_, index) => <span className={[7, 12, 18, 24, 29].includes(index) ? 'is-marked' : ''} key={index}>{index < 2 ? '' : index - 1}</span>)}</div>
+        <div className="lp-mock-legend"><span>ENSA</span><span>ENSAM</span><span>Médecine</span><span>ENCG</span></div>
+      </>
+    ),
+    course: (
+      <>
+        <div className="lp-mock-graph">
+          <svg viewBox="0 0 320 120" aria-hidden="true"><path className="lp-mock-axis" d="M18 8v96h288" /><path className="lp-mock-curve" d="M28 20 C72 95 127 115 174 66 S254 20 300 26" /><path className="lp-mock-tangent" d="M125 88 L270 42" /><circle cx="174" cy="66" r="5" /></svg>
+        </div>
+        <div className="lp-mock-definition"><b>À retenir</b><span>La dérivée en un point donne le coefficient directeur de la tangente à la courbe.</span></div>
+      </>
+    ),
+    revision: (
+      <div className="lp-mock-formulas"><span>Δ = b² − 4ac</span><span>e<sup>iπ</sup> + 1 = 0</span><span>U = R × I</span></div>
+    ),
+    blanc: (
+      <>
+        <div className="lp-mock-quiz-head"><span>Question 12 / 40</span><b>⏱ 01:24</b></div>
+        <div className="lp-mock-progress"><i /></div>
+        <p className="lp-mock-question">Quelle est la valeur de x ?</p>
+        <div className="lp-mock-options"><span>A　 2</span><span className="is-correct">B　 4 <b>✓</b></span><span>C　 6</span><span>D　 8</span></div>
+      </>
+    ),
+    annales: (
+      <div className="lp-mock-papers"><div><b>🏫　ENSA · 2024</b><strong>18/20</strong></div><div><b>🏫　ENSAM · 2023</b><strong>12/20</strong></div><div><b>🏫　Médecine · 2024</b><strong>À faire</strong></div></div>
+    ),
+    errors: (
+      <div className="lp-mock-errors"><div className="is-wrong"><b>×</b><span>La réponse donnée est incorrecte.</span></div><div className="is-right"><b>✓</b><span>La bonne réponse est : 12.</span></div><strong className="lp-mock-retry">Refaire</strong></div>
+    ),
+    dashboard: (
+      <>
+        <div className="lp-mock-dashboard-head"><span>📊　Mon progrès</span><b>+12%</b></div>
+        <div className="lp-mock-dashboard-main"><div className="lp-mock-ring"><b>78<small>%</small></b></div><div className="lp-mock-bars">{[38, 55, 43, 74, 61, 92, 80].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div></div>
+        <div className="lp-mock-stats"><span><b>24</b>Statistiques</span><span><b>↗</b>Prévision</span><span><b>18</b>Maîtrisés</span></div>
+      </>
+    ),
+  }[step.preview];
+
+  return (
+    <div
+      className={`lp-roadmap-preview lp-preview-${step.preview}`}
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      aria-label={`Découvrir ${step.title}`}
+    >
+      <div className="lp-roadmap-browserbar" aria-hidden="true">
+        <span className="lp-roadmap-browser-dots"><i /><i /><i /></span>
+        <span>{step.cardBadge}</span>
+        <em>{step.preview === 'calendar' ? 'Juin' : step.preview === 'blanc' ? 'QCM' : 'ECONCOURS'}</em>
+      </div>
+      <div className={`lp-roadmap-image lp-mock-${step.preview}`} aria-hidden="true">{previewContent}</div>
+    </div>
+  );
+}
+
 export default function LandingPage({ onNavigateToAuth }) {
   const navigate = useNavigate();
   const rootRef = useRef(null);
   const stageRef = useRef(null);
   const cardRefs = useRef([]);
+  const heroMascotRef = useRef(null);
+  const motivationMascotRef = useRef(null);
+  const travelingMascotRef = useRef(null);
+  const [heroDecorationPositions] = useState(createHeroDecorationPositions);
 
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
+  const [featureShowcasePaused, setFeatureShowcasePaused] = useState(false);
+  const featureShowcaseHoveredRef = useRef(false);
+  const featureShowcaseFocusedRef = useRef(false);
+  const featureProgressGradientId = `feature-progress-${useId().replace(/:/g, '')}`;
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || featureShowcasePaused) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setActiveFeatureIndex((currentIndex) => (currentIndex + 1) % FEATURE_SHOWCASE_ITEMS.length);
+    }, 6000);
+
+    return () => window.clearTimeout(timer);
+  }, [activeFeatureIndex, featureShowcasePaused]);
+
+  useLayoutEffect(() => {
+    const traveler = travelingMascotRef.current;
+    const source = heroMascotRef.current;
+    const destinationContainer = motivationMascotRef.current;
+    const destination = destinationContainer?.querySelector('.lp-motivation-banner-owl');
+    if (!traveler || !source || !destination) return undefined;
+
+    let frame = 0;
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const updatePosition = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const sourceRect = source.getBoundingClientRect();
+        const destinationRect = destination.getBoundingClientRect();
+        if (!sourceRect.width || !sourceRect.height || !destinationRect.width || !destinationRect.height) return;
+
+        const scrollX = window.scrollX;
+        const scrollY = window.scrollY;
+        const startLeft = sourceRect.left + scrollX;
+        const startTop = sourceRect.top + scrollY;
+        const endLeft = destinationRect.left + scrollX;
+        const endTop = destinationRect.top + scrollY;
+        const endScroll = Math.max(1, endTop);
+        const progress = clamp(scrollY / endScroll, 0, 1);
+        const eased = progress * progress * (3 - 2 * progress);
+        const width = sourceRect.width + (destinationRect.width - sourceRect.width) * eased;
+        const height = sourceRect.height + (destinationRect.height - sourceRect.height) * eased;
+
+        traveler.style.left = `${startLeft + (endLeft - startLeft) * eased - scrollX}px`;
+        traveler.style.top = `${startTop + (endTop - startTop) * eased - Math.sin(progress * Math.PI) * 64 - scrollY}px`;
+        traveler.style.width = `${width}px`;
+        traveler.style.height = `${height}px`;
+        traveler.style.visibility = 'visible';
+        traveler.querySelectorAll('.lp-traveling-mascot-art').forEach((mascot) => {
+          mascot.style.width = `${75 + 25 * eased}%`;
+          mascot.style.height = `${84 + 16 * eased}%`;
+        });
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, { passive: true });
+    window.addEventListener('resize', updatePosition);
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updatePosition) : null;
+    resizeObserver?.observe(source);
+    resizeObserver?.observe(destinationContainer);
+    document.fonts?.ready?.then(updatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+      resizeObserver?.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const formulaShapes = rootRef.current?.querySelectorAll('.lp-reference-doodles .lp-ref-item');
+    if (!formulaShapes?.length) return undefined;
+
+    const tweens = Array.from(formulaShapes, (shape, index) => gsap.to(shape, {
+      y: -7,
+      duration: 2.8 + (index % 3) * 0.25,
+      ease: 'sine.inOut',
+      repeat: -1,
+      yoyo: true,
+      delay: index * 0.14,
+    }));
+
+    return () => tweens.forEach((tween) => tween.kill());
+  }, []);
 
   // Mini-Quiz interactive demo state
-  const [mascotClickCount, setMascotClickCount] = useState(0);
-  const [mascotNavigation, setMascotNavigation] = useState({ zone: 'start', side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
-  const mascotRef = useRef(null);
-  const mascotProgressRef = useRef(0);
-  const mascotMouseXRef = useRef(window.innerWidth / 2);
 
   const handleFeatureClick = (step) => {
     try {
@@ -278,120 +521,81 @@ export default function LandingPage({ onNavigateToAuth }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Keep Bibi alongside the current landing-page section and give each section its own pose.
+  // Snap between the home screen and its next section on one scroll gesture.
   useEffect(() => {
-    let activeZone = '';
+    let isSnapping = false;
+    let touchStartY = null;
+    let touchStartedOnHome = false;
+    let touchStartedOnMotivation = false;
+    let unlockTimer;
 
-    const setZone = (zoneId, pose) => {
-      if (activeZone === zoneId) return;
-      activeZone = zoneId;
-      setMascotNavigation({ ...pose, zone: zoneId });
+    const beginSnap = (scrollAction) => {
+      if (isSnapping) return true;
+      isSnapping = true;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      scrollAction(reduceMotion ? 'auto' : 'smooth');
+      unlockTimer = window.setTimeout(() => { isSnapping = false; }, 750);
+      return true;
     };
 
-    const updateOwlMotion = () => {
-      const progress = mascotProgressRef.current;
-      const element = mascotRef.current;
-      if (!element) return;
-
-      const wingAngle = Math.sin(progress * 0.12) * 12;
-      const headTilt = ((mascotMouseXRef.current / window.innerWidth) - 0.5) * 8 + Math.sin(progress * 0.1) * 8;
-      element.style.setProperty('--owl-wing-left', `${wingAngle}deg`);
-      element.style.setProperty('--owl-wing-right', `${-wingAngle}deg`);
-      element.style.setProperty('--owl-head-tilt', `${headTilt}deg`);
+    const goToMotivation = () => {
+      const motivationSection = document.querySelector('.lp-motivation-banner');
+      if (!motivationSection) return false;
+      return beginSnap((behavior) => motivationSection.scrollIntoView({ behavior, block: 'start' }));
     };
 
-    const handleScroll = () => {
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = maxScroll > 0 ? Math.min(100, Math.max(0, (window.scrollY / maxScroll) * 100)) : 0;
-      mascotProgressRef.current = progress;
+    const goToHome = () => beginSnap((behavior) => window.scrollTo({ top: 0, behavior }));
 
-      const anchorY = window.innerHeight * 0.42;
-      const heroSection = document.querySelector('#hero');
-      const heroRect = heroSection?.getBoundingClientRect();
-      const insideHero = heroRect && heroRect.top <= anchorY && heroRect.bottom >= anchorY;
-      const featuresSection = document.querySelector('.lp-features-section');
-      const featuresRect = featuresSection?.getBoundingClientRect();
-      const insideFeatures = featuresRect && featuresRect.top <= anchorY && featuresRect.bottom >= anchorY;
-      const methodSection = document.querySelector('.lp-methodology-section');
-      const methodRows = Array.from(document.querySelectorAll('.lp-method-row'));
-      const activeRow = methodRows.find((row) => {
-        const rect = row.getBoundingClientRect();
-        return rect.top <= anchorY && rect.bottom >= anchorY;
-      });
-      const methodRect = methodSection?.getBoundingClientRect();
-      const insideMethod = methodRect && methodRect.top <= anchorY && methodRect.bottom >= anchorY;
+    const handleWheel = (event) => {
+      if (event.ctrlKey || event.deltaY === 0) return;
+      if (isSnapping) {
+        event.preventDefault();
+        return;
+      }
 
-      if (window.scrollY <= 1) {
-        setZone('start', { side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
-      } else if (insideFeatures) {
-        setZone('features', { side: 'left', speech: 'Chouf les fonctionnalités! ✨', top: '24vh', scale: 1.05, rotate: '0deg' });
-      } else if (activeRow || (insideMethod && methodRows.length)) {
-        const row = activeRow || methodRows.reduce((closest, candidate) => {
-          const candidateRect = candidate.getBoundingClientRect();
-          const closestRect = closest.getBoundingClientRect();
-          return Math.abs(candidateRect.top + candidateRect.height / 2 - anchorY) < Math.abs(closestRect.top + closestRect.height / 2 - anchorY) ? candidate : closest;
-        }, methodRows[0]);
-        const stepIndex = methodRows.indexOf(row);
-        setZone(`step-${stepIndex}`, {
-          side: stepIndex % 2 === 0 ? 'left' : 'right',
-          speech: row.dataset.mascotSpeech || 'Yallah nkemlo!',
-          top: `${24 + (stepIndex % 3) * 3}vh`,
-          scale: 1.15,
-          rotate: stepIndex % 2 === 0 ? '-6deg' : '6deg'
-        });
-      } else if (insideHero) {
-        setZone('hero', { side: 'right', speech: 'Marhaba! 👋', top: '22vh', scale: 1, rotate: '0deg' });
-      } else if (methodSection && anchorY < methodSection.getBoundingClientRect().top) {
-        const passedFeatures = featuresRect && featuresRect.bottom < anchorY;
-        setZone(passedFeatures ? 'after-features' : 'approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
-      } else {
-        const nextSection = [
-          { selector: '#apropos', pose: { side: 'right', speech: 'Chouf l-progress dyalk! 📊', top: '28vh', scale: 1.1, rotate: '4deg' } },
-          { selector: '#tarifs', pose: { side: 'right', speech: 'Khtar l-formule li tnasbek! ⭐', top: '28vh', scale: 1.2, rotate: '5deg' } },
-          { selector: '#faq', pose: { side: 'left', speech: '3endek chi sou2al? 💡', top: '32vh', scale: 1.08, rotate: '-5deg' } },
-          { selector: '.lp-bottom-cta-section', pose: { side: 'center', speech: 'Yallah, bda l-mouchwar! 🚀', top: '24vh', scale: 1.18, rotate: '0deg' } },
-          { selector: '.lp-footer', pose: { side: 'center', speech: 'B tawfiq! 🎓', top: '30vh', scale: 1, rotate: '0deg' } }
-        ].find(({ selector }) => {
-          const section = document.querySelector(selector);
-          if (!section) return false;
-          const rect = section.getBoundingClientRect();
-          return rect.top <= anchorY && rect.bottom >= anchorY;
-        });
+      if (event.deltaY > 0 && window.scrollY <= 80) {
+        if (goToMotivation()) event.preventDefault();
+        return;
+      }
 
-        if (nextSection) {
-          setZone(nextSection.selector, nextSection.pose);
-        } else if (methodSection && anchorY >= methodSection.getBoundingClientRect().bottom) {
-          setZone('last-step', { side: 'left', speech: methodRows[methodRows.length - 1]?.dataset.mascotSpeech || 'Bravo! 🎓', top: '28vh', scale: 1.15, rotate: '-5deg' });
-        } else {
-          setZone('approach', { side: 'right', speech: 'Nbdaw b planning! 📅', top: '25vh', scale: 1.08, rotate: '-4deg' });
+      if (event.deltaY < 0 && window.scrollY > 80) {
+        const motivationSection = document.querySelector('.lp-motivation-banner');
+        const rect = motivationSection?.getBoundingClientRect();
+        if (rect && rect.top < window.innerHeight && rect.bottom > 0 && goToHome()) {
+          event.preventDefault();
         }
       }
-      updateOwlMotion();
     };
 
-    const handleMouseMove = (event) => {
-      mascotMouseXRef.current = event.clientX;
-      updateOwlMotion();
+    const handleTouchStart = (event) => {
+      touchStartY = event.changedTouches[0]?.clientY ?? null;
+      touchStartedOnHome = window.scrollY <= 80;
+      const motivationSection = document.querySelector('.lp-motivation-banner');
+      const rect = motivationSection?.getBoundingClientRect();
+      touchStartedOnMotivation = window.scrollY > 80 && Boolean(rect && rect.top < window.innerHeight && rect.bottom > 0);
     };
 
-    let scrollFrame = 0;
-    const scheduleScrollUpdate = () => {
-      if (scrollFrame) return;
-      scrollFrame = window.requestAnimationFrame(() => {
-        scrollFrame = 0;
-        handleScroll();
-      });
+    const handleTouchEnd = (event) => {
+      if (touchStartY === null) return;
+      const touchEndY = event.changedTouches[0]?.clientY;
+      if (typeof touchEndY === 'number') {
+        const scrollDelta = touchStartY - touchEndY;
+        if (scrollDelta > 0 && touchStartedOnHome) goToMotivation();
+        if (scrollDelta < 0 && touchStartedOnMotivation) goToHome();
+      }
+      touchStartY = null;
+      touchStartedOnHome = false;
+      touchStartedOnMotivation = false;
     };
 
-    handleScroll();
-    window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
-    window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
-      window.removeEventListener('scroll', scheduleScrollUpdate);
-      window.removeEventListener('resize', scheduleScrollUpdate);
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      if (unlockTimer) window.clearTimeout(unlockTimer);
     };
   }, []);
 
@@ -456,8 +660,9 @@ export default function LandingPage({ onNavigateToAuth }) {
           });
         });
 
-        revealGroup('.lp-features-section', '.lp-section-header > *, .lp-feature-story-card, .lp-features-cta');
-        revealGroup('.lp-methodology-section', '.lp-section-header > *, .lp-method-copy, .lp-method-preview');
+        revealGroup('.lp-features-section', '.fk-head > *, .fk-item, .fk-stage, .fk-cta', { stagger: 0.08 });
+        revealGroup('.lp-roadmap-section', '.lp-roadmap-header > *, .lp-roadmap-step', { stagger: 0.08 });
+        revealGroup('.lp-motivation-banner', '.lp-motivation-banner-copy > *, .lp-motivation-banner-visual', { stagger: 0.12 });
         revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
         revealGroup('.lp-pricing-section', '.lp-section-header > *, .lp-pricing-toggle-wrap, .lp-discount-badge, .lp-plan-card, .lp-plan-btn');
         revealGroup('.lp-faq-section', '.lp-section-header > *, .lp-faq-item');
@@ -465,16 +670,6 @@ export default function LandingPage({ onNavigateToAuth }) {
         revealGroup('.lp-footer', '.lp-footer-brand > *, .lp-footer-col, .lp-footer-bottom > *', { start: 'top 80%', stagger: 0.08 });
 
         // Scroll reveals for sections
-        gsap.to('.lp-method-track-fill', {
-          scaleY: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.lp-method-timeline',
-            start: 'top 65%',
-            end: 'bottom 70%',
-            scrub: 0.5
-          }
-        });
         // Stats counter animation
         ScrollTrigger.create({
           trigger: '.lp-stats-section',
@@ -588,13 +783,6 @@ export default function LandingPage({ onNavigateToAuth }) {
     return () => ctx.revert();
   }, []);
 
-const partnerLogos = [
-  { src: logoEnsaMarocImg, alt: 'ENSA Maroc' },
-  { src: logoEnsamiImg, alt: 'ENSAM' },
-  { src: logoFmpcImg, alt: 'Faculté de médecine et de pharmacie' },
-  { src: logoEncgImg, alt: 'ENCG' }
-];
-
   return (
     <div className="landing-root" ref={rootRef}>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -604,35 +792,25 @@ const partnerLogos = [
         rel="stylesheet"
       />
 
+
       <div className="lp-grain" aria-hidden="true" />
+
+      {typeof document !== 'undefined' && createPortal(
+        <div className="lp-traveling-mascot" ref={travelingMascotRef} aria-hidden="true">
+          <span className="lp-travel-mascot-layer">
+            <LandingMascot className="lp-traveling-mascot-art" holdingNotebook={true} />
+          </span>
+        </div>,
+        document.body
+      )}
 
       {/* ====================================================================
           1. NAVIGATION HEADER
       ==================================================================== */}
-      <button
-        ref={mascotRef}
-        className={`lp-scroll-mascot is-${mascotNavigation.side}${mascotNavigation.zone === 'features' ? ' is-features' : ''}${mascotNavigation.zone === 'approach' ? ' is-hidden' : ''}${['start', 'hero', 'approach'].includes(mascotNavigation.zone) ? ' is-hero' : ''}`}
-        style={{ '--mascot-top': mascotNavigation.top, '--mascot-scale': mascotNavigation.scale, '--mascot-rotate': mascotNavigation.rotate }}
-        type="button"
-        aria-label="Faire bouger la mascotte"
-        onClick={() => setMascotClickCount((count) => count + 1)}
-      >
-        <span key={mascotNavigation.speech} className="lp-mascot-speech" aria-live="polite">{mascotNavigation.speech}</span>
-        <span className={`lp-scroll-mascot-action ${mascotClickCount ? 'is-clicked' : ''}`} key={mascotClickCount}>
-          <LandingMascot className="lp-scroll-mascot-art" />
-        </span>
-      </button>
 
       <nav className={`lp-nav${hasScrolled ? ' has-scrolled' : ''}`} id="nav">
-        <div className="lp-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <span className="lp-nav-mascot lp-brand-cap" aria-hidden="true">
-            <svg viewBox="0 0 48 42" fill="none">
-              <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#0b2d63" />
-              <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#0b2d63" />
-              <path d="M42 16v16" stroke="#e2ae4f" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="42" cy="34" r="2.5" fill="#e2ae4f" />
-            </svg>
-          </span>
+        <div className="lp-logo" aria-label="E-Concours, accueil" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <LandingMascot className="lp-brand-owl" brandCap />
           <span className="lp-wordmark"><span className="lp-wordmark-prefix">E-</span><span className="lp-wordmark-main">CONCOURS</span></span>
         </div>
 
@@ -874,11 +1052,91 @@ const partnerLogos = [
             <path d="M159 19v7m-3.5-3.5h7" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
+        <div className="lp-reference-doodles" aria-hidden="true">
+          <div className="lp-ref-item lp-ref-trig">
+            <svg viewBox="0 0 140 125" fill="none">
+              <circle cx="60" cy="48" r="34" stroke="#2e5aac" strokeWidth="2.5" />
+              <path d="M60 48 84 25M60 48h34M94 43v10M89 48h10" stroke="#ef8b2c" strokeWidth="2.4" strokeLinecap="round" />
+              <text x="60" y="108" textAnchor="middle">sin² θ + cos² θ = 1</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-triangle">
+            <svg viewBox="0 0 140 125" fill="none">
+              <path d="m20 94 77-52-3 55-74-3Z" fill="rgba(46,90,172,.06)" stroke="#2e5aac" strokeWidth="2.4" strokeLinejoin="round" />
+              <path d="m85 94 1-11 11 1" stroke="#ef8b2c" strokeWidth="2.2" strokeLinejoin="round" />
+              <text x="61" y="119" textAnchor="middle">a² + b² = c²</text>
+            </svg>
+          </div>
+          <div className="lp-ref-schools">
+            <span>Médecine</span>
+            <span>ENSAM</span>
+            <span>ENSA</span>
+          </div>
+          <div className="lp-ref-item lp-ref-benzene">
+            <svg viewBox="0 0 100 125" fill="none">
+              <path d="m50 10 31 18v36L50 82 19 64V28L50 10Z" stroke="#2e5aac" strokeWidth="2.3" strokeLinejoin="round" />
+              <circle cx="50" cy="46" r="15" stroke="#ef8b2c" strokeWidth="1.8" />
+              <text x="50" y="109" textAnchor="middle">C₆H₆</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-dna">
+            <svg viewBox="0 0 112 142" fill="none">
+              <path d="M18 8c72 26-5 38 74 62s-1 39-74 64M94 8c-72 26 5 38-74 62s1 39 74 64" stroke="#2e5aac" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M33 17h47M28 34h55M34 51h44M32 69h48M28 87h55M34 105h44M36 123h40" stroke="#a9c6f4" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M18 8c18 6 28 11 34 17M92 70c-17 5-29 10-38 17" stroke="#ef8b2c" strokeWidth="2.2" strokeLinecap="round" />
+              <text x="56" y="139" textAnchor="middle">A–T · C–G</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-integral">
+            <svg viewBox="0 0 150 110" fill="none">
+              <path d="M20 8v78h116M24 85h109" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="M26 75c15-47 33-45 49-30s34 35 59 7" fill="rgba(239,139,44,.22)" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
+              <path d="M39 86V66M111 86V61" stroke="#a9c6f4" strokeWidth="1.4" strokeDasharray="3 3" />
+              <text x="76" y="106" textAnchor="middle">∫₀¹ f(x) dx</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-derivative">
+            <svg viewBox="0 0 150 110" fill="none">
+              <path d="M18 8v78h116M23 85h109" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="M27 73Q68 2 119 72" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
+              <path d="m62 37 42-12" stroke="#ef8b2c" strokeWidth="2.1" strokeLinecap="round" />
+              <circle cx="80" cy="32" r="3.5" fill="#ef8b2c" />
+              <text x="80" y="106" textAnchor="middle">f′(a)</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-complex">
+            <svg viewBox="0 0 120 110" fill="none">
+              <path d="M14 52h96M62 8v82" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="m62 52 38-31" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
+              <circle cx="100" cy="21" r="3.5" fill="#ef8b2c" />
+              <text x="62" y="105" textAnchor="middle">z = a + ib</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-venn">
+            <svg viewBox="0 0 130 100" fill="none">
+              <circle cx="51" cy="43" r="31" fill="rgba(46,90,172,.08)" stroke="#2e5aac" strokeWidth="2.2" />
+              <circle cx="79" cy="43" r="31" fill="rgba(239,139,44,.12)" stroke="#ef8b2c" strokeWidth="2.2" />
+              <text x="65" y="94" textAnchor="middle">P(A ∩ B)</text>
+            </svg>
+          </div>
+          <div className="lp-ref-item lp-ref-circuit">
+            <svg viewBox="0 0 150 80" fill="none">
+              <path d="M10 38h19l8-14 10 28 10-28 10 28 10-28 10 14h43v22H10V38Z" stroke="#2e5aac" strokeWidth="2.1" strokeLinejoin="round" />
+              <path d="M122 33v12M128 35v8" stroke="#ef8b2c" strokeWidth="2" strokeLinecap="round" />
+              <text x="78" y="77" textAnchor="middle">U = R × I</text>
+            </svg>
+          </div>
+          <div className="lp-ref-equation lp-ref-ph">π</div>
+          <div className="lp-ref-equation lp-ref-delta">Δ &gt; 0</div>
+          <div className="lp-ref-equation lp-ref-limit">lim <b>x→0</b> sin x / x = 1</div>
+        </div>
         <div className="lp-headline-composition">
           <h1 className="lp-hero-title" aria-label="Préparez vos concours, assurez votre avenir.">
-            <span className="lp-headline-line lp-headline-line--first" aria-hidden="true">Préparez vos</span>
-            <span className="lp-headline-line lp-headline-line--second" aria-hidden="true">
-              <span className="lp-title-framed-word">concours,</span>
+            <span className="lp-headline-line lp-headline-line--first" aria-hidden="true">
+              Préparez vos <span className="lp-title-framed-word">concours,</span>
+            </span>
+            <span className="lp-headline-line lp-headline-line--second">
+              assurez votre <span className="lp-hero-avenir">avenir.</span>
             </span>
           </h1>
 
@@ -886,6 +1144,7 @@ const partnerLogos = [
             <div className="lp-hero-cta">
               <div
                 className="lp-hero-mascot-companion"
+                ref={heroMascotRef}
                 onClick={() => handleNav('register')}
                 role="button"
                 tabIndex={0}
@@ -899,13 +1158,6 @@ const partnerLogos = [
               </button>
             </div>
           </div>
-          <div className="lp-headline-continuation" aria-hidden="true">
-            <span className="lp-headline-line lp-headline-line--third">assurez votre</span>
-            <span className="lp-headline-line lp-headline-line--avenir">
-              <span className="lp-hero-gradient-text">avenir.</span>
-            </span>
-          </div>
-
           <div className="lp-editorial-doodle lp-editorial-doodle--book" aria-hidden="true">
             <svg viewBox="0 0 100 72" fill="none">
               <path d="M10 12c14-3 27 0 39 8v43c-12-8-25-11-39-8V12Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
@@ -931,6 +1183,32 @@ const partnerLogos = [
           </div>
           <span className="lp-editorial-dot" aria-hidden="true" />
         </div>
+        <nav className="lp-hero-process" aria-label="Étapes de préparation aux concours">
+          <ol>
+            <li className="is-complete">
+              <span className="lp-process-marker" aria-hidden="true" />
+              <span className="lp-process-label">Inscription</span>
+            </li>
+            <li className="is-complete">
+              <span className="lp-process-marker" aria-hidden="true" />
+              <span className="lp-process-label">Cours</span>
+            </li>
+            <li className="is-upcoming">
+              <span className="lp-process-marker" aria-hidden="true" />
+              <span className="lp-process-label">Examens blancs</span>
+            </li>
+            <li className="is-final">
+              <span className="lp-process-marker" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="m3 8 9-4 9 4-9 4-9-4Z" fill="currentColor" />
+                  <path d="M6.5 10v5c3.2 2.4 7.8 2.4 11 0v-5M21 8v6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="21" cy="15.5" r="1.3" fill="currentColor" />
+                </svg>
+              </span>
+              <span className="lp-process-label">Concours</span>
+            </li>
+          </ol>
+        </nav>
         <p className="lp-hero-desc">La plateforme tout-en-un pour bien pr&eacute;parer vos concours au Maroc.</p>
 
         <div className="lp-partner-strip" aria-label="Écoles préparées">
@@ -995,335 +1273,288 @@ const partnerLogos = [
       {/* ====================================================================
           6. 3-STEP METHODOLOGY SECTION (STYLE KRESCO)
       ==================================================================== */}
-      <section className="lp-methodology-section" id="methodologie">
-        <div className="lp-section-header lp-methodology-header">
-          <h2 className="lp-methodology-title">
-            Votre <span>parcours</span>
-          </h2>
-          <p className="lp-methodology-subtitle">
-            De la révision à l'admission · 7 étapes clés
-          </p>
-        </div>
-
-        <div className="lp-method-timeline">
-          <div className="lp-method-track" aria-hidden="true">
-            <span className="lp-method-track-fill" style={{ display: 'none' }} />
+      <section className="lp-motivation-banner" aria-labelledby="lp-motivation-title">
+        <div className="lp-motivation-banner-inner">
+          <div className="lp-motivation-banner-copy">
+            <span className="lp-motivation-banner-eyebrow">Un avenir à construire</span>
+            <h2 id="lp-motivation-title">Ton rêve mérite<br />une préparation<br />à la hauteur.</h2>
+            <p>Chaque grande ambition commence par une décision : un moyen d’avancer, une étape après l’autre.</p>
+            <button className="lp-motivation-banner-cta" type="button" onClick={() => handleScrollTo('methodologie')}>
+              Découvrir les 7 étapes <span aria-hidden="true">→</span>
+            </button>
           </div>
+          <div className="lp-motivation-banner-visual" ref={motivationMascotRef} aria-hidden="true">
+            <div className="lp-motivation-banner-ground" />
+            <LandingMascot className="lp-motivation-banner-owl" holdingNotebook={true} />
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          6. 7-STEP EDITORIAL ROADMAP SECTION
+      ==================================================================== */}
+      <section className="lp-roadmap-section" id="methodologie" aria-labelledby="lp-roadmap-title">
+        <header className="lp-roadmap-header">
+          <h2 id="lp-roadmap-title">Ton chemin vers<br />le <span>concours.</span></h2>
+          <p>Cours, fiches et entraînement s’enchaînent sur une seule plateforme. Chaque étape prépare la suivante.</p>
+        </header>
+
+        <div className="lp-roadmap-list">
+          <svg className="lp-roadmap-route" viewBox="0 0 100 2240" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M70 160 C70 320 30 320 30 480 C30 640 70 640 70 800 C70 960 30 960 30 1120 C30 1280 70 1280 70 1440 C70 1600 30 1600 30 1760 C30 1920 70 1920 70 2080" />
+          </svg>
           {[
             {
               number: '01',
-              side: 'left-card',
-              isOrangeNode: false,
               kicker: 'PLANIFIER',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              ),
               title: 'Calendrier & agenda',
               pills: ['Dates des concours', 'Inscriptions', 'Planning personnel'],
               subtitle: 'ENSA · ENSAM · Médecine · ENCG',
               cardBadge: 'Agenda',
-              urlPath: 'e-concours.ma/client-calendrier',
-              screenshotUrl: '/screenshots/step-01-calendrier.png',
+              preview: 'calendar',
               route: '/client-calendrier',
-              speech: 'Nbdaw b planning! 📅'
             },
             {
               number: '02',
-              side: 'right-card',
-              isOrangeNode: false,
               kicker: 'COMPRENDRE',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-              ),
               title: 'Cours & examens nationaux',
               pills: ['Cours du Bac', 'Annales', 'Corrigés détaillés'],
               subtitle: 'Mathématiques · Physique · SVT',
               cardBadge: 'Examens',
-              urlPath: 'e-concours.ma/client-examens',
-              screenshotUrl: '/screenshots/step-02-examens.png',
+              preview: 'course',
               route: '/client-examens',
-              speech: 'Fhem dars mzyan! 📚'
             },
             {
               number: '03',
-              side: 'left-card',
-              isOrangeNode: false,
               kicker: 'SYNTHÉTISER',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <line x1="10" y1="9" x2="8" y2="9" />
-                </svg>
-              ),
               title: 'Fiches de révision',
               pills: ['Formules clés', 'Résumés', 'Notions essentielles'],
               subtitle: 'Révision rapide par chapitre',
               cardBadge: 'Fiches',
-              urlPath: 'e-concours.ma/client-resumes',
-              screenshotUrl: '/screenshots/step-03-resumes.png',
+              preview: 'revision',
               route: '/client-resumes',
-              speech: 'Wjjed résumé dyalk! 📝'
             },
             {
               number: '04',
-              side: 'right-card',
-              isOrangeNode: false,
-              kicker: "S'ENTRAÎNER",
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="13" r="8" />
-                  <path d="M12 9v4l2.5 1.5" />
-                  <path d="M12 2v3" />
-                  <path d="M9 2h6" />
-                </svg>
-              ),
+              kicker: 'S’ENTRAÎNER',
               title: 'Concours blancs',
               pills: ['QCM chronométrés', 'Matières', 'Chapitres'],
               subtitle: 'Score · Temps · Progression',
               cardBadge: 'QCM Blanc',
-              urlPath: 'e-concours.ma/client-concours-blanc',
-              screenshotUrl: '/screenshots/step-04-concours-blanc.png',
+              preview: 'blanc',
               route: '/client-concours-blanc',
-              speech: 'Dreb QCM b chrono! ⏱️'
             },
             {
               number: '05',
-              side: 'left-card',
-              isOrangeNode: false,
               kicker: 'SE PRÉPARER',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" />
-                </svg>
-              ),
               title: 'Annales des concours',
               pills: ['Sujets officiels', 'QCM interactifs', 'Barèmes'],
               subtitle: 'Préparation par école',
               cardBadge: 'Annales',
-              urlPath: 'e-concours.ma/client-concours',
-              screenshotUrl: '/screenshots/step-05-concours.png',
+              preview: 'annales',
               route: '/client-concours',
-              speech: 'Jarrab annales l’école! 🏛️'
             },
             {
               number: '06',
-              side: 'right-card',
-              isOrangeNode: false,
               kicker: 'PROGRESSER',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21.5 2v6h-6" />
-                  <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                </svg>
-              ),
               title: 'Révision des erreurs',
               pills: ['Erreurs sauvegardées', 'Explications', 'Ciblage'],
               subtitle: 'Révision ciblée · Amélioration continue',
               cardBadge: 'Erreurs',
-              urlPath: 'e-concours.ma/client-erreurs',
-              screenshotUrl: '/screenshots/step-06-erreurs.png',
+              preview: 'errors',
               route: '/client-erreurs',
-              speech: 'Raja3 les erreurs dyalk! 🔄'
             },
             {
               number: '07',
-              side: 'left-card',
-              isOrangeNode: true,
               kicker: 'ATTEINDRE SON OBJECTIF',
-              kickerIcon: (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-              ),
               title: 'Dashboard & progression',
               pills: ['Statistiques', 'Précision', 'Chapitres maîtrisés'],
               subtitle: 'Objectif : admissibilité',
               cardBadge: 'Dashboard',
-              urlPath: 'e-concours.ma/client-dashboard',
-              screenshotUrl: '/screenshots/step-07-dashboard.png',
+              preview: 'dashboard',
               route: '/client-dashboard',
-              speech: 'Qrebti l’admissibilité! 🚀'
-            }
-          ].map((step) => {
-            const isLeftCard = step.side === 'left-card';
-
-            const cardElement = (
-              <div className="lp-method-preview lp-method-col-card">
-                <div
-                  className="lp-skeuo-window"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleFeatureClick(step)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleFeatureClick(step);
-                    }
-                  }}
-                  aria-label={`Essai gratuit : ${step.title}`}
-                  title={`Cliquer pour essayer gratuitement : ${step.title}`}
-                >
-                  <div className="lp-skeuo-titlebar">
-                    <div className="lp-skeuo-controls" aria-hidden="true">
-                      <span className="lp-skeuo-dot dot-close" />
-                      <span className="lp-skeuo-dot dot-min" />
-                      <span className="lp-skeuo-dot dot-expand" />
-                    </div>
-                    <div className="lp-skeuo-address-bar" aria-hidden="true">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lp-skeuo-lock-icon">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                      <span className="lp-skeuo-url">{step.urlPath}</span>
-                    </div>
-                    <div className="lp-skeuo-badge">
-                      <span className="lp-skeuo-pill">{step.cardBadge}</span>
-                    </div>
-                  </div>
-
-                  <div className="lp-skeuo-viewport">
-                    <img
-                      src={step.screenshotUrl}
-                      alt={`Capture d'écran E-CONCOURS : ${step.title}`}
-                      className="lp-skeuo-img"
-                      loading="lazy"
-                    />
-                    <div className="lp-skeuo-glare" aria-hidden="true" />
-                    <div className="lp-skeuo-hover-cta">
-                      <span className="lp-skeuo-cta-btn">
-                        <span>Essai gratuit</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
+            },
+          ].map((step, index) => (
+            <article
+              className={index % 2 === 0 ? 'lp-roadmap-step' : 'lp-roadmap-step is-reversed'}
+              key={step.number}
+            >
+              <div className="lp-roadmap-copy">
+                <span className="lp-roadmap-step-number">Étape {step.number}</span>
+                <span className="lp-roadmap-step-kicker">{step.kicker}</span>
+                <h3>{step.title}</h3>
+                <div className="lp-roadmap-pills">
+                  {step.pills.map((pill) => <span key={pill}>{pill}</span>)}
                 </div>
+                <p className="lp-roadmap-subtitle">{step.subtitle}</p>
               </div>
-            );
 
-            const infoElement = (
-              <div className="lp-method-copy lp-method-col-info">
-                <div className="lp-method-info">
-                  <div className="lp-method-info-kicker">
-                    {step.kickerIcon}
-                    <span>{step.kicker}</span>
-                  </div>
-                  <h3 className="lp-method-info-title">{step.title}</h3>
-                  <div className="lp-method-info-pills">
-                    {step.pills.map((pill) => (
-                      <span key={pill} className="lp-method-info-pill">{pill}</span>
-                    ))}
-                  </div>
-                  <p className="lp-method-info-subtitle">{step.subtitle}</p>
-                </div>
-              </div>
-            );
-
-            return (
-              <article
-                className={`lp-method-row ${isLeftCard ? 'is-left' : 'is-right'}`}
-                data-mascot-speech={step.speech}
-                key={step.number}
-              >
-                {/* Left side */}
-                {isLeftCard ? cardElement : infoElement}
-
-                {/* Center node */}
-                <div className="lp-method-node-wrap">
-                  <div className={`lp-method-node-circle ${step.isOrangeNode ? 'is-orange' : ''}`}>
-                    {step.number}
-                  </div>
-                </div>
-
-                {/* Right side */}
-                {isLeftCard ? infoElement : cardElement}
-              </article>
-            );
-          })}
-
-          {/* Bottom Admission Goal Node */}
-          <div className="lp-methodology-goal">
-            <div className="lp-methodology-goal-badge">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z" />
-              </svg>
-            </div>
-            <span className="lp-methodology-goal-title">Admission</span>
-          </div>
+              <RoadmapPreview step={step} onClick={() => handleFeatureClick(step)} />
+            </article>
+          ))}
         </div>
-      </section><section className="lp-features-section fk" id="fonctionnalites">
+
+      </section>
+      <section className="lp-features-section fk" id="fonctionnalites" aria-labelledby="fk-title">
         <div className="fk-content-wrap">
-        <span className="fk-badge">Fonctionnalités clés</span>
-        <h2>Une préparation adaptée à tes <b>objectifs</b></h2>
-        <p className="fk-sub">Suis ta progression, organise tes révisions et corrige tes erreurs, au même endroit.</p>
+          <header className="fk-head">
+            <span className="fk-badge">Fonctionnalités clés</span>
+            <h2 className="fk-heading" id="fk-title">Une préparation adaptée à tes <b>objectifs</b></h2>
+            <p className="fk-sub">Suis ta progression, organise tes révisions et corrige tes erreurs, au même endroit.</p>
+          </header>
 
-        <div className="fk-grid">
-          <article className="fk-card fk-green">
-            <div className="fk-vis" aria-hidden="true">
-              <div className="fk-ring"><i>85%</i></div>
-              <div className="fk-bars"><span style={{ height: '30%' }} /><span style={{ height: '50%' }} /><span style={{ height: '42%' }} /><span style={{ height: '80%' }} /><span style={{ height: '100%' }} /></div>
+          <div
+            className="fk-show"
+            id="fk-showcase"
+            onMouseEnter={() => {
+              featureShowcaseHoveredRef.current = true;
+              setFeatureShowcasePaused(true);
+            }}
+            onMouseLeave={() => {
+              featureShowcaseHoveredRef.current = false;
+              setFeatureShowcasePaused(featureShowcaseFocusedRef.current);
+            }}
+            onFocusCapture={() => {
+              featureShowcaseFocusedRef.current = true;
+              setFeatureShowcasePaused(true);
+            }}
+            onBlurCapture={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                featureShowcaseFocusedRef.current = false;
+                setFeatureShowcasePaused(featureShowcaseHoveredRef.current);
+              }
+            }}
+          >
+            <div className="fk-list" role="group" aria-label="Choisir une fonctionnalité">
+              {FEATURE_SHOWCASE_ITEMS.map((item, index) => {
+                const isActive = activeFeatureIndex === index;
+                return (
+                  <button
+                    type="button"
+                    className={isActive ? 'fk-item is-active' : 'fk-item'}
+                    id={'fk-feature-' + item.id}
+                    aria-pressed={isActive}
+                    aria-controls={'fk-pane-' + item.id}
+                    key={item.id}
+                    onClick={() => setActiveFeatureIndex(index)}
+                  >
+                    <span className="fk-icon" aria-hidden="true">{item.icon}</span>
+                    <span className="fk-item-copy">
+                      <span className="fk-item-title">{item.title}</span>
+                      <span className="fk-item-description">{item.description}</span>
+                    </span>
+                    <span className="fk-progress" aria-hidden="true"><i /></span>
+                  </button>
+                );
+              })}
             </div>
-            <h3>Dashboard de progression</h3>
-            <p>Analyse tes résultats et suis ton évolution au fil des révisions.</p>
-          </article>
 
-          <article className="fk-card">
-            <div className="fk-vis" aria-hidden="true">
-              <div className="fk-cal">
-                <span className="on" /><span /><span className="on" /><span /><span className="on" /><span /><span />
-                <span /><span className="on" /><span /><span className="on" /><span /><span className="on" /><span />
-                <span className="on" /><span /><span /><span className="on" /><span /><span /><span className="on" />
+            <div className="fk-stage" role="group" aria-label="Aperçu des fonctionnalités">
+              <div className="fk-window">
+                <div className="fk-bar" aria-hidden="true">
+                  <i /><i /><i /><span>E-CONCOURS</span>
+                </div>
+
+                <div
+                  className={activeFeatureIndex === 0 ? 'fk-pane is-active' : 'fk-pane'}
+                  id="fk-pane-dashboard"
+                  role="region"
+                  aria-labelledby="fk-feature-dashboard"
+                  aria-hidden={activeFeatureIndex !== 0}
+                >
+                  <p className="fk-hi">Bonjour Étudiant <span aria-hidden="true">👋</span></p>
+                  <div className="fk-row2">
+                    <svg className="fk-ring" viewBox="0 0 120 120" role="img" aria-label="Progression : 78 %">
+                      <defs>
+                        <linearGradient id={featureProgressGradientId} x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0" stopColor="#4a80de" />
+                          <stop offset="1" stopColor="#2fb67c" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="60" cy="60" r="48" fill="none" stroke="var(--line)" strokeWidth="12" />
+                      <circle cx="60" cy="60" r="48" fill="none" stroke={'url(#' + featureProgressGradientId + ')'} strokeWidth="12" strokeLinecap="round" strokeDasharray="235 302" transform="rotate(-90 60 60)" />
+                      <text x="60" y="68" textAnchor="middle" fontSize="26" fontWeight="900" fill="currentColor" fontFamily="Nunito, sans-serif">78%</text>
+                    </svg>
+                    <div className="fk-bars" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+                  </div>
+                  <div className="fk-tiles">
+                    <div><b>24</b>Séances</div>
+                    <div><b>18</b>Chapitres</div>
+                    <div><b>32/40</b>Dernier score</div>
+                  </div>
+                </div>
+
+                <div
+                  className={activeFeatureIndex === 1 ? 'fk-pane is-active' : 'fk-pane'}
+                  id="fk-pane-calendar"
+                  role="region"
+                  aria-labelledby="fk-feature-calendar"
+                  aria-hidden={activeFeatureIndex !== 1}
+                >
+                  <p className="fk-hi">Novembre</p>
+                  <div className="fk-cw">
+                    <div className="fk-cal" role="img" aria-label="Calendrier de novembre avec les dates importantes surlignées">
+                      {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, index) => <span className="fk-day-heading" key={'day-' + index}>{day}</span>)}
+                      <span className="fk-date is-empty" />
+                      {Array.from({ length: 27 }, (_, index) => {
+                        const date = index + 1;
+                        const markedDate = date === 4 ? 'is-orange' : date === 9 || date === 25 ? 'is-blue' : date === 17 ? 'is-violet' : date === 22 ? 'is-orange' : '';
+                        return <span className={'fk-date ' + markedDate} key={date}>{date}</span>;
+                      })}
+                    </div>
+                    <div className="fk-agenda">
+                      <small>Agenda</small>
+                      <div className="fk-event">Maths · Limites<em>18:00</em></div>
+                      <div className="fk-event is-orange">Physique · Ondes<em>19:30</em></div>
+                      <div className="fk-event is-violet">Concours blanc<em>Samedi</em></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={activeFeatureIndex === 2 ? 'fk-pane is-active' : 'fk-pane'}
+                  id="fk-pane-training"
+                  role="region"
+                  aria-labelledby="fk-feature-training"
+                  aria-hidden={activeFeatureIndex !== 2}
+                >
+                  <div className="fk-filters">
+                    <span className="is-selected">Maths</span><span>Physique</span><span>SVT</span>
+                    <span className="is-selected">ENSA</span><span>ENSAM</span><span>Médecine</span>
+                  </div>
+                  <p className="fk-question">Si f(x) = x², que vaut f’(3) ?</p>
+                  <div className="fk-option"><b>A</b><span>3</span></div>
+                  <div className="fk-option is-correct"><b>B</b><span>6</span></div>
+                  <div className="fk-option"><b>C</b><span>9</span></div>
+                </div>
+
+                <div
+                  className={activeFeatureIndex === 3 ? 'fk-pane is-active' : 'fk-pane'}
+                  id="fk-pane-errors"
+                  role="region"
+                  aria-labelledby="fk-feature-errors"
+                  aria-hidden={activeFeatureIndex !== 3}
+                >
+                  <p className="fk-hi">Mes erreurs</p>
+                  <div className="fk-error-card">
+                    <small>Limites · Question 12</small>
+                    <div className="fk-error-wrong">✕ Ta réponse : 0</div>
+                    <div className="fk-error-correct">✓ lim sin x / x = 1</div>
+                  </div>
+                  <div className="fk-error-card">
+                    <small>Suites · Question 7</small>
+                    <div className="fk-error-wrong">✕ Ta réponse : divergente</div>
+                    <div className="fk-error-correct">✓ Convergente vers 0</div>
+                  </div>
+                  <span className="fk-retry">Refaire</span>
+                </div>
               </div>
             </div>
-            <h3>Calendrier personnalisé</h3>
-            <p>Organise tes séances et tes objectifs de révision sur mesure.</p>
-          </article>
+          </div>
 
-          <article className="fk-card fk-violet fk-dark">
-            <div className="fk-vis" aria-hidden="true">
-              <div className="fk-qcm">
-                <b />
-                <div><u>A</u><em /></div>
-                <div className="ok"><u>B</u><em /><s>✓</s></div>
-                <div><u>C</u><em /></div>
-              </div>
-            </div>
-            <h3>Entraînement personnalisé</h3>
-            <p>Entraîne-toi par matière, chapitre ou concours d’école ciblé.</p>
-          </article>
-
-          <article className="fk-card fk-orange">
-            <div className="fk-vis" aria-hidden="true">
-              <div className="fk-err">
-                <div><b>×</b><em /><strong>✓</strong></div>
-                <div><b>×</b><em /><strong>✓</strong></div>
-                <div><b>×</b><em /><strong>✓</strong></div>
-              </div>
-            </div>
-            <h3>Sauvegarde des erreurs</h3>
-            <p>Retrouve automatiquement les questions incorrectes et leurs corrections.</p>
-          </article>
-        </div>
-
-        <button className="fk-cta" type="button" onClick={() => handleNav('register')}>
-          Accéder à toutes les fonctionnalités <span aria-hidden="true">→</span>
-        </button>
+          <button className="fk-cta" type="button" onClick={() => handleNav('register')}>
+            Accéder à toutes les fonctionnalités <span aria-hidden="true">→</span>
+          </button>
         </div>
       </section>
       {/* ====================================================================
@@ -1611,9 +1842,6 @@ const partnerLogos = [
             <p>
               La plateforme de référence pour les cours du Bac, la préparation aux examens nationaux et aux concours des grandes écoles au Maroc.
             </p>
-            <div className="lp-footer-made-in">
-              Conçu avec passion pour la jeunesse marocaine.
-            </div>
             <div className="lp-footer-social-block">
               <strong>Suivez-nous et contactez-nous</strong>
               <div className="lp-footer-socials">
@@ -1630,38 +1858,37 @@ const partnerLogos = [
           </div>
 
           <div className="lp-footer-col">
-            <h4>Plateforme</h4>
+            <h4 style={{ color: '#ff7628' }}>Plateforme</h4>
             <ul>
-              <li><a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>Fonctionnalités</a></li>
-              <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>Comment ça marche</a></li>
-              <li><a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>Tarifs & Packs</a></li>
+              <li><a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}><span className="lp-footer-arrow">›</span> Fonctionnalités</a></li>
+              <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}><span className="lp-footer-arrow">›</span> Comment ça marche</a></li>
+              <li><a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}><span className="lp-footer-arrow">›</span> Tarifs & Packs</a></li>
             </ul>
           </div>
 
           <div className="lp-footer-col">
-            <h4>Concours</h4>
+            <h4 style={{ color: '#ff7628' }}>Concours</h4>
             <ul>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}>Concours ENSA</a></li>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}>Concours ENSAM</a></li>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}>Concours Médecine (FMP)</a></li>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}>Concours ENCG</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours ENSA</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours ENSAM</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours Médecine (FMP)</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours ENCG</a></li>
             </ul>
           </div>
 
           <div className="lp-footer-col">
-            <h4>Espace Membre</h4>
+            <h4 style={{ color: '#ff7628' }}>Espace Membre</h4>
             <ul>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('login'); }}>Se connecter</a></li>
-              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}>Créer un compte</a></li>
-              <li><a href="#faq" onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}>Aide & FAQ</a></li>
-              <li><a href="mailto:support@econcours.ma">Support & Contact</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('login'); }}><span className="lp-footer-arrow">›</span> Se connecter</a></li>
+              <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Créer un compte</a></li>
+              <li><a href="#faq" onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}><span className="lp-footer-arrow">›</span> Aide & FAQ</a></li>
+              <li><a href="mailto:support@econcours.ma"><span className="lp-footer-arrow">›</span> Support & Contact</a></li>
             </ul>
           </div>
         </div>
 
         <div className="lp-footer-bottom">
           <span>© 2027 E-CONCOURS. Tous droits réservés.</span>
-          <span>Préparation aux Concours d’Accès aux Grandes Écoles du Maroc.</span>
         </div>
       </footer>
     </div>
