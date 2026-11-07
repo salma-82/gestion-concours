@@ -396,6 +396,15 @@ export default function LandingPage({ onNavigateToAuth }) {
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [featureShowcasePaused, setFeatureShowcasePaused] = useState(false);
+  const [selectedArchiveSchool, setSelectedArchiveSchool] = useState('ENSA');
+  const [selectedArchiveYear, setSelectedArchiveYear] = useState(2026);
+  const archiveSchools = [
+    { id: 'ENSA', title: 'Écoles nationales des sciences appliquées' },
+    { id: 'ENSAM', title: 'École nationale supérieure d’arts et métiers' },
+    { id: 'ENCG', title: 'Écoles nationales de commerce et de gestion' },
+    { id: 'Médecine', title: 'Facultés de médecine et de pharmacie' },
+  ];
+  const archiveYears = Array.from({ length: 19 }, (_, index) => 2008 + index);
   const featureShowcaseHoveredRef = useRef(false);
   const featureShowcaseFocusedRef = useRef(false);
   const featureProgressGradientId = `feature-progress-${useId().replace(/:/g, '')}`;
@@ -469,7 +478,7 @@ export default function LandingPage({ onNavigateToAuth }) {
   }, []);
 
   useLayoutEffect(() => {
-    const formulaShapes = rootRef.current?.querySelectorAll('.lp-reference-doodles .lp-ref-item');
+    const formulaShapes = rootRef.current?.querySelectorAll('.lp-home-doodles .lp-home-doodle');
     if (!formulaShapes?.length) return undefined;
 
     const tweens = Array.from(formulaShapes, (shape, index) => gsap.to(shape, {
@@ -668,6 +677,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         });
 
         revealGroup('.lp-features-section', '.fk-head > *, .fk-item, .fk-stage, .fk-cta', { stagger: 0.08 });
+        revealGroup('.lp-archive-section', '.lp-archive-intro > *, .lp-archive-tabs, .lp-archive-years-card, .lp-bac-card, .lp-archive-cta, .lp-archive-owl', { stagger: 0.08 });
         revealGroup('.lp-roadmap-section', '.lp-roadmap-header > *, .lp-roadmap-step', { stagger: 0.08 });
         revealGroup('.lp-motivation-banner', '.lp-motivation-banner-copy > *, .lp-motivation-banner-visual', { stagger: 0.12 });
         revealGroup('.lp-stats-section', '.lp-stats-intro > *, .lp-stat-card', { stagger: 0.14 });
@@ -1137,6 +1147,22 @@ export default function LandingPage({ onNavigateToAuth }) {
           <div className="lp-ref-equation lp-ref-delta">Δ &gt; 0</div>
           <div className="lp-ref-equation lp-ref-limit">lim <b>x→0</b> sin x / x = 1</div>
         </div>
+        <div className="lp-home-doodles" aria-hidden="true">
+          <div className="lp-home-doodle lp-home-doodle--co2"><svg viewBox="0 0 140 112" fill="none"><path d="M42 46h28M70 46h28" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="34" cy="46" r="14" fill="#fff" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="70" cy="46" r="14" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="106" cy="46" r="14" fill="#fff" stroke="#2e5aac" strokeWidth="2.4"/><text x="70" y="91" textAnchor="middle">CO&#8322;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--atom"><svg viewBox="0 0 120 112" fill="none"><circle cx="60" cy="47" r="39" fill="rgba(46,90,172,.04)" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="60" cy="47" r="13" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="60" cy="47" r="5" fill="#ef8b2c"/><circle cx="86" cy="20" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="82" cy="73" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="38" cy="75" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><text x="60" y="105" textAnchor="middle">Atome</text></svg></div>
+          <div className="lp-home-schools"><span>M&#233;decine</span><span>ENSAM</span><span>ENSA</span></div>
+          <div className="lp-home-doodle lp-home-doodle--methane"><svg viewBox="0 0 100 92" fill="none"><path d="M50 42 25 20M50 42 75 20M50 42 25 66M50 42 75 66" stroke="#2e5aac" strokeWidth="2"/><circle cx="50" cy="42" r="10" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="22" cy="18" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="78" cy="18" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="22" cy="68" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="78" cy="68" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><text x="50" y="89" textAnchor="middle">CH&#8324;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--flask"><svg viewBox="0 0 90 112" fill="none"><path d="M34 12h22M39 12v32L18 88q-4 9 7 9h40q11 0 7-9L51 44V12" fill="rgba(245,138,19,.12)" stroke="#2e5aac" strokeWidth="2.5" strokeLinejoin="round"/><path d="M27 77h36" stroke="#ef8b2c" strokeWidth="2"/><circle cx="36" cy="84" r="2.5" fill="#ef8b2c"/><circle cx="53" cy="86" r="2.5" fill="#ef8b2c"/><text x="45" y="109" textAnchor="middle">n = cV</text></svg></div>
+          <span className="lp-home-equation lp-home-equation--wave">c = &#955;f</span>
+          <div className="lp-home-doodle lp-home-doodle--logistic"><svg viewBox="0 0 150 100" fill="none"><path d="M10 82h130M20 88V10" stroke="#b9c9e2" strokeWidth="1.4" strokeDasharray="3 3"/><path d="M24 75C48 75 52 68 64 55S78 27 106 24 128 24 136 24" stroke="#2e5aac" strokeWidth="2.6" strokeLinecap="round"/><circle cx="65" cy="54" r="3.5" fill="#ef8b2c"/><text x="76" y="98" textAnchor="middle">y = 1 / (1 + e&#8315;&#739;)</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--lens"><svg viewBox="0 0 140 100" fill="none"><path d="M12 28h38M12 72h38M90 28h38M90 72h38" stroke="#2e5aac" strokeWidth="2"/><path d="M62 18C48 30 48 70 62 82 76 70 76 30 62 18Z" fill="rgba(46,90,172,.08)" stroke="#2e5aac" strokeWidth="2.4"/><path d="M14 50h112" stroke="#a9c6f4" strokeWidth="1.4"/><circle cx="105" cy="50" r="4" fill="#ef8b2c"/><text x="70" y="98" textAnchor="middle">1/f = 1/p + 1/q</text></svg></div>
+          <span className="lp-home-equation lp-home-equation--sigma">&#931;</span>
+          <div className="lp-home-doodle lp-home-doodle--radian"><svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="45" r="31" fill="rgba(46,90,172,.07)" stroke="#2e5aac" strokeWidth="2.4"/><path d="M50 45 76 24M50 45h31" stroke="#ef8b2c" strokeWidth="2.2" strokeLinecap="round"/><circle cx="76" cy="24" r="3.5" fill="#ef8b2c"/><text x="50" y="95" textAnchor="middle">1 rad = 180&#176; / &#960;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--probability"><svg viewBox="0 0 110 100" fill="none"><circle cx="54" cy="43" r="31" fill="#edf3ff" stroke="#2e5aac" strokeWidth="2.4"/><path d="M54 43V12a31 31 0 0 1 31 31H54Z" fill="#f59a22" stroke="#2e5aac" strokeWidth="2"/><path d="M54 43 29 61" stroke="#2e5aac" strokeWidth="2"/><text x="54" y="94" textAnchor="middle">P&#8321; + P&#8322; + P&#8323; = 1</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--circuit"><svg viewBox="0 0 150 70" fill="none"><path d="M8 42h12l8-26 11 46 11-43 11 43 11-43 11 23h48" stroke="#2e5aac" strokeWidth="2.3" strokeLinejoin="round"/><rect x="116" y="25" width="23" height="30" rx="4" fill="#f58a13"/></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--sine"><svg viewBox="0 0 150 70" fill="none"><path d="M5 40c15 0 15-31 30-31s15 62 30 62 15-62 30-62 15 62 30 62 15-31 20-31" stroke="#2e5aac" strokeWidth="2.5" strokeLinecap="round"/><circle cx="35" cy="10" r="3.5" fill="#ef8b2c"/><text x="78" y="69" textAnchor="middle">y = A sin(&#969;t)</text></svg></div>
+          <span className="lp-home-equation lp-home-equation--pressure">P = F / S</span>
+        </div>
         <div className="lp-headline-composition">
           <h1 className="lp-hero-title" aria-label="Préparez vos concours, assurez votre avenir.">
             <span className="lp-headline-line lp-headline-line--first" aria-hidden="true">
@@ -1152,14 +1178,8 @@ export default function LandingPage({ onNavigateToAuth }) {
               <div
                 className="lp-hero-mascot-companion"
                 ref={heroMascotRef}
-                onClick={() => handleNav('register')}
-                role="button"
-                tabIndex={0}
-                title="Jarab fabor avec la mascotte ECONCOURS"
-                aria-label="Mascotte tenant son carnet de notes"
-              >
-                <LandingMascot className="lp-mascot-hero-note" holdingNotebook={true} />
-              </div>
+                aria-hidden="true"
+              />
               <button className="lp-btn-hero-primary" type="button" onClick={() => handleScrollTo('methodologie')}>
                 <span>Jarab fabor</span>
               </button>
@@ -1564,6 +1584,88 @@ export default function LandingPage({ onNavigateToAuth }) {
           </button>
         </div>
       </section>
+      <section className="lp-archive-section" aria-labelledby="lp-archive-title">
+        <div className="lp-archive-inner">
+          <div className="lp-archive-copy">
+            <header className="lp-archive-intro">
+              <span className="lp-archive-eyebrow">Archives des concours</span>
+              <h2 id="lp-archive-title">
+                Chaque <span className="lp-archive-highlight">concours</span>
+                <br />depuis 2008. Le Bac
+                <br />en plus.
+              </h2>
+              <p>
+                Travaille sur les vrais sujets des grandes écoles. Choisis une offre concours :
+                la préparation du Bac est incluse, sans supplément.
+              </p>
+            </header>
+
+            <div className="lp-archive-tabs" role="tablist" aria-label="Choisir un concours">
+              {archiveSchools.map((school) => (
+                <button
+                  key={school.id}
+                  id={`lp-archive-tab-${school.id}`}
+                  className={`lp-archive-tab${selectedArchiveSchool === school.id ? ' is-active' : ''}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedArchiveSchool === school.id}
+                  aria-controls="lp-archive-years-panel"
+                  onClick={() => setSelectedArchiveSchool(school.id)}
+                >
+                  {school.id}
+                </button>
+              ))}
+            </div>
+
+            <div
+              className="lp-archive-years-card"
+              id="lp-archive-years-panel"
+              role="tabpanel"
+              aria-labelledby={`lp-archive-tab-${selectedArchiveSchool}`}
+            >
+              <h3 id="lp-archive-school-title">
+                {selectedArchiveSchool} · {archiveSchools.find((school) => school.id === selectedArchiveSchool)?.title}
+              </h3>
+              <div className="lp-archive-years" role="group" aria-label={`Choisir l’année du concours ${selectedArchiveSchool}`}>
+                {archiveYears.map((year) => (
+                  <button
+                    key={year}
+                    className={`lp-archive-year${selectedArchiveYear === year ? ' is-active' : ''}`}
+                    type="button"
+                    aria-pressed={selectedArchiveYear === year}
+                    onClick={() => setSelectedArchiveYear(year)}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+              <span className="lp-archive-selection" aria-live="polite">
+                Sélection : {selectedArchiveSchool} · {selectedArchiveYear}
+              </span>
+            </div>
+          </div>
+
+          <div className="lp-archive-side">
+            <div className="lp-bac-card">
+              <span className="lp-bac-ribbon">Offert</span>
+              <h3>Bonus Bac</h3>
+              <p className="lp-bac-subtitle">Inclus avec toute offre concours</p>
+              <ul className="lp-bac-list">
+                <li><span aria-hidden="true">📄</span><div><b>Examens nationaux</b><small>Sujets des années précédentes</small></div></li>
+                <li><span aria-hidden="true">🧬</span><div><b>Cours de SVT</b></div></li>
+                <li><span aria-hidden="true">∑</span><div><b>Cours de Mathématiques</b></div></li>
+                <li><span aria-hidden="true">⚙️</span><div><b>Cours de Physique-Chimie</b></div></li>
+              </ul>
+              <p className="lp-bac-price"><b>0 DH</b> pour le Bac dès que tu t’inscris à une offre concours.</p>
+            </div>
+            <div className="lp-archive-mascot-ground" aria-hidden="true" />
+            <LandingMascot className="lp-archive-owl" holdingNotebook={true} />
+            <button className="lp-archive-cta" type="button" onClick={() => handleNav('register')}>
+              Le Bac est offert !
+            </button>
+          </div>
+        </div>
+      </section>
       {/* ====================================================================
           8. STATS & IMPACT SECTION (DARK THEME)
       ==================================================================== */}
@@ -1826,7 +1928,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       <section className="lp-bottom-cta-section">
         <div className="lp-bottom-cta-card">
           <div className="lp-bottom-cta-content">
-            <span className="lp-bottom-cta-kicker"><i aria-hidden="true">✦</i> TON PROCHAIN CHAPITRE COMMENCE ICI</span>
+            <span className="lp-bottom-cta-kicker">TON PROCHAIN CHAPITRE COMMENCE ICI</span>
             <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
           </div>
           <div className="lp-bottom-cta-logos" aria-label="Écoles préparées">

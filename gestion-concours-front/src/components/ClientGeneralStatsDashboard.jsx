@@ -372,21 +372,7 @@ export default function ClientGeneralStatsDashboard({
         </button>
       </header>
 
-      <section className="general-stats-objective-card" aria-label="Dashboard et progression">
-        <div className="general-stats-objective-kicker">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M5 19v-5m7 5V9m7 10V4" />
-          </svg>
-          <span>ATTEINDRE SON OBJECTIF</span>
-        </div>
-        <h2>Dashboard &amp; progression</h2>
-        <div className="general-stats-objective-tags" aria-label="Fonctionnalités">
-          <span>Statistiques</span>
-          <span>Précision</span>
-          <span>Chapitres maîtrisés</span>
-        </div>
-        <p>Objectif : admissibilité</p>
-      </section>
+      
 
       <section className="general-stats-filters" aria-label="Filtres des statistiques générales">
         <div className="general-stats-period" role="group" aria-label="Période">
