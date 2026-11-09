@@ -1,0 +1,1990 @@
+/* ==========================================================================
+   DESIGN TOKENS - DUAL THEME ENGINE (LINEAR / VERCEL GRADE)
+   Strict compliance with WCAG AA/AAA and user-specified design requirements.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Standard Design Tokens - Mode Clair (Light) */
+  --bg: #f8fafc;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-raised: #f1f5f9;
+  --surface-hover: #e2e8f0;
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --primary: #2e5aac;
+  --primary-hover: #3d70b9;
+  --accent: #ff7628;
+  --accent-hover: #ea580c;
+  --on-accent: #ffffff;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --error: #dc2626;
+  --warning: #d97706;
+  --info: #0284c7;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.12);
+  --focus-ring: rgba(255, 118, 40, 0.35);
+  --illustration-stroke: #2e5aac;
+  --illustration-accent: #ef8b2c;
+  --illustration-accent-soft: rgba(239, 139, 44, 0.15);
+  --illustration-soft: rgba(46, 90, 172, 0.07);
+  --illustration-muted: #b9c9e2;
+
+  /* Backward Compatibility Aliases */
+  --theme-bg: var(--bg);
+  --theme-bg-subtle: #f1f5f9;
+  --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
+  --theme-surface-hover: var(--surface-hover);
+  --theme-text: var(--text);
+  --theme-text-secondary: var(--text-secondary);
+  --theme-text-muted: var(--text-muted);
+  --theme-border: var(--border);
+  --theme-border-subtle: var(--border-subtle);
+  --theme-primary: var(--primary);
+  --theme-accent: var(--accent);
+  --theme-accent-hover: var(--accent-hover);
+  --theme-accent-glow: rgba(255, 118, 40, 0.2);
+  --theme-success: var(--success);
+  --theme-error: var(--error);
+  --theme-warning: var(--warning);
+  --theme-shadow-sm: var(--shadow-sm);
+  --theme-shadow-md: var(--shadow-md);
+  --theme-shadow-lg: var(--shadow-lg);
+  --theme-nav-bg: rgba(255, 255, 255, 0.88);
+}
+
+:root[data-theme="dark"],
+:root.dark,
+html[data-theme="dark"],
+html.dark {
+  color-scheme: dark;
+
+  /* Standard Design Tokens - Mode Sombre Professionnel E-CONCOURS (Palette Exacte) */
+  --bg: #0F172A;                 /* Background principal */
+  --bg-elevated: #151F32;        /* Background secondaire */
+  --surface: #1B2940;            /* Cards */
+  --surface-2: #202F47;          /* Cards secondaires */
+  --surface-raised: #202F47;
+  --surface-hover: #263854;
+  --input-bg: #17243A;           /* Champs de saisie */
+  --border: #2B3B52;             /* Bordures */
+  --border-strong: #3A4D6B;
+  --border-subtle: #223247;
+  --text: #F1F5F9;               /* Titres & texte principal */
+  --text-title: #F1F5F9;
+  --text-secondary: #A6B3C5;     /* Textes secondaires */
+  --text-muted: #A6B3C5;
+  --text-subtle: #73849D;
+  --primary: #60A5FA;            /* Bleu principal */
+  --primary-hover: #93C5FD;
+  --accent: #F59E0B;             /* Orange accent */
+  --accent-hover: #D97706;
+  --on-accent: #ffffff;
+  --success: #10B981;
+  --danger: #EF4444;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --info: #38BDF8;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 25px -4px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 45px -8px rgba(0, 0, 0, 0.6);
+  --focus-ring: rgba(245, 158, 11, 0.45);
+  --illustration-stroke: #60A5FA;
+  --illustration-accent: #F59E0B;
+  --illustration-accent-soft: rgba(245, 158, 11, 0.2);
+  --illustration-soft: rgba(96, 165, 250, 0.12);
+  --illustration-muted: rgba(96, 165, 250, 0.5);
+
+  /* Backward Compatibility Aliases */
+  --theme-bg: var(--bg);
+  --theme-bg-subtle: var(--bg-elevated);
+  --theme-surface: var(--surface);
+  --theme-surface-raised: var(--surface-raised);
+  --theme-surface-hover: var(--surface-hover);
+  --theme-text: var(--text);
+  --theme-text-secondary: var(--text-secondary);
+  --theme-text-muted: var(--text-muted);
+  --theme-border: var(--border);
+  --theme-border-subtle: var(--border-subtle);
+  --theme-primary: var(--primary);
+  --theme-accent: var(--accent);
+  --theme-accent-hover: var(--accent-hover);
+  --theme-accent-glow: rgba(245, 158, 11, 0.25);
+  --theme-success: var(--success);
+  --theme-error: var(--error);
+  --theme-warning: var(--warning);
+  --theme-shadow-sm: var(--shadow-sm);
+  --theme-shadow-md: var(--shadow-md);
+  --theme-shadow-lg: var(--shadow-lg);
+  --theme-nav-bg: rgba(15, 23, 42, 0.92);
+}
+
+/* ==========================================================================
+   GLOBAL TRANSITIONS & SCROLLBARS
+   ========================================================================== */
+
+html,
+body {
+  min-height: 100%;
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid var(--bg);
+  border-radius: 9999px;
+  background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==========================================================================
+   DARK MODE - LANDING PAGE SPECIFIC FIXES (HIGH SPECIFICITY OVERRIDES)
+   ========================================================================== */
+
+html[data-theme="dark"] body,
+html.dark body {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root,
+html.dark #root .landing-root {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  background-image: none !important;
+
+  /* Scoped token overrides for LandingPage.css */
+  --lp-primary: #2e5aac !important;
+  --lp-primary-dark: #3d70b9 !important;
+  --lp-primary-light: rgba(46, 90, 172, 0.15) !important;
+  --lp-ink: var(--text) !important;
+  --lp-ink-soft: var(--text-secondary) !important;
+  --lp-line: var(--border) !important;
+  --lp-surface: var(--surface) !important;
+  --lp-bg: var(--bg) !important;
+
+  /* Roadmap local tokens */
+  --road-ink: var(--text) !important;
+  --road-blue: #6EA0FF !important;
+  --road-orange: var(--accent) !important;
+  --road-muted: var(--text-muted) !important;
+
+  /* Archive local tokens */
+  --archive-bg: var(--bg) !important;
+  --archive-grid: rgba(255, 255, 255, 0.04) !important;
+  --archive-ink: var(--text) !important;
+  --archive-muted: var(--text-muted) !important;
+  --archive-line: var(--border) !important;
+
+  /* Features fk local tokens */
+  --bg: #070b14 !important;
+  --card: #131A2E !important;
+  --ink: #F1F5F9 !important;
+  --blue: #6EA0FF !important;
+  --violet: #a78bfa !important;
+  --orange: #ff7628 !important;
+  --green: #34d399 !important;
+  --red: #f87171 !important;
+  --mute: #94a3b8 !important;
+  --line: rgba(255, 255, 255, 0.08) !important;
+  --soft: #18223d !important;
+  --chip: #1e293b !important;
+  --chip-border: rgba(255, 118, 40, 0.3) !important;
+  --chip-ink: #fb923c !important;
+}
+
+/* --------------------------------------------------------------------------
+   1. HIGHLIGHT "concours," DANS LE TITRE
+   Texte blanc cassé/pur sur fond orange highlight, jamais de la couleur du fond.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root #hero .lp-title-framed-word,
+html[data-theme="dark"] #root .landing-root #hero .lp-headline-composition .lp-title-framed-word,
+html.dark #root .landing-root #hero .lp-title-framed-word,
+html.dark #root .landing-root #hero .lp-headline-composition .lp-title-framed-word {
+  background: #f58a13 !important;
+  outline: 2px solid rgba(255, 192, 106, 0.6) !important;
+  outline-offset: 1px !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(245, 138, 19, 0.35) !important;
+  border: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. TITRE PRINCIPAL
+   "Préparez vos" et "assurez votre avenir." en blanc cassé (#F1F5F9).
+   L'orange est réservé au highlight et aux boutons d'action.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-title,
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-title span:not(.lp-title-framed-word),
+html[data-theme="dark"] #root .landing-root #hero .lp-headline-composition .lp-hero-title,
+html[data-theme="dark"] #root .landing-root #hero .lp-headline-line,
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-avenir,
+html.dark #root .landing-root #hero .lp-hero-title,
+html.dark #root .landing-root #hero .lp-hero-title span:not(.lp-title-framed-word),
+html.dark #root .landing-root #hero .lp-headline-composition .lp-hero-title,
+html.dark #root .landing-root #hero .lp-headline-line,
+html.dark #root .landing-root #hero .lp-hero-avenir {
+  color: #F1F5F9 !important;
+  -webkit-text-fill-color: #F1F5F9 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-title::before,
+html.dark #root .landing-root #hero .lp-hero-title::before {
+  color: #ffaa40 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-desc,
+html.dark #root .landing-root #hero .lp-hero-desc {
+  color: var(--text-secondary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. MENU PILL (Comment ça marche, Fonctionnalités, Tarifs, FAQ)
+   Fond surface sombre (#131A2E), bordure subtile, texte #CBD5E1, lien actif orange.
+   Plus aucun fond blanc.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links,
+html[data-theme="dark"] #root .landing-root .lp-nav.has-scrolled .lp-nav-links,
+html.dark #root .landing-root .lp-nav .lp-nav-links,
+html.dark #root .landing-root .lp-nav.has-scrolled .lp-nav-links {
+  background: #131A2E !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav-links a,
+html.dark #root .landing-root .lp-nav-links a {
+  color: #CBD5E1 !important;
+  transition: color 150ms ease;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav-links a:hover,
+html[data-theme="dark"] #root .landing-root .lp-nav-links a.is-active,
+html.dark #root .landing-root .lp-nav-links a:hover,
+html.dark #root .landing-root .lp-nav-links a.is-active {
+  color: #ff7628 !important;
+}
+
+/* Navbar container & wordmark */
+html[data-theme="dark"] #root .landing-root .lp-nav,
+html.dark #root .landing-root .lp-nav {
+  background: var(--theme-nav-bg) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-wordmark-main,
+html.dark #root .landing-root .lp-wordmark-main {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-wordmark-prefix,
+html.dark #root .landing-root .lp-wordmark-prefix {
+  color: var(--accent) !important;
+}
+
+/* Mobile Menu */
+html[data-theme="dark"] #root .landing-root .lp-mobile-menu,
+html.dark #root .landing-root .lp-mobile-menu {
+  background: #0d1526 !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: var(--theme-shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-mobile-menu a,
+html.dark #root .landing-root .lp-mobile-menu a {
+  color: var(--text) !important;
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. CHIPS FLOTTANTS (Médecine, ENSAM, ENSA, c = λf, P = F/S)
+   Fond surface sombre (#131A2E), bordure subtile, texte clair (#F1F5F9), ombre adaptée.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root #hero :is(.lp-ref-schools span,
+  .lp-home-schools span,
+  .lp-home-equation:not(.lp-home-equation--sigma),
+  .lp-ref-equation,
+  .lp-hero-floater,
+  .lp-school-pill),
+html.dark #root .landing-root #hero :is(.lp-ref-schools span,
+  .lp-home-schools span,
+  .lp-home-equation:not(.lp-home-equation--sigma),
+  .lp-ref-equation,
+  .lp-hero-floater,
+  .lp-school-pill) {
+  background: #131A2E !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #F1F5F9 !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero :is(.lp-ref-schools span::before, .lp-home-schools span::before),
+html.dark #root .landing-root #hero :is(.lp-ref-schools span::before, .lp-home-schools span::before) {
+  background: #ff7628 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-home-equation--sigma,
+html.dark #root .landing-root #hero .lp-home-equation--sigma {
+  color: #f58a13 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. ILLUSTRATIONS & LABELS
+   (CO₂, atome, molécule, fiole, courbes, lentille, cercle, camembert, sinusoïde)
+   Traits et textes en bleu clair (#6EA0FF), contraste minimum 4.5:1 (ici ~8.4:1).
+   Accents orange préservés.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root #hero :is(.lp-home-doodle,
+  .lp-ref-item,
+  .lp-editorial-doodle,
+  .lp-hero-science-decor,
+  .lp-hero-nitrogen-molecule,
+  .lp-hero-water-molecule,
+  .lp-math-graph,
+  .lp-math-note,
+  .lp-hero-ruler,
+  .lp-hero-pendulum),
+html.dark #root .landing-root #hero :is(.lp-home-doodle,
+  .lp-ref-item,
+  .lp-editorial-doodle,
+  .lp-hero-science-decor,
+  .lp-hero-nitrogen-molecule,
+  .lp-hero-water-molecule,
+  .lp-math-graph,
+  .lp-math-note,
+  .lp-hero-ruler,
+  .lp-hero-pendulum) {
+  color: #6EA0FF !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero :is(.lp-home-doodle, .lp-ref-item, .lp-editorial-doodle, .lp-hero-science-decor, .lp-math-graph) text,
+html.dark #root .landing-root #hero :is(.lp-home-doodle, .lp-ref-item, .lp-editorial-doodle, .lp-hero-science-decor, .lp-math-graph) text {
+  fill: #6EA0FF !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-math-note,
+html.dark #root .landing-root #hero .lp-math-note {
+  color: #6EA0FF !important;
+  opacity: 0.9;
+}
+
+/* Preserving orange accents in hero illustrations */
+html[data-theme="dark"] #root .landing-root #hero svg [fill="#ef8b2c"],
+html[data-theme="dark"] #root .landing-root #hero svg [fill="#f58a13"],
+html[data-theme="dark"] #root .landing-root #hero svg [fill="#f59a22"],
+html[data-theme="dark"] #root .landing-root #hero svg [fill="#f59e0b"],
+html[data-theme="dark"] #root .landing-root #hero svg [fill="#f97316"],
+html.dark #root .landing-root #hero svg [fill="#ef8b2c"],
+html.dark #root .landing-root #hero svg [fill="#f58a13"],
+html.dark #root .landing-root #hero svg [fill="#f59a22"],
+html.dark #root .landing-root #hero svg [fill="#f59e0b"],
+html.dark #root .landing-root #hero svg [fill="#f97316"] {
+  fill: #ff7628 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero svg [stroke="#ef8b2c"],
+html[data-theme="dark"] #root .landing-root #hero svg [stroke="#f58a13"],
+html[data-theme="dark"] #root .landing-root #hero svg [stroke="#f59a22"],
+html[data-theme="dark"] #root .landing-root #hero svg [stroke="#f59e0b"],
+html[data-theme="dark"] #root .landing-root #hero svg [stroke="#f97316"],
+html.dark #root .landing-root #hero svg [stroke="#ef8b2c"],
+html.dark #root .landing-root #hero svg [stroke="#f58a13"],
+html.dark #root .landing-root #hero svg [stroke="#f59a22"],
+html.dark #root .landing-root #hero svg [stroke="#f59e0b"],
+html.dark #root .landing-root #hero svg [stroke="#f97316"] {
+  stroke: #ff7628 !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. TIMELINE (Inscription, Cours, Examens nationaux, Concours)
+   Labels en #CBD5E1, ligne et points en bleu clair (#6EA0FF).
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] #root .landing-root #hero .lp-process-label,
+html.dark #root .landing-root #hero .lp-process-label {
+  color: #CBD5E1 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-process ol::before,
+html.dark #root .landing-root #hero .lp-hero-process ol::before {
+  background: repeating-linear-gradient(90deg, rgba(110, 160, 255, 0.4) 0 2px, transparent 2px 5px) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-hero-process ol::after,
+html.dark #root .landing-root #hero .lp-hero-process ol::after {
+  background: #6EA0FF !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .is-complete .lp-process-marker::before,
+html.dark #root .landing-root #hero .is-complete .lp-process-marker::before {
+  background: #6EA0FF !important;
+  box-shadow: 0 0 10px rgba(110, 160, 255, 0.5) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .is-upcoming .lp-process-marker::before,
+html.dark #root .landing-root #hero .is-upcoming .lp-process-marker::before {
+  border-color: #6EA0FF !important;
+  background: #070b14 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .is-final .lp-process-marker,
+html.dark #root .landing-root #hero .is-final .lp-process-marker {
+  background: #f58a13 !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(245, 138, 19, 0.4) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. BOUTONS
+   - "Créer un compte" : garde sa couleur (#2e5aac) dans les deux thèmes.
+   - "SE CONNECTER" : bordure claire.
+   - "Jarab fabor" : garde son bleu (#2e5aac) avec texte blanc (#ffffff) contrasté (7.3:1).
+   -------------------------------------------------------------------------- */
+/* Bouton "Créer un compte" dans la navbar */
+html[data-theme="dark"] #root .landing-root .lp-nav-actions>.lp-btn-primary,
+html.dark #root .landing-root .lp-nav-actions>.lp-btn-primary {
+  background: #2e5aac !important;
+  border: 1px solid #2e5aac !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav-actions>.lp-btn-primary:hover,
+html.dark #root .landing-root .lp-nav-actions>.lp-btn-primary:hover {
+  background: #3d70b9 !important;
+  border-color: #3d70b9 !important;
+  color: #ffffff !important;
+}
+
+/* Bouton "SE CONNECTER" dans la navbar */
+html[data-theme="dark"] #root .landing-root .lp-nav-actions>.lp-btn-ghost,
+html.dark #root .landing-root .lp-nav-actions>.lp-btn-ghost {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav-actions>.lp-btn-ghost:hover,
+html.dark #root .landing-root .lp-nav-actions>.lp-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+}
+
+/* Bouton "Jarab fabor" dans le Hero */
+html[data-theme="dark"] #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary,
+html.dark #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary {
+  background: #2e5aac !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 28px rgba(46, 90, 172, 0.35) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover,
+html.dark #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover {
+  background: #3d70b9 !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(46, 90, 172, 0.45) !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. WIDGET WHATSAPP "Aide"
+   Fond surface sombre (#131A2E) en dark, texte #CBD5E1.
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] .whatsapp-float,
+html.dark .whatsapp-float {
+  background: #131A2E !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #CBD5E1 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] .whatsapp-float:hover,
+html.dark .whatsapp-float:hover {
+  background: #1f2b4c !important;
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   AUTRES SECTIONS LANDING PAGE (PROFESSIONNEL BHAL LES SITES WEB LKBAR)
+   -------------------------------------------------------------------------- */
+
+/* Partner Strip */
+html[data-theme="dark"] #root .landing-root .lp-partner-strip,
+html.dark #root .landing-root .lp-partner-strip {
+  background: #080d19 !important;
+  border-top: 1px solid var(--border-subtle) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-partner-logo-item,
+html.dark #root .landing-root .lp-partner-logo-item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 6px 14px !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-social-proof,
+html.dark #root .landing-root .lp-social-proof {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-social-proof strong,
+html.dark #root .landing-root #hero .lp-proof-text strong {
+  color: #ffffff !important;
+}
+
+/* 3D Orbit Carousel cards */
+html[data-theme="dark"] #root .landing-root .lp-orbit-card,
+html.dark #root .landing-root .lp-orbit-card {
+  background: #131A2E !important;
+  border: 2px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* Motivation Section */
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner,
+html.dark #root .landing-root .lp-motivation-banner {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner::before,
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner::after,
+html.dark #root .landing-root .lp-motivation-banner::before,
+html.dark #root .landing-root .lp-motivation-banner::after {
+  display: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner-eyebrow,
+html.dark #root .landing-root .lp-motivation-banner-eyebrow {
+  color: #ffaa40 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner-copy h2,
+html.dark #root .landing-root .lp-motivation-banner-copy h2 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner-copy p,
+html.dark #root .landing-root .lp-motivation-banner-copy p {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner-cta,
+html.dark #root .landing-root .lp-motivation-banner-cta {
+  background: linear-gradient(135deg, #ff7628 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(255, 118, 40, 0.35) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-motivation-banner-ground,
+html.dark #root .landing-root .lp-motivation-banner-ground {
+  display: none !important;
+}
+
+/* Section Titles Across Landing */
+html[data-theme="dark"] #root .landing-root :is(.lp-section-title,
+  .lp-methodology-title,
+  .lp-three-steps-header h2,
+  .lp-stats-intro h2,
+  .lp-bottom-cta-card h2,
+  .fk > h2,
+  .lp-archive-intro h2,
+  .lp-roadmap-header h2),
+html.dark #root .landing-root :is(.lp-section-title,
+  .lp-methodology-title,
+  .lp-three-steps-header h2,
+  .lp-stats-intro h2,
+  .lp-bottom-cta-card h2,
+  .fk > h2,
+  .lp-archive-intro h2,
+  .lp-roadmap-header h2) {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root :is(.lp-section-desc,
+  .lp-methodology-subtitle,
+  .lp-stats-intro p,
+  .lp-bottom-cta-card p,
+  .lp-archive-intro p,
+  .lp-roadmap-subtitle),
+html.dark #root .landing-root :is(.lp-section-desc,
+  .lp-methodology-subtitle,
+  .lp-stats-intro p,
+  .lp-bottom-cta-card p,
+  .lp-archive-intro p,
+  .lp-roadmap-subtitle) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root :is(.lp-section-eyebrow,
+  .fk-badge,
+  .lp-archive-eyebrow),
+html.dark #root .landing-root :is(.lp-section-eyebrow,
+  .fk-badge,
+  .lp-archive-eyebrow) {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #ffaa40 !important;
+}
+
+/* Roadmap / 7-Step Methodology */
+html[data-theme="dark"] #root .landing-root :is(.lp-methodology-section, .lp-roadmap-section),
+html.dark #root .landing-root :is(.lp-methodology-section, .lp-roadmap-section) {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root :is(.lp-roadmap-preview, .lp-method-card, .lp-method-info),
+html.dark #root .landing-root :is(.lp-roadmap-preview, .lp-method-card, .lp-method-info) {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-roadmap-browserbar,
+html.dark #root .landing-root .lp-roadmap-browserbar {
+  background: var(--surface-raised) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-mock-papers div,
+html[data-theme="dark"] #root .landing-root .lp-mock-errors div,
+html[data-theme="dark"] #root .landing-root .lp-mock-calendar-grid span,
+html.dark #root .landing-root .lp-mock-papers div,
+html.dark #root .landing-root .lp-mock-errors div,
+html.dark #root .landing-root .lp-mock-calendar-grid span {
+  background: var(--surface-raised) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+/* Interactive Features Showcase (.fk) */
+html[data-theme="dark"] #root .landing-root .lp-features-section,
+html.dark #root .landing-root .lp-features-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk .fk-item,
+html.dark #root .landing-root .fk .fk-item {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk .fk-item.is-active,
+html.dark #root .landing-root .fk .fk-item.is-active {
+  background-color: var(--surface-raised) !important;
+  border-color: rgba(255, 118, 40, 0.4) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk .fk-item-title,
+html.dark #root .landing-root .fk .fk-item-title {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk .fk-item-description,
+html.dark #root .landing-root .fk .fk-item-description {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk :is(.fk-window, .fk-stage, .fk-card),
+html.dark #root .landing-root .fk :is(.fk-window, .fk-stage, .fk-card) {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .fk .fk-date,
+html[data-theme="dark"] #root .landing-root .fk .fk-filters span,
+html[data-theme="dark"] #root .landing-root .fk .fk-error-card,
+html.dark #root .landing-root .fk .fk-date,
+html.dark #root .landing-root .fk .fk-filters span,
+html.dark #root .landing-root .fk .fk-error-card {
+  background-color: var(--surface-raised) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+/* Archive & Annales Section */
+html[data-theme="dark"] #root .landing-root .lp-archive-section,
+html.dark #root .landing-root .lp-archive-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-archive-tab,
+html.dark #root .landing-root .lp-archive-tab {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-archive-tab.is-active,
+html.dark #root .landing-root .lp-archive-tab.is-active {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
+}
+
+html[data-theme="dark"] #root .landing-root :is(.lp-archive-years-card, .lp-bac-card),
+html.dark #root .landing-root :is(.lp-archive-years-card, .lp-bac-card) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-archive-year,
+html.dark #root .landing-root .lp-archive-year {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-archive-year:hover,
+html[data-theme="dark"] #root .landing-root .lp-archive-year.is-active,
+html.dark #root .landing-root .lp-archive-year:hover,
+html.dark #root .landing-root .lp-archive-year.is-active {
+  background: #1e3158 !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-archive-selection,
+html.dark #root .landing-root .lp-archive-selection {
+  background: var(--surface-raised) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* 3 Steps Section */
+html[data-theme="dark"] #root .landing-root .lp-three-steps-section,
+html.dark #root .landing-root .lp-three-steps-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-three-step-card,
+html.dark #root .landing-root .lp-three-step-card {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-three-step-card h3,
+html.dark #root .landing-root .lp-three-step-card h3 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-three-step-card p,
+html.dark #root .landing-root .lp-three-step-card p {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-three-step-number,
+html.dark #root .landing-root .lp-three-step-number {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
+}
+
+/* Pricing Section */
+html[data-theme="dark"] #root .landing-root .lp-pricing-section,
+html.dark #root .landing-root .lp-pricing-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-card,
+html.dark #root .landing-root .lp-plan-card {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-name,
+html[data-theme="dark"] #root .landing-root .lp-plan-price,
+html.dark #root .landing-root .lp-plan-name,
+html.dark #root .landing-root .lp-plan-price {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-sub,
+html.dark #root .landing-root .lp-plan-sub {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-features li,
+html.dark #root .landing-root .lp-plan-features li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-card.is-featured,
+html.dark #root .landing-root .lp-plan-card.is-featured {
+  background: linear-gradient(180deg, #162444 0%, #0e172a 100%) !important;
+  border: 1.5px solid var(--accent) !important;
+  box-shadow: 0 0 32px rgba(255, 118, 40, 0.22), var(--theme-shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-btn,
+html.dark #root .landing-root .lp-plan-btn {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-btn:hover,
+html.dark #root .landing-root .lp-plan-btn:hover {
+  background: var(--surface-hover) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-plan-card.is-featured .lp-plan-btn,
+html.dark #root .landing-root .lp-plan-card.is-featured .lp-plan-btn {
+  background: linear-gradient(135deg, #ff7628 0%, #ea580c 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(255, 118, 40, 0.4) !important;
+}
+
+/* Stats Section */
+html[data-theme="dark"] #root .landing-root .lp-stats-section,
+html.dark #root .landing-root .lp-stats-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-inner,
+html.dark #root .landing-root .lp-stats-inner {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--theme-shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stat-card strong,
+html.dark #root .landing-root .lp-stat-card strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stat-card span,
+html.dark #root .landing-root .lp-stat-card span {
+  color: var(--text-muted) !important;
+}
+
+/* FAQ Accordion */
+html[data-theme="dark"] #root .landing-root .lp-faq-section,
+html.dark #root .landing-root .lp-faq-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-faq-item,
+html.dark #root .landing-root .lp-faq-item {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--theme-shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-faq-question,
+html.dark #root .landing-root .lp-faq-question {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-faq-chevron,
+html.dark #root .landing-root .lp-faq-chevron {
+  color: var(--accent) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-faq-item.is-open,
+html.dark #root .landing-root .lp-faq-item.is-open {
+  background: #111d33 !important;
+  border-color: rgba(255, 118, 40, 0.4) !important;
+  box-shadow: var(--theme-shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-faq-answer,
+html.dark #root .landing-root .lp-faq-answer {
+  color: var(--text-secondary) !important;
+}
+
+/* Bottom CTA Banner */
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section,
+html.dark #root .landing-root .lp-bottom-cta-section {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-card,
+html.dark #root .landing-root .lp-bottom-cta-card {
+  background: radial-gradient(circle at 50% 0%, rgba(255, 118, 40, 0.12), transparent 70%), var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--theme-shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-kicker,
+html.dark #root .landing-root .lp-bottom-cta-kicker {
+  color: #ffaa40 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-logo-item,
+html.dark #root .landing-root .lp-bottom-cta-logo-item {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  padding: 8px 14px !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-btn,
+html.dark #root .landing-root .lp-bottom-cta-btn {
+  background: linear-gradient(135deg, #ff7628 0%, #ea580c 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 22px rgba(255, 118, 40, 0.4) !important;
+}
+
+/* Footer (Deep night blue, orange column titles preserved as requested) */
+html[data-theme="dark"] #root .landing-root .lp-footer,
+html.dark #root .landing-root .lp-footer {
+  background: #050810 !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer-col h4,
+html.dark #root .landing-root .lp-footer-col h4 {
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer-col a,
+html.dark #root .landing-root .lp-footer-col a {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer-col a:hover,
+html.dark #root .landing-root .lp-footer-col a:hover {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer-bottom,
+html.dark #root .landing-root .lp-footer-bottom {
+  border-color: var(--border-subtle) !important;
+  color: var(--text-muted) !important;
+}
+
+/* ==========================================================================
+   DARK MODE - AUTHENTICATION PAGES
+   ========================================================================== */
+
+html[data-theme="dark"] #root .ecauth-root,
+html.dark #root .ecauth-root {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .ecauth-root :is(.ecauth-main,
+  .ecauth-form-panel,
+  .ecauth-form-card,
+  .ecauth-card,
+  .ecauth-form-wrap,
+  .ecauth-panel),
+html.dark #root .ecauth-root :is(.ecauth-main,
+  .ecauth-form-panel,
+  .ecauth-form-card,
+  .ecauth-card,
+  .ecauth-form-wrap,
+  .ecauth-panel) {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  background-color: var(--surface) !important;
+  box-shadow: var(--theme-shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .ecauth-root .ecauth-aside,
+html.dark #root .ecauth-root .ecauth-aside {
+  background-color: #0b1222 !important;
+  border-right-color: var(--border) !important;
+}
+
+html[data-theme="dark"] #root .ecauth-root :is(.ecauth-title, .ecauth-aside-copy h2, .ecauth-tabs button),
+html.dark #root .ecauth-root :is(.ecauth-title, .ecauth-aside-copy h2, .ecauth-tabs button) {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .ecauth-root :is(.ecauth-subtitle, .ecauth-aside-copy p, .ecauth-feat-list li),
+html.dark #root .ecauth-root :is(.ecauth-subtitle, .ecauth-aside-copy p, .ecauth-feat-list li) {
+  color: var(--text-secondary) !important;
+}
+
+/* Form Inputs */
+html[data-theme="dark"] #root input,
+html[data-theme="dark"] #root select,
+html[data-theme="dark"] #root textarea,
+html.dark #root input,
+html.dark #root select,
+html.dark #root textarea {
+  background-color: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root input::placeholder,
+html[data-theme="dark"] #root textarea::placeholder,
+html.dark #root input::placeholder,
+html.dark #root textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root input:focus,
+html[data-theme="dark"] #root select:focus,
+html[data-theme="dark"] #root textarea:focus,
+html.dark #root input:focus,
+html.dark #root select:focus,
+html.dark #root textarea:focus {
+  border-color: var(--accent) !important;
+  outline: 2px solid var(--accent) !important;
+}
+
+/* ==========================================================================
+   DARK MODE - CLIENT INTERFACE (FULL SENIOR COVERAGE)
+   ========================================================================== */
+
+/* 1. Header & Navigation */
+html[data-theme="dark"] #root .client-header,
+html.dark #root .client-header {
+  background: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .client-brand-name,
+html.dark #root .client-brand-name {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .client-brand-tagline,
+html.dark #root .client-brand-tagline {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .client-nav-link,
+html.dark #root .client-nav-link {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .client-nav-link:hover,
+html.dark #root .client-nav-link:hover {
+  background-color: var(--surface-2) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .client-nav-link.is-active,
+html.dark #root .client-nav-link.is-active {
+  background-color: rgba(255, 118, 40, 0.12) !important;
+  color: var(--accent) !important;
+}
+
+html[data-theme="dark"] #root .client-nav-dropdown,
+html.dark #root .client-nav-dropdown {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .client-nav-dropdown-link,
+html.dark #root .client-nav-dropdown-link {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .client-nav-dropdown-link:hover,
+html.dark #root .client-nav-dropdown-link:hover {
+  background-color: var(--surface-2) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .client-nav-dropdown-item.is-active .client-nav-dropdown-link,
+html.dark #root .client-nav-dropdown-item.is-active .client-nav-dropdown-link {
+  color: var(--accent) !important;
+  background-color: rgba(255, 118, 40, 0.1) !important;
+}
+
+html[data-theme="dark"] #root .client-user-btn,
+html.dark #root .client-user-btn {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .client-user-menu,
+html.dark #root .client-user-menu {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .client-user-menu button,
+html[data-theme="dark"] #root .client-user-menu a,
+html.dark #root .client-user-menu button,
+html.dark #root .client-user-menu a {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .client-user-menu button:hover,
+html[data-theme="dark"] #root .client-user-menu a:hover,
+html.dark #root .client-user-menu button:hover,
+html.dark #root .client-user-menu a:hover {
+  background-color: var(--surface-2) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .client-mobile-drawer,
+html.dark #root .client-mobile-drawer {
+  background-color: var(--bg-elevated) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+/* 2. Client Layout & Page Containers */
+html[data-theme="dark"] #root .client-layout,
+html[data-theme="dark"] #root .client-page-content,
+html[data-theme="dark"] #root .client-content-area,
+html[data-theme="dark"] #root .client-dashboard,
+html[data-theme="dark"] #root main,
+html.dark #root .client-layout,
+html.dark #root .client-page-content,
+html.dark #root .client-content-area,
+html.dark #root .client-dashboard,
+html.dark #root main {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* 3. Dashboard Components */
+html[data-theme="dark"] #root .dashboard-welcome,
+html.dark #root .dashboard-welcome {
+  background: linear-gradient(115deg, #111832 0%, #172041 55%, #1E2A52 100%) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-welcome h1,
+html.dark #root .dashboard-welcome h1 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-welcome-copy>p,
+html.dark #root .dashboard-welcome-copy>p {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root :is(.dashboard-eyebrow, .dashboard-section-kicker),
+html.dark #root :is(.dashboard-eyebrow, .dashboard-section-kicker) {
+  color: #ffaa40 !important;
+}
+
+html[data-theme="dark"] #root .dashboard-overall-card,
+html.dark #root .dashboard-overall-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-overall-card strong,
+html.dark #root .dashboard-overall-card strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-overall-card span,
+html.dark #root .dashboard-overall-card span {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-ring>div,
+html.dark #root .dashboard-ring>div {
+  background: var(--surface) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-ring strong,
+html.dark #root .dashboard-ring strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-secondary-action,
+html.dark #root .dashboard-secondary-action {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-secondary-action:hover,
+html.dark #root .dashboard-secondary-action:hover {
+  background: var(--surface-2) !important;
+  border-color: var(--border-strong) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-stat-card,
+html.dark #root .dashboard-stat-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-stat-copy strong,
+html.dark #root .dashboard-stat-copy strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-stat-copy>span,
+html.dark #root .dashboard-stat-copy>span {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-panel,
+html.dark #root .dashboard-panel {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-panel-heading h2,
+html.dark #root .dashboard-panel-heading h2 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-subject-title strong,
+html.dark #root .dashboard-subject-title strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-subject-title span,
+html.dark #root .dashboard-subject-title span {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-progress-track,
+html.dark #root .dashboard-progress-track {
+  background: var(--bg-elevated) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-week-count,
+html.dark #root .dashboard-week-count {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-week-bar-track,
+html.dark #root .dashboard-week-bar-track {
+  background: var(--bg-elevated) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-week-label,
+html.dark #root .dashboard-week-label {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-week-total,
+html.dark #root .dashboard-week-total {
+  background: var(--surface-2) !important;
+  color: #6EA0FF !important;
+}
+
+html[data-theme="dark"] #root .dashboard-activity-row,
+html.dark #root .dashboard-activity-row {
+  border-top-color: var(--border) !important;
+}
+
+html[data-theme="dark"] #root .dashboard-activity-row strong,
+html.dark #root .dashboard-activity-row strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .dashboard-activity-row span,
+html.dark #root .dashboard-activity-row span {
+  color: var(--text-muted) !important;
+}
+
+/* 4. Competition Calendar */
+html[data-theme="dark"] #root .competition-calendar,
+html.dark #root .competition-calendar {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .calendar-heading h1,
+html.dark #root .calendar-heading h1 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .calendar-heading p,
+html.dark #root .calendar-heading p {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root :is(.calendar-panel, .calendar-agenda),
+html.dark #root :is(.calendar-panel, .calendar-agenda) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root :is(.calendar-toolbar h2, .agenda-heading h2),
+html.dark #root :is(.calendar-toolbar h2, .agenda-heading h2) {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .calendar-toolbar>button:not(.calendar-today),
+html.dark #root .calendar-toolbar>button:not(.calendar-today) {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .calendar-today,
+html.dark #root .calendar-today {
+  background: rgba(46, 90, 172, 0.2) !important;
+  border: 1px solid #2e5aac !important;
+  color: #6EA0FF !important;
+}
+
+html[data-theme="dark"] #root .calendar-weekdays>div,
+html.dark #root .calendar-weekdays>div {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .calendar-day,
+html.dark #root .calendar-day {
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .calendar-day:hover,
+html.dark #root .calendar-day:hover {
+  background: var(--surface-2) !important;
+}
+
+html[data-theme="dark"] #root .calendar-day.outside,
+html.dark #root .calendar-day.outside {
+  color: var(--text-subtle) !important;
+  opacity: 0.45;
+}
+
+html[data-theme="dark"] #root .calendar-day.selected,
+html.dark #root .calendar-day.selected {
+  background: rgba(46, 90, 172, 0.25) !important;
+}
+
+html[data-theme="dark"] #root .agenda-heading,
+html.dark #root .agenda-heading {
+  border-bottom-color: var(--border) !important;
+}
+
+html[data-theme="dark"] #root .agenda-event,
+html.dark #root .agenda-event {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .agenda-event h3,
+html.dark #root .agenda-event h3 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .agenda-event p,
+html.dark #root .agenda-event p {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root :is(.event-time, .agenda-event .event-school),
+html.dark #root :is(.event-time, .agenda-event .event-school) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .calendar-modal-backdrop,
+html.dark #root .calendar-modal-backdrop {
+  background: rgba(11, 16, 32, 0.82) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+html[data-theme="dark"] #root .calendar-modal,
+html.dark #root .calendar-modal {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .calendar-modal h2,
+html.dark #root .calendar-modal h2 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #root .calendar-modal label,
+html.dark #root .calendar-modal label {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .calendar-view-switch,
+html.dark #root .calendar-view-switch {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+
+html[data-theme="dark"] #root .calendar-view-switch button,
+html.dark #root .calendar-view-switch button {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root .calendar-view-switch button.active,
+html.dark #root .calendar-view-switch button.active {
+  background: var(--surface-2) !important;
+  color: #ffffff !important;
+}
+
+/* 5. Generic Cards, Panels, Tables & Modals Across Client Space */
+html[data-theme="dark"] #root :is(.client-page-content [class*="card"],
+  .client-page-content [class*="Card"],
+  .client-page-content [class*="panel"],
+  .client-page-content [class*="Panel"],
+  .client-page-content [class*="modal"],
+  .client-page-content [class*="Modal"]),
+html.dark #root :is(.client-page-content [class*="card"],
+  .client-page-content [class*="Card"],
+  .client-page-content [class*="panel"],
+  .client-page-content [class*="Panel"],
+  .client-page-content [class*="modal"],
+  .client-page-content [class*="Modal"]) {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root table,
+html.dark #root table {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root th,
+html.dark #root th {
+  background-color: var(--surface-2) !important;
+  color: #6EA0FF !important;
+  border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] #root td,
+html.dark #root td {
+  background-color: var(--surface) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] #root tr:hover td,
+html.dark #root tr:hover td {
+  background-color: var(--surface-hover) !important;
+}
+
+/* 6. High-Specificity Inline Styles Fallback in Dark Mode */
+html[data-theme="dark"] #root div[style*="background: #ffffff"],
+html[data-theme="dark"] #root div[style*="background:#ffffff"],
+html[data-theme="dark"] #root div[style*="background: rgb(255, 255, 255)"],
+html[data-theme="dark"] #root div[style*="background: #fff"],
+html[data-theme="dark"] #root div[style*="background:#fff"],
+html[data-theme="dark"] #root div[style*="backgroundColor: #ffffff"],
+html[data-theme="dark"] #root div[style*="backgroundColor:#ffffff"],
+html[data-theme="dark"] #root div[style*="backgroundColor: #fff"],
+html[data-theme="dark"] #root div[style*="backgroundColor:#fff"],
+html.dark #root div[style*="background: #ffffff"],
+html.dark #root div[style*="background:#ffffff"],
+html.dark #root div[style*="background: rgb(255, 255, 255)"],
+html.dark #root div[style*="background: #fff"],
+html.dark #root div[style*="background:#fff"],
+html.dark #root div[style*="backgroundColor: #ffffff"],
+html.dark #root div[style*="backgroundColor:#ffffff"],
+html.dark #root div[style*="backgroundColor: #fff"],
+html.dark #root div[style*="backgroundColor:#fff"] {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme="dark"] #root div[style*="background: #f8fafc"],
+html[data-theme="dark"] #root div[style*="background:#f8fafc"],
+html[data-theme="dark"] #root div[style*="background: #f3f6fb"],
+html[data-theme="dark"] #root div[style*="background:#f3f6fb"],
+html[data-theme="dark"] #root div[style*="backgroundColor: #f8fafc"],
+html[data-theme="dark"] #root div[style*="backgroundColor:#f8fafc"],
+html[data-theme="dark"] #root div[style*="backgroundColor: #f3f6fb"],
+html[data-theme="dark"] #root div[style*="backgroundColor:#f3f6fb"],
+html.dark #root div[style*="background: #f8fafc"],
+html.dark #root div[style*="background:#f8fafc"],
+html.dark #root div[style*="background: #f3f6fb"],
+html.dark #root div[style*="background:#f3f6fb"],
+html.dark #root div[style*="backgroundColor: #f8fafc"],
+html.dark #root div[style*="backgroundColor:#f8fafc"],
+html.dark #root div[style*="backgroundColor: #f3f6fb"],
+html.dark #root div[style*="backgroundColor:#f3f6fb"] {
+  background-color: var(--bg) !important;
+}
+
+html[data-theme="dark"] #root div[style*="background: #f1f5f9"],
+html[data-theme="dark"] #root div[style*="background:#f1f5f9"],
+html[data-theme="dark"] #root div[style*="backgroundColor: #f1f5f9"],
+html[data-theme="dark"] #root div[style*="backgroundColor:#f1f5f9"],
+html.dark #root div[style*="background: #f1f5f9"],
+html.dark #root div[style*="background:#f1f5f9"],
+html.dark #root div[style*="backgroundColor: #f1f5f9"],
+html.dark #root div[style*="backgroundColor:#f1f5f9"] {
+  background-color: var(--surface-2) !important;
+}
+
+html[data-theme="dark"] #root *[style*="color: #0f172a"],
+html[data-theme="dark"] #root *[style*="color:#0f172a"],
+html[data-theme="dark"] #root *[style*="color: #1e293b"],
+html[data-theme="dark"] #root *[style*="color:#1e293b"],
+html[data-theme="dark"] #root *[style*="color: #10284d"],
+html[data-theme="dark"] #root *[style*="color:#10284d"],
+html.dark #root *[style*="color: #0f172a"],
+html.dark #root *[style*="color:#0f172a"],
+html.dark #root *[style*="color: #1e293b"],
+html.dark #root *[style*="color:#1e293b"],
+html.dark #root *[style*="color: #10284d"],
+html.dark #root *[style*="color:#10284d"] {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root *[style*="color: #64748b"],
+html[data-theme="dark"] #root *[style*="color:#64748b"],
+html[data-theme="dark"] #root *[style*="color: #71809a"],
+html[data-theme="dark"] #root *[style*="color:#71809a"],
+html[data-theme="dark"] #root *[style*="color: #667894"],
+html[data-theme="dark"] #root *[style*="color:#667894"],
+html.dark #root *[style*="color: #64748b"],
+html.dark #root *[style*="color:#64748b"],
+html.dark #root *[style*="color: #71809a"],
+html.dark #root *[style*="color:#71809a"],
+html.dark #root *[style*="color: #667894"],
+html.dark #root *[style*="color:#667894"] {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root *[style*="border: 1px solid #e2e8f0"],
+html[data-theme="dark"] #root *[style*="border:1px solid #e2e8f0"],
+html[data-theme="dark"] #root *[style*="border: 1px solid #e5edf8"],
+html[data-theme="dark"] #root *[style*="border:1px solid #e5edf8"],
+html[data-theme="dark"] #root *[style*="border: 1px solid #dbeafe"],
+html[data-theme="dark"] #root *[style*="border:1px solid #dbeafe"],
+html.dark #root *[style*="border: 1px solid #e2e8f0"],
+html.dark #root *[style*="border:1px solid #e2e8f0"],
+html.dark #root *[style*="border: 1px solid #e5edf8"],
+html.dark #root *[style*="border:1px solid #e5edf8"],
+html.dark #root *[style*="border: 1px solid #dbeafe"],
+html.dark #root *[style*="border:1px solid #dbeafe"] {
+  border-color: var(--border) !important;
+}
+
+/* Category Statistics Dashboards */
+html[data-theme="dark"] :is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root,
+  .general-stats-root
+),
+html.dark :is(
+  .contest-stats-root,
+  .mock-exam-stats-root,
+  .course-stats-root,
+  .national-exam-stats,
+  .summary-stats-root,
+  .general-stats-root
+) {
+  --stats-ink: var(--text) !important;
+  --stats-muted: var(--text-muted) !important;
+  --stats-line: var(--border) !important;
+  --stats-surface: var(--surface) !important;
+  --stats-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  color: var(--text) !important;
+}
+
+/* 7. Stats Dashboards Deep Overrides (Zero White Left Behind) */
+html[data-theme="dark"] :is(
+  .contest-stats-filters-bar,
+  .course-stats-filters-bar,
+  .mock-exam-filters-bar,
+  .general-stats-filters-bar,
+  .summary-stats-filters-bar,
+  .national-exam-filters-bar,
+  .stats-filters-bar
+),
+html.dark :is(
+  .contest-stats-filters-bar,
+  .course-stats-filters-bar,
+  .mock-exam-filters-bar,
+  .general-stats-filters-bar,
+  .summary-stats-filters-bar,
+  .national-exam-filters-bar,
+  .stats-filters-bar
+) {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-filter-field select,
+  .course-filter-field select,
+  .mock-exam-filter-field select,
+  .general-filter-field select,
+  .summary-filter-field select,
+  .national-exam-filter-field select,
+  .course-filter-field input,
+  .filter-field select,
+  .filter-field input
+),
+html.dark :is(
+  .contest-filter-field select,
+  .course-filter-field select,
+  .mock-exam-filter-field select,
+  .general-filter-field select,
+  .summary-filter-field select,
+  .national-exam-filter-field select,
+  .course-filter-field input,
+  .filter-field select,
+  .filter-field input
+) {
+  background-color: var(--input-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-kpi-card,
+  .course-kpi-card,
+  .mock-exam-kpi-card,
+  .general-kpi-card,
+  .summary-kpi-card,
+  .national-exam-kpi-card,
+  .stat-kpi-card,
+  [class*="-kpi-card"]
+),
+html.dark :is(
+  .contest-kpi-card,
+  .course-kpi-card,
+  .mock-exam-kpi-card,
+  .general-kpi-card,
+  .summary-kpi-card,
+  .national-exam-kpi-card,
+  .stat-kpi-card,
+  [class*="-kpi-card"]
+) {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] [class*="-kpi-icon"],
+html.dark [class*="-kpi-icon"] {
+  background: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] :is([class*="-kpi-label"], [class*="kpi-label"]),
+html.dark :is([class*="-kpi-label"], [class*="kpi-label"]) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] :is([class*="-kpi-value"], [class*="kpi-value"]),
+html.dark :is([class*="-kpi-value"], [class*="kpi-value"]) {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is([class*="-kpi-subtext"], [class*="kpi-subtext"]),
+html.dark :is([class*="-kpi-subtext"], [class*="kpi-subtext"]) {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-panel-card,
+  .course-panel-card,
+  .mock-exam-panel-card,
+  .general-panel-card,
+  .summary-panel-card,
+  .national-exam-panel-card,
+  .stats-panel-card
+),
+html.dark :is(
+  .contest-panel-card,
+  .course-panel-card,
+  .mock-exam-panel-card,
+  .general-panel-card,
+  .summary-panel-card,
+  .national-exam-panel-card,
+  .stats-panel-card
+) {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-insight-card,
+  .course-insight-card,
+  .mock-exam-insight-card,
+  .summary-insight-card
+),
+html.dark :is(
+  .contest-insight-card,
+  .course-insight-card,
+  .mock-exam-insight-card,
+  .summary-insight-card
+) {
+  background: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-subject-item,
+  .course-subject-item,
+  .mock-exam-subject-item,
+  .summary-subject-item,
+  .contest-recommendation-card
+),
+html.dark :is(
+  .contest-subject-item,
+  .course-subject-item,
+  .mock-exam-subject-item,
+  .summary-subject-item,
+  .contest-recommendation-card
+) {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-subject-item:hover,
+  .course-subject-item:hover,
+  .mock-exam-subject-item:hover,
+  .summary-subject-item:hover,
+  .contest-recommendation-card:hover
+),
+html.dark :is(
+  .contest-subject-item:hover,
+  .course-subject-item:hover,
+  .mock-exam-subject-item:hover,
+  .summary-subject-item:hover,
+  .contest-recommendation-card:hover
+) {
+  background-color: var(--surface-hover) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-view-details-btn,
+  .contest-page-btn,
+  .contest-recommendation-action-btn,
+  .course-view-details-btn,
+  .mock-exam-view-details-btn
+),
+html.dark :is(
+  .contest-view-details-btn,
+  .contest-page-btn,
+  .contest-recommendation-action-btn,
+  .course-view-details-btn,
+  .mock-exam-view-details-btn
+) {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-view-details-btn:hover,
+  .contest-page-btn:hover,
+  .contest-recommendation-action-btn:hover,
+  .course-view-details-btn:hover,
+  .mock-exam-view-details-btn:hover
+),
+html.dark :is(
+  .contest-view-details-btn:hover,
+  .contest-page-btn:hover,
+  .contest-recommendation-action-btn:hover,
+  .course-view-details-btn:hover,
+  .mock-exam-view-details-btn:hover
+) {
+  background-color: var(--surface-hover) !important;
+  border-color: var(--border-strong) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-empty-state,
+  .course-empty-state,
+  .mock-exam-empty-state,
+  .general-empty-state,
+  .summary-empty-state
+),
+html.dark :is(
+  .contest-empty-state,
+  .course-empty-state,
+  .mock-exam-empty-state,
+  .general-empty-state,
+  .summary-empty-state
+) {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-modal-box,
+  .course-modal-box,
+  .mock-exam-modal-box,
+  .summary-modal-box
+),
+html.dark :is(
+  .contest-modal-box,
+  .course-modal-box,
+  .mock-exam-modal-box,
+  .summary-modal-box
+) {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-modal-close,
+  .course-modal-close,
+  .mock-exam-modal-close
+),
+html.dark :is(
+  .contest-modal-close,
+  .course-modal-close,
+  .mock-exam-modal-close
+) {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] :is(
+  .contest-modal-question-item,
+  .course-modal-question-item,
+  .mock-exam-modal-question-item
+),
+html.dark :is(
+  .contest-modal-question-item,
+  .course-modal-question-item,
+  .mock-exam-modal-question-item
+) {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+/* 8. Global Form Inputs, Textareas, Selects & Search Bars */
+html[data-theme="dark"] #root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  select,
+  textarea,
+  .form-control
+),
+html.dark #root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  select,
+  textarea,
+  .form-control
+) {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root :is(
+  input::placeholder,
+  textarea::placeholder
+),
+html.dark #root :is(
+  input::placeholder,
+  textarea::placeholder
+) {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] #root :is(
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .form-control:focus
+),
+html.dark #root :is(
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .form-control:focus
+) {
+  border-color: var(--accent) !important;
+  outline: 2px solid var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* 9. Universal Overrides for Remaining White/Light Elements */
+html[data-theme="dark"] [style*="rgb(255, 255, 255)"],
+html[data-theme="dark"] [style*="rgb(255,255,255)"],
+html.dark [style*="rgb(255, 255, 255)"],
+html.dark [style*="rgb(255,255,255)"] {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme="dark"] #root select option,
+html.dark #root select option {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* ==========================================================================
+   REDUCED MOTION SUPPORT
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { PACK_OPTIONS } from '../packAccess';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/logooo.jpg';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('demandes'); // 'demandes' wla 'concours'

@@ -1,0 +1,105 @@
+/* ==========================================================================
+   THEMETOGGLE - PREMIUM DESIGN SYSTEM BUTTON
+   ========================================================================== */
+
+.theme-toggle {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  margin: 0;
+  border: 1px solid var(--theme-border, rgba(0, 0, 0, 0.08)) !important;
+  border-radius: 9999px !important;
+  color: var(--theme-text, #0f172a) !important;
+  background: var(--theme-surface, #ffffff) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover & Active States */
+.theme-toggle:hover {
+  border-color: rgba(255, 118, 40, 0.4) !important;
+  background: var(--theme-surface-hover, #f1f5f9) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 118, 40, 0.2) !important;
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--theme-accent, #ff7628) !important;
+  outline-offset: 2px;
+}
+
+/* Icon Animation & Styling */
+.theme-toggle-icon {
+  width: 19px;
+  height: 19px;
+  stroke-width: 2;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+  transform: rotate(20deg) scale(1.08);
+}
+
+/* Sun Icon (Mode Sombre) */
+.theme-toggle-sun {
+  color: #ffaa33;
+  filter: drop-shadow(0 0 6px rgba(255, 170, 51, 0.5));
+}
+
+/* Moon Icon (Mode Clair) */
+.theme-toggle-moon {
+  color: #475569;
+}
+
+/* Dark Mode Specific Overrides */
+[data-theme="dark"] .theme-toggle,
+.dark .theme-toggle {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .theme-toggle:hover,
+.dark .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 170, 51, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 170, 51, 0.25) !important;
+}
+
+/* Spacing in Navbars */
+.lp-nav-actions .theme-toggle {
+  margin-right: 6px;
+}
+
+.client-nav-actions .theme-toggle {
+  margin-right: 4px;
+}
+
+@media (max-width: 850px) {
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .theme-toggle-icon {
+    width: 17px;
+    height: 17px;
+  }
+}

@@ -771,18 +771,18 @@ export default function ClientSummaryStatsDashboard({
                       const d = payload[0].payload;
                       return (
                         <div style={{
-                          background: '#ffffff',
+                          background: 'var(--surface, #ffffff)',
                           padding: '10px 14px',
                           borderRadius: '10px',
-                          border: '1px solid #e2e8f0',
-                          boxShadow: '0 4px 18px rgba(15,23,42,0.1)',
+                          border: '1px solid var(--border, #e2e8f0)',
+                          boxShadow: 'var(--shadow-sm, 0 4px 18px rgba(15,23,42,0.1))',
                           fontSize: '12.5px'
                         }}>
-                          <div style={{ fontWeight: 800, color: '#0f172a' }}>{d.dateKey}</div>
+                          <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)' }}>{d.dateKey}</div>
                           <div style={{ color: '#7c3aed', fontWeight: 850, marginTop: 4, fontSize: '14px' }}>
                             {d.hours} h ({d.minutes} min)
                           </div>
-                          <div style={{ color: '#64748b', fontSize: '11px', marginTop: 2 }}>
+                          <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', marginTop: 2 }}>
                             {d.views} consultation{d.views > 1 ? 's' : ''} ce jour
                           </div>
                         </div>

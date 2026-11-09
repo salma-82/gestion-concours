@@ -301,10 +301,10 @@ export default function ClientConcoursBlanc() {
   if (!requestedMatiere) return null;
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 76px)', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: 'calc(100vh - 76px)', background: 'var(--bg, #f8fafc)', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {currentStep === 'loading' && (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary, #64748b)' }}>
           <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
           <p style={{ fontWeight: 600 }}>Chargement du contenu...</p>
         </div>
@@ -320,14 +320,14 @@ export default function ClientConcoursBlanc() {
                   key={chapitre.nom}
                   type="button"
                   onClick={() => handleSelectChapitre(chapitre.nom)}
-                  style={{ width: '100%', padding: '12px 14px', border: '1px solid #93c5fd', borderRadius: '12px', background: '#eff6ff', color: '#1d4ed8', textAlign: 'left', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '12px 14px', border: '1px solid #93c5fd', borderRadius: '12px', background: 'var(--surface-2, #eff6ff)', color: '#1d4ed8', textAlign: 'left', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
                 >
                   {chapitre.nom}
                 </button>
               ))}
             </div>
           ) : (
-            <div style={{ padding: '12px 14px', border: '1px solid #e2e8f0', borderRadius: '12px', color: '#64748b', fontSize: '14px' }}>
+            <div style={{ padding: '12px 14px', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
               Aucun chapitre disponible pour cette matière.
             </div>
           )}
@@ -339,7 +339,7 @@ export default function ClientConcoursBlanc() {
       ======================================================== */}
       {currentStep === 'player' && activeConcours && (
         <div style={{ display: 'grid', gridTemplateColumns: isSidebarCollapsed ? '38px minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px', width: '100%' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 280px', width: '280px', minWidth: '220px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px', boxSizing: 'border-box' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 280px', width: '280px', minWidth: '220px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px', boxSizing: 'border-box' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
                 const qcms = getConcoursForChapitre(selectedMatiere, chapitre.nom);
@@ -389,15 +389,15 @@ export default function ClientConcoursBlanc() {
                   chapter={activeConcours.chapitre || selectedChapitre || ''}
                   year={activeConcours.annee || ''}
                   school={activeConcours.ecole || ''}
-                  style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                  style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
                 />
               </div>
             ) : activeConcours.pdfUrl ? (
-              <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+              <div style={{ background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
                 <iframe src={getFullUrl(activeConcours.pdfUrl)} title={activeConcours.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
                 <p>Aucun fichier HTML n'est rattaché à cette épreuve.</p>
               </div>
             )}
@@ -411,16 +411,16 @@ export default function ClientConcoursBlanc() {
       {currentStep === 'matieres' && (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#0f172a' }}>
+            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
               🎓 Concours Blancs
             </h1>
-            <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '15px' }}>
+            <p style={{ margin: '8px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '15px' }}>
               Choisissez une matière pour accéder aux chapitres et fichiers HTML disponibles
             </p>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary, #64748b)' }}>
               <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
               <p style={{ fontWeight: 600 }}>Chargement des épreuves...</p>
             </div>
@@ -431,7 +431,7 @@ export default function ClientConcoursBlanc() {
                   key={mat.id}
                   onClick={() => handleSelectMatiere(mat)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -480,14 +480,14 @@ export default function ClientConcoursBlanc() {
                       margin: '0 0 6px',
                       fontSize: '24px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {mat.nom}
                     </h2>
                     <p style={{
                       margin: 0,
-                      color: '#64748b',
+                      color: 'var(--text-secondary, #64748b)',
                       fontSize: '14px',
                       fontWeight: 500,
                       lineHeight: 1.4
@@ -560,7 +560,7 @@ export default function ClientConcoursBlanc() {
               onClick={handleBackToMatieres}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: '#ffffff', border: '1px solid #cbd5e1',
+                background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #cbd5e1)',
                 padding: '10px 16px', borderRadius: '12px',
                 cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb'
               }}
@@ -571,20 +571,20 @@ export default function ClientConcoursBlanc() {
           </div>
 
           <div style={{ marginBottom: '28px' }}>
-            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
               📖 Chapitres — {selectedMatiere.nom}
             </h1>
-            <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
               Choisissez un chapitre pour découvrir les épreuves QCM correspondantes
             </p>
           </div>
 
           {/* Horizontal Pill Cards des Chapitres - EXACT MÊME STYLE QUE LES MATIÈRES */}
           {getChapitresForMatiere(selectedMatiere).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
               <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
-              <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800 }}>Aucun chapitre disponible</h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de concours pour cette matière.</p>
+              <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800 }}>Aucun chapitre disponible</h3>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de concours pour cette matière.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -593,7 +593,7 @@ export default function ClientConcoursBlanc() {
                   key={idx}
                   onClick={() => handleSelectChapitre(chap.nom)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -662,8 +662,8 @@ export default function ClientConcoursBlanc() {
                       }}>
                         {selectedMatiere.nom}
                       </span>
-                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>•</span>
-                      <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+                      <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>•</span>
+                      <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', fontWeight: 600 }}>
                         Chapitre {idx + 1}
                       </span>
                     </div>
@@ -672,14 +672,14 @@ export default function ClientConcoursBlanc() {
                       margin: '0 0 6px',
                       fontSize: '24px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {chap.nom}
                     </h2>
                     <p style={{
                       margin: 0,
-                      color: '#64748b',
+                      color: 'var(--text-secondary, #64748b)',
                       fontSize: '14px',
                       fontWeight: 500,
                       lineHeight: 1.4
@@ -749,24 +749,24 @@ export default function ClientConcoursBlanc() {
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                 🎯 Épreuves & QCM — {selectedChapitre}
               </h1>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
                 Cliquez sur une épreuve pour démarrer le test en ligne interactif
               </p>
             </div>
             <button
               onClick={handleBackToChapitres}
               style={{
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
+                background: 'var(--surface, #ffffff)',
+                border: '1px solid var(--border, #cbd5e1)',
                 padding: '8px 16px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: 600,
                 fontSize: '13px',
-                color: '#334155'
+                color: 'var(--text, #334155)'
               }}
             >
               ← Retour aux chapitres
@@ -775,10 +775,10 @@ export default function ClientConcoursBlanc() {
 
           {/* Horizontal Pill Cards des QCMs */}
           {getConcoursForChapitre(selectedMatiere, selectedChapitre).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               <div style={{ fontSize: '36px', marginBottom: '10px' }}>📝</div>
-              <h3 style={{ margin: '0 0 6px', color: '#0f172a' }}>Aucun QCM disponible</h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Aucun concours blanc n'a été rattaché à ce chapitre pour l'instant.</p>
+              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)' }}>Aucun QCM disponible</h3>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>Aucun concours blanc n'a été rattaché à ce chapitre pour l'instant.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -787,7 +787,7 @@ export default function ClientConcoursBlanc() {
                   key={qcm.id || idx}
                   onClick={() => handleOpenQcm(qcm)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -863,17 +863,17 @@ export default function ClientConcoursBlanc() {
                       margin: '0 0 4px',
                       fontSize: '20px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {qcm.titre}
                     </h2>
                     {qcm.description ? (
-                      <p style={{ margin: 0, color: '#64748b', fontSize: '13px', lineHeight: 1.4 }}>
+                      <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '13px', lineHeight: 1.4 }}>
                         {qcm.description}
                       </p>
                     ) : (
-                      <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>
+                      <p style={{ margin: 0, color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>
                         Épreuve interactive avec chronomètre et réponses détaillées
                       </p>
                     )}

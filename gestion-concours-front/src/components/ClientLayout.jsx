@@ -6,6 +6,7 @@ import { LandingMascot } from './LandingPage';
 import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
 import './ClientCompact.css';
+import ThemeToggle from './ThemeToggle';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -327,7 +328,7 @@ export default function ClientLayout() {
     <div style={{
       display: 'flex',
       height: '100vh',
-      backgroundColor: '#f3f6fb',
+      backgroundColor: 'var(--bg, #f3f6fb)',
       fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
       overflow: 'hidden',
       position: 'relative'
@@ -336,7 +337,7 @@ export default function ClientLayout() {
       {<aside style={{
         width: '130px',
         minWidth: '130px',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--surface, #ffffff)',
         borderRight: isSidebarOpen ? '1px solid #edf2f7' : 'none',
         display: 'flex',
         flexDirection: 'column',
@@ -366,7 +367,7 @@ export default function ClientLayout() {
               padding: '10px 12px',
               marginBottom: '22px',
               borderRadius: '20px',
-              border: '1px solid #dbeafe',
+              border: '1px solid var(--border, #dbeafe)',
               background: 'linear-gradient(135deg, #f3f8ff 0%, #eaf3ff 100%)',
               boxShadow: '0 4px 14px rgba(37, 99, 235, 0.06)',
               cursor: 'pointer',
@@ -904,12 +905,12 @@ export default function ClientLayout() {
         minWidth: 0,
         height: '100vh',
         overflow: 'visible',
-        backgroundColor: '#f3f6fb'
+        backgroundColor: 'var(--bg, #f3f6fb)'
       }}>
         {/* TOPBAR MODERNE & IDENTIQUE AU DESIGN */}
         <header className="client-header" style={{
           height: '68px',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--surface, #ffffff)',
           borderBottom: '1px solid #edf2f7',
           display: 'flex',
           alignItems: 'center',
@@ -965,6 +966,7 @@ export default function ClientLayout() {
           {/* Droite : Notification Bell & Profil Étudiant avec Initiale SB */}
           <div className="client-search-placeholder" aria-hidden="true" />
           <div className="client-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <ThemeToggle />
             {/* Cloche Notification */}
             <div
               className="client-notifications"
@@ -1027,10 +1029,10 @@ export default function ClientLayout() {
 
               {/* Name & Role */}
               <div className="client-profile-copy" style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="client-profile-name" style={{ fontSize: '13.5px', fontWeight: 750, color: '#0f172a', lineHeight: 1.25 }}>
+                <span className="client-profile-name" style={{ fontSize: '13.5px', fontWeight: 750, color: 'var(--text, #0f172a)', lineHeight: 1.25 }}>
                   {userName}
                 </span>
-                <span className="client-profile-role" style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
+                <span className="client-profile-role" style={{ fontSize: '11.5px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>
                   Étudiant
                 </span>
               </div>
@@ -1064,7 +1066,7 @@ export default function ClientLayout() {
         <main style={{
           flex: 1,
           overflowY: 'auto',
-          backgroundColor: '#f3f6fb',
+          backgroundColor: 'var(--bg, #f3f6fb)',
           position: 'relative'
         }} ref={pageRegionRef}>
           <Outlet />

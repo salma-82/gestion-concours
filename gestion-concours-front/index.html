@@ -2,6 +2,25 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+        <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('econcours-theme');
+          var theme = saved;
+          if (!theme || (theme !== 'dark' && theme !== 'light')) {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = theme;
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Econcour - Préparez vos concours avec excellence</title>

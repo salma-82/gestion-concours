@@ -414,7 +414,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg, #f8fafc)', padding: '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {/* ========================================================
           ÉTAPE 4 : LECTEUR DU RÉSUMÉ (HTML WEB OU PDF)
@@ -423,11 +423,11 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           {/* Top Bar Reader */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface, #ffffff)',
             borderRadius: '16px',
             padding: '18px 24px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e2e8f0)',
             marginBottom: '20px',
             display: 'flex',
             justifyContent: 'space-between',
@@ -439,9 +439,9 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
               <button
                 onClick={handleBackToResumes}
                 style={{
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  color: '#1e293b',
+                  background: 'var(--surface-2, #f1f5f9)',
+                  border: '1px solid var(--border, #cbd5e1)',
+                  color: 'var(--text, #1e293b)',
                   padding: '9px 16px',
                   borderRadius: '10px',
                   cursor: 'pointer',
@@ -467,7 +467,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                     {selectedMatiere?.nom || activeResume.matiere}
                   </span>
                   {activeResume.chapitre && (
-                    <span style={{ background: '#f1f5f9', color: '#475569', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
+                    <span style={{ background: 'var(--surface-2, #f1f5f9)', color: 'var(--text-secondary, #475569)', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
                       📌 {activeResume.chapitre}
                     </span>
                   )}
@@ -477,7 +477,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                     </span>
                   ) : null}
                 </div>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                   {activeResume.titre}
                 </h2>
               </div>
@@ -486,8 +486,8 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
             {/* Quick Actions & Switcher */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               {selectedChapitre && getResumesForChapitre(selectedMatiere, selectedChapitre).length > 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '5px 10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Fiches du chapitre :</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg, #f8fafc)', padding: '5px 10px', borderRadius: '10px', border: '1px solid var(--border, #e2e8f0)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #64748b)' }}>Fiches du chapitre :</span>
                   {getResumesForChapitre(selectedMatiere, selectedChapitre).map((r, i) => {
                     const isCurrent = (activeResume.id && r.id === activeResume.id) || (activeResume.uniqueId && r.uniqueId === activeResume.uniqueId);
                     return (
@@ -539,25 +539,25 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
           {/* Document Content View */}
           {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
             <div style={{
-              background: '#ffffff',
+              background: 'var(--surface, #ffffff)',
               borderRadius: '16px',
               overflow: 'hidden',
               boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-              border: '1px solid #e2e8f0'
+              border: '1px solid var(--border, #e2e8f0)'
             }}>
               <div style={{
                 padding: '12px 20px',
-                background: '#f8fafc',
+                background: 'var(--bg, #f8fafc)',
                 borderBottom: '1px solid #e2e8f0',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 fontSize: '13px',
-                color: '#475569',
+                color: 'var(--text-secondary, #475569)',
                 fontWeight: 600
               }}>
                 <span>{isAstucesMode ? '💡 Astuce Concours Interactive (Méthodes & Formules)' : '📐 Fiche Résumé Interactive (Formules & Cours complet)'}</span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>MathJax activé</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>MathJax activé</span>
               </div>
               <iframe
                 src={getFullUrl(activeResume.htmlUrl)}
@@ -568,7 +568,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                   height: '84vh',
                   border: 'none',
                   display: 'block',
-                  background: '#ffffff'
+                  background: 'var(--surface, #ffffff)'
                 }}
               />
             </div>
@@ -579,17 +579,17 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                 <div style={{
                   width: '160px',
                   minWidth: '160px',
-                  background: '#ffffff',
+                  background: 'var(--surface, #ffffff)',
                   borderRadius: '12px',
                   padding: '12px',
                   boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--border, #e2e8f0)',
                   maxHeight: '80vh',
                   overflowY: 'auto',
                   position: 'sticky',
                   top: '90px'
                 }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary, #64748b)', textTransform: 'uppercase', marginBottom: '10px', textAlign: 'center' }}>
                     Pages ({getPages(activeResume).length})
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -600,10 +600,10 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                           const el = document.getElementById(`resume-page-${idx + 1}`);
                           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }}
-                        style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', border: '1px solid #e2e8f0' }}
+                        style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', border: '1px solid var(--border, #e2e8f0)' }}
                       >
                         <img src={pageUrl} alt={`Page ${idx + 1}`} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '4px' }} loading="lazy" />
-                        <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, marginTop: '4px', color: '#64748b' }}>Page {idx + 1}</div>
+                        <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, marginTop: '4px', color: 'var(--text-secondary, #64748b)' }}>Page {idx + 1}</div>
                       </div>
                     ))}
                   </div>
@@ -611,18 +611,18 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
               )}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
                 {getPages(activeResume).map((pageUrl, idx) => (
-                  <div key={idx} id={`resume-page-${idx + 1}`} style={{ width: '100%', maxWidth: '950px', background: '#ffffff', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: '1px solid #cbd5e1', overflow: 'hidden' }}>
+                  <div key={idx} id={`resume-page-${idx + 1}`} style={{ width: '100%', maxWidth: '950px', background: 'var(--surface, #ffffff)', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: '1px solid var(--border, #cbd5e1)', overflow: 'hidden' }}>
                     <img src={pageUrl} alt={`Page ${idx + 1}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
                   </div>
                 ))}
               </div>
             </div>
           ) : activeResume.pdfUrl ? (
-            <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+            <div style={{ background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
               <iframe src={getFullUrl(activeResume.pdfUrl)} title={activeResume.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               <p>Aucun document n'est rattaché à ce résumé.</p>
             </div>
           )}
@@ -635,11 +635,11 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
       {currentStep === 'matieres' && (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ marginBottom: '32px' }}>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: 'var(--text, #0f172a)', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>{isAstucesMode ? '💡' : '📚'}</span>
               <span>{isAstucesMode ? 'Astuces Concours & Formules Clés' : 'Résumés de Cours'}</span>
             </h1>
-            <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: '15px' }}>
+            <p style={{ margin: '8px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '15px' }}>
               {isAstucesMode
                 ? 'Sélectionnez une matière (Mathématiques, Physique - Chimie, SVT) pour accéder aux astuces par chapitre et ouvrir directement le fichier HTML interactif.'
                 : 'Sélectionnez une matière (Mathématiques, Physique - Chimie, SVT) pour accéder à ses chapitres et consulter directement les fiches HTML interactives.'}
@@ -647,7 +647,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary, #64748b)' }}>
               <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
               <p style={{ fontWeight: 600 }}>Chargement des résumés...</p>
             </div>
@@ -658,7 +658,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                   key={mat.id}
                   onClick={() => handleSelectMatiere(mat)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -703,14 +703,14 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       margin: '0 0 6px',
                       fontSize: '24px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {mat.nom}
                     </h2>
                     <p style={{
                       margin: 0,
-                      color: '#64748b',
+                      color: 'var(--text-secondary, #64748b)',
                       fontSize: '14px',
                       fontWeight: 500,
                       lineHeight: 1.4
@@ -786,18 +786,18 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
             >
               📚 Matières
             </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '14px' }}>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
+            <span style={{ color: 'var(--text, #0f172a)', fontWeight: 800, fontSize: '14px' }}>
               {selectedMatiere.nom}
             </span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                 {isAstucesMode ? '💡 Astuces par Chapitre — ' : '📖 Chapitres — '}{selectedMatiere.nom}
               </h1>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
                 {isAstucesMode
                   ? "Choisissez un chapitre pour ouvrir directement l'astuce HTML correspondante enregistrée par l'administrateur"
                   : "Choisissez un chapitre pour ouvrir directement le fichier HTML correspondant"}
@@ -806,14 +806,14 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
             <button
               onClick={handleBackToMatieres}
               style={{
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
+                background: 'var(--surface, #ffffff)',
+                border: '1px solid var(--border, #cbd5e1)',
                 padding: '8px 16px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: 600,
                 fontSize: '13px',
-                color: '#334155'
+                color: 'var(--text, #334155)'
               }}
             >
               ← Changer de matière
@@ -822,9 +822,9 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
 
           {/* Banner d'information */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface, #ffffff)',
             borderRadius: '16px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e2e8f0)',
             padding: '14px 20px',
             marginBottom: '24px',
             display: 'flex',
@@ -834,7 +834,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '20px' }}>💡</span>
-              <span style={{ fontSize: '13.5px', color: '#475569', fontWeight: 600 }}>
+              <span style={{ fontSize: '13.5px', color: 'var(--text-secondary, #475569)', fontWeight: 600 }}>
                 {isAstucesMode
                   ? "Cliquez sur n'importe quel chapitre pour ouvrir directement son astuce ou fiche méthode HTML (formules MathJax incluses)."
                   : "Cliquez sur n'importe quel chapitre pour ouvrir directement son cours ou résumé HTML interactif (formules MathJax incluses)."}
@@ -854,10 +854,10 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
 
           {/* Horizontal Pill Cards des Chapitres - EXACT MÊME STYLE QUE LES MATIÈRES */}
           {getChapitresForMatiere(selectedMatiere).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
               <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
-              <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800 }}>Aucun chapitre disponible</h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
+              <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800 }}>Aucun chapitre disponible</h3>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -866,7 +866,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                   key={idx}
                   onClick={() => handleSelectChapitre(chap.nom)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -931,8 +931,8 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       }}>
                         {selectedMatiere.nom}
                       </span>
-                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>•</span>
-                      <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+                      <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>•</span>
+                      <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', fontWeight: 600 }}>
                         Chapitre {idx + 1}
                       </span>
                     </div>
@@ -941,14 +941,14 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       margin: '0 0 6px',
                       fontSize: '24px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {chap.nom}
                     </h2>
                     <p style={{
                       margin: 0,
-                      color: '#64748b',
+                      color: 'var(--text-secondary, #64748b)',
                       fontSize: '14px',
                       fontWeight: 500,
                       lineHeight: 1.4
@@ -1024,39 +1024,39 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
             >
               📚 Matières
             </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
             <button
               onClick={handleBackToChapitres}
               style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontWeight: 700, fontSize: '14px', padding: 0 }}
             >
               {selectedMatiere.nom}
             </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '14px' }}>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
+            <span style={{ color: 'var(--text, #0f172a)', fontWeight: 800, fontSize: '14px' }}>
               📌 {selectedChapitre}
             </span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                 📄 Fiches de Cours — {selectedChapitre}
               </h1>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
                 Cliquez sur une fiche pour consulter le résumé complet et les formules clés
               </p>
             </div>
             <button
               onClick={handleBackToChapitres}
               style={{
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
+                background: 'var(--surface, #ffffff)',
+                border: '1px solid var(--border, #cbd5e1)',
                 padding: '8px 16px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: 600,
                 fontSize: '13px',
-                color: '#334155'
+                color: 'var(--text, #334155)'
               }}
             >
               ← Retour aux chapitres
@@ -1065,10 +1065,10 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
 
           {/* Horizontal Pill Cards des Résumés */}
           {getResumesForChapitre(selectedMatiere, selectedChapitre).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               <div style={{ fontSize: '36px', marginBottom: '10px' }}>📄</div>
-              <h3 style={{ margin: '0 0 6px', color: '#0f172a' }}>Aucun résumé disponible</h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Aucune fiche n'a été rattachée à ce chapitre pour l'instant.</p>
+              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)' }}>Aucun résumé disponible</h3>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>Aucune fiche n'a été rattachée à ce chapitre pour l'instant.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1077,7 +1077,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                   key={res.id || idx}
                   onClick={() => handleOpenResume(res)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -1147,17 +1147,17 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       margin: '0 0 4px',
                       fontSize: '20px',
                       fontWeight: 800,
-                      color: '#0f172a',
+                      color: 'var(--text, #0f172a)',
                       letterSpacing: '-0.3px'
                     }}>
                       {res.titre}
                     </h2>
                     {res.description ? (
-                      <p style={{ margin: 0, color: '#64748b', fontSize: '13px', lineHeight: 1.4 }}>
+                      <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '13px', lineHeight: 1.4 }}>
                         {res.description}
                       </p>
                     ) : (
-                      <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>
+                      <p style={{ margin: 0, color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>
                         Fiche de révision complète avec démonstrations et synthèses
                       </p>
                     )}

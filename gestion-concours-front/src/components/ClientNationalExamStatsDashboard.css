@@ -147,3 +147,50 @@
   .national-exam-chart-subject-chart { min-height: 200px; }
   .national-exam-pagination { align-items: flex-start; flex-direction: column; }
 }
+
+/* Keep the exam dashboard legible when the application is in dark mode. */
+html[data-theme="dark"] #root .national-exam-stats,
+html.dark #root .national-exam-stats {
+  --exam-blue: var(--primary);
+  --exam-ink: var(--text);
+  --exam-muted: var(--text-secondary);
+  --exam-border: var(--border);
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-filter-panel, .national-exam-panel, .national-exam-history, .national-exam-kpi),
+html.dark #root .national-exam-stats :is(.national-exam-filter-panel, .national-exam-panel, .national-exam-history, .national-exam-kpi) {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-hero h1, .national-exam-panel-heading h2, .national-exam-panel-heading h3, .national-exam-section-title h2, .national-exam-kpi strong, .national-exam-donut-center strong, .national-exam-legend strong, .national-exam-correction-rate strong, .national-exam-history td strong),
+html.dark #root .national-exam-stats :is(.national-exam-hero h1, .national-exam-panel-heading h2, .national-exam-panel-heading h3, .national-exam-section-title h2, .national-exam-kpi strong, .national-exam-donut-center strong, .national-exam-legend strong, .national-exam-correction-rate strong, .national-exam-history td strong) {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-hero p, .national-exam-section-title p, .national-exam-filters label, .national-exam-period, .national-exam-table-filters label, .national-exam-kpi-label, .national-exam-kpi small, .national-exam-legend > div, .national-exam-donut-center span, .national-exam-correction-rate span, .national-exam-correction-footnote, .national-exam-empty, .national-exam-history td, .national-exam-history td small),
+html.dark #root .national-exam-stats :is(.national-exam-hero p, .national-exam-section-title p, .national-exam-filters label, .national-exam-period, .national-exam-table-filters label, .national-exam-kpi-label, .national-exam-kpi small, .national-exam-legend > div, .national-exam-donut-center span, .national-exam-correction-rate span, .national-exam-correction-footnote, .national-exam-empty, .national-exam-history td, .national-exam-history td small) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-kpi-icon, .national-exam-result-count, .national-exam-history th),
+html.dark #root .national-exam-stats :is(.national-exam-kpi-icon, .national-exam-result-count, .national-exam-history th) {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-filters select, .national-exam-period select, .national-exam-table-filters input, .national-exam-table-filters select),
+html.dark #root .national-exam-stats :is(.national-exam-filters select, .national-exam-period select, .national-exam-table-filters input, .national-exam-table-filters select) {
+  border-color: var(--border) !important;
+  background: var(--input-bg) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .national-exam-stats .national-exam-history td,
+html.dark #root .national-exam-stats .national-exam-history td {
+  border-color: var(--border) !important;
+}

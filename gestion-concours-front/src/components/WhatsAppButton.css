@@ -8,13 +8,13 @@
   align-items: center;
   gap: 9px;
   padding: 8px 17px 8px 10px;
-  border: 1px solid #e4eaf4;
+  border: 1px solid var(--border, #e4eaf4);
   border-radius: 17px;
-  background: #fff;
-  color: #5f6470;
+  background: var(--surface, #fff);
+  color: var(--text-secondary, #5f6470);
   box-shadow: 0 6px 18px rgba(22, 43, 91, .12);
   text-decoration: none;
-  transition: transform .22s ease, background-color .22s ease, box-shadow .22s ease;
+  transition: transform .22s ease, background-color .22s ease, box-shadow .22s ease, color .22s ease, border-color .22s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -28,17 +28,33 @@
 .whatsapp-float-label {
   font-size: 14px;
   font-weight: 750;
+  color: inherit;
 }
 
 .whatsapp-float:hover {
   transform: translateY(-3px);
-  background: #fbfcff;
+  background: var(--surface-hover, #fbfcff);
   box-shadow: 0 10px 24px rgba(22, 43, 91, .17);
 }
 
 .whatsapp-float:focus-visible {
-  outline: 3px solid #14213d;
+  outline: 3px solid var(--accent, #ff7628);
   outline-offset: 4px;
+}
+
+/* Dark Mode explicit overrides */
+html[data-theme="dark"] .whatsapp-float,
+html.dark .whatsapp-float {
+  background: var(--surface, #131A2E) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1)) !important;
+  color: var(--text-secondary, #CBD5E1) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] .whatsapp-float:hover,
+html.dark .whatsapp-float:hover {
+  background: var(--surface-hover, #1f2b4c) !important;
+  color: #ffffff !important;
 }
 
 @media (max-width: 520px) {

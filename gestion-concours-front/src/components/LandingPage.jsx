@@ -12,7 +12,10 @@ import logoEncgImg from '../assets/logo-encg.png';
 import logoEnsaMarocImg from '../assets/logo-ensa-maroc.jpg';
 import logoEnsamiImg from '../assets/logo-ensam-umi-transparent.png';
 import logoFmpcImg from '../assets/logo-fmpc.png';
+import navLogoImg from '../assets/logo-navbar-transparent.png';
+import navMascotImg from '../assets/logo-mascot.png';
 import './LandingPage.css';
+import ThemeToggle from './ThemeToggle';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -141,7 +144,13 @@ export function LandingMascot({ className = '', showCap = true, wave = false, ho
   const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}${holdingNotebook ? ' lp-mascot--holding-notebook' : ''}`.trim();
   const pupilGazeTransform = gaze === 'left' ? 'translate(-5 -2)' : 'translate(0 0)';
   return (
-    <svg className={mascotClassName} viewBox="0 0 240 260" role="img" aria-label="Mascotte hibou diplômé ECONCOURS">
+    <svg
+      className={mascotClassName}
+      viewBox={brandCap ? '0 0 240 185' : '0 0 240 260'}
+      preserveAspectRatio={brandCap ? 'xMidYMin meet' : undefined}
+      role="img"
+      aria-label="Mascotte hibou diplômé ECONCOURS"
+    >
       <defs>
         <linearGradient id={`${mascotId}-owlBrown`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#8c4b28" />
@@ -172,6 +181,13 @@ export function LandingMascot({ className = '', showCap = true, wave = false, ho
       <ellipse cx="120" cy="155" rx="68" ry="72" fill={`url(#${mascotId}-owlBrown)`} />
       <ellipse cx="120" cy="165" rx="46" ry="50" fill={`url(#${mascotId}-owlBelly)`} />
       <path d="M102 150q8 6 16 0m4 0q8 6 16 0M98 168q12 7 24 0m-2 0q10 7 22 0" stroke="#d1b894" strokeWidth="3" fill="none" strokeLinecap="round" />
+      {brandCap && (
+        <g fill="#87502e" stroke="#4a2817" strokeWidth="3.5" strokeLinejoin="round">
+          <ellipse cx="54" cy="164" rx="22" ry="14" />
+          <ellipse cx="186" cy="164" rx="22" ry="14" />
+          <path d="M45 156v15m9-13v17m9-16v14m123-17v15m9-13v17m9-16v14" fill="none" strokeWidth="2.2" strokeLinecap="round" />
+        </g>
+      )}
       
       {!holdingNotebook && (
         <>
@@ -299,9 +315,9 @@ export function LandingMascot({ className = '', showCap = true, wave = false, ho
         <path d="m114 102 12 0-6 18Z" fill="#ff7700" />
         {showCap && (
           <g transform="translate(0 -18)" filter={`url(#${mascotId}-softShadow)`}>
-            <rect x="94" y="42" width="52" height="18" rx="3" fill={brandCap ? '#244887' : '#1e2b37'} />
-            <polygon points="120,20 182,38 120,56 58,38" fill={brandCap ? '#244887' : '#243342'} />
-            <polygon points="120,20 182,38 120,41 58,38" fill={brandCap ? '#2e5aac' : '#324558'} />
+            <rect x="94" y="42" width="52" height="18" rx="3" fill="#1e2b37" />
+            <polygon points="120,20 182,38 120,56 58,38" fill="#243342" />
+            <polygon points="120,20 182,38 120,41 58,38" fill="#324558" />
             <circle cx="120" cy="38" r="4" fill="#ffaa00" />
             <path d="M120 38q40 4 45 27" stroke="#ffb700" strokeWidth="3" fill="none" strokeLinecap="round" />
             <path d="m161 65 8 0-2 13h-4Z" fill="#ffb700" />
@@ -393,6 +409,7 @@ export default function LandingPage({ onNavigateToAuth }) {
   // States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [activeNavSection, setActiveNavSection] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [featureShowcasePaused, setFeatureShowcasePaused] = useState(false);
@@ -454,6 +471,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         traveler.style.width = `${width}px`;
         traveler.style.height = `${height}px`;
         traveler.style.visibility = 'visible';
+        destination.style.opacity = '0';
         traveler.querySelectorAll('.lp-traveling-mascot-art').forEach((mascot) => {
           mascot.style.width = `${75 + 25 * eased}%`;
           mascot.style.height = `${84 + 16 * eased}%`;
@@ -474,6 +492,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       window.removeEventListener('resize', updatePosition);
       resizeObserver?.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
+      destination.style.opacity = '';
     };
   }, []);
 
@@ -524,6 +543,7 @@ export default function LandingPage({ onNavigateToAuth }) {
 
   const handleScrollTo = (id) => {
     setMobileMenuOpen(false);
+    setActiveNavSection(id);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -815,7 +835,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       {typeof document !== 'undefined' && createPortal(
         <div className="lp-traveling-mascot" ref={travelingMascotRef} aria-hidden="true">
           <span className="lp-travel-mascot-layer">
-            <LandingMascot className="lp-traveling-mascot-art" holdingNotebook={true} />
+            <img className="lp-traveling-mascot-art" src={navMascotImg} alt="" />
           </span>
         </div>,
         document.body
@@ -825,36 +845,56 @@ export default function LandingPage({ onNavigateToAuth }) {
           1. NAVIGATION HEADER
       ==================================================================== */}
 
-      <nav className={`lp-nav${hasScrolled ? ' has-scrolled' : ''}`} id="nav">
+      <nav className={`lp-nav lp-nav--reference${hasScrolled ? ' has-scrolled' : ''}`} id="nav">
         <div className="lp-logo" aria-label="E-Concours, accueil" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <LandingMascot className="lp-brand-owl" brandCap />
-          <span className="lp-wordmark"><span className="lp-wordmark-prefix">E-</span><span className="lp-wordmark-main">CONCOURS</span></span>
+          <img className="lp-logo-image" src={navLogoImg} alt="E-Concours" />
         </div>
 
         <ul className="lp-nav-links">
           <li>
-            <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
+            <a
+              href="#methodologie"
+              className={activeNavSection === 'methodologie' ? 'is-active' : undefined}
+              aria-current={activeNavSection === 'methodologie' ? 'location' : undefined}
+              onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}
+            >
               Comment ça marche
             </a>
           </li>
           <li>
-            <a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}>
+            <a
+              href="#fonctionnalites"
+              className={activeNavSection === 'fonctionnalites' ? 'is-active' : undefined}
+              aria-current={activeNavSection === 'fonctionnalites' ? 'location' : undefined}
+              onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}
+            >
               Fonctionnalités
             </a>
           </li>
           <li>
-            <a href="#tarifs" onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}>
+            <a
+              href="#tarifs"
+              className={activeNavSection === 'tarifs' ? 'is-active' : undefined}
+              aria-current={activeNavSection === 'tarifs' ? 'location' : undefined}
+              onClick={(e) => { e.preventDefault(); handleScrollTo('tarifs'); }}
+            >
               Tarifs
             </a>
           </li>
           <li>
-            <a href="#faq" onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}>
+            <a
+              href="#faq"
+              className={activeNavSection === 'faq' ? 'is-active' : undefined}
+              aria-current={activeNavSection === 'faq' ? 'location' : undefined}
+              onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}
+            >
               FAQ
             </a>
           </li>
         </ul>
 
         <div className="lp-nav-actions">
+          <ThemeToggle className="lp-home-theme-toggle" />
           <button className="lp-btn-ghost" type="button" onClick={() => handleNav('login')}>
             Se connecter
           </button>
@@ -868,6 +908,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             className="lp-menu-toggle"
             type="button"
             aria-label="Menu"
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -900,6 +941,10 @@ export default function LandingPage({ onNavigateToAuth }) {
             Se connecter
           </a>
           <div className="lp-mobile-menu-actions">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '4px 0 8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700 }}>Thème</span>
+              <ThemeToggle />
+            </div>
             <button className="lp-btn-ghost" type="button" onClick={() => handleNav('login')} style={{ width: '100%' }}>
               Se connecter
             </button>
@@ -920,19 +965,19 @@ export default function LandingPage({ onNavigateToAuth }) {
         <span className="lp-hero-sparkle lp-hero-sparkle--lower" aria-hidden="true">✧</span>
         <div className="lp-hero-nitrogen-molecule" aria-hidden="true">
           <svg viewBox="0 0 72 44" fill="none">
-            <text x="4" y="12" fill="#3478c8" fontSize="11" fontFamily="Georgia,serif" fontStyle="italic">N₂</text>
-            <path d="M22 25h27M22 29h27" stroke="#4d8de0" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="17" cy="27" r="6" fill="#fff" stroke="#3478c8" strokeWidth="1.5" />
-            <circle cx="54" cy="27" r="6" fill="#fff" stroke="#3478c8" strokeWidth="1.5" />
+            <text x="4" y="12" fill="var(--illustration-stroke, #3478c8)" fontSize="11" fontFamily="Georgia,serif" fontStyle="italic">N₂</text>
+            <path d="M22 25h27M22 29h27" stroke="var(--illustration-stroke, #4d8de0)" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="17" cy="27" r="6" fill="#fff" stroke="var(--illustration-stroke, #3478c8)" strokeWidth="1.5" />
+            <circle cx="54" cy="27" r="6" fill="#fff" stroke="var(--illustration-stroke, #3478c8)" strokeWidth="1.5" />
           </svg>
         </div>
         <div className="lp-hero-water-molecule" aria-hidden="true">
           <svg viewBox="0 0 100 66" fill="none">
-            <path d="M50 30 26 49M50 30l24 19" stroke="#3b82f6" strokeWidth="1.8" />
-            <circle cx="50" cy="27" r="8" fill="#fff" stroke="#f59e0b" strokeWidth="1.8" />
-            <circle cx="22" cy="52" r="7" fill="#fff" stroke="#3b82f6" strokeWidth="1.8" />
-            <circle cx="78" cy="52" r="7" fill="#fff" stroke="#3b82f6" strokeWidth="1.8" />
-            <text x="3" y="14" fill="#2563eb" fontSize="11" fontFamily="'Fira Code', monospace">H₂O</text>
+            <path d="M50 30 26 49M50 30l24 19" stroke="var(--illustration-stroke, #3b82f6)" strokeWidth="1.8" />
+            <circle cx="50" cy="27" r="8" fill="#fff" stroke="var(--illustration-accent, #f59e0b)" strokeWidth="1.8" />
+            <circle cx="22" cy="52" r="7" fill="#fff" stroke="var(--illustration-stroke, #3b82f6)" strokeWidth="1.8" />
+            <circle cx="78" cy="52" r="7" fill="#fff" stroke="var(--illustration-stroke, #3b82f6)" strokeWidth="1.8" />
+            <text x="3" y="14" fill="var(--illustration-stroke, #2563eb)" fontSize="11" fontFamily="'Fira Code', monospace">H₂O</text>
           </svg>
         </div>
         <div className="lp-hero-ruler" aria-hidden="true">
@@ -940,12 +985,12 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
         <div className="lp-hero-science-decor lp-hero-science-decor--atom" aria-hidden="true">
           <svg viewBox="0 0 90 90" fill="none">
-            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(-35 45 45)" stroke="#3b82f6" strokeWidth="1.7" />
-            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(35 45 45)" stroke="#60a5fa" strokeWidth="1.7" />
-            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(90 45 45)" stroke="#93c5fd" strokeWidth="1.7" />
-            <circle cx="45" cy="45" r="5" fill="#f59e0b" />
-            <circle cx="71" cy="29" r="3.5" fill="#2563eb" />
-            <circle cx="27" cy="61" r="3.5" fill="#2563eb" />
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(-35 45 45)" stroke="var(--illustration-stroke, #3b82f6)" strokeWidth="1.7" />
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(35 45 45)" stroke="var(--illustration-stroke, #60a5fa)" strokeWidth="1.7" />
+            <ellipse cx="45" cy="45" rx="38" ry="15" transform="rotate(90 45 45)" stroke="var(--illustration-muted, #93c5fd)" strokeWidth="1.7" />
+            <circle cx="45" cy="45" r="5" fill="var(--illustration-accent, #f59e0b)" />
+            <circle cx="71" cy="29" r="3.5" fill="var(--illustration-stroke, #2563eb)" />
+            <circle cx="27" cy="61" r="3.5" fill="var(--illustration-stroke, #2563eb)" />
           </svg>
         </div>
         <div className="lp-hero-science-decor lp-hero-science-decor--hexagon" aria-hidden="true">
@@ -961,16 +1006,16 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
         <div className="lp-hero-science-decor lp-hero-science-decor--dna" aria-hidden="true">
           <svg viewBox="0 0 80 140" fill="none">
-            <path d="M20 10 Q50 30 20 50 Q-10 70 20 90 Q50 110 20 130" stroke="#3b82f6" strokeWidth="3" fill="none" strokeLinecap="round" />
-            <path d="M60 10 Q30 30 60 50 Q90 70 60 90 Q30 110 60 130" stroke="#60a5fa" strokeWidth="3" fill="none" strokeLinecap="round" />
-            <line x1="28" y1="20" x2="52" y2="20" stroke="#93c5fd" strokeWidth="1.8" />
-            <line x1="18" y1="35" x2="62" y2="35" stroke="#bfdbfe" strokeWidth="1.5" />
-            <line x1="20" y1="50" x2="60" y2="50" stroke="#93c5fd" strokeWidth="1.8" />
-            <line x1="18" y1="65" x2="62" y2="65" stroke="#bfdbfe" strokeWidth="1.5" />
-            <line x1="28" y1="80" x2="52" y2="80" stroke="#93c5fd" strokeWidth="1.8" />
-            <line x1="18" y1="95" x2="62" y2="95" stroke="#bfdbfe" strokeWidth="1.5" />
-            <line x1="20" y1="110" x2="60" y2="110" stroke="#93c5fd" strokeWidth="1.8" />
-            <line x1="28" y1="125" x2="52" y2="125" stroke="#bfdbfe" strokeWidth="1.5" />
+            <path d="M20 10 Q50 30 20 50 Q-10 70 20 90 Q50 110 20 130" stroke="var(--illustration-stroke, #3b82f6)" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M60 10 Q30 30 60 50 Q90 70 60 90 Q30 110 60 130" stroke="var(--illustration-stroke, #60a5fa)" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <line x1="28" y1="20" x2="52" y2="20" stroke="var(--illustration-muted, #93c5fd)" strokeWidth="1.8" />
+            <line x1="18" y1="35" x2="62" y2="35" stroke="var(--illustration-muted, #bfdbfe)" strokeWidth="1.5" />
+            <line x1="20" y1="50" x2="60" y2="50" stroke="var(--illustration-muted, #93c5fd)" strokeWidth="1.8" />
+            <line x1="18" y1="65" x2="62" y2="65" stroke="var(--illustration-muted, #bfdbfe)" strokeWidth="1.5" />
+            <line x1="28" y1="80" x2="52" y2="80" stroke="var(--illustration-muted, #93c5fd)" strokeWidth="1.8" />
+            <line x1="18" y1="95" x2="62" y2="95" stroke="var(--illustration-muted, #bfdbfe)" strokeWidth="1.5" />
+            <line x1="20" y1="110" x2="60" y2="110" stroke="var(--illustration-muted, #93c5fd)" strokeWidth="1.8" />
+            <line x1="28" y1="125" x2="52" y2="125" stroke="var(--illustration-muted, #bfdbfe)" strokeWidth="1.5" />
             <text x="65" y="42" fill="#64748b" fontSize="9" fontWeight="600">BAS</text>
             <text x="65" y="72" fill="#3b82f6" fontSize="9" fontWeight="600">DNA</text>
             <text x="65" y="102" fill="#f97316" fontSize="9" fontWeight="600">DNA</text>
@@ -989,16 +1034,16 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="lp-math-note lp-math-note--biology" aria-hidden="true">ATP → ADP + P<sub>i</sub><br />2n = 46 chromosomes</div>
         <div className="lp-math-note lp-math-note--newton" aria-hidden="true">U = R · I</div>
         <div className="lp-math-graph lp-math-graph--left" aria-hidden="true">
-          <svg viewBox="0 0 140 90" fill="none"><path d="M10 80h120M20 85V10" stroke="currentColor" strokeDasharray="3 3" /><path d="M20 70Q50 10 80 50T130 15" stroke="#2563eb" strokeWidth="2" /><circle cx="80" cy="50" r="3" fill="#2563eb" /><text x="90" y="45">f(x)</text></svg>
+          <svg viewBox="0 0 140 90" fill="none"><path d="M10 80h120M20 85V10" stroke="currentColor" strokeDasharray="3 3" /><path d="M20 70Q50 10 80 50T130 15" stroke="var(--illustration-stroke, #2563eb)" strokeWidth="2" /><circle cx="80" cy="50" r="3" fill="var(--illustration-stroke, #2563eb)" /><text x="90" y="45">f(x)</text></svg>
         </div>
         <div className="lp-math-graph lp-math-graph--right" aria-hidden="true">
           <svg viewBox="0 0 130 80" fill="none"><path d="M10 70h110M20 75V10" stroke="currentColor" /><path d="M20 65Q60 65 110 15" stroke="#1e40af" strokeWidth="2" /><text x="64" y="30">∫ eˣ dx</text></svg>
         </div>
         <div className="lp-math-graph lp-math-graph--exponential" aria-hidden="true">
-          <svg viewBox="0 0 130 90" fill="none"><path d="M10 75h110M20 82V10" stroke="currentColor" /><path d="M22 70C43 68 51 63 65 51S88 28 112 14" stroke="#2563eb" strokeWidth="2" /><text x="8" y="12">y</text><text x="119" y="84">x</text><text x="69" y="36">eˣ</text></svg>
+          <svg viewBox="0 0 130 90" fill="none"><path d="M10 75h110M20 82V10" stroke="currentColor" /><path d="M22 70C43 68 51 63 65 51S88 28 112 14" stroke="var(--illustration-stroke, #2563eb)" strokeWidth="2" /><text x="8" y="12">y</text><text x="119" y="84">x</text><text x="69" y="36">eˣ</text></svg>
         </div>
         <div className="lp-math-graph lp-math-graph--area" aria-hidden="true">
-          <svg viewBox="0 0 150 100" fill="none"><path d="M12 84h126M24 91V12" stroke="currentColor" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82L132 84H26Z" fill="rgba(245,158,11,.16)" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82" stroke="#2563eb" strokeWidth="2" /><path d="m31 40 35 38M43 36l40 44M57 45l39 35M73 60l30 23" stroke="#f59e0b" strokeWidth="1" opacity=".55" /><text x="8" y="12">z</text><text x="139" y="92">x</text></svg>
+          <svg viewBox="0 0 150 100" fill="none"><path d="M12 84h126M24 91V12" stroke="currentColor" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82L132 84H26Z" fill="rgba(245,158,11,.16)" /><path d="M26 28C48 32 51 58 72 68S111 78 132 82" stroke="var(--illustration-stroke, #2563eb)" strokeWidth="2" /><path d="m31 40 35 38M43 36l40 44M57 45l39 35M73 60l30 23" stroke="var(--illustration-accent, #f59e0b)" strokeWidth="1" opacity=".55" /><text x="8" y="12">z</text><text x="139" y="92">x</text></svg>
         </div>
         <div className="lp-hero-decor lp-hero-decor--books" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
@@ -1066,21 +1111,21 @@ export default function LandingPage({ onNavigateToAuth }) {
             <path d="M59 138c18 15 44 18 66 7" stroke="#80b2ff" strokeWidth="2" strokeDasharray="5 6" strokeLinecap="round" />
             <circle cx="59" cy="137" r="12" fill="#5798f5" />
             <path d="M58 127a12 12 0 0 1 12 8" stroke="#a8ccff" strokeWidth="2" strokeLinecap="round" />
-            <path d="M159 19v7m-3.5-3.5h7" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+            <path d="M159 19v7m-3.5-3.5h7" stroke="var(--illustration-accent, #f59e0b)" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
         <div className="lp-reference-doodles" aria-hidden="true">
           <div className="lp-ref-item lp-ref-trig">
             <svg viewBox="0 0 140 125" fill="none">
-              <circle cx="60" cy="48" r="34" stroke="#2e5aac" strokeWidth="2.5" />
-              <path d="M60 48 84 25M60 48h34M94 43v10M89 48h10" stroke="#ef8b2c" strokeWidth="2.4" strokeLinecap="round" />
+              <circle cx="60" cy="48" r="34" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.5" />
+              <path d="M60 48 84 25M60 48h34M94 43v10M89 48h10" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.4" strokeLinecap="round" />
               <text x="60" y="108" textAnchor="middle">sin² θ + cos² θ = 1</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-triangle">
             <svg viewBox="0 0 140 125" fill="none">
-              <path d="m20 94 77-52-3 55-74-3Z" fill="rgba(46,90,172,.06)" stroke="#2e5aac" strokeWidth="2.4" strokeLinejoin="round" />
-              <path d="m85 94 1-11 11 1" stroke="#ef8b2c" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="m20 94 77-52-3 55-74-3Z" fill="var(--illustration-soft, rgba(46,90,172,.06))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4" strokeLinejoin="round" />
+              <path d="m85 94 1-11 11 1" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.2" strokeLinejoin="round" />
               <text x="61" y="119" textAnchor="middle">a² + b² = c²</text>
             </svg>
           </div>
@@ -1091,55 +1136,55 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
           <div className="lp-ref-item lp-ref-benzene">
             <svg viewBox="0 0 100 125" fill="none">
-              <path d="m50 10 31 18v36L50 82 19 64V28L50 10Z" stroke="#2e5aac" strokeWidth="2.3" strokeLinejoin="round" />
-              <circle cx="50" cy="46" r="15" stroke="#ef8b2c" strokeWidth="1.8" />
+              <path d="m50 10 31 18v36L50 82 19 64V28L50 10Z" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.3" strokeLinejoin="round" />
+              <circle cx="50" cy="46" r="15" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="1.8" />
               <text x="50" y="109" textAnchor="middle">C₆H₆</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-dna">
             <svg viewBox="0 0 112 142" fill="none">
-              <path d="M18 8c72 26-5 38 74 62s-1 39-74 64M94 8c-72 26 5 38-74 62s1 39 74 64" stroke="#2e5aac" strokeWidth="2.2" strokeLinecap="round" />
-              <path d="M33 17h47M28 34h55M34 51h44M32 69h48M28 87h55M34 105h44M36 123h40" stroke="#a9c6f4" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M18 8c18 6 28 11 34 17M92 70c-17 5-29 10-38 17" stroke="#ef8b2c" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M18 8c72 26-5 38 74 62s-1 39-74 64M94 8c-72 26 5 38-74 62s1 39 74 64" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M33 17h47M28 34h55M34 51h44M32 69h48M28 87h55M34 105h44M36 123h40" stroke="var(--illustration-muted, #a9c6f4)" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M18 8c18 6 28 11 34 17M92 70c-17 5-29 10-38 17" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.2" strokeLinecap="round" />
               <text x="56" y="139" textAnchor="middle">A–T · C–G</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-integral">
             <svg viewBox="0 0 150 110" fill="none">
-              <path d="M20 8v78h116M24 85h109" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
-              <path d="M26 75c15-47 33-45 49-30s34 35 59 7" fill="rgba(239,139,44,.22)" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
-              <path d="M39 86V66M111 86V61" stroke="#a9c6f4" strokeWidth="1.4" strokeDasharray="3 3" />
+              <path d="M20 8v78h116M24 85h109" stroke="var(--illustration-muted, #b9c9e2)" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="M26 75c15-47 33-45 49-30s34 35 59 7" fill="var(--illustration-accent-soft, rgba(239,139,44,.22))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4" strokeLinecap="round" />
+              <path d="M39 86V66M111 86V61" stroke="var(--illustration-muted, #a9c6f4)" strokeWidth="1.4" strokeDasharray="3 3" />
               <text x="76" y="106" textAnchor="middle">∫₀¹ f(x) dx</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-derivative">
             <svg viewBox="0 0 150 110" fill="none">
-              <path d="M18 8v78h116M23 85h109" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
-              <path d="M27 73Q68 2 119 72" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
-              <path d="m62 37 42-12" stroke="#ef8b2c" strokeWidth="2.1" strokeLinecap="round" />
-              <circle cx="80" cy="32" r="3.5" fill="#ef8b2c" />
+              <path d="M18 8v78h116M23 85h109" stroke="var(--illustration-muted, #b9c9e2)" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="M27 73Q68 2 119 72" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4" strokeLinecap="round" />
+              <path d="m62 37 42-12" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.1" strokeLinecap="round" />
+              <circle cx="80" cy="32" r="3.5" fill="var(--illustration-accent, #ef8b2c)" />
               <text x="80" y="106" textAnchor="middle">f′(a)</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-complex">
             <svg viewBox="0 0 120 110" fill="none">
-              <path d="M14 52h96M62 8v82" stroke="#b9c9e2" strokeWidth="1.5" strokeDasharray="3 4" />
-              <path d="m62 52 38-31" stroke="#2e5aac" strokeWidth="2.4" strokeLinecap="round" />
-              <circle cx="100" cy="21" r="3.5" fill="#ef8b2c" />
+              <path d="M14 52h96M62 8v82" stroke="var(--illustration-muted, #b9c9e2)" strokeWidth="1.5" strokeDasharray="3 4" />
+              <path d="m62 52 38-31" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4" strokeLinecap="round" />
+              <circle cx="100" cy="21" r="3.5" fill="var(--illustration-accent, #ef8b2c)" />
               <text x="62" y="105" textAnchor="middle">z = a + ib</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-venn">
             <svg viewBox="0 0 130 100" fill="none">
-              <circle cx="51" cy="43" r="31" fill="rgba(46,90,172,.08)" stroke="#2e5aac" strokeWidth="2.2" />
-              <circle cx="79" cy="43" r="31" fill="rgba(239,139,44,.12)" stroke="#ef8b2c" strokeWidth="2.2" />
+              <circle cx="51" cy="43" r="31" fill="var(--illustration-soft, rgba(46,90,172,.08))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.2" />
+              <circle cx="79" cy="43" r="31" fill="var(--illustration-accent-soft, rgba(239,139,44,.12))" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.2" />
               <text x="65" y="94" textAnchor="middle">P(A ∩ B)</text>
             </svg>
           </div>
           <div className="lp-ref-item lp-ref-circuit">
             <svg viewBox="0 0 150 80" fill="none">
-              <path d="M10 38h19l8-14 10 28 10-28 10 28 10-28 10 14h43v22H10V38Z" stroke="#2e5aac" strokeWidth="2.1" strokeLinejoin="round" />
-              <path d="M122 33v12M128 35v8" stroke="#ef8b2c" strokeWidth="2" strokeLinecap="round" />
+              <path d="M10 38h19l8-14 10 28 10-28 10 28 10-28 10 14h43v22H10V38Z" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.1" strokeLinejoin="round" />
+              <path d="M122 33v12M128 35v8" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2" strokeLinecap="round" />
               <text x="78" y="77" textAnchor="middle">U = R × I</text>
             </svg>
           </div>
@@ -1148,19 +1193,18 @@ export default function LandingPage({ onNavigateToAuth }) {
           <div className="lp-ref-equation lp-ref-limit">lim <b>x→0</b> sin x / x = 1</div>
         </div>
         <div className="lp-home-doodles" aria-hidden="true">
-          <div className="lp-home-doodle lp-home-doodle--co2"><svg viewBox="0 0 140 112" fill="none"><path d="M42 46h28M70 46h28" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="34" cy="46" r="14" fill="#fff" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="70" cy="46" r="14" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="106" cy="46" r="14" fill="#fff" stroke="#2e5aac" strokeWidth="2.4"/><text x="70" y="91" textAnchor="middle">CO&#8322;</text></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--atom"><svg viewBox="0 0 120 112" fill="none"><circle cx="60" cy="47" r="39" fill="rgba(46,90,172,.04)" stroke="#2e5aac" strokeWidth="2.4"/><circle cx="60" cy="47" r="13" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="60" cy="47" r="5" fill="#ef8b2c"/><circle cx="86" cy="20" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="82" cy="73" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="38" cy="75" r="4.5" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><text x="60" y="105" textAnchor="middle">Atome</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--co2"><svg viewBox="0 0 140 112" fill="none"><path d="M42 46h28M70 46h28" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><circle cx="34" cy="46" r="14" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><circle cx="70" cy="46" r="14" fill="var(--surface, #fff)" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.4"/><circle cx="106" cy="46" r="14" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><text x="70" y="91" textAnchor="middle">CO&#8322;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--atom"><svg viewBox="0 0 120 112" fill="none"><circle cx="60" cy="47" r="39" fill="var(--illustration-soft, rgba(46,90,172,.04))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><circle cx="60" cy="47" r="13" fill="var(--surface, #fff)" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.4"/><circle cx="60" cy="47" r="5" fill="var(--illustration-accent, #ef8b2c)"/><circle cx="86" cy="20" r="4.5" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="82" cy="73" r="4.5" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="38" cy="75" r="4.5" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><text x="60" y="105" textAnchor="middle">Atome</text></svg></div>
           <div className="lp-home-schools"><span>M&#233;decine</span><span>ENSAM</span><span>ENSA</span></div>
-          <div className="lp-home-doodle lp-home-doodle--methane"><svg viewBox="0 0 100 92" fill="none"><path d="M50 42 25 20M50 42 75 20M50 42 25 66M50 42 75 66" stroke="#2e5aac" strokeWidth="2"/><circle cx="50" cy="42" r="10" fill="#fff" stroke="#ef8b2c" strokeWidth="2.4"/><circle cx="22" cy="18" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="78" cy="18" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="22" cy="68" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><circle cx="78" cy="68" r="7" fill="#fff" stroke="#2e5aac" strokeWidth="2"/><text x="50" y="89" textAnchor="middle">CH&#8324;</text></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--flask"><svg viewBox="0 0 90 112" fill="none"><path d="M34 12h22M39 12v32L18 88q-4 9 7 9h40q11 0 7-9L51 44V12" fill="rgba(245,138,19,.12)" stroke="#2e5aac" strokeWidth="2.5" strokeLinejoin="round"/><path d="M27 77h36" stroke="#ef8b2c" strokeWidth="2"/><circle cx="36" cy="84" r="2.5" fill="#ef8b2c"/><circle cx="53" cy="86" r="2.5" fill="#ef8b2c"/><text x="45" y="109" textAnchor="middle">n = cV</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--methane"><svg viewBox="0 0 100 92" fill="none"><path d="M50 42 25 20M50 42 75 20M50 42 25 66M50 42 75 66" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="50" cy="42" r="10" fill="var(--surface, #fff)" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.4"/><circle cx="22" cy="18" r="7" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="78" cy="18" r="7" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="22" cy="68" r="7" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><circle cx="78" cy="68" r="7" fill="var(--surface, #fff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><text x="50" y="89" textAnchor="middle">CH&#8324;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--flask"><svg viewBox="0 0 90 112" fill="none"><path d="M34 12h22M39 12v32L18 88q-4 9 7 9h40q11 0 7-9L51 44V12" fill="var(--illustration-accent-soft, rgba(245,138,19,.12))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.5" strokeLinejoin="round"/><path d="M27 77h36" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2"/><circle cx="36" cy="84" r="2.5" fill="var(--illustration-accent, #ef8b2c)"/><circle cx="53" cy="86" r="2.5" fill="var(--illustration-accent, #ef8b2c)"/><text x="45" y="109" textAnchor="middle">n = cV</text></svg></div>
           <span className="lp-home-equation lp-home-equation--wave">c = &#955;f</span>
-          <div className="lp-home-doodle lp-home-doodle--logistic"><svg viewBox="0 0 150 100" fill="none"><path d="M10 82h130M20 88V10" stroke="#b9c9e2" strokeWidth="1.4" strokeDasharray="3 3"/><path d="M24 75C48 75 52 68 64 55S78 27 106 24 128 24 136 24" stroke="#2e5aac" strokeWidth="2.6" strokeLinecap="round"/><circle cx="65" cy="54" r="3.5" fill="#ef8b2c"/><text x="76" y="98" textAnchor="middle">y = 1 / (1 + e&#8315;&#739;)</text></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--lens"><svg viewBox="0 0 140 100" fill="none"><path d="M12 28h38M12 72h38M90 28h38M90 72h38" stroke="#2e5aac" strokeWidth="2"/><path d="M62 18C48 30 48 70 62 82 76 70 76 30 62 18Z" fill="rgba(46,90,172,.08)" stroke="#2e5aac" strokeWidth="2.4"/><path d="M14 50h112" stroke="#a9c6f4" strokeWidth="1.4"/><circle cx="105" cy="50" r="4" fill="#ef8b2c"/><text x="70" y="98" textAnchor="middle">1/f = 1/p + 1/q</text></svg></div>
-          <span className="lp-home-equation lp-home-equation--sigma">&#931;</span>
-          <div className="lp-home-doodle lp-home-doodle--radian"><svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="45" r="31" fill="rgba(46,90,172,.07)" stroke="#2e5aac" strokeWidth="2.4"/><path d="M50 45 76 24M50 45h31" stroke="#ef8b2c" strokeWidth="2.2" strokeLinecap="round"/><circle cx="76" cy="24" r="3.5" fill="#ef8b2c"/><text x="50" y="95" textAnchor="middle">1 rad = 180&#176; / &#960;</text></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--probability"><svg viewBox="0 0 110 100" fill="none"><circle cx="54" cy="43" r="31" fill="#edf3ff" stroke="#2e5aac" strokeWidth="2.4"/><path d="M54 43V12a31 31 0 0 1 31 31H54Z" fill="#f59a22" stroke="#2e5aac" strokeWidth="2"/><path d="M54 43 29 61" stroke="#2e5aac" strokeWidth="2"/><text x="54" y="94" textAnchor="middle">P&#8321; + P&#8322; + P&#8323; = 1</text></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--circuit"><svg viewBox="0 0 150 70" fill="none"><path d="M8 42h12l8-26 11 46 11-43 11 43 11-43 11 23h48" stroke="#2e5aac" strokeWidth="2.3" strokeLinejoin="round"/><rect x="116" y="25" width="23" height="30" rx="4" fill="#f58a13"/></svg></div>
-          <div className="lp-home-doodle lp-home-doodle--sine"><svg viewBox="0 0 150 82" fill="none"><path d="M5 40c15 0 15-31 30-31s15 62 30 62 15-62 30-62 15 62 30 62 15-31 20-31" stroke="#2e5aac" strokeWidth="2.5" strokeLinecap="round"/><circle cx="35" cy="10" r="3.5" fill="#ef8b2c"/><text x="78" y="78" textAnchor="middle">y = A sin(&#969;t)</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--logistic"><svg viewBox="0 0 150 100" fill="none"><path d="M10 82h130M20 88V10" stroke="var(--illustration-muted, #b9c9e2)" strokeWidth="1.4" strokeDasharray="3 3"/><path d="M24 75C48 75 52 68 64 55S78 27 106 24 128 24 136 24" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.6" strokeLinecap="round"/><circle cx="65" cy="54" r="3.5" fill="var(--illustration-accent, #ef8b2c)"/><text x="76" y="98" textAnchor="middle">y = 1 / (1 + e&#8315;&#739;)</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--lens"><svg viewBox="0 0 140 100" fill="none"><path d="M12 28h38M12 72h38M90 28h38M90 72h38" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><path d="M62 18C48 30 48 70 62 82 76 70 76 30 62 18Z" fill="var(--illustration-soft, rgba(46,90,172,.08))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><path d="M14 50h112" stroke="var(--illustration-muted, #a9c6f4)" strokeWidth="1.4"/><circle cx="105" cy="50" r="4" fill="var(--illustration-accent, #ef8b2c)"/><text x="70" y="98" textAnchor="middle">1/f = 1/p + 1/q</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--radian"><svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="45" r="31" fill="var(--illustration-soft, rgba(46,90,172,.07))" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><path d="M50 45 76 24M50 45h31" stroke="var(--illustration-accent, #ef8b2c)" strokeWidth="2.2" strokeLinecap="round"/><circle cx="76" cy="24" r="3.5" fill="var(--illustration-accent, #ef8b2c)"/><text x="50" y="95" textAnchor="middle">1 rad = 180&#176; / &#960;</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--probability"><svg viewBox="0 0 110 100" fill="none"><circle cx="54" cy="43" r="31" fill="var(--illustration-soft, #edf3ff)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.4"/><path d="M54 43V12a31 31 0 0 1 31 31H54Z" fill="var(--illustration-accent, #f59a22)" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><path d="M54 43 29 61" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2"/><text x="54" y="94" textAnchor="middle">P&#8321; + P&#8322; + P&#8323; = 1</text></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--circuit"><svg viewBox="0 0 150 70" fill="none"><path d="M8 42h12l8-26 11 46 11-43 11 43 11-43 11 23h48" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.3" strokeLinejoin="round"/><rect x="116" y="25" width="23" height="30" rx="4" fill="var(--illustration-accent, #f58a13)"/></svg></div>
+          <div className="lp-home-doodle lp-home-doodle--sine"><svg viewBox="0 0 150 82" fill="none"><path d="M5 40c15 0 15-31 30-31s15 62 30 62 15-62 30-62 15 62 30 62 15-31 20-31" stroke="var(--illustration-stroke, #2e5aac)" strokeWidth="2.5" strokeLinecap="round"/><circle cx="35" cy="10" r="3.5" fill="var(--illustration-accent, #ef8b2c)"/><text x="78" y="78" textAnchor="middle">y = A sin(&#969;t)</text></svg></div>
           <span className="lp-home-equation lp-home-equation--pressure">P = F / S</span>
         </div>
         <div className="lp-headline-composition">
@@ -1312,7 +1356,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
           <div className="lp-motivation-banner-visual" ref={motivationMascotRef} aria-hidden="true">
             <div className="lp-motivation-banner-ground" />
-            <LandingMascot className="lp-motivation-banner-owl" holdingNotebook={true} />
+            <img className="lp-motivation-banner-owl" src={navMascotImg} alt="" />
           </div>
         </div>
       </section>
@@ -1584,6 +1628,31 @@ export default function LandingPage({ onNavigateToAuth }) {
           </button>
         </div>
       </section>
+      {/* Call to action placed directly after the features section. */}
+      <section className="lp-bottom-cta-section">
+        <div className="lp-bottom-cta-card">
+          <div className="lp-bottom-cta-content">
+            <span className="lp-bottom-cta-kicker">TON PROCHAIN CHAPITRE COMMENCE ICI</span>
+            <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
+          </div>
+          <div className="lp-bottom-cta-logos" aria-label="Écoles préparées">
+            <div className="lp-bottom-cta-logo-viewport">
+              <div className="lp-bottom-cta-logo-track">
+                {[0, 1].map((copy) => (
+                  <div className="lp-bottom-cta-logo-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+                    {bottomCtaLogos.map((logo) => (
+                      <div className="lp-bottom-cta-logo-item" key={logo.name}>
+                        <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
+                        <span>{logo.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       <section className="lp-archive-section" aria-labelledby="lp-archive-title">
         <div className="lp-archive-inner">
           <div className="lp-archive-copy">
@@ -1667,39 +1736,6 @@ export default function LandingPage({ onNavigateToAuth }) {
         </div>
       </section>
       {/* ====================================================================
-          8. STATS & IMPACT SECTION (DARK THEME)
-      ==================================================================== */}
-      <section className="lp-three-steps-section" aria-labelledby="lp-three-steps-title">
-        <div className="lp-three-steps-header">
-          <span className="lp-three-steps-eyebrow">VOS ÉTAPES</span>
-          <h2 id="lp-three-steps-title">Votre préparation, pas à pas</h2>
-        </div>
-        <div className="lp-three-steps-grid">
-          <article className="lp-three-step-card">
-            <div className="lp-three-step-top">
-              <span className="lp-three-step-number">01</span>
-            </div>
-            <h3>Créez votre compte</h3>
-            <p>Inscrivez-vous en quelques instants pour accéder à la plateforme.</p>
-          </article>
-          <article className="lp-three-step-card lp-three-step-card--accent">
-            <div className="lp-three-step-top">
-              <span className="lp-three-step-number">02</span>
-            </div>
-            <h3>Choisissez votre pack</h3>
-            <p>Médecine, ENSA, ENSAM, ENCG ou un pack groupé, avec un paiement unique.</p>
-          </article>
-          <article className="lp-three-step-card">
-            <div className="lp-three-step-top">
-              <span className="lp-three-step-number">03</span>
-            </div>
-            <h3>Révisez et testez-vous</h3>
-            <p>QCM, résumés, cours et examens chronométrés pour arriver prêt le jour J.</p>
-          </article>
-        </div>
-      </section>
-
-      {/* ====================================================================
           9. PRICING & PLANS SECTION
       ==================================================================== */}
       <section className="lp-pricing-section" id="tarifs">
@@ -1776,7 +1812,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             },
           ].map((plan) => (
             <div className={`lp-plan-card${plan.featured ? ' is-featured' : ''}`} key={plan.name}>
-              {plan.featured && <div className="lp-featured-ribbon">⭐ LE PLUS CHOISI</div>}
+              {plan.featured && <div className="lp-featured-ribbon">Populaire</div>}
               <h3 className="lp-plan-name">{plan.name}</h3>
               <p className="lp-plan-sub">{plan.description}</p>
               <div className="lp-plan-price">
@@ -1796,6 +1832,39 @@ export default function LandingPage({ onNavigateToAuth }) {
               </button>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ====================================================================
+          THREE-STEP PREPARATION SECTION
+      ==================================================================== */}
+      <section className="lp-three-steps-section" aria-labelledby="lp-three-steps-title">
+        <div className="lp-three-steps-header">
+          <span className="lp-three-steps-eyebrow">VOS ÉTAPES</span>
+          <h2 id="lp-three-steps-title">Votre préparation, pas à pas</h2>
+        </div>
+        <div className="lp-three-steps-grid">
+          <article className="lp-three-step-card">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">01</span>
+            </div>
+            <h3>Créez votre compte</h3>
+            <p>Inscrivez-vous en quelques instants pour accéder à la plateforme.</p>
+          </article>
+          <article className="lp-three-step-card lp-three-step-card--accent">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">02</span>
+            </div>
+            <h3>Choisissez votre pack</h3>
+            <p>Médecine, ENSA, ENSAM, ENCG ou un pack groupé, avec un paiement unique.</p>
+          </article>
+          <article className="lp-three-step-card">
+            <div className="lp-three-step-top">
+              <span className="lp-three-step-number">03</span>
+            </div>
+            <h3>Révisez et testez-vous</h3>
+            <p>QCM, résumés, cours et examens chronométrés pour arriver prêt le jour J.</p>
+          </article>
         </div>
       </section>
 
@@ -1919,34 +1988,6 @@ export default function LandingPage({ onNavigateToAuth }) {
               </div>
             );
           })}
-        </div>
-      </section>
-
-      {/* ====================================================================
-          11. BOTTOM CTA BANNER
-      ==================================================================== */}
-      <section className="lp-bottom-cta-section">
-        <div className="lp-bottom-cta-card">
-          <div className="lp-bottom-cta-content">
-            <span className="lp-bottom-cta-kicker">TON PROCHAIN CHAPITRE COMMENCE ICI</span>
-            <h2>Prêt à intégrer la <span>Grande École</span> de tes rêves ?</h2>
-          </div>
-          <div className="lp-bottom-cta-logos" aria-label="Écoles préparées">
-            <div className="lp-bottom-cta-logo-viewport">
-              <div className="lp-bottom-cta-logo-track">
-                {[0, 1].map((copy) => (
-                  <div className="lp-bottom-cta-logo-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
-                    {bottomCtaLogos.map((logo) => (
-                      <div className="lp-bottom-cta-logo-item" key={logo.name}>
-                        <img src={logo.src} alt={copy === 0 ? logo.alt : ''} />
-                        <span>{logo.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

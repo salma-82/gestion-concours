@@ -307,7 +307,7 @@ export default function ClientResumesPage() {
      RENDER
      ═══════════════════════════════════════════ */
   return (
-    <div style={{ minHeight: 'calc(100vh - 76px)', background: '#f8fafc', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: 'calc(100vh - 76px)', background: 'var(--bg, #f8fafc)', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
 
       {/* ─────────────────────────────────────
           STEP 1 : CHOIX DE LA MATIÈRE
@@ -316,11 +316,11 @@ export default function ClientResumesPage() {
         <div style={{ width: 'calc(100% - min(6cm, 12vw))', maxWidth: 'calc(1200px - 6cm)', margin: '12px auto 0' }}>
           {/* Header */}
           <div style={{ marginBottom: '36px' }}>
-            <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 900, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 900, color: 'var(--text, #0f172a)', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '32px' }}>📚</span>
               <span>Résumés de Cours</span>
             </h1>
-            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '15px', maxWidth: '700px', lineHeight: 1.6 }}>
+            <p style={{ margin: '10px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '15px', maxWidth: '700px', lineHeight: 1.6 }}>
               Sélectionnez une matière pour parcourir les chapitres et consulter les résumés interactifs ajoutés par l'administrateur.
             </p>
           </div>
@@ -331,11 +331,11 @@ export default function ClientResumesPage() {
                 width: '56px', height: '56px', border: '4px solid #e2e8f0', borderTopColor: '#2563eb',
                 borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite'
               }} />
-              <p style={{ fontWeight: 600, color: '#64748b', fontSize: '15px' }}>Chargement des résumés…</p>
+              <p style={{ fontWeight: 600, color: 'var(--text-secondary, #64748b)', fontSize: '15px' }}>Chargement des résumés…</p>
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           ) : error ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: '#fff', borderRadius: '20px', border: '1px solid #fecaca' }}>
+            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #fff)', borderRadius: '20px', border: '1px solid #fecaca' }}>
               <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
               <p style={{ color: '#dc2626', fontWeight: 700 }}>{error}</p>
             </div>
@@ -346,7 +346,7 @@ export default function ClientResumesPage() {
                   key={mat.id}
                   onClick={() => goChapitres(mat)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '26px',
                     border: '1.5px solid #e2e8f0',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
@@ -386,10 +386,10 @@ export default function ClientResumesPage() {
 
                   {/* Contenu central */}
                   <div style={{ flex: 1, padding: '0 32px' }}>
-                    <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
+                    <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: '-0.3px' }}>
                       {mat.nom}
                     </h2>
-                    <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
+                    <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
                       {mat.desc}
                     </p>
                   </div>
@@ -433,15 +433,15 @@ export default function ClientResumesPage() {
       {step === 'chapitres' && selectedMatiere && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'grid', gridTemplateColumns: isSidebarCollapsed || !activeResume ? 'minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px' }}>
           {activeResume && (
-            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', minWidth: 0, position: 'sticky', top: 0, zIndex: 30, padding: '7px 0', background: '#f8fafc' }}>
-              <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des chapitres' : 'Fermer le menu des chapitres'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', minWidth: 0, position: 'sticky', top: 0, zIndex: 30, padding: '7px 0', background: 'var(--bg, #f8fafc)' }}>
+              <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des chapitres' : 'Fermer le menu des chapitres'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '10px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '10px' }}>
                 {completionErrorKey === activeResumeStatusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
                 <button type="button" disabled={activeResumeCompleted || completingActivityKey === activeResumeStatusKey} onClick={(event) => handleCompleteResume(event, activeResume)} style={{ padding: '9px 16px', border: 0, borderRadius: '10px', background: activeResumeCompleted ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '12px', fontWeight: 750, cursor: activeResumeCompleted ? 'default' : 'pointer', opacity: completingActivityKey === activeResumeStatusKey ? 0.7 : 1 }}>{activeResumeCompleted ? '✓ Terminé' : completingActivityKey === activeResumeStatusKey ? 'Enregistrement…' : 'Terminer'}</button>
               </div>
             </div>
           )}
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: activeResume ? 'none' : 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '10px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: activeResume ? '0 0 280px' : '1 1 auto', width: activeResume ? '280px' : 'calc(100% - min(6cm, 12vw))', marginInline: activeResume ? 0 : 'auto', minWidth: activeResume ? '220px' : 0, maxHeight: activeResume ? 'calc(100vh - 116px)' : 'none', overflowY: activeResume ? 'auto' : 'visible', background: activeResume ? '#ffffff' : 'transparent', border: activeResume ? '1px solid #dbeafe' : 'none', borderRadius: activeResume ? '16px' : 0, padding: activeResume ? '18px 16px' : 0, boxShadow: activeResume ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: activeResume ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
+          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: activeResume ? 'none' : 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '10px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: activeResume ? '0 0 280px' : '1 1 auto', width: activeResume ? '280px' : 'calc(100% - min(6cm, 12vw))', marginInline: activeResume ? 0 : 'auto', minWidth: activeResume ? '220px' : 0, maxHeight: activeResume ? 'calc(100vh - 116px)' : 'none', overflowY: activeResume ? 'auto' : 'visible', background: activeResume ? '#ffffff' : 'transparent', border: activeResume ? '1px solid #dbeafe' : 'none', borderRadius: activeResume ? '16px' : 0, padding: activeResume ? '18px 16px' : 0, boxShadow: activeResume ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: activeResume ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {chapitresForMatiere(selectedMatiere).map((chapitre) => {
@@ -470,7 +470,7 @@ export default function ClientResumesPage() {
           <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {activeResume && (
               <>
-                <div style={activeResume.htmlUrl ? { overflow: 'visible' } : { background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                <div style={activeResume.htmlUrl ? { overflow: 'visible' } : { background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                 {activeResume.htmlUrl ? (
                   <AutoHeightHtmlFrame
                     src={getFullUrl(activeResume.htmlUrl)}
@@ -486,8 +486,8 @@ export default function ClientResumesPage() {
                     {activeResume.pageImages.map((url, index) => <img key={`${url}-${index}`} src={getFullUrl(url)} alt={`Page ${index + 1}`} style={{ width: '100%', maxWidth: '950px', height: 'auto', borderRadius: '10px' }} />)}
                   </div>
                 ) : activeResume.contenu?.trim() ? (
-                  <div style={{ padding: '24px', color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{activeResume.contenu}</div>
-                ) : <div style={{ padding: '48px 24px', color: '#64748b', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
+                  <div style={{ padding: '24px', color: 'var(--text, #334155)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{activeResume.contenu}</div>
+                ) : <div style={{ padding: '48px 24px', color: 'var(--text-secondary, #64748b)', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
                 </div>
               </>
             )}
@@ -497,7 +497,7 @@ export default function ClientResumesPage() {
                   onClick={goMatieres}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    background: '#ffffff', border: '1px solid #cbd5e1',
+                    background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #cbd5e1)',
                     padding: '10px 16px', borderRadius: '12px',
                     cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb',
                     transition: 'all 0.2s'
@@ -511,20 +511,20 @@ export default function ClientResumesPage() {
               </div>
 
               <div style={{ marginBottom: '28px' }}>
-                <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#0f172a' }}>
+                <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                   📖 Chapitres — {selectedMatiere.nom}
                 </h1>
-                <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14px' }}>
+                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
                   Cliquez sur un chapitre pour consulter le résumé HTML interactif
                 </p>
               </div>
 
               {/* Liste des chapitres */}
               {chapitresForMatiere(selectedMatiere).length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', background: '#fff', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
+                <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #fff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
                   <div style={{ fontSize: '48px', marginBottom: '14px' }}>📂</div>
-                  <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800, fontSize: '18px' }}>Aucun chapitre disponible</h3>
-                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
+                  <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800, fontSize: '18px' }}>Aucun chapitre disponible</h3>
+                  <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -533,7 +533,7 @@ export default function ClientResumesPage() {
                       key={idx}
                       onClick={() => goReader(chap.nom)}
                       style={{
-                        background: '#fff', borderRadius: '26px', border: '1.5px solid #e2e8f0',
+                        background: 'var(--surface, #fff)', borderRadius: '26px', border: '1.5px solid #e2e8f0',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.04)', overflow: 'hidden',
                         cursor: 'pointer', transition: 'all 0.25s ease',
                         display: 'flex', alignItems: 'center', minHeight: '125px'
@@ -584,13 +584,13 @@ export default function ClientResumesPage() {
                           }}>
                             {selectedMatiere.nom}
                           </span>
-                          <span style={{ color: '#94a3b8', fontSize: '13px' }}>•</span>
-                          <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Chapitre {idx + 1}</span>
+                          <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>•</span>
+                          <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', fontWeight: 600 }}>Chapitre {idx + 1}</span>
                         </div>
-                        <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
+                        <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: '-0.3px' }}>
                           {chap.nom}
                         </h2>
-                        <p style={{ margin: 0, color: '#64748b', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
+                        <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
                           Résumé interactif avec formules et cours complet
                         </p>
                       </div>
@@ -634,7 +634,7 @@ export default function ClientResumesPage() {
       ───────────────────────────────────── */}
       {step === 'reader' && activeResume && selectedMatiere && (
         <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px' }}>
-          <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+          <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
             <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {chapitresForMatiere(selectedMatiere).map((chapitre) => {
@@ -652,10 +652,10 @@ export default function ClientResumesPage() {
           <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
             {/* Top bar */}
             <div style={{
-              background: '#fff', borderRadius: '18px',
+              background: 'var(--surface, #fff)', borderRadius: '18px',
               padding: '16px 24px', marginBottom: '18px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-              border: '1px solid #e2e8f0',
+              border: '1px solid var(--border, #e2e8f0)',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               flexWrap: 'wrap', gap: '14px'
             }}>
@@ -663,7 +663,7 @@ export default function ClientResumesPage() {
                 <button
                   onClick={() => { setStep('chapitres'); setActiveResume(null); }}
                   style={{
-                    background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b',
+                    background: 'var(--surface-2, #f1f5f9)', border: '1px solid var(--border, #cbd5e1)', color: 'var(--text, #1e293b)',
                     padding: '9px 16px', borderRadius: '10px', cursor: 'pointer',
                     fontWeight: 700, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px',
                     transition: 'all 0.2s'
@@ -682,7 +682,7 @@ export default function ClientResumesPage() {
                       {selectedMatiere.nom}
                     </span>
                     {activeResume.chapitre && (
-                      <span style={{ background: '#f1f5f9', color: '#475569', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
+                      <span style={{ background: 'var(--surface-2, #f1f5f9)', color: 'var(--text-secondary, #475569)', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
                         📌 {activeResume.chapitre}
                       </span>
                     )}
@@ -692,7 +692,7 @@ export default function ClientResumesPage() {
                       </span>
                     )}
                   </div>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                     {activeResume.titre}
                   </h2>
                 </div>
@@ -702,8 +702,8 @@ export default function ClientResumesPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 {/* Switcher si plusieurs résumés dans le chapitre */}
                 {selectedChapitre && resumesForChapitre(selectedMatiere, selectedChapitre).length > 1 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '5px 10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Fiches :</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg, #f8fafc)', padding: '5px 10px', borderRadius: '10px', border: '1px solid var(--border, #e2e8f0)' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #64748b)' }}>Fiches :</span>
                     {resumesForChapitre(selectedMatiere, selectedChapitre).map((r, i) => {
                       const isCurrent = activeResume.id === r.id;
                       return (
@@ -751,20 +751,20 @@ export default function ClientResumesPage() {
             {/* Contenu du résumé */}
             {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
               <div style={{
-                background: '#fff', borderRadius: '18px',
+                background: 'var(--surface, #fff)', borderRadius: '18px',
                 overflow: 'hidden',
                 boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-                border: '1px solid #e2e8f0'
+                border: '1px solid var(--border, #e2e8f0)'
               }}>
                 {/* Sub-header */}
                 <div style={{
-                  padding: '12px 20px', background: '#f8fafc',
+                  padding: '12px 20px', background: 'var(--bg, #f8fafc)',
                   borderBottom: '1px solid #e2e8f0',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  fontSize: '13px', color: '#475569', fontWeight: 600
+                  fontSize: '13px', color: 'var(--text-secondary, #475569)', fontWeight: 600
                 }}>
                   <span>📐 Résumé Interactif (Formules & Cours complet)</span>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>MathJax activé</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>MathJax activé</span>
                 </div>
                 {/* Iframe */}
                 <AutoHeightHtmlFrame
@@ -774,12 +774,12 @@ export default function ClientResumesPage() {
                   style={{
                     width: '100%', height: '84vh',
                     border: 'none', display: 'block',
-                    background: '#fff'
+                    background: 'var(--surface, #fff)'
                   }}
                 />
               </div>
             ) : activeResume.pdfUrl ? (
-              <div style={{ background: '#fff', borderRadius: '18px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+              <div style={{ background: 'var(--surface, #fff)', borderRadius: '18px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
                 <iframe
                   src={getFullUrl(activeResume.pdfUrl)}
                   title={activeResume.titre}
@@ -790,19 +790,19 @@ export default function ClientResumesPage() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
                 {activeResume.pageImages.map((url, idx) => (
                   <div key={idx} style={{
-                    width: '100%', maxWidth: '950px', background: '#fff',
+                    width: '100%', maxWidth: '950px', background: 'var(--surface, #fff)',
                     borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                    border: '1px solid #cbd5e1', overflow: 'hidden'
+                    border: '1px solid var(--border, #cbd5e1)', overflow: 'hidden'
                   }}>
                     <img src={getFullUrl(url)} alt={`Page ${idx + 1}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '80px', background: '#fff', borderRadius: '18px', border: '1.5px dashed #cbd5e1' }}>
+              <div style={{ textAlign: 'center', padding: '80px', background: 'var(--surface, #fff)', borderRadius: '18px', border: '1.5px dashed #cbd5e1' }}>
                 <div style={{ fontSize: '48px', marginBottom: '14px' }}>📄</div>
-                <h3 style={{ margin: '0 0 8px', color: '#0f172a', fontWeight: 800 }}>Aucun document rattaché</h3>
-                <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML ou PDF pour ce résumé.</p>
+                <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800 }}>Aucun document rattaché</h3>
+                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML ou PDF pour ce résumé.</p>
               </div>
             )}
           </div>

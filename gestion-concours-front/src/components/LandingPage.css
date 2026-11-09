@@ -4263,7 +4263,7 @@ body {
 .lp-nav.has-scrolled .lp-nav-links {
   position: fixed;
   z-index: 60;
-  top: 14px;
+  top: 4px;
   left: 50%;
   margin: 0;
   transform: translateX(-50%);
@@ -8491,7 +8491,7 @@ body > .lp-scroll-mascot.is-hero.is-right {
 }
 
 .lp-motivation-banner-owl {
-  opacity: 0;
+  opacity: 1;
 }
 
 .lp-traveling-mascot {
@@ -8547,6 +8547,10 @@ body > .lp-traveling-mascot {
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
+}
+
+.lp-traveling-mascot img.lp-traveling-mascot-art {
+  object-fit: contain;
 }
 
 #root .landing-root .fk .fk-vis--screenshot {
@@ -10804,17 +10808,6 @@ body > .lp-traveling-mascot {
 
 #root .landing-root #hero .lp-home-equation--wave { top: 196px; left: 6%; }
 #root .landing-root #hero .lp-home-equation--pressure { top: 312px; right: 9%; }
-#root .landing-root #hero .lp-home-equation--sigma {
-  top: calc(clamp(365px, 42vh, 405px) + 45px);
-  left: 44.5%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  color: #f58a13;
-  font-size: 18px;
-}
-
 #root .landing-root #hero .lp-home-doodle--logistic { top: calc(clamp(365px, 42vh, 405px) + 85px); left: 5%; width: 100px; }
 #root .landing-root #hero .lp-home-doodle--lens { top: calc(clamp(365px, 42vh, 405px) + 85px); left: 25%; width: 96px; }
 #root .landing-root #hero .lp-home-doodle--radian { top: calc(clamp(365px, 42vh, 405px) + 85px); right: 22%; width: 78px; }
@@ -10832,7 +10825,6 @@ body > .lp-traveling-mascot {
   #root .landing-root #hero .lp-home-equation--pressure { top: 322px; right: 2%; }
   #root .landing-root #hero .lp-home-doodle--logistic { top: 436px; left: 0; width: 84px; }
   #root .landing-root #hero .lp-home-doodle--lens { top: 436px; left: 21%; width: 82px; }
-  #root .landing-root #hero .lp-home-equation--sigma { top: 380px; left: 45%; }
   #root .landing-root #hero .lp-home-doodle--radian { top: 432px; right: 19%; width: 70px; }
   #root .landing-root #hero .lp-home-doodle--probability { top: 432px; right: 0; width: 72px; }
   #root .landing-root #hero .lp-home-doodle--circuit { top: 512px; left: 15%; width: 82px; }
@@ -11330,5 +11322,1576 @@ body > .lp-traveling-mascot {
   #root .landing-root .lp-archive-year.is-active { color: #fff; background: #f58a12; }
   #root .landing-root .lp-archive-selection { color: #a3b4d7; }
   #root .landing-root .lp-archive-cta { color: #e9efff; background: #17294d; }
+}
+
+/* Landing navbar: one centered row with a segmented navigation pill. */
+#root .landing-root .lp-nav {
+  position: relative !important;
+  top: auto;
+  left: auto;
+  z-index: 30;
+  display: grid !important;
+  grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+  grid-template-areas: "brand links actions" !important;
+  align-items: center;
+  column-gap: clamp(14px, 2vw, 34px);
+  row-gap: 0;
+  width: min(1472px, calc(100% - 64px));
+  min-height: 104px;
+  margin: 24px auto 0;
+  padding: 14px clamp(18px, 2vw, 32px);
+  border: 1px solid #dededb !important;
+  border-radius: 24px;
+  background: #fff !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+}
+
+#root .landing-root .lp-nav.has-scrolled {
+  position: fixed !important;
+  top: 12px;
+  left: 50%;
+  z-index: 1000;
+  display: grid !important;
+  grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+  grid-template-areas: "brand links actions" !important;
+  width: min(1472px, calc(100% - 64px));
+  max-width: none;
+  min-height: 76px;
+  margin: 0;
+  padding: 10px clamp(18px, 2vw, 32px);
+  transform: translateX(-50%);
+  border: 1px solid #dededb !important;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .97) !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .12) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+#root .landing-root .lp-nav .lp-logo {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  gap: 10px;
+  min-width: max-content;
+}
+
+#root .landing-root .lp-nav-owl-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  gap: 4px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #8b552c;
+}
+
+#root .landing-root .lp-nav-owl-mark i {
+  position: relative;
+  display: block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid #f4a446;
+  border-radius: 50%;
+  background: #fff;
+}
+
+#root .landing-root .lp-nav-owl-mark i::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f28b20;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+#root .landing-root .lp-nav .lp-wordmark {
+  padding-left: 0;
+  color: #2e5aac;
+  font-size: clamp(19px, 1.55vw, 27px);
+  font-weight: 800;
+  letter-spacing: -.035em;
+}
+
+#root .landing-root .lp-nav .lp-wordmark-prefix { color: #f08a19; }
+#root .landing-root .lp-nav .lp-wordmark-main { color: #2e5aac; }
+
+#root .landing-root .lp-nav .lp-nav-links,
+#root .landing-root .lp-nav.has-scrolled .lp-nav-links {
+  position: static !important;
+  inset: auto !important;
+  grid-area: links;
+  justify-self: center;
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 2px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 6px;
+  transform: none !important;
+  border: 2px solid #dedbd3 !important;
+  border-radius: 999px;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav .lp-nav-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px clamp(12px, 1.15vw, 19px);
+  border-radius: 999px;
+  color: #2e5aac;
+  font-size: clamp(14px, 1.1vw, 18px);
+  font-weight: 600;
+  line-height: 1.15;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+#root .landing-root .lp-nav .lp-nav-links a.is-active,
+#root .landing-root .lp-nav .lp-nav-links a:hover,
+#root .landing-root .lp-nav .lp-nav-links a:focus-visible {
+  background: #e8eefb;
+  color: #2856ad;
+}
+
+#root .landing-root .lp-nav .lp-nav-links a:focus-visible {
+  outline: 2px solid #2e5aac;
+  outline-offset: 2px;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions .theme-toggle {
+  order: 0;
+  flex: 0 0 54px;
+  width: 54px !important;
+  height: 54px !important;
+  border: 2px solid #dedbd3 !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions .theme-toggle-icon { width: 20px; height: 20px; }
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-ghost { display: none !important; }
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary {
+  order: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(180px, 14.5vw, 224px);
+  min-height: 54px;
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #2e5aac;
+  box-shadow: none;
+  color: #fff;
+  font-size: clamp(14px, 1.05vw, 17px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary::after { content: none !important; }
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try {
+  order: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(158px, 13vw, 204px);
+  min-height: 54px;
+  padding: 9px 20px;
+  border: 2px solid #2e5aac;
+  border-radius: 999px;
+  background: transparent;
+  color: #2e5aac;
+  font-size: clamp(13px, 1vw, 16px);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary:hover { background: #244a95; }
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try:hover { background: #f2f5fc; }
+
+html[data-theme="dark"] #root .landing-root .lp-nav,
+html.dark #root .landing-root .lp-nav,
+html[data-theme="dark"] #root .landing-root .lp-nav.has-scrolled,
+html.dark #root .landing-root .lp-nav.has-scrolled {
+  border-color: #26324b !important;
+  background: #0b1020 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav.has-scrolled,
+html.dark #root .landing-root .lp-nav.has-scrolled { box-shadow: 0 10px 28px rgba(0, 0, 0, .34) !important; }
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-wordmark-main,
+html.dark #root .landing-root .lp-nav .lp-wordmark-main { color: #6ea0ff; }
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links,
+html.dark #root .landing-root .lp-nav .lp-nav-links {
+  border-color: #26324b !important;
+  background: #111832 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links a,
+html.dark #root .landing-root .lp-nav .lp-nav-links a { color: #cbd5e1; }
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links a.is-active,
+html.dark #root .landing-root .lp-nav .lp-nav-links a.is-active,
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links a:hover,
+html.dark #root .landing-root .lp-nav .lp-nav-links a:hover,
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-links a:focus-visible,
+html.dark #root .landing-root .lp-nav .lp-nav-links a:focus-visible {
+  background: #202d55;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-actions .theme-toggle,
+html.dark #root .landing-root .lp-nav .lp-nav-actions .theme-toggle {
+  border-color: #26324b !important;
+  background: #111832 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try,
+html.dark #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try {
+  border-color: #384d75;
+  background: transparent;
+  color: #e5eaf3;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try:hover,
+html.dark #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try:hover { background: #151f3a; }
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  #root .landing-root .lp-nav,
+  #root .landing-root .lp-nav.has-scrolled {
+    column-gap: 12px;
+    width: calc(100% - 32px);
+    min-height: 82px;
+    padding: 10px 12px;
+  }
+
+  #root .landing-root .lp-nav-owl-mark { flex-basis: 40px; width: 40px; height: 40px; }
+  #root .landing-root .lp-nav-owl-mark i { width: 13px; height: 13px; }
+  #root .landing-root .lp-nav .lp-logo { gap: 7px; }
+  #root .landing-root .lp-nav .lp-wordmark { font-size: clamp(15px, 1.75vw, 19px); }
+  #root .landing-root .lp-nav .lp-nav-links,
+  #root .landing-root .lp-nav.has-scrolled .lp-nav-links { gap: 0; padding: 4px; }
+  #root .landing-root .lp-nav .lp-nav-links a { min-height: 38px; padding: 7px 9px; font-size: clamp(11px, 1.2vw, 13px); }
+  #root .landing-root .lp-nav .lp-nav-actions { gap: 7px; }
+  #root .landing-root .lp-nav .lp-nav-actions .theme-toggle { flex-basis: 42px; width: 42px !important; height: 42px !important; border-radius: 13px !important; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary { min-width: 136px; min-height: 42px; padding: 8px 12px; font-size: 12px; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try { min-width: 128px; min-height: 42px; padding: 7px 11px; font-size: 11px; }
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-nav,
+  #root .landing-root .lp-nav.has-scrolled {
+    display: flex !important;
+    justify-content: space-between;
+    width: calc(100% - 24px);
+    min-height: 54px;
+    margin: 4px auto 0;
+    padding: 5px 10px;
+    border-radius: 22px;
+  }
+
+  #root .landing-root .lp-nav.has-scrolled {
+    position: fixed !important;
+    top: 8px;
+    left: 50%;
+    z-index: 1000;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  #root .landing-root .lp-nav .lp-nav-links,
+  #root .landing-root .lp-nav.has-scrolled .lp-nav-links { display: none !important; }
+  #root .landing-root .lp-nav-owl-mark { flex-basis: 34px; width: 34px; height: 34px; gap: 3px; }
+  #root .landing-root .lp-nav-owl-mark i { width: 11px; height: 11px; border-width: 1.5px; }
+  #root .landing-root .lp-nav-owl-mark i::after { width: 4px; height: 4px; }
+  #root .landing-root .lp-nav .lp-logo { gap: 6px; }
+  #root .landing-root .lp-nav .lp-wordmark { font-size: clamp(14px, 4vw, 18px); }
+  #root .landing-root .lp-nav .lp-nav-actions { gap: 6px; }
+  #root .landing-root .lp-nav .lp-nav-actions .theme-toggle { flex-basis: 36px; width: 36px !important; height: 36px !important; border-radius: 11px !important; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary { min-width: 0; min-height: 36px; padding: 7px 10px; font-size: 11px; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try,
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-ghost { display: none !important; }
+}
+
+/* Pricing cards: white surfaces, blue accents, and red outer frames. */
+#root .landing-root .lp-pricing-section .lp-pricing-grid { gap: 22px; }
+
+#root .landing-root .lp-pricing-section .lp-plan-card,
+#root .landing-root .lp-pricing-section .lp-plan-card.is-featured {
+  border: 2px solid #2e5aac !important;
+  border-radius: 24px;
+  background: #fff !important;
+  box-shadow: 0 10px 28px rgba(46, 90, 172, .09) !important;
+  color: #263247 !important;
+  transform: none;
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-card:hover,
+#root .landing-root .lp-pricing-section .lp-plan-card.is-featured:hover {
+  border-color: #244b94 !important;
+  box-shadow: 0 16px 34px rgba(46, 90, 172, .16) !important;
+  transform: translateY(-5px);
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-name,
+#root .landing-root .lp-pricing-section .lp-plan-price {
+  color: #2e5aac !important;
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-sub { color: #667085 !important; }
+#root .landing-root .lp-pricing-section .lp-plan-price small { color: #788195 !important; }
+
+#root .landing-root .lp-pricing-section .lp-plan-features li {
+  color: #465267 !important;
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-features li::before {
+  border-color: rgba(46, 90, 172, .2) !important;
+  background: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+#root .landing-root .lp-pricing-section .check-icon {
+  display: inline-grid;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #2e5aac !important;
+  font-size: 12px;
+}
+
+#root .landing-root .lp-pricing-section .lp-discount-badge {
+  border: 1px solid rgba(46, 90, 172, .2) !important;
+  border-radius: 999px;
+  background: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+#root .landing-root .lp-pricing-section .lp-featured-ribbon {
+  z-index: 2;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 999px;
+  background: #2e5aac !important;
+  box-shadow: 0 6px 16px rgba(46, 90, 172, .24) !important;
+  color: #fff !important;
+  font-size: 12px;
+  letter-spacing: .01em;
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-btn,
+#root .landing-root .lp-pricing-section .lp-plan-card.is-featured .lp-plan-btn {
+  border: 1px solid #2e5aac !important;
+  border-radius: 999px;
+  background: #2e5aac !important;
+  box-shadow: 0 8px 18px rgba(46, 90, 172, .2) !important;
+  color: #fff !important;
+}
+
+#root .landing-root .lp-pricing-section .lp-plan-btn:hover,
+#root .landing-root .lp-pricing-section .lp-plan-card.is-featured .lp-plan-btn:hover {
+  border-color: #2e5aac !important;
+  background: #244b94 !important;
+  box-shadow: 0 10px 22px rgba(46, 90, 172, .26) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card.is-featured,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card.is-featured {
+  border-color: #2e5aac !important;
+  background: #fff !important;
+  box-shadow: 0 10px 28px rgba(46, 90, 172, .09) !important;
+  color: #263247 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card:hover,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card:hover {
+  border-color: #244b94 !important;
+  box-shadow: 0 16px 34px rgba(46, 90, 172, .16) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-name,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-name { color: #2e5aac !important; }
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-price,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-price { color: #2e5aac !important; }
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-sub,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-sub,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-price small,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-price small { color: #788195 !important; }
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-features li,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-features li { color: #465267 !important; }
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-features li::before,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-features li::before,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .check-icon,
+html.dark #root .landing-root .lp-pricing-section .check-icon {
+  border-color: rgba(46, 90, 172, .2) !important;
+  background: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-discount-badge,
+html.dark #root .landing-root .lp-pricing-section .lp-discount-badge {
+  border-color: rgba(46, 90, 172, .2) !important;
+  background: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-featured-ribbon,
+html.dark #root .landing-root .lp-pricing-section .lp-featured-ribbon {
+  border-color: rgba(255, 255, 255, .2);
+  background: #2e5aac !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-btn,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-btn,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card.is-featured .lp-plan-btn,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card.is-featured .lp-plan-btn {
+  border-color: #2e5aac !important;
+  background: #2e5aac !important;
+  color: #fff !important;
+}
+
+/* Home header and hero: match the supplied reference and fit tablet widths. */
+#root .landing-root {
+  background-size: 56px 56px !important;
+}
+
+#root .landing-root .lp-nav {
+  width: min(1664px, calc(100% - 64px));
+  min-height: 116px;
+  margin: 40px auto 0;
+  padding: 14px clamp(22px, 2.2vw, 40px);
+  grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr) !important;
+  column-gap: clamp(16px, 2vw, 32px);
+  border: 1px solid #dededb !important;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, .96) !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav.has-scrolled {
+  top: 12px;
+  width: min(1664px, calc(100% - 64px));
+  min-height: 76px;
+  padding: 8px clamp(18px, 2vw, 32px);
+  border: 1px solid #dededb !important;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .97) !important;
+}
+
+#root .landing-root .lp-nav .lp-logo {
+  position: relative;
+  grid-area: brand;
+  display: flex;
+  width: max-content;
+  min-width: 245px;
+  height: 80px;
+  align-items: flex-end;
+  justify-self: start;
+  padding: 0 0 5px;
+  gap: 0;
+}
+
+#root .landing-root .lp-nav-brand-mascot {
+  position: absolute;
+  z-index: 2;
+  top: -2px;
+  left: 52px;
+  display: block;
+  width: 58px;
+  height: 64px;
+  pointer-events: none;
+}
+
+#root .landing-root .lp-nav-brand-mascot .lp-brand-owl {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  overflow: visible;
+}
+
+#root .landing-root .lp-nav .lp-wordmark {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  font-size: clamp(28px, 2vw, 36px);
+  font-weight: 900;
+  letter-spacing: -.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-nav .lp-nav-links,
+#root .landing-root .lp-nav.has-scrolled .lp-nav-links {
+  grid-area: links;
+  justify-self: center;
+  gap: 8px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav .lp-nav-links a {
+  min-height: 46px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  color: #40567f !important;
+  font-size: clamp(14px, 1vw, 17px);
+  font-weight: 700;
+}
+
+#root .landing-root .lp-nav .lp-nav-links a.is-active,
+#root .landing-root .lp-nav .lp-nav-links a:hover,
+#root .landing-root .lp-nav .lp-nav-links a:focus-visible {
+  background: #eaf0ff;
+  color: #244f9d !important;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions {
+  grid-area: actions;
+  justify-self: end;
+  gap: 12px;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions .theme-toggle {
+  flex-basis: 48px;
+  width: 48px !important;
+  height: 48px !important;
+  border: 1px solid #dce5f4 !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary {
+  min-width: 180px;
+  min-height: 48px;
+  padding: 10px 20px;
+  border: 1px solid #2e5aac !important;
+  border-radius: 999px;
+  background: #2e5aac !important;
+  box-shadow: 0 8px 18px rgba(46, 90, 172, .15) !important;
+  font-size: 15px;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try {
+  min-width: 162px;
+  min-height: 48px;
+  padding: 9px 18px;
+  border: 1.5px solid #2e5aac !important;
+  border-radius: 999px;
+  background: #fff !important;
+  color: #244f9d !important;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary:hover { background: #244b94 !important; }
+#root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try:hover { background: #f2f5fc !important; }
+
+#root .landing-root #hero .lp-headline-composition .lp-hero-actions {
+  top: clamp(345px, 42vh, 395px);
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary {
+  width: 258px;
+  min-width: 258px;
+  height: 60px;
+  min-height: 60px;
+  padding: 8px 20px 8px 62px;
+  font-size: 20px;
+}
+
+#root .landing-root #hero .lp-hero-process {
+  top: clamp(385px, 45.2vh, 420px);
+}
+
+@media (min-width: 761px) and (max-width: 1023px) {
+  #root .landing-root .lp-nav,
+  #root .landing-root .lp-nav.has-scrolled {
+    width: calc(100% - 40px);
+    min-height: 82px;
+    margin-top: 20px;
+    padding: 10px 18px;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-areas: "brand actions" !important;
+    column-gap: 16px;
+    border-radius: 22px;
+  }
+
+  #root .landing-root .lp-nav.has-scrolled {
+    top: 10px;
+    min-height: 72px;
+    margin-top: 0;
+    padding: 8px 14px;
+  }
+
+  #root .landing-root .lp-nav .lp-logo {
+    min-width: 210px;
+    height: 60px;
+    padding-bottom: 5px;
+  }
+
+  #root .landing-root .lp-nav-brand-mascot {
+    top: -2px;
+    left: 43px;
+    width: 45px;
+    height: 50px;
+  }
+
+  #root .landing-root .lp-nav .lp-wordmark { font-size: clamp(24px, 3vw, 32px); }
+  #root .landing-root .lp-nav.has-scrolled .lp-wordmark { font-size: clamp(22px, 2.6vw, 28px); }
+  #root .landing-root .lp-nav.has-scrolled .lp-nav-brand-mascot { width: 40px; height: 44px; }
+
+  #root .landing-root .lp-nav .lp-nav-links,
+  #root .landing-root .lp-nav.has-scrolled .lp-nav-links,
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-ghost,
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try { display: none !important; }
+
+  #root .landing-root .lp-nav .lp-nav-actions { gap: 10px; }
+  #root .landing-root .lp-nav .lp-nav-actions .theme-toggle { flex-basis: 44px; width: 44px !important; height: 44px !important; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary { min-width: 160px; min-height: 44px; padding: 8px 16px; font-size: 14px; }
+
+  #root .landing-root .lp-nav .lp-menu-toggle {
+    order: 3;
+    display: inline-flex !important;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #dce5f4;
+    border-radius: 13px;
+    background: #fff;
+    color: #2e5aac;
+  }
+
+  #root .landing-root .lp-mobile-menu {
+    top: 112px;
+    right: 20px;
+    left: auto;
+    width: min(360px, calc(100vw - 40px));
+  }
+
+  #root .landing-root .lp-nav.has-scrolled ~ .lp-mobile-menu { top: 88px; }
+
+  #root .landing-root #hero.lp-hero-section {
+    min-height: max(660px, calc(100svh - 102px)) !important;
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  #root .landing-root #hero .lp-headline-composition {
+    top: clamp(125px, 17vh, 150px);
+    width: calc(100% - 32px);
+  }
+
+  #root .landing-root #hero .lp-headline-composition .lp-hero-title {
+    font-size: clamp(48px, 6.6vw, 72px);
+    line-height: 1.08;
+  }
+
+  #root .landing-root #hero .lp-headline-composition .lp-hero-actions { top: clamp(300px, 37vh, 345px); }
+  #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary { width: 238px; min-width: 238px; height: 58px; min-height: 58px; font-size: 18px; }
+  #root .landing-root #hero .lp-hero-process { top: clamp(360px, 44vh, 410px); }
+
+  #root .landing-root #hero .lp-home-doodle--co2 { top: 48px; left: 3%; width: 82px; }
+  #root .landing-root #hero .lp-home-doodle--atom { top: 56px; left: 18%; width: 74px; }
+  #root .landing-root #hero .lp-home-schools { top: 52px; width: 210px; transform: translateX(-50%) scale(.86); }
+  #root .landing-root #hero .lp-home-doodle--methane { top: 58px; right: 14%; width: 68px; }
+  #root .landing-root #hero .lp-home-doodle--flask { top: 48px; right: 2%; width: 62px; }
+  #root .landing-root #hero .lp-home-equation--wave { top: 190px; left: 3%; }
+  #root .landing-root #hero .lp-home-equation--pressure { top: 310px; right: 3%; }
+  #root .landing-root #hero .lp-home-doodle--logistic { top: 490px; left: 3%; width: 88px; }
+  #root .landing-root #hero .lp-home-doodle--lens { top: 490px; left: 22%; width: 82px; }
+  #root .landing-root #hero .lp-home-doodle--radian { top: 486px; right: 20%; width: 72px; }
+  #root .landing-root #hero .lp-home-doodle--probability { top: 486px; right: 3%; width: 74px; }
+  #root .landing-root #hero .lp-home-doodle--circuit { top: 560px; left: 15%; width: 78px; }
+  #root .landing-root #hero .lp-home-doodle--sine { top: 560px; right: 12%; width: 86px; }
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-nav,
+  #root .landing-root .lp-nav.has-scrolled {
+    width: calc(100% - 24px);
+    min-height: 58px;
+    margin: 10px auto 0;
+    padding: 5px 10px;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-areas: "brand actions" !important;
+    border-radius: 20px;
+  }
+
+  #root .landing-root .lp-nav.has-scrolled { margin-top: 0; }
+  #root .landing-root .lp-nav .lp-logo { min-width: 0; height: 46px; padding-bottom: 4px; }
+  #root .landing-root .lp-nav-brand-mascot { top: -2px; left: 30px; width: 34px; height: 38px; }
+  #root .landing-root .lp-nav .lp-wordmark { font-size: clamp(16px, 4.2vw, 21px); }
+  #root .landing-root .lp-nav .lp-nav-actions { gap: 6px; }
+  #root .landing-root .lp-nav .lp-nav-actions .theme-toggle { flex-basis: 36px; width: 36px !important; height: 36px !important; border-radius: 11px !important; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary { min-width: 0; min-height: 36px; padding: 7px 10px; font-size: 11px; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try,
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-ghost { display: none !important; }
+  #root .landing-root .lp-nav .lp-menu-toggle { order: 3; display: inline-flex !important; width: 36px; height: 36px; border-color: #dce5f4; border-radius: 11px; color: #2e5aac; }
+  #root .landing-root .lp-mobile-menu { top: 76px; }
+  #root .landing-root .lp-nav.has-scrolled ~ .lp-mobile-menu { top: 70px; }
+  #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary { width: min(248px, calc(100vw - 76px)); min-width: 0; height: 58px; min-height: 58px; font-size: 17px; }
+}
+
+@media (min-width: 1280px) {
+  #root .landing-root .lp-nav {
+    width: min(1664px, 87vw);
+    min-height: clamp(88px, 6.05vw, 116px);
+    margin-top: clamp(30px, 2.1vw, 40px);
+    padding-right: clamp(24px, 1.7vw, 32px);
+    padding-left: clamp(24px, 1.7vw, 32px);
+    grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+    column-gap: clamp(14px, 1.7vw, 32px);
+  }
+
+  #root .landing-root .lp-nav.has-scrolled {
+    width: min(1664px, 87vw);
+    min-height: 76px;
+    margin-top: 0;
+  }
+
+  #root .landing-root .lp-nav .lp-logo {
+    min-width: clamp(210px, 12.8vw, 245px);
+    height: clamp(61px, 4.17vw, 80px);
+  }
+
+  #root .landing-root .lp-nav-brand-mascot {
+    left: clamp(43px, 2.7vw, 52px);
+    width: clamp(44px, 3.02vw, 58px);
+    height: clamp(49px, 3.34vw, 64px);
+  }
+
+  #root .landing-root .lp-nav .lp-wordmark { font-size: clamp(26px, 1.8vw, 35px); }
+  #root .landing-root .lp-nav.has-scrolled .lp-logo { height: 58px; min-width: clamp(200px, 12vw, 230px); }
+  #root .landing-root .lp-nav.has-scrolled .lp-nav-brand-mascot { width: 42px; height: 46px; }
+  #root .landing-root .lp-nav.has-scrolled .lp-wordmark { font-size: clamp(24px, 1.6vw, 31px); }
+
+  #root .landing-root .lp-nav .lp-nav-links { gap: clamp(4px, .42vw, 8px); }
+  #root .landing-root .lp-nav .lp-nav-links a {
+    min-height: clamp(36px, 2.4vw, 46px);
+    padding: 9px clamp(14px, 1.05vw, 20px);
+    font-size: clamp(13px, .9vw, 17px);
+  }
+
+  #root .landing-root .lp-nav .lp-nav-actions { gap: clamp(8px, .63vw, 12px); }
+  #root .landing-root .lp-nav .lp-nav-actions .theme-toggle {
+    flex-basis: clamp(38px, 2.5vw, 48px);
+    width: clamp(38px, 2.5vw, 48px) !important;
+    height: clamp(38px, 2.5vw, 48px) !important;
+    border-radius: clamp(12px, .75vw, 14px) !important;
+  }
+
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary {
+    min-width: clamp(136px, 9.4vw, 180px);
+    min-height: clamp(36px, 2.5vw, 48px);
+    padding: 8px clamp(12px, 1.05vw, 20px);
+    font-size: clamp(12px, .78vw, 15px);
+  }
+
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-try {
+    min-width: clamp(120px, 8.4vw, 162px);
+    min-height: clamp(36px, 2.5vw, 48px);
+    padding: 8px clamp(12px, .95vw, 18px);
+    font-size: clamp(12px, .73vw, 14px);
+  }
+
+  #root .landing-root #hero.lp-hero-section {
+    min-height: clamp(580px, 37.5vw, 720px) !important;
+  }
+
+  #root .landing-root #hero .lp-headline-composition {
+    top: clamp(130px, 9vw, 173px);
+  }
+
+  #root .landing-root #hero .lp-headline-composition .lp-hero-title {
+    font-size: clamp(42px, 5.2vw, 90px);
+  }
+
+  #root .landing-root #hero .lp-headline-composition .lp-hero-actions {
+    top: clamp(290px, 19.6vw, 377px);
+  }
+
+  #root .landing-root #hero .lp-hero-mascot-companion {
+    width: clamp(38px, 2.5vw, 48px);
+    height: clamp(38px, 2.5vw, 48px);
+  }
+
+  #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary {
+    width: clamp(198px, 13.4vw, 258px);
+    min-width: clamp(198px, 13.4vw, 258px);
+    height: clamp(46px, 3.125vw, 60px);
+    min-height: clamp(46px, 3.125vw, 60px);
+    padding-left: clamp(50px, 3.23vw, 62px);
+    font-size: clamp(16px, 1.05vw, 20px);
+  }
+
+  #root .landing-root #hero .lp-hero-process {
+    top: clamp(314px, 21.5vw, 414px);
+  }
+}
+
+/* Final home navbar pass: use the reference wordmark and compact moon control. */
+#root .landing-root .lp-nav.lp-nav--reference {
+  position: sticky !important;
+  top: 14px;
+  z-index: 1000;
+  display: grid !important;
+  grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+  grid-template-areas: "brand links actions" !important;
+  align-items: center;
+  width: min(1500px, calc(100% - 96px));
+  min-height: clamp(76px, 7vw, 126px);
+  margin: clamp(0px, .5vw, 9px) auto 0;
+  padding: 10px clamp(16px, 2.2vw, 40px);
+  column-gap: clamp(14px, 1.7vw, 32px);
+  border: 1px solid #dededb !important;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, .97) !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+  position: fixed !important;
+  top: 12px;
+  left: 50%;
+  width: min(1500px, calc(100% - 96px));
+  min-height: 76px;
+  margin: 0;
+  padding: 8px clamp(18px, 2vw, 32px);
+  transform: translateX(-50%);
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-logo {
+  width: max-content;
+  min-width: clamp(160px, 13.6vw, 245px);
+  height: clamp(58px, 4.6vw, 82px);
+  align-items: flex-end;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot {
+  top: -2px;
+  left: clamp(36px, 2.65vw, 48px);
+  width: clamp(62px, 5.6vw, 100px);
+  height: clamp(62px, 5.8vw, 104px);
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-wordmark {
+  padding: 0;
+  font-size: clamp(26px, 1.8vw, 35px);
+  font-weight: 900;
+  letter-spacing: -.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-links {
+  grid-area: links;
+  justify-self: center;
+  display: flex !important;
+  flex-wrap: nowrap;
+  gap: clamp(4px, .42vw, 8px);
+  width: max-content;
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a {
+  min-height: 44px;
+  padding: 9px clamp(14px, 1.05vw, 20px);
+  border-radius: 999px;
+  color: #40567f !important;
+  font-size: clamp(13px, .9vw, 17px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a.is-active,
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:hover,
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:focus-visible {
+  background: #eaf0ff !important;
+  color: #244f9d !important;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions {
+  grid-area: actions;
+  justify-self: end;
+  gap: clamp(8px, .63vw, 12px);
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle {
+  flex: 0 0 clamp(40px, 3.1vw, 48px);
+  width: clamp(40px, 3.1vw, 48px) !important;
+  height: clamp(40px, 3.1vw, 48px) !important;
+  min-height: clamp(36px, 2.5vw, 48px) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid #dce5f4 !important;
+  border-radius: 13px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #2e5aac !important;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle .theme-toggle-moon {
+  width: 19px;
+  height: 19px;
+  color: #2e5aac !important;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle .theme-toggle-moon path {
+  fill-opacity: .9;
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-primary {
+  min-width: clamp(116px, 10vw, 180px);
+}
+
+#root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try {
+  min-width: clamp(104px, 9vw, 162px);
+}
+
+@media (min-width: 761px) and (max-width: 1023px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-areas: "brand actions" !important;
+    width: calc(100% - 40px);
+    min-height: 82px;
+    margin: 20px auto 0;
+    padding: 10px 18px;
+    border-radius: 22px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    position: fixed !important;
+    top: 10px;
+    left: 50%;
+    min-height: 72px;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo { min-width: 210px; height: 60px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot { left: 38px; width: 56px; height: 64px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark { font-size: clamp(24px, 3vw, 32px); }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links { display: none !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-ghost,
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try { display: none !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle { width: 44px !important; height: 44px !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-menu-toggle { display: inline-flex !important; }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+    grid-template-areas: "brand links actions" !important;
+    width: calc(100% - 12px);
+    min-height: 82px;
+    margin: 0 auto;
+    padding: 8px 20px;
+    column-gap: 14px;
+    border-radius: 22px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    position: fixed !important;
+    top: 10px;
+    left: 50%;
+    min-height: 66px;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo { min-width: 160px; height: 58px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot { left: clamp(32px, 2.7vw, 48px); width: clamp(52px, 4.7vw, 84px); height: clamp(56px, 5.3vw, 95px); }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark { font-size: clamp(20px, 2.1vw, 25px); }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links { display: flex !important; gap: 2px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a { min-height: 38px; padding: 7px clamp(9px, 1vw, 13px); font-size: clamp(12px, 1.15vw, 14px); }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions { gap: 8px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle { width: 36px !important; height: 36px !important; flex-basis: 36px; border-radius: 11px !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-primary,
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try { min-height: 38px; padding: 7px 12px; font-size: 12px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try { display: inline-flex !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-menu-toggle { display: none !important; }
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    position: sticky !important;
+    top: 8px;
+    left: auto;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-areas: "brand actions" !important;
+    width: calc(100% - 24px);
+    min-height: 58px;
+    margin: 10px auto 0;
+    padding: 5px 10px;
+    border-radius: 20px;
+    transform: none;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo { min-width: 0; height: 46px; padding-bottom: 4px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot { left: 26px; width: 42px; height: 48px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark { font-size: clamp(16px, 4.2vw, 21px); }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links { display: none !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions { gap: 6px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle { width: 36px !important; height: 36px !important; border-radius: 11px !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-ghost,
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try { display: none !important; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-menu-toggle { display: inline-flex !important; width: 36px; height: 36px; }
+}
+
+/* Center the school ticker under the invitation instead of stretching it edge to edge. */
+#root .landing-root .lp-bottom-cta-logos {
+  width: min(100%, 1120px);
+  max-width: 1120px;
+  margin: 32px auto 0;
+}
+
+#root .landing-root .lp-bottom-cta-logo-viewport {
+  padding: 4px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+
+#root .landing-root .lp-bottom-cta-logo-group {
+  width: min(1120px, calc(100vw - 48px));
+  min-width: 0;
+  flex: 0 0 min(1120px, calc(100vw - 48px));
+  justify-content: center;
+  gap: clamp(12px, 1.8vw, 24px);
+  padding: 0 16px;
+}
+
+#root .landing-root .lp-bottom-cta-logo-item {
+  width: clamp(148px, 13vw, 180px);
+  min-height: 68px;
+  flex-basis: clamp(148px, 13vw, 180px);
+  gap: 10px;
+  padding: 7px 12px;
+}
+
+#root .landing-root .lp-bottom-cta-logo-item img {
+  width: 46px;
+  height: 46px;
+  flex-basis: 46px;
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-bottom-cta-logos { width: 100%; margin: 26px auto 0; }
+  #root .landing-root .lp-bottom-cta-logo-group {
+    width: calc(100vw - 28px);
+    flex-basis: calc(100vw - 28px);
+    justify-content: center;
+    gap: 12px;
+    padding: 0 12px;
+  }
+  #root .landing-root .lp-bottom-cta-logo-item {
+    width: 146px;
+    min-height: 62px;
+    flex-basis: 146px;
+    gap: 9px;
+    padding: 6px 10px;
+  }
+  #root .landing-root .lp-bottom-cta-logo-item img { width: 42px; height: 42px; flex-basis: 42px; }
+  #root .landing-root .lp-bottom-cta-logo-item span { font-size: 14px; }
+}
+
+/* Dark-theme surfaces and copy for the roadmap feature cards. */
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-copy,
+html.dark #root .landing-root #methodologie .lp-roadmap-copy {
+  border: 1px solid var(--border) !important;
+  border-radius: 16px;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-copy h3,
+html.dark #root .landing-root #methodologie .lp-roadmap-copy h3 {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-step-number,
+html.dark #root .landing-root #methodologie .lp-roadmap-step-number {
+  color: #ffad52 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-step-kicker,
+html.dark #root .landing-root #methodologie .lp-roadmap-step-kicker {
+  color: #ffad52 !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-pills span,
+html.dark #root .landing-root #methodologie .lp-roadmap-pills span {
+  border-color: rgba(255, 173, 82, .55) !important;
+  background: var(--surface-2) !important;
+  color: #ffd09a !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-subtitle,
+html.dark #root .landing-root #methodologie .lp-roadmap-subtitle {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-preview,
+html.dark #root .landing-root #methodologie .lp-roadmap-preview {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-browserbar,
+html.dark #root .landing-root #methodologie .lp-roadmap-browserbar {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-image,
+html.dark #root .landing-root #methodologie .lp-roadmap-image {
+  background: var(--surface) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie :is(.lp-mock-calendar-head, .lp-mock-quiz-head, .lp-mock-dashboard-head),
+html.dark #root .landing-root #methodologie :is(.lp-mock-calendar-head, .lp-mock-quiz-head, .lp-mock-dashboard-head) {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-mock-calendar-grid span:not(.is-marked),
+html.dark #root .landing-root #methodologie .lp-mock-calendar-grid span:not(.is-marked) {
+  background: var(--surface-2) !important;
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-mock-calendar-grid span.is-marked,
+html.dark #root .landing-root #methodologie .lp-mock-calendar-grid span.is-marked {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-mock-legend,
+html.dark #root .landing-root #methodologie .lp-mock-legend {
+  color: var(--text-secondary) !important;
+}
+
+/* Pricing cards use the dark theme surfaces and readable copy in dark mode. */
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card {
+  border-color: #3d65ad !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card.is-featured,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card.is-featured {
+  border-color: var(--accent) !important;
+  background: linear-gradient(180deg, #202f47 0%, #17243a 100%) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-card:hover,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-name,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-name,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-price,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-price {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-sub,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-sub,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-price small,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-price small,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-features li,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-features li {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-plan-features li::before,
+html.dark #root .landing-root .lp-pricing-section .lp-plan-features li::before,
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .check-icon,
+html.dark #root .landing-root .lp-pricing-section .check-icon {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-2) !important;
+  color: var(--primary) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-discount-badge,
+html.dark #root .landing-root .lp-pricing-section .lp-discount-badge {
+  border-color: rgba(245, 158, 11, .42) !important;
+  background: rgba(245, 158, 11, .12) !important;
+  color: #ffd18a !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-pricing-section .lp-featured-ribbon,
+html.dark #root .landing-root .lp-pricing-section .lp-featured-ribbon {
+  border-color: rgba(255, 255, 255, .2) !important;
+  background: var(--primary) !important;
+  color: #0f172a !important;
+}
+
+/* Show roadmap copy directly on the page, without a card surface. */
+#root .landing-root #methodologie .lp-roadmap-copy {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-copy,
+html.dark #root .landing-root #methodologie .lp-roadmap-copy {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Dark-mode layout for the invitation: direct page content and a stable school row. */
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card {
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-kicker {
+  border: 1px solid var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--accent) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-card h2 {
+  max-width: 1000px;
+  color: var(--text) !important;
+  font-size: clamp(36px, 4vw, 60px);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logos,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logos {
+  width: min(100%, 1120px);
+  max-width: 1120px;
+  margin: 36px auto 0;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-viewport,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-viewport {
+  overflow: hidden;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-track,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-track {
+  width: max-content;
+  animation: lp-bottom-cta-logo-scroll 32s linear infinite !important;
+  will-change: transform;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-group,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-group {
+  width: min(1120px, calc(100vw - 48px));
+  min-width: 0;
+  flex: 0 0 min(1120px, calc(100vw - 48px));
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-item,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-item {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-item span,
+html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-item span {
+  color: var(--text) !important;
+}
+
+@media (max-width: 760px) {
+  html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section,
+  html.dark #root .landing-root .lp-bottom-cta-section {
+    padding: 48px 14px 32px;
+  }
+
+  html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logos,
+  html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logos {
+    width: 100%;
+    margin: 28px auto 0;
+  }
+
+  html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-group,
+  html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-group {
+    width: max-content;
+    min-width: max-content;
+    flex: 0 0 max-content;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-track,
+  html.dark #root .landing-root .lp-bottom-cta-section .lp-bottom-cta-logo-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Keep the dark navbar links visually separate without a frame around the group. */
+html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links,
+html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Roadmap step labels stay as plain text in dark mode on every step. */
+html[data-theme="dark"] #root .landing-root #methodologie .lp-roadmap-step-kicker,
+html.dark #root .landing-root #methodologie .lp-roadmap-step-kicker {
+  width: fit-content !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Keep the home navbar compact before and after it becomes sticky. */
+@media (min-width: 1280px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    min-height: 76px;
+    padding: 8px clamp(18px, 2vw, 32px);
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo {
+    min-width: clamp(160px, 12vw, 220px);
+    height: 58px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot {
+    width: 48px;
+    height: 52px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark {
+    font-size: clamp(22px, 1.6vw, 30px);
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a {
+    min-height: 38px;
+    padding: 7px clamp(10px, .9vw, 16px);
+    font-size: clamp(12px, .8vw, 15px);
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle {
+    width: 40px !important;
+    height: 40px !important;
+    flex-basis: 40px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-primary,
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-try,
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-actions > .lp-btn-ghost {
+    min-height: 38px;
+    padding: 8px clamp(12px, .9vw, 16px);
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    min-height: 66px;
+    padding: 6px 20px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo { height: 50px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot { width: 42px; height: 46px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark { font-size: 22px; }
+}
+
+@media (min-width: 761px) and (max-width: 1023px) {
+  #root .landing-root .lp-nav.lp-nav--reference,
+  #root .landing-root .lp-nav.lp-nav--reference.has-scrolled {
+    min-height: 72px;
+    padding: 8px 18px;
+  }
+
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo { height: 54px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-nav-brand-mascot { width: 42px; height: 46px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-wordmark { font-size: 24px; }
+  #root .landing-root .lp-nav.lp-nav--reference .lp-home-theme-toggle { width: 40px !important; height: 40px !important; }
+}
+
+/* Use the supplied E-CONCOURS artwork as the navbar's single logo. */
+#root .landing-root .lp-nav.lp-nav--reference .lp-logo-image {
+  display: block;
+  width: clamp(150px, 13vw, 200px);
+  max-width: 100%;
+  height: auto;
+  max-height: 64px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-nav.lp-nav--reference .lp-logo-image {
+    width: clamp(116px, 36vw, 142px);
+    max-width: 100%;
+    max-height: 46px;
+  }
+}
+
+/* Keep the centered "Vos étapes" eyebrow free of a full-width strip. */
+html[data-theme="dark"] #root .landing-root .lp-three-steps-eyebrow,
+html.dark #root .landing-root .lp-three-steps-eyebrow {
+  width: fit-content !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Refined hero CTA: compact proportions, clear focus, and restrained motion. */
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary {
+  width: 238px !important;
+  min-width: 238px !important;
+  height: 60px !important;
+  min-height: 60px !important;
+  padding: 0 22px 0 64px !important;
+  border: 1px solid rgba(255, 255, 255, .2) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #315fae, #244b94) !important;
+  color: #fff !important;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  box-shadow: 0 8px 18px rgba(27, 60, 120, .24) !important;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover {
+  border-color: rgba(255, 255, 255, .3) !important;
+  background: linear-gradient(135deg, #3a6bbd, #2c58a3) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 11px 22px rgba(27, 60, 120, .3) !important;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 12px rgba(27, 60, 120, .22) !important;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:focus-visible {
+  outline: 3px solid rgba(96, 155, 255, .6) !important;
+  outline-offset: 3px;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary::after {
+  display: inline-block !important;
+  margin-left: 10px;
+  color: #fff;
+  content: "\279C" !important;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  -webkit-text-stroke: .35px currentColor;
+  text-shadow: 0 0 1px rgba(255, 255, 255, .55);
+  transition: transform 160ms ease;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover::after {
+  transform: translateX(3px);
+}
+
+/* Raise the pressure formula pill by roughly 3 cm. */
+#root .landing-root #hero .lp-home-equation--pressure {
+  transform: translateY(-3cm);
+}
+
+@media (max-width: 760px) {
+  #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary {
+    width: min(238px, calc(100vw - 36px)) !important;
+    min-width: 0 !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    padding-left: 58px !important;
+    font-size: 15px;
+  }
 }
 

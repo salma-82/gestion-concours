@@ -3,7 +3,7 @@ package com.gestionconcours.controller;
 import com.gestionconcours.model.StudentMistake;
 import com.gestionconcours.model.User;
 import com.gestionconcours.repository.StudentMistakeRepository;
-import com.gestionconcours.service.AuthSessionService;
+import com.gestionconcours.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,40 +24,36 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class StudentMistakeControllerTest {
     @Mock private StudentMistakeRepository repository;
-    @Mock private AuthSessionService auth;
+    @Mock private UserRepository users;
 
     private StudentMistakeController controller;
     private User student;
 
     @BeforeEach
     void setUp() {
-        controller = new StudentMistakeController(repository, auth);
+        controller = new StudentMistakeController(repository, users);
         student = new User();
         student.setId(12L);
-        student.setNom("Étudiant");
+        student.setNom("Etudiant");
         student.setPrenom("Lina");
         student.setEmail("lina@example.test");
         student.setRole("CLIENT");
         student.setActive(1);
-        lenient().when(auth.resolve("student-token")).thenReturn(Optional.of(student));
     }
 
     @Test
-    void manualCourseMistakeIsSavedAndUpdatedIndependentlyAcrossAttempts() {
-        StudentMistake existingManual = manualMistake();
-        when(repository.findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyTrueOrderByCreatedAtDesc(
-                12L, "course-3", "q-4", "Exercice")).thenReturn(List.of(existingManual));
-        when(repository.findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyIsNullOrderByCreatedAtDesc(
-                12L, "course-3", "q-4", "Exercice")).thenReturn(List.of());
+    void savesMistakeForTheRequestedStudentAndAttempt() {
+        when(users.findById(12L)).thenReturn(Optional.of(student));
+        when(repository.findByStudentIdAndResourceIdAndAttemptIdAndQuestionId(
+                12L, "course-3", "attempt-2", "q-4")).thenReturn(Optional.empty());
         when(repository.save(any(StudentMistake.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = controller.saveMistakesBatch("Bearer student-token", Map.of("mistakes", List.of(manualPayload("attempt-2"))));
+        var response = controller.saveMistakesBatch(batch("attempt-2"));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         ArgumentCaptor<StudentMistake> captor = ArgumentCaptor.forClass(StudentMistake.class);
         verify(repository).save(captor.capture());
         StudentMistake saved = captor.getValue();
-        assertSame(existingManual, saved);
         assertEquals(12L, saved.getStudentId());
         assertSame(student, saved.getUser());
         assertEquals("Cours de suites", saved.getResourceTitle());
@@ -65,75 +61,71 @@ class StudentMistakeControllerTest {
         assertEquals("Suites", saved.getChapter());
         assertEquals("Nouvelle explication", saved.getExplanation());
         assertEquals("attempt-2", saved.getAttemptId());
-        assertTrue(saved.getSavedManually());
         assertTrue(saved.isSavedForReview());
-        verify(repository, never()).findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyFalse(
-                any(), any(), any(), any());
     }
 
     @Test
-    void automaticAttemptUpsertDoesNotChangeManualCopyOfTheSameQuestion() {
-        StudentMistake savedManual = manualMistake();
-        StudentMistake automatic = new StudentMistake();
-        automatic.setId(22L);
-        automatic.setStudentId(12L);
-        automatic.setSourceType("Exercice");
-        automatic.setResourceId("course-3");
-        automatic.setQuestionId("q-4");
-        automatic.setSavedManually(false);
-        automatic.setSavedForReview(true);
-        when(repository.findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyFalse(
-                12L, "course-3", "q-4", "Exercice")).thenReturn(List.of(automatic));
+    void automaticMistakesAreStoredOutsideTheReviewList() {
+        when(users.findById(12L)).thenReturn(Optional.of(student));
+        when(repository.findByStudentIdAndResourceIdAndAttemptIdAndQuestionId(
+                12L, "course-3", "attempt-auto", "q-4")).thenReturn(Optional.empty());
         when(repository.save(any(StudentMistake.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Map<String, Object> request = batch("attempt-auto");
 
-        var response = controller.saveAutomaticMistake("Bearer student-token", Map.of("mistakes", List.of(manualPayload("contest-attempt-1"))));
+        var response = controller.saveAutomaticMistake(request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(savedManual.getSavedManually());
-        assertTrue(savedManual.isSavedForReview());
-        assertFalse(automatic.getSavedManually());
-        assertTrue(automatic.isSavedForReview());
-        assertEquals("contest-attempt-1", automatic.getAttemptId());
-        verify(repository, never()).findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyTrueOrderByCreatedAtDesc(
-                any(), any(), any(), any());
+        ArgumentCaptor<StudentMistake> captor = ArgumentCaptor.forClass(StudentMistake.class);
+        verify(repository).save(captor.capture());
+        assertFalse(captor.getValue().isSavedForReview());
+        assertEquals("attempt-auto", captor.getValue().getAttemptId());
     }
 
     @Test
-    void explicitDeleteRemovesManualDuplicatesButRejectsAutomaticRows() {
-        StudentMistake selected = manualMistake();
-        selected.setId(31L);
-        when(repository.findById(31L)).thenReturn(Optional.of(selected));
-        when(repository.findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyTrueOrderByCreatedAtDesc(
-                12L, "course-3", "q-4", "Exercice")).thenReturn(List.of(selected));
-        when(repository.findByStudentIdAndResourceIdAndQuestionIdAndSourceTypeAndSavedManuallyIsNullOrderByCreatedAtDesc(
-                12L, "course-3", "q-4", "Exercice")).thenReturn(List.of());
+    void resolvesMistakesForTheQuestion() {
+        StudentMistake mistake = new StudentMistake();
+        mistake.setSavedForReview(true);
+        when(repository.findByStudentIdAndResourceIdAndQuestionId(12L, "course-3", "q-4"))
+                .thenReturn(List.of(mistake));
 
-        var deleted = controller.deleteStudentMistake(31L, "Bearer student-token", null);
+        var response = controller.resolveMistake(Map.of(
+                "studentId", 12L, "resourceId", "course-3", "questionId", "q-4"));
 
-        assertEquals(HttpStatus.OK, deleted.getStatusCode());
-        verify(repository).deleteByIdAndStudentId(31L, 12L);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertFalse(mistake.isSavedForReview());
+        verify(repository).saveAll(List.of(mistake));
+    }
 
-        StudentMistake automatic = new StudentMistake();
-        automatic.setId(32L);
-        automatic.setStudentId(12L);
-        automatic.setSavedManually(false);
-        when(repository.findById(32L)).thenReturn(Optional.of(automatic));
-        var rejected = controller.deleteStudentMistake(32L, "Bearer student-token", null);
+    @Test
+    void deleteChecksTheStudentIdWhenItIsProvided() {
+        StudentMistake mistake = new StudentMistake();
+        mistake.setId(31L);
+        mistake.setStudentId(12L);
+        when(repository.findById(31L)).thenReturn(Optional.of(mistake));
+
+        var rejected = controller.deleteStudentMistake(31L, 15L);
+        var deleted = controller.deleteStudentMistake(31L, 12L);
 
         assertEquals(HttpStatus.FORBIDDEN, rejected.getStatusCode());
-        verify(repository, never()).deleteByIdAndStudentId(32L, 12L);
+        assertEquals(HttpStatus.OK, deleted.getStatusCode());
+        verify(repository).deleteById(31L);
     }
 
     @Test
-    void refusesMistakeReadsAndWritesWithoutAnAuthenticatedStudent() {
-        when(auth.resolve(null)).thenReturn(Optional.empty());
-
-        assertEquals(HttpStatus.UNAUTHORIZED, controller.getStudentMistakes(null, null, "all").getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, controller.saveMistakesBatch(null, Map.of("mistakes", List.of(manualPayload("a")))).getStatusCode());
-        verifyNoInteractions(repository);
+    void refusesReadsAndWritesWithoutAStudentId() {
+        assertEquals(HttpStatus.BAD_REQUEST, controller.getStudentMistakes(null).getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, controller.saveMistakesBatch(Map.of("mistakes", List.of(payload("a")))).getStatusCode());
+        verifyNoInteractions(repository, users);
     }
 
-    private Map<String, Object> manualPayload(String attemptId) {
+    private Map<String, Object> batch(String attemptId) {
+        Map<String, Object> request = new HashMap<>();
+        request.put("studentId", 12L);
+        request.put("mistakes", List.of(payload(attemptId)));
+        return request;
+    }
+
+    private Map<String, Object> payload(String attemptId) {
         Map<String, Object> item = new HashMap<>();
         item.put("sourceType", "Exercice");
         item.put("resourceId", "course-3");
@@ -148,19 +140,5 @@ class StudentMistakeControllerTest {
         item.put("explanation", "Nouvelle explication");
         item.put("attemptId", attemptId);
         return item;
-    }
-
-    private StudentMistake manualMistake() {
-        StudentMistake mistake = new StudentMistake();
-        mistake.setId(21L);
-        mistake.setStudentId(12L);
-        mistake.setUser(student);
-        mistake.setSourceType("Exercice");
-        mistake.setResourceId("course-3");
-        mistake.setQuestionId("q-4");
-        mistake.setAttemptId("attempt-1");
-        mistake.setSavedManually(true);
-        mistake.setSavedForReview(true);
-        return mistake;
     }
 }

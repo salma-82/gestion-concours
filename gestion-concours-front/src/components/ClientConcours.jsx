@@ -392,7 +392,7 @@ export default function ClientConcours() {
   if (!requestedEcole && !viewerModal.isOpen) return null;
 
   return (
-    <div style={{ minHeight: '100%', backgroundColor: '#f8fafc', padding: viewerModal.isOpen ? '0' : requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: '#0f172a' }}>
+    <div style={{ minHeight: '100%', backgroundColor: 'var(--bg, #f8fafc)', padding: viewerModal.isOpen ? '0' : requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: 'var(--text, #0f172a)' }}>
       {!viewerModal.isOpen && (
       <>
 
@@ -407,9 +407,9 @@ export default function ClientConcours() {
         gap: '8px',
         marginBottom: '22px',
         padding: '12px 18px',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--surface, #ffffff)',
         borderRadius: '12px',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--border, #e2e8f0)',
         fontSize: '13.5px',
         boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
       }}>
@@ -440,7 +440,7 @@ export default function ClientConcours() {
 
         {selectedEcole && (
           <>
-            <span style={{ color: '#94a3b8', fontWeight: 600 }}>›</span>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)', fontWeight: 600 }}>›</span>
             <button
               onClick={() => {
                 setSelectedMatiere(ALL_MATIERES);
@@ -468,15 +468,15 @@ export default function ClientConcours() {
 
         {selectedMatiere && (
           <>
-            <span style={{ color: '#94a3b8', fontWeight: 600 }}>›</span>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)', fontWeight: 600 }}>›</span>
             <span style={{
-              color: '#0f172a',
+              color: 'var(--text, #0f172a)',
               fontWeight: 800,
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
               padding: '4px 8px',
-              backgroundColor: '#f1f5f9',
+              backgroundColor: 'var(--surface-2, #f1f5f9)',
               borderRadius: '6px'
             }}>
               <span>{getMatiereTheme(selectedMatiere).icon}</span> {selectedMatiere}
@@ -505,7 +505,7 @@ export default function ClientConcours() {
           <button
             onClick={fetchAllConcours}
             style={{
-              background: '#ffffff',
+              background: 'var(--surface, #ffffff)',
               border: '1px solid #fca5a5',
               padding: '6px 14px',
               borderRadius: '8px',
@@ -523,11 +523,11 @@ export default function ClientConcours() {
       {/* État de chargement */}
       {loading ? (
         <div style={{
-          background: '#ffffff',
+          background: 'var(--surface, #ffffff)',
           borderRadius: '20px',
           padding: '80px 20px',
           textAlign: 'center',
-          border: '1px solid #e2e8f0'
+          border: '1px solid var(--border, #e2e8f0)'
         }}>
           <div style={{
             display: 'inline-block',
@@ -540,10 +540,10 @@ export default function ClientConcours() {
             marginBottom: '16px'
           }} />
           <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text, #1e293b)' }}>
             Chargement des données...
           </div>
-          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '4px' }}>
             Récupération des écoles et concours ajoutés par l'administrateur
           </div>
         </div>
@@ -566,7 +566,7 @@ export default function ClientConcours() {
               <h1 style={{
                 fontSize: '22px',
                 fontWeight: 800,
-                color: '#0f172a',
+                color: 'var(--text, #0f172a)',
                 margin: 0,
                 letterSpacing: '-0.3px',
                 display: 'flex',
@@ -585,7 +585,7 @@ export default function ClientConcours() {
                   {filteredEcoles.length} école{filteredEcoles.length > 1 ? 's' : ''}
                 </span>
               </h1>
-              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13.5px' }}>
+              <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '13.5px' }}>
                 Cliquez sur une école pour afficher les matières et épreuves publiées par l'administration.
               </p>
             </div>
@@ -593,7 +593,7 @@ export default function ClientConcours() {
             {/* Barre de recherche d'école */}
             {ecolesSummary.length > 0 && (
               <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>🔍</span>
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)' }}>🔍</span>
                 <input
                   type="text"
                   placeholder="Rechercher une école..."
@@ -605,7 +605,7 @@ export default function ClientConcours() {
                     borderRadius: '10px',
                     border: '1.5px solid #cbd5e1',
                     fontSize: '13.5px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'var(--surface, #ffffff)',
                     outline: 'none',
                     boxSizing: 'border-box'
                   }}
@@ -617,17 +617,17 @@ export default function ClientConcours() {
           {/* Aucune école ajoutée par l'admin */}
           {filteredEcoles.length === 0 ? (
             <div style={{
-              background: '#ffffff',
+              background: 'var(--surface, #ffffff)',
               borderRadius: '20px',
               padding: '70px 20px',
               textAlign: 'center',
               border: '2px dashed #cbd5e1'
             }}>
               <div style={{ fontSize: '48px', marginBottom: '14px' }}>🎓</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px 0' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 8px 0' }}>
                 {searchEcole ? `Aucune école ne correspond à "${searchEcole}"` : 'Aucune école disponible pour le moment'}
               </h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 18px 0', maxWidth: '480px', marginInline: 'auto' }}>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 18px 0', maxWidth: '480px', marginInline: 'auto' }}>
                 {searchEcole
                   ? 'Essayez de modifier votre mot-clé de recherche ou réinitialisez le filtre.'
                   : 'Seules les écoles ajoutées par l\'administrateur apparaîtront ici dès leur publication.'}
@@ -681,9 +681,9 @@ export default function ClientConcours() {
                     key={ec.name}
                     onClick={() => handleOpenSchool(ec)}
                     style={{
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--surface, #ffffff)',
                       borderRadius: '18px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid var(--border, #e2e8f0)',
                       boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
                       padding: '24px',
                       cursor: 'pointer',
@@ -736,8 +736,8 @@ export default function ClientConcours() {
 
                         <div style={{ display: 'flex', gap: '6px' }}>
                           <span style={{
-                            backgroundColor: '#f1f5f9',
-                            color: '#334155',
+                            backgroundColor: 'var(--surface-2, #f1f5f9)',
+                            color: 'var(--text, #334155)',
                             fontSize: '12px',
                             fontWeight: 800,
                             padding: '4px 10px',
@@ -746,9 +746,9 @@ export default function ClientConcours() {
                             {ec.matieresList.length} matière{ec.matieresList.length > 1 ? 's' : ''}
                           </span>
                           <span style={{
-                            backgroundColor: '#f8fafc',
-                            border: '1px solid #e2e8f0',
-                            color: '#64748b',
+                            backgroundColor: 'var(--bg, #f8fafc)',
+                            border: '1px solid var(--border, #e2e8f0)',
+                            color: 'var(--text-secondary, #64748b)',
                             fontSize: '12px',
                             fontWeight: 700,
                             padding: '4px 10px',
@@ -763,7 +763,7 @@ export default function ClientConcours() {
                       <h2 style={{
                         fontSize: '21px',
                         fontWeight: 800,
-                        color: '#0f172a',
+                        color: 'var(--text, #0f172a)',
                         margin: '0 0 4px 0',
                         letterSpacing: '-0.3px'
                       }}>
@@ -772,7 +772,7 @@ export default function ClientConcours() {
 
                       <div style={{
                         fontSize: '13px',
-                        color: '#64748b',
+                        color: 'var(--text-secondary, #64748b)',
                         fontWeight: 600,
                         marginBottom: '14px',
                         minHeight: '36px',
@@ -785,9 +785,9 @@ export default function ClientConcours() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '18px' }}>
                         {latestYear && (
                           <span style={{
-                            background: '#f8fafc',
-                            border: '1px solid #e2e8f0',
-                            color: '#0f172a',
+                            background: 'var(--bg, #f8fafc)',
+                            border: '1px solid var(--border, #e2e8f0)',
+                            color: 'var(--text, #0f172a)',
                             fontSize: '11px',
                             fontWeight: 700,
                             padding: '3px 8px',
@@ -801,9 +801,9 @@ export default function ClientConcours() {
                           <span
                             key={mat}
                             style={{
-                              background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              color: '#475569',
+                              background: 'var(--bg, #f8fafc)',
+                              border: '1px solid var(--border, #e2e8f0)',
+                              color: 'var(--text-secondary, #475569)',
                               fontSize: '11px',
                               fontWeight: 600,
                               padding: '3px 8px',
@@ -817,7 +817,7 @@ export default function ClientConcours() {
                         {ec.matieresList.length > 3 && (
                           <span style={{
                             fontSize: '11px',
-                            color: '#94a3b8',
+                            color: 'var(--text-secondary, #94a3b8)',
                             fontWeight: 700,
                             padding: '3px 4px'
                           }}>
@@ -856,10 +856,10 @@ export default function ClientConcours() {
         <div>
           {/* Barre supérieure : Retour aux écoles + Titre de l'école */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface, #ffffff)',
             borderRadius: '16px',
             padding: '20px 24px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e2e8f0)',
             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
             marginBottom: '24px'
           }}>
@@ -877,9 +877,9 @@ export default function ClientConcours() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    background: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    color: '#334155',
+                    background: 'var(--surface-2, #f1f5f9)',
+                    border: '1px solid var(--border, #cbd5e1)',
+                    color: 'var(--text, #334155)',
                     padding: '8px 14px',
                     borderRadius: '10px',
                     fontSize: '13px',
@@ -898,7 +898,7 @@ export default function ClientConcours() {
                     margin: 0,
                     fontSize: '20px',
                     fontWeight: 800,
-                    color: '#0f172a',
+                    color: 'var(--text, #0f172a)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'
@@ -915,7 +915,7 @@ export default function ClientConcours() {
                       {matieresForSelectedEcole.length} matière{matieresForSelectedEcole.length > 1 ? 's' : ''}
                     </span>
                   </h2>
-                  <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
                     {getEcoleMeta(selectedEcole).nomComplet}
                   </div>
                 </div>
@@ -924,7 +924,7 @@ export default function ClientConcours() {
               {/* Champ de recherche de matière si besoin */}
               {activeEcoleData && activeEcoleData.matieresList.length > 4 && (
                 <div style={{ position: 'relative', width: '240px' }}>
-                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '12px' }}>🔍</span>
+                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)', fontSize: '12px' }}>🔍</span>
                   <input
                     type="text"
                     placeholder="Filtrer les matières..."
@@ -948,17 +948,17 @@ export default function ClientConcours() {
           {/* Grille des matières */}
           {matieresForSelectedEcole.length === 0 ? (
             <div style={{
-              background: '#ffffff',
+              background: 'var(--surface, #ffffff)',
               borderRadius: '20px',
               padding: '60px 20px',
               textAlign: 'center',
               border: '2px dashed #cbd5e1'
             }}>
               <div style={{ fontSize: '42px', marginBottom: '10px' }}>📚</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px 0' }}>
                 Aucune matière trouvée
               </h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 16px 0' }}>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 16px 0' }}>
                 Aucune matière n'est actuellement associée à cette école.
               </p>
               <button
@@ -995,7 +995,7 @@ export default function ClientConcours() {
                       setSearchConcours('');
                     }}
                     style={{
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--surface, #ffffff)',
                       borderRadius: '16px',
                       border: '1.5px solid #e2e8f0',
                       boxShadow: '0 4px 14px rgba(0, 0, 0, 0.03)',
@@ -1036,8 +1036,8 @@ export default function ClientConcours() {
                         </div>
 
                         <span style={{
-                          backgroundColor: '#f1f5f9',
-                          color: '#334155',
+                          backgroundColor: 'var(--surface-2, #f1f5f9)',
+                          color: 'var(--text, #334155)',
                           fontSize: '12px',
                           fontWeight: 700,
                           padding: '4px 10px',
@@ -1052,13 +1052,13 @@ export default function ClientConcours() {
                         margin: '0 0 8px 0',
                         fontSize: '18px',
                         fontWeight: 800,
-                        color: '#0f172a'
+                        color: 'var(--text, #0f172a)'
                       }}>
                         {mat.name}
                       </h3>
 
                       {/* Années couvertes */}
-                      <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', marginBottom: '16px' }}>
                         {mat.years.length > 0 ? (
                           <span>
                             📅 Années : <strong>{mat.years.slice(0, 4).join(', ')}{mat.years.length > 4 ? '...' : ''}</strong>
@@ -1099,10 +1099,10 @@ export default function ClientConcours() {
         <div>
           {/* Header de navigation et filtres */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface, #ffffff)',
             borderRadius: '16px',
             padding: '20px 24px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e2e8f0)',
             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
             marginBottom: '24px'
           }}>
@@ -1128,9 +1128,9 @@ export default function ClientConcours() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
-                    background: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    color: '#334155',
+                    background: 'var(--surface-2, #f1f5f9)',
+                    border: '1px solid var(--border, #cbd5e1)',
+                    color: 'var(--text, #334155)',
                     padding: '8px 14px',
                     borderRadius: '10px',
                     fontSize: '13px',
@@ -1149,7 +1149,7 @@ export default function ClientConcours() {
                     margin: 0,
                     fontSize: '20px',
                     fontWeight: 800,
-                    color: '#0f172a',
+                    color: 'var(--text, #0f172a)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'
@@ -1166,7 +1166,7 @@ export default function ClientConcours() {
                       {filteredConcoursForDisplay.length} concours
                     </span>
                   </h2>
-                  <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12.5px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
                     {getEcoleMeta(selectedEcole).nomComplet}
                   </div>
                 </div>
@@ -1198,7 +1198,7 @@ export default function ClientConcours() {
             }}>
               {/* Sélecteur d'année (Pastilles interactives) */}
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: '#475569', marginRight: '4px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-secondary, #475569)', marginRight: '4px' }}>
                   📅 Sélectionner l'Année :
                 </span>
 
@@ -1242,7 +1242,7 @@ export default function ClientConcours() {
 
               {/* Recherche par mot-clé */}
               <div style={{ position: 'relative', width: '220px' }}>
-                <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '12px' }}>🔍</span>
+                <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)', fontSize: '12px' }}>🔍</span>
                 <input
                   type="text"
                   placeholder="Rechercher épreuve..."
@@ -1265,17 +1265,17 @@ export default function ClientConcours() {
           {/* Grille des concours correspondants */}
           {filteredConcoursForDisplay.length === 0 ? (
             <div style={{
-              background: '#ffffff',
+              background: 'var(--surface, #ffffff)',
               borderRadius: '20px',
               padding: '60px 20px',
               textAlign: 'center',
               border: '2px dashed #cbd5e1'
             }}>
               <div style={{ fontSize: '42px', marginBottom: '10px' }}>📄</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px 0' }}>
                 Aucun concours disponible pour ces critères
               </h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 16px 0' }}>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 16px 0' }}>
                 {selectedYear ? `Aucune épreuve trouvée pour l'année ${selectedYear}.` : 'Aucune épreuve n\'a été publiée pour cette matière.'}
               </p>
               {selectedYear && (
@@ -1311,9 +1311,9 @@ export default function ClientConcours() {
                   <div
                     key={c.id}
                     style={{
-                      background: '#ffffff',
+                      background: 'var(--surface, #ffffff)',
                       borderRadius: '16px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid var(--border, #e2e8f0)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
                       padding: '20px',
                       display: 'flex',
@@ -1365,7 +1365,7 @@ export default function ClientConcours() {
                       <h3 style={{
                         fontSize: '17px',
                         fontWeight: 800,
-                        color: '#0f172a',
+                        color: 'var(--text, #0f172a)',
                         margin: '0 0 10px 0',
                         lineHeight: 1.4
                       }}>
@@ -1403,7 +1403,7 @@ export default function ClientConcours() {
                         <button
                           onClick={() => handleOpenViewer(c, 'sujet')}
                           style={{
-                            background: '#eff6ff',
+                            background: 'var(--surface-2, #eff6ff)',
                             color: '#1d4ed8',
                             border: '1px solid #bfdbfe',
                             padding: '9px 12px',
@@ -1426,9 +1426,9 @@ export default function ClientConcours() {
                         <button
                           disabled
                           style={{
-                            background: '#f8fafc',
-                            color: '#94a3b8',
-                            border: '1px solid #e2e8f0',
+                            background: 'var(--bg, #f8fafc)',
+                            color: 'var(--text-secondary, #94a3b8)',
+                            border: '1px solid var(--border, #e2e8f0)',
                             padding: '9px 12px',
                             borderRadius: '8px',
                             fontSize: '12px',
@@ -1468,9 +1468,9 @@ export default function ClientConcours() {
                         <button
                           disabled
                           style={{
-                            background: '#f8fafc',
-                            color: '#94a3b8',
-                            border: '1px solid #e2e8f0',
+                            background: 'var(--bg, #f8fafc)',
+                            color: 'var(--text-secondary, #94a3b8)',
+                            border: '1px solid var(--border, #e2e8f0)',
                             padding: '9px 12px',
                             borderRadius: '8px',
                             fontSize: '12px',
@@ -1501,14 +1501,14 @@ export default function ClientConcours() {
           position: 'relative',
           width: '100%',
           minHeight: 'calc(100vh - 76px)',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'var(--bg, #f8fafc)',
           display: 'flex',
           flexDirection: 'column',
           padding: 0,
           boxSizing: 'border-box'
         }}>
           <div style={{
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--bg, #f8fafc)',
             width: '100%',
             minHeight: 'calc(100vh - 76px)',
             display: 'flex',
@@ -1519,7 +1519,7 @@ export default function ClientConcours() {
             <div style={{
               flex: 1,
               minHeight: 'calc(100vh - 116px)',
-              backgroundColor: '#f1f5f9',
+              backgroundColor: 'var(--surface-2, #f1f5f9)',
               padding: '32px 16px 20px',
               display: 'grid',
               gridTemplateColumns: isViewerSidebarCollapsed
@@ -1626,16 +1626,16 @@ export default function ClientConcours() {
                       subject={viewerModal.concours.matiere || selectedMatiere || ''}
                       school={viewerModal.concours.ecole || selectedEcole || ''}
                       year={viewerModal.concours.annee || ''}
-                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', background: '#ffffff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                  <div style={{ width: '100%', background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
                     <iframe
                       src={currentViewerUrl}
                       title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
                       sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: '#ffffff' }}
+                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
                     />
                   </div>
                 )
@@ -1647,15 +1647,15 @@ export default function ClientConcours() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: '40px',
-                  backgroundColor: '#ffffff',
+                  backgroundColor: 'var(--surface, #ffffff)',
                   borderRadius: '12px',
                   border: '1px dashed #cbd5e1'
                 }}>
                   <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                     Aucun fichier {viewerModal.activeTab === 'sujet' ? 'Sujet' : 'Corrigé'} disponible
                   </h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#64748b', maxWidth: '380px', textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)', maxWidth: '380px', textAlign: 'center' }}>
                     L'administrateur n'a pas encore téléversé le document correspondant pour cette épreuve.
                   </p>
                 </div>

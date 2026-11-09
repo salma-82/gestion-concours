@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 
 // Styles
 import 'katex/dist/katex.min.css';
+import './theme.css';
+import { ThemeProvider } from './theme';
 
 // Entry Point & Authentication
 import LandingPage from './components/LandingPage';
@@ -33,9 +35,11 @@ import WhatsAppButton from './components/WhatsAppButton';
 
 function App() {
   return (
-    <Router>
-      <AppRoutes />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </ThemeProvider>
   );
 }
 

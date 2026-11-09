@@ -1454,3 +1454,85 @@
     padding: 8px;
   }
 }
+
+/* Keep the global dashboard legible when the application is in dark mode. */
+html[data-theme="dark"] #root .general-stats,
+html.dark #root .general-stats {
+  --general-ink: var(--text);
+  --general-muted: var(--text-secondary);
+  --general-line: var(--border);
+  --general-surface: var(--surface);
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(
+  .general-stats-filters,
+  .general-stats-period,
+  .general-stats-kpi,
+  .general-stats-panel,
+  .general-stats-total-badge,
+  .general-stats-empty,
+  .general-stats-distribution-list li,
+  .general-stats-recent-item,
+  .general-stats-goals-list li,
+  .general-stats-recommendation,
+  .general-stats-subject-highlights p
+),
+html.dark #root .general-stats :is(
+  .general-stats-filters,
+  .general-stats-period,
+  .general-stats-kpi,
+  .general-stats-panel,
+  .general-stats-total-badge,
+  .general-stats-empty,
+  .general-stats-distribution-list li,
+  .general-stats-recent-item,
+  .general-stats-goals-list li,
+  .general-stats-recommendation,
+  .general-stats-subject-highlights p
+) {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(.general-stats-header h1, .general-stats-panel-heading h2, .general-stats-kpi-label, .general-stats-kpi > strong, .general-stats-donut-center strong, .general-stats-performance-score strong, .general-stats-performance-metrics strong, .general-stats-progress-copy strong, .general-stats-distribution-list strong, .general-stats-recent-copy strong, .general-stats-goals-heading > strong, .general-stats-goals-list strong, .general-stats-subject-highlights strong),
+html.dark #root .general-stats :is(.general-stats-header h1, .general-stats-panel-heading h2, .general-stats-kpi-label, .general-stats-kpi > strong, .general-stats-donut-center strong, .general-stats-performance-score strong, .general-stats-performance-metrics strong, .general-stats-progress-copy strong, .general-stats-distribution-list strong, .general-stats-recent-copy strong, .general-stats-goals-heading > strong, .general-stats-goals-list strong, .general-stats-subject-highlights strong) {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(.general-stats-header p, .general-stats-panel-heading p, .general-stats-filters label, .general-stats-kpi > small, .general-stats-comparison, .general-stats-total-badge, .general-stats-legend, .general-stats-donut-center span, .general-stats-distribution-list li > span, .general-stats-empty p, .general-stats-performance-score span, .general-stats-performance-metrics span, .general-stats-footnote, .general-stats-progress-copy span, .general-stats-progress-copy > small, .general-stats-goals-list small, .general-stats-goals-empty, .general-stats-recommendation p, .general-stats-recent-copy small, .general-stats-recent-item time),
+html.dark #root .general-stats :is(.general-stats-header p, .general-stats-panel-heading p, .general-stats-filters label, .general-stats-kpi > small, .general-stats-comparison, .general-stats-total-badge, .general-stats-legend, .general-stats-donut-center span, .general-stats-distribution-list li > span, .general-stats-empty p, .general-stats-performance-score span, .general-stats-performance-metrics span, .general-stats-footnote, .general-stats-progress-copy span, .general-stats-progress-copy > small, .general-stats-goals-list small, .general-stats-goals-empty, .general-stats-recommendation p, .general-stats-recent-copy small, .general-stats-recent-item time) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(.general-stats-calendar, .general-stats-filters select, .general-stats-period button.is-active, .general-stats-empty > span),
+html.dark #root .general-stats :is(.general-stats-calendar, .general-stats-filters select, .general-stats-period button.is-active, .general-stats-empty > span) {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(.general-stats-performance-metrics > div, .general-stats-goal-date, .general-stats-progress-track),
+html.dark #root .general-stats :is(.general-stats-performance-metrics > div, .general-stats-goal-date, .general-stats-progress-track) {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+}
+
+html[data-theme="dark"] #root .general-stats .general-stats-period button,
+html.dark #root .general-stats .general-stats-period button,
+html[data-theme="dark"] #root .general-stats :is(.general-stats-panel-heading > button, .general-stats-goals-heading button),
+html.dark #root .general-stats :is(.general-stats-panel-heading > button, .general-stats-goals-heading button) {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] #root .general-stats :is(.recharts-cartesian-grid line, .recharts-cartesian-axis-line, .recharts-cartesian-axis-tick line),
+html.dark #root .general-stats :is(.recharts-cartesian-grid line, .recharts-cartesian-axis-line, .recharts-cartesian-axis-tick line) {
+  stroke: var(--border) !important;
+}
+
+html[data-theme="dark"] #root .general-stats .recharts-cartesian-axis-tick-value,
+html.dark #root .general-stats .recharts-cartesian-axis-tick-value {
+  fill: var(--text-muted) !important;
+}

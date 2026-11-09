@@ -683,12 +683,12 @@ export default function ClientCoursPage() {
     position: 'relative',
     width: '100%',
     minHeight: '100%',
-    backgroundColor: '#f3f6fb',
+    backgroundColor: 'var(--bg, #f3f6fb)',
     overflowY: 'visible',
     padding: activeCours ? '12px 20px 20px' : '28px 32px 48px',
     boxSizing: 'border-box',
     fontFamily: "'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    color: '#0f172a'
+    color: 'var(--text, #0f172a)'
   };
 
   return (
@@ -705,7 +705,7 @@ export default function ClientCoursPage() {
           `}</style>
           <aside style={{ width: 'calc(100% - min(6cm, 12vw))', marginInline: 'auto', background: 'transparent', border: 'none', borderRadius: 0, padding: 0, boxShadow: 'none', boxSizing: 'border-box' }}>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div className="client-course-subject-grid" style={{ display: 'grid', alignItems: 'start', gap: '10px' }}>
+            {loading ? <div style={{ padding: '16px 6px', color: 'var(--text-secondary, #64748b)', fontSize: '13px' }}>Chargement des mati&egrave;res...</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div className="client-course-subject-grid" style={{ display: 'grid', alignItems: 'start', gap: '10px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere?.id === matiere.id;
                 const expanded = active;
@@ -714,13 +714,13 @@ export default function ClientCoursPage() {
                 return <div key={matiere.id}>
                   <button type="button" onClick={() => expanded ? goMatieres() : goChapitres(matiere)} aria-expanded={expanded} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: expanded ? '#93c5fd' : active ? '#bfdbfe' : '#e2e8f0', borderRadius: '10px', background: expanded || active ? '#eff6ff' : '#ffffff', color: expanded || active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>
                     <span>{matiere.nom}</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#64748b', fontWeight: 600 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease' }} aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                     </span>
                   </button>
                   {expanded && <div style={{ margin: '6px 0 5px', padding: '7px 0 8px 10px', borderLeft: `2px solid ${matiere.color || '#93c5fd'}` }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {filteredChapitres.map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? matiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? matiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? matiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '10px', fontWeight: 500 }}>{chapitre.count} cours</span></button>)}
+                      {filteredChapitres.map((chapitre) => <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '9px 10px', border: '1px solid', borderColor: selectedChapitre === chapitre.nom ? matiere.color : '#e2e8f0', borderRadius: '9px', background: selectedChapitre === chapitre.nom ? matiere.lightBg : '#ffffff', color: selectedChapitre === chapitre.nom ? matiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 650, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: 'var(--text-secondary, #64748b)', fontSize: '10px', fontWeight: 500 }}>{chapitre.count} cours</span></button>)}
                     </div>
                   </div>}
                 </div>;
@@ -750,19 +750,19 @@ export default function ClientCoursPage() {
           </div>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
           {!isSidebarCollapsed && (
-          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+          <aside style={{ flex: '0 0 290px', maxWidth: '32vw', minWidth: '240px', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Mati&egrave;res</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' }}>
               {matieresWithCount.map((matiere) => {
                 const active = selectedMatiere.id === matiere.id;
-                return <button key={matiere.id} type="button" onClick={() => goChapitres(matiere)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '9px 10px', border: '1px solid', borderColor: active ? '#93c5fd' : '#e2e8f0', borderRadius: '9px', background: active ? '#eff6ff' : '#ffffff', color: active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>;
+                return <button key={matiere.id} type="button" onClick={() => goChapitres(matiere)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '9px 10px', border: '1px solid', borderColor: active ? '#93c5fd' : '#e2e8f0', borderRadius: '9px', background: active ? '#eff6ff' : '#ffffff', color: active ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>{matiere.count}</span></button>;
               })}
             </div>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
               {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.count > 0).map((chapitre) => {
                 const active = selectedChapitre === chapitre.nom;
-                return <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: active ? selectedMatiere.color : '#e2e8f0', borderRadius: '10px', background: active ? selectedMatiere.lightBg : '#ffffff', color: active ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: '#64748b', fontSize: '11px', fontWeight: 500 }}>{chapitre.count} cours</span></button>;
+                return <button key={chapitre.nom} type="button" onClick={() => openReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: active ? selectedMatiere.color : '#e2e8f0', borderRadius: '10px', background: active ? selectedMatiere.lightBg : '#ffffff', color: active ? selectedMatiere.badgeColor : '#334155', textAlign: 'left', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}><span>{chapitre.nom}</span><span style={{ display: 'block', marginTop: '4px', color: 'var(--text-secondary, #64748b)', fontSize: '11px', fontWeight: 500 }}>{chapitre.count} cours</span></button>;
               })}
             </div>
           </aside>
@@ -773,23 +773,23 @@ export default function ClientCoursPage() {
                 <div className="course-reader-header" style={{ position: 'absolute', zIndex: 20, top: '8px', left: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', padding: 0, borderRadius: 0, background: 'transparent', boxShadow: 'none' }}>
                   <div>
                     <div style={{ color: selectedMatiere.badgeColor, fontSize: '11px', fontWeight: 800 }}>{selectedMatiere.nom}{selectedFiliere ? ` · ${selectedFiliere}` : ''}</div>
-                    <div style={{ color: '#1e293b', fontSize: '16px', fontWeight: 750, marginTop: '3px' }}>{activeCours.titre || selectedChapitre}</div>
+                    <div style={{ color: 'var(--text, #1e293b)', fontSize: '16px', fontWeight: 750, marginTop: '3px' }}>{activeCours.titre || selectedChapitre}</div>
                   </div>
                   {coursForChapitre(selectedMatiere, selectedChapitre).length > 1 && <div style={{ position: 'relative' }}>
-                    <button type="button" aria-label="Changer de cours" aria-haspopup="menu" aria-expanded={isCoursMenuOpen} onClick={() => setIsCoursMenuOpen(open => !open)} style={{ width: '34px', height: '34px', display: 'grid', placeItems: 'center', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#ffffff', color: '#334155', cursor: 'pointer' }}>
+                    <button type="button" aria-label="Changer de cours" aria-haspopup="menu" aria-expanded={isCoursMenuOpen} onClick={() => setIsCoursMenuOpen(open => !open)} style={{ width: '34px', height: '34px', display: 'grid', placeItems: 'center', border: '1px solid var(--border, #cbd5e1)', borderRadius: '9px', background: 'var(--surface, #ffffff)', color: 'var(--text, #334155)', cursor: 'pointer' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
                     </button>
-                    {isCoursMenuOpen && <div role="menu" style={{ position: 'absolute', zIndex: 20, top: 'calc(100% + 6px)', right: 0, minWidth: '220px', maxWidth: 'min(320px, 80vw)', padding: '6px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.14)' }}>
+                    {isCoursMenuOpen && <div role="menu" style={{ position: 'absolute', zIndex: 20, top: 'calc(100% + 6px)', right: 0, minWidth: '220px', maxWidth: 'min(320px, 80vw)', padding: '6px', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: '10px', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.14)' }}>
                       {coursForChapitre(selectedMatiere, selectedChapitre).map((cours, index) => <button key={cours.id || index} type="button" role="menuitem" onClick={() => openReader(selectedChapitre, cours)} style={{ width: '100%', display: 'block', padding: '9px 10px', border: 0, borderRadius: '7px', background: String(activeCours.id) === String(cours.id) ? '#eff6ff' : '#ffffff', color: String(activeCours.id) === String(cours.id) ? '#1d4ed8' : '#334155', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: 700 }}>{cours.titre || `Cours ${index + 1}`}</button>)}
                     </div>}
                   </div>}
 
                 </div>
                 {completionErrorKey && completionErrorKey === activeCourseStatusKey && <span role="alert" style={{ position: 'absolute', zIndex: 21, top: '52px', right: '8px', color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
-                {activeCours.htmlUrl ? <iframe ref={iframeRef} key={activeCours.id || activeCours.htmlUrl} srcDoc={courseHtml} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', background: '#ffffff', overflow: 'hidden' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
+                {activeCours.htmlUrl ? <iframe ref={iframeRef} key={activeCours.id || activeCours.htmlUrl} srcDoc={courseHtml} title={activeCours.titre || selectedChapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', background: 'var(--surface, #ffffff)', overflow: 'hidden' }} /> : <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>L’administrateur n’a pas encore ajouté de cours HTML pour ce chapitre.</div>}
               </div>
             ) : (
-              <div style={{ minHeight: '260px', background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: '#64748b', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
+              <div style={{ minHeight: '260px', background: 'var(--surface, #ffffff)', border: '1px dashed #cbd5e1', borderRadius: '16px', display: 'grid', placeItems: 'center', padding: '32px', color: 'var(--text-secondary, #64748b)', textAlign: 'center', fontSize: '14px' }}>Choisissez un chapitre dans le menu de gauche pour afficher son cours.</div>
             )}
           </main>
           </div>
@@ -815,7 +815,7 @@ export default function ClientCoursPage() {
             >
               <span>📚 Matières</span>
             </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
             <button
               onClick={() => goChapitres(selectedMatiere)}
               style={{
@@ -825,8 +825,8 @@ export default function ClientCoursPage() {
             >
               {selectedMatiere.nom}
             </button>
-            <span style={{ color: '#94a3b8' }}>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 800 }}>{selectedChapitre}</span>
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
+            <span style={{ color: 'var(--text, #0f172a)', fontWeight: 800 }}>{selectedChapitre}</span>
           </div>
 
           {/* Header section cours */}
@@ -837,21 +837,21 @@ export default function ClientCoursPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '28px' }}>📖</span>
-                <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: '#0f172a' }}>
+                <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                   Cours — {selectedChapitre}
                 </h1>
               </div>
-              <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14.5px' }}>
-                Matière : <strong style={{ color: '#1e293b' }}>{selectedMatiere.nom}</strong>
+              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
+                Matière : <strong style={{ color: 'var(--text, #1e293b)' }}>{selectedMatiere.nom}</strong>
               </p>
             </div>
 
             <button
               onClick={() => goChapitres(selectedMatiere)}
               style={{
-                background: '#fff', border: '1.5px solid #cbd5e1',
+                background: 'var(--surface, #fff)', border: '1.5px solid #cbd5e1',
                 padding: '9px 18px', borderRadius: '12px',
-                cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: '#334155',
+                cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: 'var(--text, #334155)',
                 transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
@@ -868,14 +868,14 @@ export default function ClientCoursPage() {
             if (chapCours.length === 0) {
               return (
                 <div style={{
-                  background: '#ffffff', borderRadius: '24px', border: '1.5px dashed #cbd5e1',
+                  background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1',
                   padding: '60px 30px', textAlign: 'center'
                 }}>
                   <div style={{ fontSize: '46px', marginBottom: '12px' }}>📂</div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                     Aucun cours spécifique en base pour ce chapitre
                   </h3>
-                  <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14.5px' }}>
+                  <p style={{ margin: '0 0 20px', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
                     L’administrateur n’a pas encore déposé de fichier HTML pour ce chapitre dans cette filière.
                   </p>
                   <button
@@ -899,7 +899,7 @@ export default function ClientCoursPage() {
                     key={coursItem.id || cIdx}
                     onClick={() => openReader(selectedChapitre, coursItem)}
                     style={{
-                      background: '#ffffff',
+                      background: 'var(--surface, #ffffff)',
                       borderRadius: '22px',
                       border: `1.5px solid ${selectedMatiere.color}40`,
                       boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
@@ -941,7 +941,7 @@ export default function ClientCoursPage() {
                             {selectedMatiere.nom}
                           </span>
                           {coursItem.filiere && (
-                            <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                            <span style={{ background: 'var(--surface-2, #eff6ff)', color: '#1d4ed8', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
                               🎓 {coursItem.filiere}
                             </span>
                           )}
@@ -949,7 +949,7 @@ export default function ClientCoursPage() {
                             ● Cours HTML
                           </span>
                         </div>
-                        <h2 style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: '#0f172a' }}>
+                        <h2 style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                           {coursItem.titre || `Cours #${coursItem.id}`}
                         </h2>
                       </div>
@@ -1006,15 +1006,15 @@ export default function ClientCoursPage() {
           position: 'relative',
           width: '100%',
           minHeight: 'calc(100vh - 76px)',
-          backgroundColor: '#f8fafc',
+          backgroundColor: 'var(--bg, #f8fafc)',
           display: 'flex',
           overflow: 'visible',
           margin: 0,
           padding: '20px 16px',
           boxSizing: 'border-box'
         }}>
-          <div style={{ width: '100%', minHeight: 'calc(100vh - 116px)', background: '#f1f5f9', display: 'flex', alignItems: 'flex-start', gap: '18px', padding: '0', boxSizing: 'border-box' }}>
-            <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 118px)', overflowY: 'auto', background: '#ffffff', border: '1px solid #dbeafe', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
+          <div style={{ width: '100%', minHeight: 'calc(100vh - 116px)', background: 'var(--surface-2, #f1f5f9)', display: 'flex', alignItems: 'flex-start', gap: '18px', padding: '0', boxSizing: 'border-box' }}>
+            <aside style={{ flex: '0 1 280px', minWidth: '250px', maxHeight: 'calc(100vh - 118px)', overflowY: 'auto', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px' }}>
               <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et cours</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {chapitresForMatiere(selectedMatiere).filter(chapitre => chapitre.count > 0).map((chapitre) => {
@@ -1031,12 +1031,12 @@ export default function ClientCoursPage() {
             </aside>
             <div style={{ flex: '1 1 620px', minWidth: 'min(100%, 320px)', display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '14px' }}>
-                <button type="button" onClick={() => { setStep('chapitres'); setActiveCours(null); setSelectedChapitre(null); }} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#1e293b', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>← Retour</button>
+                <button type="button" onClick={() => { setStep('chapitres'); setActiveCours(null); setSelectedChapitre(null); }} style={{ background: 'var(--surface-2, #f1f5f9)', border: '1px solid var(--border, #cbd5e1)', color: 'var(--text, #1e293b)', padding: '8px 12px', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>← Retour</button>
               </div>
-              {activeCours.htmlUrl ? <div style={{ background: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-                <iframe ref={iframeRef} srcDoc={courseHtml} title={activeCours.titre || activeCours.chapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', backgroundColor: '#ffffff', overflow: 'hidden' }} />
-              </div> : <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1', padding: '40px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div><h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>Aucun fichier HTML rattaché</h2><p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML pour ce cours.</p>
+              {activeCours.htmlUrl ? <div style={{ background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', border: '1px solid var(--border, #e2e8f0)' }}>
+                <iframe ref={iframeRef} srcDoc={courseHtml} title={activeCours.titre || activeCours.chapitre} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="no" style={{ width: '100%', height: `${courseFrameHeight}px`, border: 'none', display: 'block', backgroundColor: 'var(--surface, #ffffff)', overflow: 'hidden' }} />
+              </div> : <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1', padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div><h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 8px' }}>Aucun fichier HTML rattaché</h2><p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14.5px', maxWidth: '480px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML pour ce cours.</p>
               </div>}
             </div>
           </div>

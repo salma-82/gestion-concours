@@ -50,9 +50,9 @@ export default function ClientCompetitions() {
 
   const concours = filtered.filter((item) => !valueOf(item.resourceType).toLowerCase().includes('blanc'));
   const blancs = filtered.filter((item) => valueOf(item.resourceType).toLowerCase().includes('blanc'));
-  const selectStyle = { width: '100%', minWidth: 0, padding: '10px 12px', border: '1px solid #dbe3ef', borderRadius: 10, background: '#fff', color: '#334155', font: 'inherit', fontSize: 12 };
-  const sectionStyle = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '20px 22px', marginBottom: 20, boxShadow: '0 3px 14px rgba(15,23,42,.03)' };
-  const rowStyle = { display: 'grid', gridTemplateColumns: 'minmax(160px, 1.5fr) repeat(4, minmax(85px, .7fr)) minmax(100px, .7fr)', gap: 10, alignItems: 'center', padding: '11px 10px', borderBottom: '1px solid #eef2f7', color: '#475569', fontSize: 12 };
+  const selectStyle = { width: '100%', minWidth: 0, padding: '10px 12px', border: '1px solid var(--border, #dbe3ef)', borderRadius: 10, background: 'var(--input-bg, #fff)', color: 'var(--text, #334155)', font: 'inherit', fontSize: 12 };
+  const sectionStyle = { background: 'var(--surface, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 18, padding: '20px 22px', marginBottom: 20, boxShadow: 'var(--shadow-sm, 0 3px 14px rgba(15,23,42,.03))' };
+  const rowStyle = { display: 'grid', gridTemplateColumns: 'minmax(160px, 1.5fr) repeat(4, minmax(85px, .7fr)) minmax(100px, .7fr)', gap: 10, alignItems: 'center', padding: '11px 10px', borderBottom: '1px solid var(--border, #eef2f7)', color: 'var(--text-secondary, #475569)', fontSize: 12 };
 
   const renderAttempts = (items, kind) => items.length === 0
     ? <p style={{ margin: '12px 0 2px', color: '#64748b', fontSize: 13 }}>Aucune tentative enregistrée pour ces filtres.</p>

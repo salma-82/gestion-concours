@@ -352,7 +352,7 @@ export default function ClientExamens() {
     } else if (mat.includes('SVT') || mat.includes('BIO')) {
       return { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
     }
-    return { background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1' };
+    return { background: 'var(--surface-2, #f1f5f9)', color: 'var(--text, #334155)', border: '1px solid var(--border, #cbd5e1)' };
   };
 
   const activePages = getActivePages(activeExam, activeDocType);
@@ -388,7 +388,7 @@ export default function ClientExamens() {
       position: 'relative',
       width: '100%',
       minHeight: '100%',
-      backgroundColor: '#f8fafc',
+      backgroundColor: 'var(--bg, #f8fafc)',
       overflowY: 'visible',
       padding: selectedFiliere ? '24px 24px 40px' : '0',
       boxSizing: 'border-box',
@@ -400,28 +400,28 @@ export default function ClientExamens() {
       {selectedFiliere ? (
         <div style={{ width: '100%', display: activeExam && !isSidebarCollapsed ? 'grid' : 'flex', gridTemplateColumns: activeExam && !isSidebarCollapsed ? '290px minmax(0, 1fr)' : undefined, gridTemplateRows: activeExam && !isSidebarCollapsed ? 'auto minmax(0, 1fr)' : undefined, flexDirection: 'column', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
           {!isSidebarCollapsed && <aside style={{ ...(activeExam ? { gridColumn: '1', gridRow: '2', width: 'auto', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', position: 'sticky', top: '12px' } : {}), flex: '0 0 auto', width: activeExam ? 'auto' : 'calc(100% - min(6cm, 12vw))', marginInline: activeExam ? 0 : 'auto', maxWidth: 'none', minWidth: 0, background: activeExam ? '#ffffff' : 'transparent', border: activeExam ? '1px solid #dbeafe' : 'none', borderRadius: activeExam ? '16px' : 0, padding: activeExam ? '18px 22px' : 0, boxShadow: activeExam ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', boxSizing: 'border-box' }}>
-            <label style={{ display: 'block', margin: '0 2px 16px', color: '#475569', fontSize: '12px', fontWeight: 700 }}>Année
-              <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid #cbd5e1', borderRadius: '9px', background: '#fff', color: '#334155', fontSize: '12px' }}>
+            <label style={{ display: 'block', margin: '0 2px 16px', color: 'var(--text-secondary, #475569)', fontSize: '12px', fontWeight: 700 }}>Année
+              <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid var(--border, #cbd5e1)', borderRadius: '9px', background: 'var(--surface, #fff)', color: 'var(--text, #334155)', fontSize: '12px' }}>
                 <option value="">Toutes les années</option>
                 {filiereAnneesList.map((annee) => <option key={annee} value={annee}>{annee}</option>)}
               </select>
             </label>
             <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: '#64748b', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
+            {loading ? <div style={{ padding: '16px 6px', color: 'var(--text-secondary, #64748b)', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
               {examMatieresWithCount.map((matiere) => {
                 const isActive = selectedMatiereCard === matiere.id;
                 const subjectExams = filiereExamsForSelectedYear.filter((exam) => matchMatiere(getExamMatiere(exam), matiere.id));
                 return <div key={matiere.id}>
-                  <button type="button" onClick={() => { setSelectedMatiereCard(matiere.id); setActiveExam(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: '#64748b', fontWeight: 600 }}>{matiere.count}</span></button>
+                  <button type="button" onClick={() => { setSelectedMatiereCard(matiere.id); setActiveExam(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>{matiere.count}</span></button>
                   {isActive && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '1px 0 8px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
-                    {subjectExams.length ? subjectExams.map((exam, index) => <button key={exam.id || index} type="button" onClick={() => handleOpenReader(exam, 'sujet')} style={{ width: '100%', padding: '8px 9px', border: '0', borderRadius: '8px', background: activeExam?.id === exam.id ? '#2563eb' : 'transparent', color: activeExam?.id === exam.id ? '#fff' : '#475569', textAlign: 'left', fontSize: '11px', fontWeight: 650, cursor: 'pointer' }}><span>{exam.titre || `Examen National ${exam.annee || ''}`}</span><span style={{ display: 'block', marginTop: '3px', color: activeExam?.id === exam.id ? '#dbeafe' : '#94a3b8', fontSize: '10px' }}>{exam.annee || 'Année inconnue'} · {exam.session || 'Normale'}</span></button>) : <div style={{ padding: '8px 9px', color: '#94a3b8', fontSize: '11px' }}>Aucune épreuve pour cette matière.</div>}
+                    {subjectExams.length ? subjectExams.map((exam, index) => <button key={exam.id || index} type="button" onClick={() => handleOpenReader(exam, 'sujet')} style={{ width: '100%', padding: '8px 9px', border: '0', borderRadius: '8px', background: activeExam?.id === exam.id ? '#2563eb' : 'transparent', color: activeExam?.id === exam.id ? '#fff' : '#475569', textAlign: 'left', fontSize: '11px', fontWeight: 650, cursor: 'pointer' }}><span>{exam.titre || `Examen National ${exam.annee || ''}`}</span><span style={{ display: 'block', marginTop: '3px', color: activeExam?.id === exam.id ? '#dbeafe' : '#94a3b8', fontSize: '10px' }}>{exam.annee || 'Année inconnue'} · {exam.session || 'Normale'}</span></button>) : <div style={{ padding: '8px 9px', color: 'var(--text-secondary, #94a3b8)', fontSize: '11px' }}>Aucune épreuve pour cette matière.</div>}
                   </div>}
                 </div>;
               })}
             </div>}
           </aside>}
           {activeExam && <div style={{ ...(activeExam && !isSidebarCollapsed ? { gridColumn: '1 / -1', gridRow: '1' } : {}), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', width: '100%', position: 'sticky', top: 0, zIndex: 40, background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none', padding: 0 }}>
-            <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des examens' : 'Fermer le menu des examens'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '48px', height: '48px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #dbeafe', borderRadius: '12px', background: '#ffffff', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+            <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des examens' : 'Fermer le menu des examens'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '48px', height: '48px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '12px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '8px', marginLeft: 'auto' }}>
               <button type="button" onClick={() => handleSelectDocument('sujet')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'sujet' ? '#2563eb' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff', color: activeDocType === 'sujet' ? '#2563eb' : '#475569', fontWeight: 700, cursor: 'pointer' }}>Sujet</button>
               <button type="button" disabled={!activeExam.pdfCorrectionUrl && !activeExam.correctionPageImages?.length} onClick={() => handleSelectDocument('correction')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'correction' ? '#059669' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff', color: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? '#059669' : '#94a3b8', fontWeight: 700, cursor: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? 'pointer' : 'not-allowed' }}>Corrigé</button>
@@ -435,11 +435,11 @@ export default function ClientExamens() {
                 {(() => {
                   const documentUrl = activeDocType === 'correction' ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl) : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
                   const pages = getActivePages(activeExam, activeDocType);
-                  if (pages.length) return <div style={{ width: '100%', minHeight: 'calc(100vh - 211px)', overflowY: 'visible', background: '#ffffff' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} loading={index > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', background: '#ffffff' }} />)}</div>;
+                  if (pages.length) return <div style={{ width: '100%', minHeight: 'calc(100vh - 211px)', overflowY: 'visible', background: 'var(--surface, #ffffff)' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} loading={index > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', background: 'var(--surface, #ffffff)' }} />)}</div>;
                   if (documentUrl) return isPdfDocument(documentUrl)
-                    ? <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} style={{ width: '100%', height: 'calc(100vh - 211px)', minHeight: '460px', border: 'none', display: 'block', background: '#ffffff' }} />
+                    ? <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} style={{ width: '100%', height: 'calc(100vh - 211px)', minHeight: '460px', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }} />
                     : <AutoHeightHtmlFrame key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" integrated style={{ width: '100%', minHeight: '460px', border: 'none', display: 'block', background: 'transparent' }} />;
-                  return <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: '#64748b' }}>Le document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} n’est pas encore disponible.</div>;
+                  return <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>Le document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} n’est pas encore disponible.</div>;
                 })()}
               </div>
             ) : null}
@@ -450,7 +450,7 @@ export default function ClientExamens() {
           position: 'relative',
           width: '100%',
           minHeight: 'calc(100vh - 76px)',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--surface, #ffffff)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'visible',
@@ -462,7 +462,7 @@ export default function ClientExamens() {
             height: '48px',
             minHeight: '48px',
             maxHeight: '48px',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--surface, #ffffff)',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
@@ -497,7 +497,7 @@ export default function ClientExamens() {
                 Matières
               </button>
 
-              <span style={{ color: '#94a3b8', fontSize: '13px' }}>/</span>
+              <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>/</span>
 
               <button
                 onClick={() => {
@@ -520,10 +520,10 @@ export default function ClientExamens() {
                 {getExamMatiere(activeExam) || selectedMatiereCard || 'Physique - Chimie'}
               </button>
 
-              <span style={{ color: '#94a3b8', fontSize: '13px' }}>/</span>
+              <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>/</span>
 
               <span style={{
-                color: '#0f172a',
+                color: 'var(--text, #0f172a)',
                 fontWeight: 700,
                 fontSize: '13.5px',
                 padding: '4px 6px',
@@ -617,7 +617,7 @@ export default function ClientExamens() {
                   width: '100%',
                   height: 'auto',
                   overflowY: 'visible',
-                  backgroundColor: '#ffffff',
+                  backgroundColor: 'var(--surface, #ffffff)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
@@ -625,14 +625,14 @@ export default function ClientExamens() {
                   gap: 0
                 }}>
                   {pages.map((imgUrl, pIdx) => (
-                    <img key={pIdx} src={imgUrl} alt={`Page ${pIdx + 1}`} loading={pIdx > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', backgroundColor: '#ffffff' }} />
+                    <img key={pIdx} src={imgUrl} alt={`Page ${pIdx + 1}`} loading={pIdx > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', backgroundColor: 'var(--surface, #ffffff)' }} />
                   ))}
                 </div>
               );
             }
 
             if (docUrl && isPdfDocument(docUrl)) {
-              return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(docUrl)} title={activeExam.titre || 'Examen National'} style={{ width: '100%', height: 'calc(100vh - 48px)', minHeight: '460px', border: 'none', display: 'block', backgroundColor: '#ffffff' }} />;
+              return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(docUrl)} title={activeExam.titre || 'Examen National'} style={{ width: '100%', height: 'calc(100vh - 48px)', minHeight: '460px', border: 'none', display: 'block', backgroundColor: 'var(--surface, #ffffff)' }} />;
             }
 
             return (
@@ -643,15 +643,15 @@ export default function ClientExamens() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#f8fafc',
+                backgroundColor: 'var(--bg, #f8fafc)',
                 padding: '40px 20px',
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)', marginBottom: '8px' }}>
                   Document {activeDocType === 'correction' ? 'de correction' : 'de sujet'} non disponible
                 </h2>
-                <p style={{ color: '#64748b', fontSize: '14.5px', maxWidth: '480px', marginBottom: '24px' }}>
+                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14.5px', maxWidth: '480px', marginBottom: '24px' }}>
                   L'administrateur n'a pas encore ajouté le fichier pour cette épreuve.
                 </p>
                 <button
@@ -688,10 +688,10 @@ export default function ClientExamens() {
               gap: '16px'
             }}>
               <div>
-                <h2 style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: 800, color: '#0f172a' }}>
+                <h2 style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                   Matières d'Examens Nationaux
                 </h2>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '14.5px' }}>
+                <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
                   Sélectionnez une matière pour afficher les épreuves et corrections officielles ajoutées par l'administration.
                 </p>
               </div>
@@ -699,7 +699,7 @@ export default function ClientExamens() {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '6px',
-                color: '#475569',
+                color: 'var(--text-secondary, #475569)',
                 fontSize: '12px',
                 fontWeight: 700
               }}>
@@ -711,10 +711,10 @@ export default function ClientExamens() {
                   style={{
                     minWidth: '190px',
                     padding: '10px 14px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid var(--border, #cbd5e1)',
                     borderRadius: '12px',
-                    background: '#ffffff',
-                    color: '#0f172a',
+                    background: 'var(--surface, #ffffff)',
+                    color: 'var(--text, #0f172a)',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: loading || filiereAnneesList.length === 0 ? 'not-allowed' : 'pointer'
@@ -735,7 +735,7 @@ export default function ClientExamens() {
                   key={mat.id}
                   onClick={() => setSelectedMatiereCard(mat.id)}
                   style={{
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     borderRadius: '18px',
                     border: '1px solid #e4ecf8',
                     boxShadow: '0 3px 14px rgba(15, 23, 42, 0.035)',
@@ -816,7 +816,7 @@ export default function ClientExamens() {
                       aria-label={`Voir les épreuves de ${mat.nom}`}
                       onClick={(e) => { e.stopPropagation(); setSelectedMatiereCard(mat.id); }}
                       style={{
-                        background: '#ffffff', color: '#2563eb', border: '1px solid #3b82f6',
+                        background: 'var(--surface, #ffffff)', color: '#2563eb', border: '1px solid #3b82f6',
                         padding: '10px 18px', borderRadius: '13px',
                         fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: '9px',
@@ -855,10 +855,10 @@ export default function ClientExamens() {
               >
                 <span>📚 Matières</span>
               </button>
-              <span style={{ color: '#94a3b8' }}>/</span>
-              <span style={{ color: '#475569', fontWeight: 600 }}>{selectedFiliere || 'Toutes options'}</span>
-              <span style={{ color: '#94a3b8' }}>/</span>
-              <span style={{ color: '#0f172a', fontWeight: 800 }}>{selectedMatiereCard}</span>
+              <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
+              <span style={{ color: 'var(--text-secondary, #475569)', fontWeight: 600 }}>{selectedFiliere || 'Toutes options'}</span>
+              <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
+              <span style={{ color: 'var(--text, #0f172a)', fontWeight: 800 }}>{selectedMatiereCard}</span>
             </div>
 
             {/* Header */}
@@ -869,21 +869,21 @@ export default function ClientExamens() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '28px' }}>📝</span>
-                  <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: '#0f172a' }}>
+                  <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
                     Épreuves — {selectedMatiereCard}
                   </h1>
                 </div>
-                <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: '14.5px' }}>
-                  Filière : <strong style={{ color: '#1e293b' }}>{selectedFiliere || 'Toutes options'}</strong> • Sujets d'examens nationaux et corrections officielles
+                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
+                  Filière : <strong style={{ color: 'var(--text, #1e293b)' }}>{selectedFiliere || 'Toutes options'}</strong> • Sujets d'examens nationaux et corrections officielles
                 </p>
               </div>
 
               <button
                 onClick={() => setSelectedMatiereCard(null)}
                 style={{
-                  background: '#fff', border: '1.5px solid #cbd5e1',
+                  background: 'var(--surface, #fff)', border: '1.5px solid #cbd5e1',
                   padding: '9px 18px', borderRadius: '12px',
-                  cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: '#334155',
+                  cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: 'var(--text, #334155)',
                   transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
@@ -900,14 +900,14 @@ export default function ClientExamens() {
               if (list.length === 0) {
                 return (
                   <div style={{
-                    background: '#ffffff', borderRadius: '24px', border: '1.5px dashed #cbd5e1',
+                    background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1',
                     padding: '60px 30px', textAlign: 'center'
                   }}>
                     <div style={{ fontSize: '46px', marginBottom: '12px' }}>📂</div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>
+                    <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                       Aucun examen national trouvé pour cette matière
                     </h3>
-                    <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14.5px' }}>
+                    <p style={{ margin: '0 0 20px', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
                       L’administrateur n’a pas encore déposé d’épreuves pour la matière {selectedMatiereCard} dans cette filière.
                     </p>
                     <button
@@ -935,7 +935,7 @@ export default function ClientExamens() {
                       <div
                         key={exam.id || idx}
                         style={{
-                          background: '#ffffff',
+                          background: 'var(--surface, #ffffff)',
                           borderRadius: '20px',
                           border: '1.5px solid #e2e8f0',
                           boxShadow: '0 4px 18px rgba(0,0,0,0.04)',
@@ -966,15 +966,15 @@ export default function ClientExamens() {
                             </span>
                           </div>
 
-                          <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: 800, color: '#0f172a', lineHeight: 1.35 }}>
+                          <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', lineHeight: 1.35 }}>
                             {exam.titre}
                           </h3>
 
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '12px', color: '#64748b' }}>
-                            <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
+                            <span style={{ background: 'var(--surface-2, #f1f5f9)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
                               Session : {exam.session || 'Normale'}
                             </span>
-                            <span style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                            <span style={{ background: 'var(--bg, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
                               {exam.optionBac || selectedFiliere}
                             </span>
                           </div>
@@ -986,7 +986,7 @@ export default function ClientExamens() {
                             onClick={() => handleOpenReader(exam, 'sujet')}
                             style={{
                               height: '140px',
-                              background: '#f8fafc',
+                              background: 'var(--bg, #f8fafc)',
                               borderTop: '1px solid #f1f5f9',
                               borderBottom: '1px solid #f1f5f9',
                               overflow: 'hidden',
@@ -1080,17 +1080,17 @@ export default function ClientExamens() {
           
           {/* BARRE DE RECHERCHE ET FILTRES PRO (PAR ANNEE ET PAR MATIERE) */}
           <div style={{
-            background: '#ffffff',
+            background: 'var(--surface, #ffffff)',
             borderRadius: '16px',
             padding: '24px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border, #e2e8f0)',
             marginBottom: '30px'
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', alignItems: 'flex-end' }}>
               
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
                   🔍 Recherche mot-clé
                 </label>
                 <input
@@ -1111,7 +1111,7 @@ export default function ClientExamens() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
                   📚 Matière
                 </label>
                 <select
@@ -1123,7 +1123,7 @@ export default function ClientExamens() {
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
                     fontSize: '14px',
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     cursor: 'pointer',
                     boxSizing: 'border-box'
                   }}
@@ -1134,7 +1134,7 @@ export default function ClientExamens() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
                   📅 Année
                 </label>
                 <select
@@ -1146,7 +1146,7 @@ export default function ClientExamens() {
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
                     fontSize: '14px',
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     cursor: 'pointer',
                     boxSizing: 'border-box'
                   }}
@@ -1157,7 +1157,7 @@ export default function ClientExamens() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
                   🏷️ Option / Filière
                 </label>
                 <select
@@ -1169,7 +1169,7 @@ export default function ClientExamens() {
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
                     fontSize: '14px',
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     cursor: 'pointer',
                     boxSizing: 'border-box'
                   }}
@@ -1180,7 +1180,7 @@ export default function ClientExamens() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
                   ⏳ Session
                 </label>
                 <select
@@ -1192,7 +1192,7 @@ export default function ClientExamens() {
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
                     fontSize: '14px',
-                    background: '#ffffff',
+                    background: 'var(--surface, #ffffff)',
                     cursor: 'pointer',
                     boxSizing: 'border-box'
                   }}
@@ -1213,8 +1213,8 @@ export default function ClientExamens() {
                     setSelectedSession('');
                   }}
                   style={{
-                    background: '#f1f5f9',
-                    color: '#475569',
+                    background: 'var(--surface-2, #f1f5f9)',
+                    color: 'var(--text-secondary, #475569)',
                     border: '1.5px solid #cbd5e1',
                     padding: '10px 16px',
                     borderRadius: '8px',
@@ -1233,7 +1233,7 @@ export default function ClientExamens() {
 
           {/* État de chargement et erreurs */}
           {loading && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary, #64748b)' }}>
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
               <p style={{ fontWeight: 600, fontSize: '16px' }}>Chargement des examens nationaux...</p>
             </div>
@@ -1247,10 +1247,10 @@ export default function ClientExamens() {
 
           {/* GRILLE DES EXAMENS NATIONAUX */}
           {!loading && filteredExamens.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               <div style={{ fontSize: '38px', marginBottom: '10px' }}>🎓</div>
-              <h3 style={{ margin: '0 0 6px', color: '#0f172a', fontSize: '18px' }}>Aucun examen national trouvé</h3>
-              <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Modifiez vos filtres ou réinitialisez la recherche.</p>
+              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)', fontSize: '18px' }}>Aucun examen national trouvé</h3>
+              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>Modifiez vos filtres ou réinitialisez la recherche.</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
@@ -1263,9 +1263,9 @@ export default function ClientExamens() {
                   <div
                     key={exam.id || idx}
                     style={{
-                      background: '#ffffff',
+                      background: 'var(--surface, #ffffff)',
                       borderRadius: '16px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid var(--border, #e2e8f0)',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                       overflow: 'hidden',
                       display: 'flex',
@@ -1285,7 +1285,7 @@ export default function ClientExamens() {
                     <div
                       style={{
                         height: '190px',
-                        background: '#f8fafc',
+                        background: 'var(--bg, #f8fafc)',
                         borderBottom: '1px solid #f1f5f9',
                         display: 'flex',
                         alignItems: 'center',
@@ -1309,7 +1309,7 @@ export default function ClientExamens() {
                           }}
                         />
                       ) : (
-                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                        <div style={{ textAlign: 'center', color: 'var(--text-secondary, #94a3b8)' }}>
                           <span style={{ fontSize: '44px' }}>🎓</span>
                           <div style={{ fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>Examen National</div>
                         </div>
@@ -1365,7 +1365,7 @@ export default function ClientExamens() {
                           {getExamMatiere(exam) || 'Matière'}
                         </span>
                         {exam.optionBac && (
-                          <span style={{ background: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
+                          <span style={{ background: 'var(--surface-2, #f1f5f9)', color: 'var(--text-secondary, #475569)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
                             🏷️ {exam.optionBac}
                           </span>
                         )}
@@ -1377,7 +1377,7 @@ export default function ClientExamens() {
                           margin: '0 0 16px',
                           fontSize: '17px',
                           fontWeight: 700,
-                          color: '#0f172a',
+                          color: 'var(--text, #0f172a)',
                           lineHeight: '1.4',
                           cursor: 'pointer'
                         }}

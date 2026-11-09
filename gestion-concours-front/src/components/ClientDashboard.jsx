@@ -58,7 +58,7 @@ const subjectStyle = (subject) => {
   if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return { name: 'SVT', icon: '\u25C9', color: '#059669', tint: '#ecfdf5' };
   if (normalized.includes('philo')) return { name: 'Philosophie', icon: '\u03A6', color: '#d97706', tint: '#fffbeb' };
   if (normalized.includes('ang') || normalized.includes('eng')) return { name: 'Anglais', icon: 'A', color: '#0284c7', tint: '#f0f9ff' };
-  return { name: subject || 'Autres ressources', icon: '\u25A4', color: '#475569', tint: '#f1f5f9' };
+  return { name: subject || 'Autres ressources', icon: '\u25A4', color: 'var(--text-secondary, #475569)', tint: '#f1f5f9' };
 };
 
 const formatDate = (value) => {
@@ -699,7 +699,7 @@ export default function ClientDashboard() {
                   <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    background: '#f1f5f9',
+                    background: 'var(--surface-2, #f1f5f9)',
                     padding: '2px',
                     borderRadius: '10px',
                     gap: '2px',
@@ -770,7 +770,7 @@ export default function ClientDashboard() {
                             contentStyle={{
                               borderRadius: '10px',
                               fontSize: '12px',
-                              border: '1px solid #e2e8f0',
+                              border: '1px solid var(--border, #e2e8f0)',
                               boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                             }}
                           />
@@ -789,7 +789,7 @@ export default function ClientDashboard() {
                         <strong style={{ fontSize: '17px', fontWeight: 800, color: '#18345b', lineHeight: 1 }}>
                           {pct}%
                         </strong>
-                        <span style={{ fontSize: '8px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                        <span style={{ fontSize: '8px', color: 'var(--text-secondary, #64748b)', fontWeight: 600, marginTop: '2px' }}>
                           terminé
                         </span>
                       </div>
@@ -798,17 +798,17 @@ export default function ClientDashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#059669', display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>Terminées</span>
+                        <span style={{ fontSize: '9px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>Terminées</span>
                         <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{done}</strong>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>En cours</span>
+                        <span style={{ fontSize: '9px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>En cours</span>
                         <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{inProgress}</strong>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 500 }}>Total</span>
+                        <span style={{ fontSize: '9px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>Total</span>
                         <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{total}</strong>
                       </div>
                     </div>
@@ -822,7 +822,7 @@ export default function ClientDashboard() {
                   }}>
                     {/* Metric 1: Total consultées */}
                     <div style={{
-                      background: '#f8fafc',
+                      background: 'var(--bg, #f8fafc)',
                       borderRadius: '14px',
                       padding: '14px 16px',
                       border: '1px solid #edf2f7',
@@ -832,12 +832,12 @@ export default function ClientDashboard() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb' }} />
-                        <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Total consultés</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>Total consultés</span>
                       </div>
                       <strong style={{ fontSize: '26px', fontWeight: 800, color: '#18345b', lineHeight: 1.1 }}>
                         {total}
                       </strong>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary, #94a3b8)' }}>
                         {statPeriod === 7 ? 'Sur 7 jours' : statPeriod === 30 ? 'Sur 30 jours' : 'Toute période'}
                       </span>
                     </div>
@@ -866,10 +866,10 @@ export default function ClientDashboard() {
 
                     {/* Metric 3: Progression */}
                     <div style={{
-                      background: '#eff6ff',
+                      background: 'var(--surface-2, #eff6ff)',
                       borderRadius: '14px',
                       padding: '14px 16px',
-                      border: '1px solid #dbeafe',
+                      border: '1px solid var(--border, #dbeafe)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '4px',
@@ -977,7 +977,7 @@ export default function ClientDashboard() {
                       <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#73839a', fontSize: 11 }} width={34} />
                       <Tooltip
                         formatter={(value, name) => [value, name === 'views' || name === 'Consultations' ? 'Consultations' : 'Validations']}
-                        contentStyle={{ border: '1px solid #dbeafe', borderRadius: 12, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.1)' }}
+                        contentStyle={{ border: '1px solid var(--border, #dbeafe)', borderRadius: 12, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.1)' }}
                         cursor={{ fill: 'rgba(37, 99, 235, 0.05)' }}
                       />
                       <Bar dataKey="views" name="Consultations" fill="#2563eb" radius={[5, 5, 0, 0]} maxBarSize={30} />
@@ -1047,7 +1047,7 @@ export default function ClientDashboard() {
                           width: '52px',
                           height: '52px',
                           borderRadius: '14px',
-                          background: '#eff6ff',
+                          background: 'var(--surface-2, #eff6ff)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -1059,7 +1059,7 @@ export default function ClientDashboard() {
                         <strong style={{ color: '#18345b', fontSize: '15px', fontWeight: 800 }}>
                           Graphique d'évolution des scores
                         </strong>
-                        <span style={{ color: '#64748b', fontSize: '13px', maxWidth: '400px', lineHeight: 1.5 }}>
+                        <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', maxWidth: '400px', lineHeight: 1.5 }}>
                           Aucun concours terminé ne correspond à ces filtres. Vos résultats s'afficheront ici sous forme de courbe dès la fin d'un QCM.
                         </span>
                       </div>
@@ -1179,7 +1179,7 @@ export default function ClientDashboard() {
                         background: 'rgba(255, 255, 255, 0.82)',
                         borderRadius: '12px',
                         fontSize: '13px',
-                        color: '#64748b',
+                        color: 'var(--text-secondary, #64748b)',
                         fontWeight: 600,
                       }}>
                         📊 Les performances détaillées par matière s'afficheront après vos tentatives.
@@ -1286,7 +1286,7 @@ export default function ClientDashboard() {
                         }}>
                           <span style={{ fontSize: 28 }}>📊</span>
                           <strong style={{ color: '#1e3a5f', fontSize: 13 }}>Aucune donnée pour l'instant</strong>
-                          <span style={{ color: '#64748b', fontSize: 12 }}>Les barres apparaîtront après vos premières consultations.</span>
+                          <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: 12 }}>Les barres apparaîtront après vos premières consultations.</span>
                         </div>
                       )}
                       <ResponsiveContainer width="100%" height="100%">
@@ -1318,14 +1318,14 @@ export default function ClientDashboard() {
                               const color = subjectStyle(d.fullName).color;
                               return (
                                 <div style={{
-                                  background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10,
+                                  background: 'var(--surface, #fff)', border: '1px solid var(--border, #e2e8f0)', borderRadius: 10,
                                   padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
                                   minWidth: 160,
                                 }}>
                                   <div style={{ fontWeight: 700, color: '#1e3a5f', marginBottom: 4, fontSize: 13 }}>{d.fullName}</div>
                                   <div style={{ color, fontWeight: 700, fontSize: 18 }}>{hasData ? `${d.percent}%` : '—'}</div>
                                   {hasData && d.total !== undefined && (
-                                    <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>
+                                    <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: 11, marginTop: 2 }}>
                                       {d.completed}/{d.total} terminées
                                     </div>
                                   )}
@@ -1351,7 +1351,7 @@ export default function ClientDashboard() {
                         {sectionGroups.map((group) => {
                           const s = subjectStyle(group.name);
                           return (
-                            <div key={group.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569' }}>
+                            <div key={group.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary, #475569)' }}>
                               <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: 'inline-block' }} />
                               <span>{group.name}</span>
                               <strong style={{ color: s.color }}>{group.percent}%</strong>

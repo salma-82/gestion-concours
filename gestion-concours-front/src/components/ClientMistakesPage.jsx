@@ -135,15 +135,15 @@ export default function ClientMistakesPage() {
     }
   };
 
-  const page = { minHeight: '100%', padding: '24px 28px 40px', background: '#f3f6fb', color: '#0f172a', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" };
-  const panel = { maxWidth: 1380, margin: '0 auto', overflow: 'hidden', background: '#fff', border: '1px solid #dbeafe', borderRadius: 18, boxShadow: '0 3px 14px rgba(37,99,235,.04)' };
-  const header = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18, padding: '20px 24px', background: 'linear-gradient(100deg,#f8fbff,#eef6ff)', borderBottom: '1px solid #dbeafe' };
+  const page = { minHeight: '100%', padding: '24px 28px 40px', background: 'var(--bg, #f3f6fb)', color: 'var(--text, #0f172a)', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" };
+  const panel = { maxWidth: 1380, margin: '0 auto', overflow: 'hidden', background: 'var(--surface, #fff)', border: '1px solid var(--border, #dbeafe)', borderRadius: 18, boxShadow: 'var(--shadow-sm, 0 3px 14px rgba(37,99,235,.04))' };
+  const header = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18, padding: '20px 24px', background: 'var(--surface-2, linear-gradient(100deg,#f8fbff,#eef6ff))', borderBottom: '1px solid var(--border, #dbeafe)' };
   const tableWrap = { overflowX: 'auto', padding: '0 14px 14px' };
   const table = { width: '100%', minWidth: 880, borderCollapse: 'separate', borderSpacing: '0 5px', fontSize: 12 };
-  const th = { padding: '11px 10px', textAlign: 'left', color: '#2563eb', background: '#eff6ff', fontWeight: 750, whiteSpace: 'nowrap' };
-  const td = { padding: '12px 10px', color: '#475569', borderTop: '1px solid #e7effa', borderBottom: '1px solid #e7effa', background: '#fff', verticalAlign: 'middle' };
-  const blueAction = { border: 0, borderRadius: 9, padding: '8px 13px', background: '#1769f5', color: '#fff', fontSize: 12, fontWeight: 750, cursor: 'pointer', whiteSpace: 'nowrap' };
-  const segmented = { display: 'flex', padding: 4, gap: 4, border: '1px solid #dbeafe', borderRadius: 999, background: '#fff' };
+  const th = { padding: '11px 10px', textAlign: 'left', color: 'var(--primary, #2563eb)', background: 'var(--surface-2, #eff6ff)', fontWeight: 750, whiteSpace: 'nowrap' };
+  const td = { padding: '12px 10px', color: 'var(--text-secondary, #475569)', borderTop: '1px solid var(--border, #e7effa)', borderBottom: '1px solid var(--border, #e7effa)', background: 'var(--surface, #fff)', verticalAlign: 'middle' };
+  const blueAction = { border: 0, borderRadius: 9, padding: '8px 13px', background: 'var(--primary, #1769f5)', color: '#fff', fontSize: 12, fontWeight: 750, cursor: 'pointer', whiteSpace: 'nowrap' };
+  const segmented = { display: 'flex', padding: 4, gap: 4, border: '1px solid var(--border, #dbeafe)', borderRadius: 999, background: 'var(--surface, #fff)' };
 
   return (
     <main style={page}>
@@ -183,11 +183,11 @@ export default function ClientMistakesPage() {
                     <td style={{ ...td, fontWeight: 800 }}>{attempt ? `${attempt.correctAnswers}/${attempt.expectedQuestions || attempt.totalQuestions}` : '—'}</td>
                     <td style={td}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button type="button" onClick={() => setExpanded((state) => ({ ...state, [group.key]: !state[group.key] }))} style={blueAction}>{expanded[group.key] ? 'Fermer' : 'Réviser'} · {group.errors.length}</button>
-                      <button type="button" onClick={() => removeSavedGroup(group)} style={{ border: '1px solid #fecaca', borderRadius: 9, padding: '8px 11px', background: '#fff', color: '#dc2626', fontSize: 12, fontWeight: 750, cursor: 'pointer', whiteSpace: 'nowrap' }}>Supprimer</button>
+                      <button type="button" onClick={() => removeSavedGroup(group)} style={{ border: '1px solid #fecaca', borderRadius: 9, padding: '8px 11px', background: 'var(--surface, #fff)', color: '#dc2626', fontSize: 12, fontWeight: 750, cursor: 'pointer', whiteSpace: 'nowrap' }}>Supprimer</button>
                     </div></td>
                   </tr>
-                  {expanded[group.key] && group.errors.map((error, index) => <tr key={error.id || error.databaseId || `${group.key}-${index}`}><td colSpan="7" style={{ ...td, background: '#f8fbff', padding: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><strong>Question {error.questionNumber || index + 1}</strong><button type="button" onClick={() => removeSavedError(error)} style={{ border: '1px solid #fecaca', borderRadius: 8, padding: '6px 10px', color: '#dc2626', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Retirer</button></div>
+                  {expanded[group.key] && group.errors.map((error, index) => <tr key={error.id || error.databaseId || `${group.key}-${index}`}><td colSpan="7" style={{ ...td, background: 'var(--surface-2, #f8fbff)', padding: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><strong>Question {error.questionNumber || index + 1}</strong><button type="button" onClick={() => removeSavedError(error)} style={{ border: '1px solid #fecaca', borderRadius: 8, padding: '6px 10px', color: '#dc2626', background: 'var(--surface, #fff)', fontWeight: 700, cursor: 'pointer' }}>Retirer</button></div>
                     <div style={{ marginTop: 8 }}><MathContent>{error.questionText}</MathContent></div><ChoiceList value={error.choicesText} /><p style={{ color: '#b91c1c' }}>Votre réponse : <MathContent>{`${error.selectedChoiceLabel || ''} ${error.selectedChoiceText || ''}`}</MathContent></p><p style={{ color: '#047857' }}>Bonne réponse : <MathContent>{`${error.correctChoiceLabel || ''} ${error.correctChoiceText || ''}`}</MathContent></p>{error.explanation && <details open><summary>Correction et explication</summary><MathContent>{error.explanation}</MathContent></details>}
                   </td></tr>)}
                 </React.Fragment>;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useId, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
+import ThemeToggle from './ThemeToggle';
 
 /* ─────────────────────────────────────────────
    OWL MASCOT  (same SVG as LandingPage)
@@ -327,6 +328,7 @@ export default function AuthPage({ initialMode = 'login', onBackToHome }) {
   return (
     <div className={`ecauth-root ecauth-root--${mode}`}>
       {/* Grid background (mirrors landing-root) */}
+      <ThemeToggle style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 100 }} />
       <div className="ecauth-grid" aria-hidden="true" />
       <div className="ecauth-grain" aria-hidden="true" />
 

@@ -407,8 +407,8 @@ export default function Register() {
         .ecr-success-desc,.ecr-success-note { margin:0;color:#5e6b85;line-height:1.6; }
         .ecr-summary { display:grid;gap:7px;padding:16px;border-radius:16px;background:#f3f6fd;border:1px solid #e4eaf4;font-size:14px; }
         .ecr-summary span strong { color:#14213d; }
-        .ecr-wa-btn { display:flex;min-height:56px;align-items:center;justify-content:center;gap:9px;padding:0 20px;border:1px solid #f28c1b;border-radius:999px;background:#2e5aac;color:#fff;font:850 15px/1 inherit;text-decoration:none;box-shadow:0 10px 24px rgba(46,90,172,.24);transition:background .2s,transform .2s; }
-        .ecr-wa-btn:hover { background:#244887;transform:translateY(-2px); }
+        .ecr-wa-btn { display:flex;min-height:56px;align-items:center;justify-content:center;gap:9px;padding:0 20px;border:1px solid #f28c1b;border-radius:999px;background:#25d366;color:#fff;font:850 15px/1 inherit;text-decoration:none;box-shadow:0 10px 24px rgba(37,211,102,.24);transition:background .2s,transform .2s; }
+        .ecr-wa-btn:hover { background:#1fba5b;transform:translateY(-2px); }
         .ecr-login-link { display:block;margin:4px auto 0;padding:10px 16px;border:0;background:transparent;color:#0B2D63;font:700 14px/1 inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px; }
 
         /* ── Security ── */

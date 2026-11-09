@@ -938,18 +938,18 @@ export default function ClientMockExamStatsDashboard({
                         const data = payload[0].payload;
                         return (
                           <div style={{
-                            background: '#ffffff',
+                            background: 'var(--surface, #ffffff)',
                             padding: '12px 16px',
                             borderRadius: '12px',
-                            border: '1px solid #e2e8f0',
-                            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+                            border: '1px solid var(--border, #e2e8f0)',
+                            boxShadow: 'var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.12))',
                             fontSize: '12.5px'
                           }}>
-                            <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>{data.name}</div>
-                            <div style={{ color: '#64748b', fontSize: '11.5px', marginBottom: 6 }}>
+                            <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)', marginBottom: 4 }}>{data.name}</div>
+                            <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11.5px', marginBottom: 6 }}>
                               {data.subject} • {formatDate(data.rawDate)}
                             </div>
-                            <div style={{ color: '#2563eb', fontWeight: 800, fontSize: '15px' }}>
+                            <div style={{ color: 'var(--primary, #2563eb)', fontWeight: 800, fontSize: '15px' }}>
                               Score : {data.score}%
                             </div>
                             <div style={{ marginTop: 6, display: 'flex', gap: 12, fontSize: '11.5px' }}>
@@ -1121,18 +1121,18 @@ export default function ClientMockExamStatsDashboard({
                         const d = payload[0].payload;
                         return (
                           <div style={{
-                            background: '#ffffff',
+                            background: 'var(--surface, #ffffff)',
                             padding: '10px 14px',
                             borderRadius: '10px',
-                            border: '1px solid #e2e8f0',
-                            boxShadow: '0 4px 18px rgba(15,23,42,0.1)',
+                            border: '1px solid var(--border, #e2e8f0)',
+                            boxShadow: 'var(--shadow-sm, 0 4px 18px rgba(15,23,42,0.1))',
                             fontSize: '12.5px'
                           }}>
-                            <div style={{ fontWeight: 800, color: '#0f172a' }}>{d.name}</div>
+                            <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)' }}>{d.name}</div>
                             <div style={{ color: '#10b981', fontWeight: 800, marginTop: 4 }}>
                               Taux de réussite : {d.rate}%
                             </div>
-                            <div style={{ color: '#64748b', fontSize: '11px', marginTop: 2 }}>
+                            <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', marginTop: 2 }}>
                               Moyenne cumulée : {d.runningAvg}%
                             </div>
                           </div>
@@ -1218,15 +1218,15 @@ export default function ClientMockExamStatsDashboard({
                           const d = payload[0].payload;
                           return (
                             <div style={{
-                              background: '#ffffff',
+                              background: 'var(--surface, #ffffff)',
                               padding: '10px 14px',
                               borderRadius: '10px',
-                              border: '1px solid #e2e8f0',
-                              boxShadow: '0 4px 18px rgba(15,23,42,0.1)',
+                              border: '1px solid var(--border, #e2e8f0)',
+                              boxShadow: 'var(--shadow-sm, 0 4px 18px rgba(15,23,42,0.1))',
                               fontSize: '12.5px'
                             }}>
-                              <div style={{ fontWeight: 800, color: '#0f172a' }}>{d.label}</div>
-                              <div style={{ color: '#64748b', fontSize: '11px', marginBottom: 4 }}>{d.date}</div>
+                              <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)' }}>{d.label}</div>
+                              <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', marginBottom: 4 }}>{d.date}</div>
                               <div style={{ color: '#2563eb', fontWeight: 850, fontSize: '14px' }}>Score : {d.score}%</div>
                               <div style={{ color: '#10b981', fontWeight: 700, marginTop: 4 }}>✓ {d.correct} correctes</div>
                               <div style={{ color: '#ef4444', fontWeight: 700 }}>✕ {d.wrong} incorrectes</div>
@@ -1261,66 +1261,66 @@ export default function ClientMockExamStatsDashboard({
           </div>
         </div>
 
-      {/* --------------------------------------------------------------------
+        {/* --------------------------------------------------------------------
          6. STRENGTHS & POINTS TO IMPROVE (SIDE COLUMN)
          -------------------------------------------------------------------- */}
-      <section className="mock-exam-insights-grid">
-        {/* Points Forts */}
-        <div className="mock-exam-insight-card is-strength">
-          <div className="mock-exam-insight-head">
-            <div className="mock-exam-insight-head-text">
-              <h3>Points forts</h3>
-              <p>Chapitres et matières les mieux maîtrisés (&ge; 65%)</p>
+        <section className="mock-exam-insights-grid">
+          {/* Points Forts */}
+          <div className="mock-exam-insight-card is-strength">
+            <div className="mock-exam-insight-head">
+              <div className="mock-exam-insight-head-text">
+                <h3>Points forts</h3>
+                <p>Chapitres et matières les mieux maîtrisés (&ge; 65%)</p>
+              </div>
+            </div>
+            <div className="mock-exam-insight-list">
+              {insights.strengths.length > 0 ? (
+                insights.strengths.map((item) => (
+                  <div key={item.name} className="mock-exam-insight-item">
+                    <div className="mock-exam-insight-item-title">
+                      <span className="mock-exam-insight-dot" />
+                      <span>{item.name}</span>
+                    </div>
+                    <span className="mock-exam-insight-item-score">{item.avgScore}%</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: '#64748b', fontSize: '13px', fontStyle: 'italic', padding: '10px 0' }}>
+                  Effectuez davantage de tentatives pour identifier vos points forts.
+                </div>
+              )}
             </div>
           </div>
-          <div className="mock-exam-insight-list">
-            {insights.strengths.length > 0 ? (
-              insights.strengths.map((item) => (
-                <div key={item.name} className="mock-exam-insight-item">
-                  <div className="mock-exam-insight-item-title">
-                    <span className="mock-exam-insight-dot" />
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="mock-exam-insight-item-score">{item.avgScore}%</span>
-                </div>
-              ))
-            ) : (
-              <div style={{ color: '#64748b', fontSize: '13px', fontStyle: 'italic', padding: '10px 0' }}>
-                Effectuez davantage de tentatives pour identifier vos points forts.
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* À Améliorer */}
-        <div className="mock-exam-insight-card is-improvement">
-          <div className="mock-exam-insight-head">
-            <div className="mock-exam-insight-head-text">
-              <h3>À améliorer</h3>
-              <p>Chapitres nécessitant des révisions ciblées</p>
+          {/* À Améliorer */}
+          <div className="mock-exam-insight-card is-improvement">
+            <div className="mock-exam-insight-head">
+              <div className="mock-exam-insight-head-text">
+                <h3>À améliorer</h3>
+                <p>Chapitres nécessitant des révisions ciblées</p>
+              </div>
+            </div>
+            <div className="mock-exam-insight-list">
+              {insights.improvements.length > 0 ? (
+                insights.improvements.map((item) => (
+                  <div key={item.name} className="mock-exam-insight-item">
+                    <div className="mock-exam-insight-item-title">
+                      <span className="mock-exam-insight-dot" />
+                      <span>{item.name}</span>
+                    </div>
+                    <span className="mock-exam-insight-item-score">
+                      {item.wrongTotal} erreur{item.wrongTotal > 1 ? 's' : ''} ({item.avgScore}%)
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: '#64748b', fontSize: '13px', fontStyle: 'italic', padding: '10px 0' }}>
+                  Félicitations, aucun point critique détecté sur cette période !
+                </div>
+              )}
             </div>
           </div>
-          <div className="mock-exam-insight-list">
-            {insights.improvements.length > 0 ? (
-              insights.improvements.map((item) => (
-                <div key={item.name} className="mock-exam-insight-item">
-                  <div className="mock-exam-insight-item-title">
-                    <span className="mock-exam-insight-dot" />
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="mock-exam-insight-item-score">
-                    {item.wrongTotal} erreur{item.wrongTotal > 1 ? 's' : ''} ({item.avgScore}%)
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div style={{ color: '#64748b', fontSize: '13px', fontStyle: 'italic', padding: '10px 0' }}>
-                Félicitations, aucun point critique détecté sur cette période !
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+        </section>
       </div>
 
       {/* --------------------------------------------------------------------

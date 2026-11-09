@@ -803,7 +803,7 @@ export default function Login() {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button type="submit" style={{ flex: 1, padding: '11px', borderRadius: '10px', border: 'none', background: '#2563eb', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Enregistrer &amp; Activer</button>
                     {customGoogleClientId && (
-                      <button type="button" onClick={handleRemoveCustomClientId} style={{ padding: '11px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#ef4444', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Effacer</button>
+                      <button type="button" onClick={handleRemoveCustomClientId} style={{ padding: '11px 14px', borderRadius: '10px', border: '1px solid var(--border, #e2e8f0)', background: 'var(--surface, #fff)', color: '#ef4444', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Effacer</button>
                     )}
                   </div>
                 </form>
