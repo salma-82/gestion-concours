@@ -1,0 +1,74 @@
+.demo-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 34px;
+  padding: 5px 16px;
+  box-sizing: border-box;
+  color: var(--text-secondary, #475569);
+  background: color-mix(in srgb, var(--surface, #fff) 88%, #dbeafe);
+  border-bottom: 1px solid var(--border, #dbeafe);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.demo-mode-banner a { color: #2563eb; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
+[data-theme="dark"] .demo-mode-banner, .dark .demo-mode-banner { background: #1d2b41; border-color: #334155; color: #cbd5e1; }
+[data-theme="dark"] .demo-mode-banner a, .dark .demo-mode-banner a { color: #93c5fd; }
+
+.demo-content-locked { position: relative !important; }
+.client-chapter-card, .client-resume-card, .client-exam-card { position: relative; }
+.demo-content-locked > :not(.demo-access-badge) { filter: blur(.35px); opacity: .68; }
+.demo-access-badge {
+  position: absolute;
+  z-index: 12;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font: 800 11px/1.2 system-ui, sans-serif;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .16);
+  pointer-events: none;
+}
+.demo-access-badge.is-free { color: #047857; background: #d1fae5; border: 1px solid #a7f3d0; }
+.demo-access-badge.is-locked { color: #334155; background: rgba(255,255,255,.94); border: 1px solid #cbd5e1; font-size: 15px; }
+
+.demo-paywall-backdrop {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .56);
+  backdrop-filter: blur(4px);
+}
+.demo-paywall-dialog {
+  position: relative;
+  width: min(100%, 420px);
+  padding: 32px 28px 28px;
+  border: 1px solid var(--border, #dbeafe);
+  border-radius: 22px;
+  background: var(--surface, #fff);
+  color: var(--text, #0f172a);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+  text-align: center;
+}
+.demo-paywall-lock { display: block; margin-bottom: 12px; font-size: 32px; }
+.demo-paywall-dialog h2 { margin: 0 30px 10px; font-size: 21px; font-weight: 850; }
+.demo-paywall-dialog p { margin: 0 auto 22px; max-width: 330px; color: var(--text-secondary, #64748b); font-size: 14px; line-height: 1.6; }
+.demo-paywall-close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--text-secondary, #64748b); font-size: 25px; cursor: pointer; }
+.demo-paywall-subscribe { width: 100%; border: 0; border-radius: 12px; padding: 13px 18px; background: #2563eb; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(37, 99, 235, .24); }
+.demo-paywall-subscribe:hover { background: #1d4ed8; }
+
+[data-theme="dark"] .demo-paywall-dialog, .dark .demo-paywall-dialog { background: var(--surface, #1b273b); border-color: #334155; color: var(--text, #f8fafc); }
+[data-theme="dark"] .demo-access-badge.is-locked, .dark .demo-access-badge.is-locked { color: #e2e8f0; background: rgba(30, 41, 59, .94); border-color: #475569; }
+
+.lp-demo-error { margin: 8px 0 0; color: #b91c1c; font-size: 13px; font-weight: 700; }

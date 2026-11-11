@@ -2,6 +2,7 @@ package com.gestionconcours.controller;
 
 import com.gestionconcours.model.CoursBac;
 import com.gestionconcours.repository.CoursBacRepository;
+import com.gestionconcours.service.DemoContentAccessService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class CoursBacController {
 
     private final CoursBacRepository coursBacRepository;
+    private final DemoContentAccessService demoAccess;
     private final String UPLOAD_DIR = "uploads/";
 
     // 1. GET: Récupérer tous les cours_bac avec filtre par Matière, Chapitre et Filière
@@ -29,21 +31,28 @@ public class CoursBacController {
     public List<CoursBac> getCoursBac(
             @RequestParam(required = false) String matiere,
             @RequestParam(required = false) String chapitre,
-            @RequestParam(required = false) String filiere) {
+            @RequestParam(required = false) String filiere,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        List<CoursBac> items;
         if ((matiere != null && !matiere.trim().isEmpty()) || 
             (chapitre != null && !chapitre.trim().isEmpty()) || 
             (filiere != null && !filiere.trim().isEmpty())) {
-            return coursBacRepository.filterCoursBac(matiere, chapitre, filiere);
+            items = coursBacRepository.filterCoursBac(matiere, chapitre, filiere);
+        } else {
+            items = coursBacRepository.findAll();
         }
-        return coursBacRepository.findAll();
+        demoAccess.protect(items, authorization);
+        return items;
     }
 
     // 2. GET by ID
     @GetMapping("/api/cours-bac/{id}")
-    public ResponseEntity<?> getCoursBacById(@PathVariable Long id) {
-        return coursBacRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getCoursBacById(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        Optional<CoursBac> item = coursBacRepository.findById(id);
+        if (item.isEmpty()) return ResponseEntity.notFound().build();
+        if (demoAccess.isLocked(item.get().isFree(), authorization)) return demoAccess.forbidden();
+        return ResponseEntity.ok(item.get());
     }
 
     // 3. GET: Distinct Matières

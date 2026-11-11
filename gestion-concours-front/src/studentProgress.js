@@ -89,6 +89,13 @@ export const getStudentActivityStatusKey = (type, resourceId) =>
 export const fetchStudentActivityCompletionMap = async () => {
   const events = await fetchStudentActivityEvents();
   const statuses = {};
+  const frontendTypes = {
+    CONCOURS: 'Concours',
+    CONCOURS_BLANC: 'Concours blanc',
+    COURS: 'Cours',
+    EXAMEN: 'Examen national',
+    RESUME: 'Résumé'
+  };
   [...events]
     .sort((left, right) => {
       const timeDifference = new Date(left.occurredAt || 0) - new Date(right.occurredAt || 0);
@@ -96,7 +103,12 @@ export const fetchStudentActivityCompletionMap = async () => {
     })
     .forEach((event) => {
       if (event.eventType !== 'COMPLETE' && event.eventType !== 'UNCOMPLETE') return;
-      const key = getStudentActivityStatusKey(event.type, event.resourceId);
+      const eventType = String(event.type || '').trim().toUpperCase();
+      const type = frontendTypes[eventType] || event.type;
+      const resourceId = [event.resourceId, event.resourceVariant]
+        .filter((part) => part !== null && part !== undefined && String(part).trim() !== '')
+        .join(':');
+      const key = getStudentActivityStatusKey(type, resourceId);
       statuses[key] = event.eventType === 'COMPLETE';
     });
   return statuses;

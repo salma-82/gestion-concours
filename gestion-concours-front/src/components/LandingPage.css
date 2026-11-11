@@ -4522,6 +4522,14 @@ body {
   height: clamp(108px, 9.3vw, 143px);
 }
 
+#hero .lp-hero-mascot-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px rgba(20, 38, 78, .18));
+}
+
 #hero .lp-mascot-hero-note {
   width: 100%;
   height: 100%;
@@ -6245,6 +6253,7 @@ body {
 .landing-root .lp-motivation-banner {
   position: relative;
   overflow: hidden;
+  margin-top: clamp(72px, 8vh, 104px);
   padding: 0 clamp(24px, 6vw, 88px);
   background-color: #ffe0c2;
   background-image:

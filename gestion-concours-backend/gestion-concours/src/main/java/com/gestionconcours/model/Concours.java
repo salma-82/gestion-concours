@@ -1,6 +1,7 @@
 package com.gestionconcours.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "concours")
@@ -22,6 +23,9 @@ public class Concours {
 
     @Column(length = 500)
     private String htmlCorrectionUrl; // Fichier HTML Correction
+
+    @Column(name = "is_free", nullable = false)
+    private boolean isFree = false;
 
     public Concours() {
     }
@@ -76,6 +80,10 @@ public class Concours {
     public void setAnnee(Integer annee) {
         this.annee = annee;
     }
+
+    @JsonProperty("isFree")
+    public boolean isFree() { return isFree; }
+    public void setFree(boolean free) { isFree = free; }
 
     public String getPdfCorrectionUrl() {
         return pdfCorrectionUrl;

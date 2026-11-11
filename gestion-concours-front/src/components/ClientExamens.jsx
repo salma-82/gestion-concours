@@ -1,12 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
-import { readStudentProgress, recordStudentActivity, setStudentActivityCompleted } from '../studentProgress';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
 import { toBackendResourceUrl } from '../backendResourceUrl';
+import {
+  fetchStudentActivityCompletionMap,
+  getStudentActivityStatusKey,
+  readStudentProgress,
+  recordStudentActivity,
+  setStudentActivityCompleted
+} from '../studentProgress';
+import cardMascot from '../assets/logo-mascot.png';
+import './ClientExamens.css';
+import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
 
 const isPdfDocument = (url) => /\.pdf(?:$|[?#])/i.test(String(url || ''));
 
+/* ─────────────────────────────────────────────
+   HELPERS : Filière & Matière
+   ───────────────────────────────────────────── */
 const matchOption = (itemOption, targetFiliere) => {
   if (!targetFiliere) return true;
   if (!itemOption) return true;
@@ -43,7 +55,7 @@ const matchMatiere = (value, configId) => {
   const c = configId.toLowerCase().trim();
   if (c.includes('math')) return v.includes('math');
   if (c.includes('phys')) return v.includes('phys') || v.includes('chimie') || v === 'pc';
-  if (c.includes('svt')) return v.includes('svt') || v.includes('vie') || v.includes('terre');
+  if (c.includes('svt') || c.includes('vie') || c.includes('terre')) return v.includes('svt') || v.includes('vie') || v.includes('terre');
   if (c.includes('philo')) return v.includes('philo');
   if (c.includes('ang') || c.includes('eng')) return v.includes('ang') || v.includes('eng');
   return v.includes(c) || c.includes(v);
@@ -57,7 +69,7 @@ const getExamMatiere = (exam) => {
     const normalized = normalize(value);
     if (normalized.includes('math')) return 'Mathématiques';
     if (normalized.includes('phys') || normalized.includes('chim')) return 'Physique - Chimie';
-    if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return 'SVT';
+    if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return 'Sciences de la Vie et de la Terre';
     if (normalized.includes('philo')) return 'Philosophie';
     if (normalized.includes('anglais') || normalized.includes('english')) return 'Anglais';
     return '';
@@ -65,99 +77,76 @@ const getExamMatiere = (exam) => {
   return resolve(source) || resolve(title) || source || title;
 };
 
-const EXAM_MATIERES = [
+const getExamSession = (exam) => {
+  const explicit = String(exam?.session || '').trim().toLowerCase();
+  const title = String(exam?.titre || '').trim().toLowerCase();
+  if (explicit.includes('rattrapage') || title.includes('rattrapage')) return 'Rattrapage';
+  return 'Normale';
+};
+
+/* ─────────────────────────────────────────────
+   SECTIONS OFFICIELLES PAR MATIÈRE
+   ───────────────────────────────────────────── */
+const EXAM_SECTIONS = [
   {
     id: 'Mathématiques',
     nom: 'Mathématiques',
-    color: '#2563eb',
-    squareBg: '#2563eb',
-    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
-    badgeBg: '#eff6ff',
-    badgeColor: '#1d4ed8',
-    desc: 'Analyse, Limites, Suites, Fonctions exponentielles & logarithmes, Nombres complexes, Intégrales…',
-    emoji: '📐',
-    renderSquareIcon: () => (
-      <span style={{ color: '#ffffff', fontSize: '28px', fontWeight: 'bold', fontFamily: 'system-ui, serif' }}>
-        π
-      </span>
-    )
+    headingTitle: 'Math',
+    tag: 'MATH',
+    fullTag: 'MATHEMATIQUES',
+    subtitle: 'Examens nationaux de mathématiques.',
+    formulas: '∑  f(x)  ∫dx  lim',
+    defaultDuration: '3 h'
   },
   {
-    id: 'Physique',
+    id: 'Physique - Chimie',
     nom: 'Physique - Chimie',
-    color: '#7c3aed',
-    squareBg: '#818cf8',
-    gradient: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
-    badgeBg: '#f5f3ff',
-    badgeColor: '#6d28d9',
-    desc: 'Ondes mécaniques & lumineuses, Nucléaire, Électricité RC/RL/RLC, Lois de Newton, Chimie…',
-    emoji: '⚡',
-    renderSquareIcon: () => (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 2v7.31L4.19 19a2 2 0 0 0 1.7 3h12.22a2 2 0 0 0 1.7-3L14 9.31V2" />
-        <line x1="8.5" y1="2" x2="15.5" y2="2" />
-        <path d="M7 16h10" opacity="0.6" />
-      </svg>
-    )
+    headingTitle: 'Physique - Chimie',
+    tag: 'PHYSIQUE',
+    fullTag: 'PHYSIQUE - CHIMIE',
+    subtitle: 'Examens nationaux de physique-chimie.',
+    formulas: 'E=mc²  F=ma  U=RI  λ',
+    defaultDuration: '3 h'
   },
   {
-    id: 'SVT',
-    nom: 'SVT (Sciences de la Vie et de la Terre)',
-    color: '#059669',
-    squareBg: '#10b981',
-    gradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-    badgeBg: '#ecfdf5',
-    badgeColor: '#047857',
-    desc: 'Information Génétique, Immunologie, Énergie cellulaire & Muscle, Géologie de la Terre…',
-    emoji: '🧬',
-    renderSquareIcon: () => (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-      </svg>
-    )
+    id: 'Sciences de la Vie et de la Terre',
+    nom: 'Sciences de la Vie et de la Terre',
+    headingTitle: 'Sciences de la Vie et de la Terre',
+    tag: 'SVT',
+    fullTag: 'SCIENCES DE LA VIE ET DE LA TERRE',
+    subtitle: 'Examens nationaux de SVT.',
+    formulas: 'ADN  ATP  CO₂  O₂',
+    defaultDuration: '3 h'
   },
   {
     id: 'Philosophie',
     nom: 'Philosophie',
-    color: '#d97706',
-    squareBg: '#f59e0b',
-    gradient: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)',
-    badgeBg: '#fffbeb',
-    badgeColor: '#b45309',
-    desc: 'La Condition Humaine, La Connaissance & Vérité, La Politique, La Justice, Dissertation philosophique…',
-    emoji: '🏛️',
-    renderSquareIcon: () => (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 22h16" />
-        <path d="M4 18h16" />
-        <path d="M2 18l10-7 10 7" />
-        <line x1="6" y1="18" x2="6" y2="11" />
-        <line x1="10" y1="18" x2="10" y2="11" />
-        <line x1="14" y1="18" x2="14" y2="11" />
-        <line x1="18" y1="18" x2="18" y2="11" />
-        <path d="M2 11h20" />
-      </svg>
-    )
+    headingTitle: 'Philosophie',
+    tag: 'PHILO',
+    fullTag: 'PHILOSOPHIE',
+    subtitle: 'Examens nationaux de philosophie.',
+    formulas: 'Logos  Vérité  Devoir  Morale',
+    defaultDuration: '2 h'
   },
   {
     id: 'Anglais',
-    nom: 'Anglais (English)',
-    color: '#0284c7',
-    squareBg: '#0ea5e9',
-    gradient: 'linear-gradient(135deg, #0369a1 0%, #38bdf8 100%)',
-    badgeBg: '#f0f9ff',
-    badgeColor: '#0369a1',
-    desc: 'Reading Comprehension, Writing, Gifts of Youth, Science & Culture, Sustainable Development…',
-    emoji: '🌍',
-    renderSquareIcon: () => (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      </svg>
-    )
+    nom: 'Anglais',
+    headingTitle: 'Anglais',
+    tag: 'ENGLISH',
+    fullTag: 'ANGLAIS',
+    subtitle: 'Examens nationaux d’anglais.',
+    formulas: 'Grammar  Reading  Writing  Vocab',
+    defaultDuration: '2 h'
   }
+];
+
+const SUBJECT_PILLS = [
+  'Toutes',
+  'Mathématiques',
+  'Physique - Chimie',
+  'Sciences de la Vie et de la Terre',
+  'Philosophie',
+  'Anglais'
 ];
 
 export default function ClientExamens() {
@@ -167,58 +156,39 @@ export default function ClientExamens() {
   const requestedDocument = searchParams.get('document') || 'sujet';
 
   let profileFiliere = '';
-  try { profileFiliere = JSON.parse(localStorage.getItem('user') || '{}')?.filiere || ''; } catch {}
-  const [selectedFiliere, setSelectedFiliere] = useState(filiereParam || profileFiliere);
-  const [selectedFiliereAnnee, setSelectedFiliereAnnee] = useState('');
-  const [selectedMatiereCard, setSelectedMatiereCard] = useState(null);
+  try {
+    profileFiliere = JSON.parse(localStorage.getItem('user') || '{}')?.filiere || '';
+  } catch { }
 
+  const [selectedFiliere, setSelectedFiliere] = useState(filiereParam || profileFiliere);
   const [examens, setExamens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Synchronisation avec les changements d'URL
+  // Filtres
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubjectPill, setSelectedSubjectPill] = useState('Toutes');
+  const [selectedSession, setSelectedSession] = useState('Toutes'); // 'Toutes' | 'Normale' | 'Rattrapage'
+  const [selectedAnnee, setSelectedAnnee] = useState(''); // '' = toutes les années
+
+  // Suivi de progression étudiant
+  const [completionMap, setCompletionMap] = useState({});
+  const [progressList, setProgressList] = useState(() => readStudentProgress());
+  const [isFinishingExam, setIsFinishingExam] = useState(false);
+  const [finishExamError, setFinishExamError] = useState('');
+
+  // Mode Visionneuse
+  const [activeExam, setActiveExam] = useState(null);
+  const [activeDocType, setActiveDocType] = useState('sujet'); // 'sujet' | 'correction'
+  const openedExamRequestRef = useRef('');
+
+  // Synchronisation avec les paramètres d'URL
   useEffect(() => {
     const f = searchParams.get('filiere') || '';
     setSelectedFiliere(f || profileFiliere);
-    setSelectedFiliereAnnee('');
-    setSelectedMatiereCard(null);
-    setActiveExam(null);
-    setIsSidebarCollapsed(false);
   }, [searchParams, profileFiliere]);
 
-  // Filtres
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMatiere, setSelectedMatiere] = useState('');
-  const [selectedAnnee, setSelectedAnnee] = useState('');
-  const [selectedOption, setSelectedOption] = useState('');
-  const [selectedSession, setSelectedSession] = useState('');
-
-  // Mode Lecteur / Visionneuse
-  const [activeExam, setActiveExam] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeDocType, setActiveDocType] = useState('sujet'); // 'sujet' ou 'correction'
-  const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState('scroll'); // 'scroll' ou 'single'
-  const [zoomLevel, setZoomLevel] = useState(100);
-  const [showThumbnails, setShowThumbnails] = useState(true);
-  const [isFinishingExam, setIsFinishingExam] = useState(false);
-  const [finishExamError, setFinishExamError] = useState('');
-  const [completedActivityIds, setCompletedActivityIds] = useState(() => new Set(
-    readStudentProgress().filter((activity) => activity.completed).map((activity) => activity.id)
-  ));
-  const openedExamRequestRef = useRef('');
-
-  const activeActivityId = activeExam ? `Examen national:${activeExam.id}:${activeDocType}` : '';
-  const activeExamCompleted = completedActivityIds.has(activeActivityId);
-
-  useEffect(() => {
-    const stage = activeExam ? activeDocType : 'selection';
-    const context = activeExam
-      ? [getExamMatiere(activeExam), activeExam.annee || activeExam.anneeScolaire].filter(Boolean).join(' · ')
-      : [selectedFiliere, selectedMatiereCard?.nom || selectedMatiere, selectedAnnee].filter(Boolean).join(' · ');
-    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage, context } }));
-  }, [activeExam, activeDocType, selectedFiliere, selectedMatiereCard, selectedMatiere, selectedAnnee]);
-
+  // Chargement des données d'examens
   useEffect(() => {
     fetchExamens();
   }, []);
@@ -231,12 +201,36 @@ export default function ClientExamens() {
       const data = Array.isArray(res.data) ? res.data : [];
       setExamens(data);
     } catch (err) {
-      console.error("Erreur fetch examens:", err);
-      setError("Impossible de charger les examens nationaux. Vérifiez que le serveur est démarré.");
+      console.error('Erreur fetch examens:', err);
+      setError('Impossible de charger les examens nationaux. Vérifiez que le serveur est démarré.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Chargement de la map de complétion
+  useEffect(() => {
+    let isMounted = true;
+    fetchStudentActivityCompletionMap()
+      .then((map) => { if (isMounted) setCompletionMap((previous) => ({ ...previous, ...(map || {}) })); })
+      .catch(() => { });
+
+    const handleProgressUpdate = () => {
+      setProgressList(readStudentProgress());
+      fetchStudentActivityCompletionMap()
+        .then((map) => { if (isMounted) setCompletionMap((previous) => ({ ...previous, ...(map || {}) })); })
+        .catch(() => { });
+    };
+
+    window.addEventListener('student-progress-updated', handleProgressUpdate);
+    window.addEventListener('student-server-activity-updated', handleProgressUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('student-progress-updated', handleProgressUpdate);
+      window.removeEventListener('student-server-activity-updated', handleProgressUpdate);
+    };
+  }, []);
 
   const getFullUrl = (url) => {
     if (!url) return '';
@@ -245,66 +239,30 @@ export default function ClientExamens() {
     return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
-  // Listes dynamiques pour les sélecteurs de filtres
-  const matieresList = [...new Set(examens.map(getExamMatiere).filter(Boolean))];
-  const anneesList = [...new Set(examens.map(e => e.annee).filter(Boolean))].sort((a, b) => b - a);
-  const optionsList = [...new Set(examens.map(e => e.optionBac).filter(Boolean))];
-
-  // Examens filtrés
-  const filteredExamens = examens.filter(e => {
-    const examMatiere = getExamMatiere(e);
-    const matchSearch = !searchQuery ||
-      (e.titre && e.titre.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (examMatiere && examMatiere.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (e.optionBac && e.optionBac.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchMatiere = !selectedMatiere || examMatiere === selectedMatiere;
-    const matchAnnee = !selectedAnnee || String(e.annee) === String(selectedAnnee);
-    const matchOption = !selectedOption || e.optionBac === selectedOption;
-    const matchSession = !selectedSession || e.session === selectedSession;
-    return matchSearch && matchMatiere && matchAnnee && matchOption && matchSession;
-  });
-
-  // Obtenir la liste des pages actives (Sujet ou Correction)
+  // Pages du document actif (Sujet ou Corrigé)
   const getActivePages = (exam, docType) => {
     if (!exam) return [];
     if (docType === 'sujet') {
       return (exam.sujetPageImages || []).map(getFullUrl);
-    } else {
-      return (exam.correctionPageImages || []).map(getFullUrl);
     }
+    return (exam.correctionPageImages || []).map(getFullUrl);
   };
 
+  // Ouvrir le lecteur pour une épreuve
   const handleOpenReader = useCallback((exam, type = 'sujet') => {
     setActiveExam(exam);
-    setIsSidebarCollapsed(true);
     setActiveDocType(type);
     recordStudentActivity({
       type: 'Examen national',
       resourceId: `${exam.id}:${type}`,
-      title: exam.titre || exam.title || `${type === 'correction' ? 'Correction' : 'Épreuve'} ${exam.annee || ''}`.trim(),
-      subject: getExamMatiere(exam) || selectedMatiereCard || '',
+      title: exam.titre || `Examen National ${exam.annee || ''}`.trim(),
+      subject: getExamMatiere(exam) || '',
       chapter: exam.annee ? String(exam.annee) : ''
     });
-    setCurrentPage(1);
-    setZoomLevel(100);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [selectedMatiereCard]);
+  }, []);
 
-  const handleSelectDocument = (type) => {
-    if (!activeExam || activeDocType === type) return;
-    setActiveDocType(type);
-    recordStudentActivity({
-      type: 'Examen national',
-      resourceId: `${activeExam.id}:${type}`,
-      title: activeExam.titre || activeExam.title || `${type === 'correction' ? 'Correction' : 'Épreuve'} ${activeExam.annee || ''}`.trim(),
-      subject: getExamMatiere(activeExam) || selectedMatiereCard || '',
-      chapter: activeExam.annee ? String(activeExam.annee) : ''
-    });
-    setCurrentPage(1);
-    setZoomLevel(100);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+  // Gestion du deep-linking via query params (?examId=...&document=...)
   useEffect(() => {
     if (!requestedExamId) {
       openedExamRequestRef.current = '';
@@ -320,1127 +278,580 @@ export default function ClientExamens() {
     handleOpenReader(exam, documentType);
   }, [examens, requestedExamId, requestedDocument, handleOpenReader]);
 
-  const handleCloseReader = () => {
-    setActiveExam(null);
+  // Synchronisation avec la mascotte globale du layout
+  useEffect(() => {
+    const stage = activeExam ? activeDocType : 'selection';
+    const context = activeExam
+      ? [getExamMatiere(activeExam), activeExam.annee, activeExam.titre].filter(Boolean).join(' · ')
+      : [selectedFiliere, selectedSubjectPill !== 'Toutes' ? selectedSubjectPill : '', selectedAnnee].filter(Boolean).join(' · ');
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage, context } }));
+  }, [activeExam, activeDocType, selectedFiliere, selectedSubjectPill, selectedAnnee]);
+
+  // Document switcher
+  const handleSelectDocument = (type) => {
+    if (!activeExam || activeDocType === type) return;
+    setActiveDocType(type);
+    recordStudentActivity({
+      type: 'Examen national',
+      resourceId: `${activeExam.id}:${type}`,
+      title: activeExam.titre || `Examen National ${activeExam.annee || ''}`.trim(),
+      subject: getExamMatiere(activeExam) || '',
+      chapter: activeExam.annee ? String(activeExam.annee) : ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Marquer l'examen comme terminé
+  const activeExamIsCompleted = useMemo(() => {
+    if (!activeExam) return false;
+    const keyWithDoc = getStudentActivityStatusKey('Examen national', `${activeExam.id}:${activeDocType}`);
+    const keyGeneral = getStudentActivityStatusKey('Examen national', activeExam.id);
+    return completionMap[keyWithDoc] === true || completionMap[keyGeneral] === true;
+  }, [activeExam, activeDocType, completionMap]);
+
   const handleFinishExam = async () => {
-    if (!activeExam || isFinishingExam || activeExamCompleted) return;
-    const activityId = activeActivityId;
+    if (!activeExam || isFinishingExam || activeExamIsCompleted) return;
+    const activityId = `Examen national:${activeExam.id}:${activeDocType}`;
     setIsFinishingExam(true);
     setFinishExamError('');
     try {
       const saved = await setStudentActivityCompleted(activityId, true);
       if (!saved) {
-        setFinishExamError('La fin de l’examen n’a pas pu être enregistrée. Réessayez.');
+        setFinishExamError('L’enregistrement a échoué. Veuillez réessayer.');
         return;
       }
-      setCompletedActivityIds((current) => new Set(current).add(activityId));
+      const key = getStudentActivityStatusKey('Examen national', `${activeExam.id}:${activeDocType}`);
+      setCompletionMap((prev) => ({ ...prev, [key]: true }));
+      setProgressList(readStudentProgress());
     } catch {
-      setFinishExamError('La fin de l’examen n’a pas pu être enregistrée. Réessayez.');
+      setFinishExamError('L’enregistrement a échoué. Veuillez réessayer.');
     } finally {
       setIsFinishingExam(false);
     }
   };
 
-  const getMatiereBadgeStyle = (matiere) => {
-    const mat = (matiere || '').toUpperCase();
-    if (mat.includes('MATH')) {
-      return { background: '#dbeafe', color: '#1e40af', border: '1px solid #bfdbfe' };
-    } else if (mat.includes('PHYS') || mat.includes('CHIM')) {
-      return { background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' };
-    } else if (mat.includes('SVT') || mat.includes('BIO')) {
-      return { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
+  // Années disponibles dans le jeu de données pour le sélecteur
+  const availableYears = useMemo(() => {
+    const relevantExams = selectedFiliere
+      ? examens.filter((e) => matchOption(e.optionBac, selectedFiliere))
+      : examens;
+    return [...new Set(
+      relevantExams.map((e) => e.annee).filter((annee) => annee !== null && annee !== undefined && annee !== '')
+    )].sort((a, b) => Number(b) - Number(a));
+  }, [examens, selectedFiliere]);
+
+  // Examens filtrés globalement (filière, recherche, session, année)
+  const filteredExams = useMemo(() => {
+    return examens.filter((e) => {
+      // Filtre filière (si une filière est définie dans le profil ou l'URL)
+      if (selectedFiliere && !matchOption(e.optionBac, selectedFiliere)) {
+        return false;
+      }
+
+      // Filtre année
+      if (selectedAnnee && String(e.annee) !== String(selectedAnnee)) {
+        return false;
+      }
+
+      // Filtre session
+      if (selectedSession !== 'Toutes') {
+        const session = getExamSession(e);
+        if (session.toLowerCase() !== selectedSession.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Filtre recherche par texte
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const title = (e.titre || '').toLowerCase();
+        const mat = getExamMatiere(e).toLowerCase();
+        const year = String(e.annee || '');
+        const session = (e.session || '').toLowerCase();
+        const opt = (e.optionBac || '').toLowerCase();
+        if (!title.includes(q) && !mat.includes(q) && !year.includes(q) && !session.includes(q) && !opt.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [examens, selectedFiliere, selectedAnnee, selectedSession, searchQuery]);
+
+  // Calcul du statut et pourcentage de progression d'une épreuve
+  const getExamProgressData = useCallback((exam) => {
+    const examId = exam?.id;
+    const keyWithSujet = getStudentActivityStatusKey('Examen national', `${examId}:sujet`);
+    const keyGeneral = getStudentActivityStatusKey('Examen national', examId);
+    const keyWithCorr = getStudentActivityStatusKey('Examen national', `${examId}:correction`);
+
+    const isCompleted =
+      completionMap[keyWithSujet] === true ||
+      completionMap[keyGeneral] === true ||
+      completionMap[keyWithCorr] === true;
+
+    if (isCompleted) {
+      return {
+        status: 'Terminé',
+        pct: 100,
+        label: 'Terminé',
+        btnText: 'Revoir',
+        statusClass: 'status-completed'
+      };
     }
-    return { background: 'var(--surface-2, #f1f5f9)', color: 'var(--text, #334155)', border: '1px solid var(--border, #cbd5e1)' };
-  };
 
-  const activePages = getActivePages(activeExam, activeDocType);
+    const activity = progressList.find(
+      (p) =>
+        p.id === `Examen national:${examId}` ||
+        p.id === `Examen national:${examId}:sujet` ||
+        (p.title && exam.titre && p.title.trim().toLowerCase() === exam.titre.trim().toLowerCase())
+    );
 
-  // Examens filtrés par la filière sélectionnée depuis la sidebar
-  const filiereExams = selectedFiliere
-    ? examens.filter(e => matchOption(e.optionBac, selectedFiliere))
-    : examens;
-  const filiereAnneesList = [...new Set(
-    filiereExams
-      .map(e => e.annee)
-      .filter(annee => annee !== null && annee !== undefined && annee !== '')
-  )].sort((a, b) => Number(b) - Number(a));
-  const filiereExamsForSelectedYear = filiereExams.filter(e =>
-    !selectedFiliereAnnee || String(e.annee) === String(selectedFiliereAnnee)
-  );
+    if (activity && (activity.visits > 0 || activity.durationSeconds > 0)) {
+      const pct = activity.durationSeconds > 180 ? 60 : activity.durationSeconds > 40 ? 45 : 30;
+      return {
+        status: 'En cours',
+        pct,
+        label: 'En cours',
+        btnText: 'Commencer',
+        statusClass: 'status-in-progress'
+      };
+    }
 
-  // Calcul du nombre d'examens disponibles par matière pour cette filière
-  const examMatieresWithCount = EXAM_MATIERES.map(m => {
-    const list = filiereExamsForSelectedYear.filter(e => matchMatiere(getExamMatiere(e), m.id));
     return {
-      ...m,
-      count: list.length
+      status: 'Nouveau',
+      pct: 0,
+      label: 'Nouveau',
+      btnText: 'Commencer',
+      statusClass: 'status-new'
     };
-  });
+  }, [completionMap, progressList]);
 
-  if (!selectedFiliere) {
-    return <Navigate to="/client-dashboard" replace state={{ openSidebarMenu: 'examens' }} />;
-  }
+  // Sections à afficher selon la pilule matière sélectionnée
+  const visibleSections = useMemo(() => {
+    if (selectedSubjectPill === 'Toutes') {
+      return EXAM_SECTIONS;
+    }
+    return EXAM_SECTIONS.filter((s) => s.nom === selectedSubjectPill || s.id === selectedSubjectPill);
+  }, [selectedSubjectPill]);
 
-  return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      minHeight: '100%',
-      backgroundColor: 'var(--bg, #f8fafc)',
-      overflowY: 'visible',
-      padding: selectedFiliere ? '24px 24px 40px' : '0',
-      boxSizing: 'border-box',
-      fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif"
-    }}>
-      
+  // =========================================================================
+  // RENDU VUE 1 : VISIONNEUSE DU DOCUMENT (LECTEUR PLEIN ÉCRAN)
+  // =========================================================================
+  if (activeExam) {
+    const docUrl = activeDocType === 'correction'
+      ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl)
+      : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
 
-      {/* ==================== VUE 1 : VISIONNEUSE DU DOCUMENT (PLEINE PAGE) ==================== */}
-      {selectedFiliere ? (
-        <div style={{ width: '100%', display: activeExam && !isSidebarCollapsed ? 'grid' : 'flex', gridTemplateColumns: activeExam && !isSidebarCollapsed ? '290px minmax(0, 1fr)' : undefined, gridTemplateRows: activeExam && !isSidebarCollapsed ? 'auto minmax(0, 1fr)' : undefined, flexDirection: 'column', alignItems: 'stretch', gap: '18px', minHeight: 'calc(100vh - 140px)' }}>
-          {!isSidebarCollapsed && <aside style={{ ...(activeExam ? { gridColumn: '1', gridRow: '2', width: 'auto', maxHeight: 'calc(100vh - 164px)', overflowY: 'auto', position: 'sticky', top: '12px' } : {}), flex: '0 0 auto', width: activeExam ? 'auto' : 'calc(100% - min(6cm, 12vw))', marginInline: activeExam ? 0 : 'auto', maxWidth: 'none', minWidth: 0, background: activeExam ? '#ffffff' : 'transparent', border: activeExam ? '1px solid #dbeafe' : 'none', borderRadius: activeExam ? '16px' : 0, padding: activeExam ? '18px 22px' : 0, boxShadow: activeExam ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', boxSizing: 'border-box' }}>
-            <label style={{ display: 'block', margin: '0 2px 16px', color: 'var(--text-secondary, #475569)', fontSize: '12px', fontWeight: 700 }}>Année
-              <select value={selectedFiliereAnnee} onChange={(event) => setSelectedFiliereAnnee(event.target.value)} style={{ width: '100%', marginTop: '6px', padding: '8px 9px', border: '1px solid var(--border, #cbd5e1)', borderRadius: '9px', background: 'var(--surface, #fff)', color: 'var(--text, #334155)', fontSize: '12px' }}>
-                <option value="">Toutes les années</option>
-                {filiereAnneesList.map((annee) => <option key={annee} value={annee}>{annee}</option>)}
-              </select>
-            </label>
-            <h2 style={{ margin: '2px 4px 10px', fontSize: '15px', color: '#1e3a8a' }}>Matières</h2>
-            {loading ? <div style={{ padding: '16px 6px', color: 'var(--text-secondary, #64748b)', fontSize: '13px' }}>Chargement…</div> : error ? <div style={{ padding: '16px 6px', color: '#dc2626', fontSize: '13px' }}>{error}</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
-              {examMatieresWithCount.map((matiere) => {
-                const isActive = selectedMatiereCard === matiere.id;
-                const subjectExams = filiereExamsForSelectedYear.filter((exam) => matchMatiere(getExamMatiere(exam), matiere.id));
-                return <div key={matiere.id}>
-                  <button type="button" onClick={() => { setSelectedMatiereCard(matiere.id); setActiveExam(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}><span>{matiere.nom}</span><span style={{ color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>{matiere.count}</span></button>
-                  {isActive && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '1px 0 8px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
-                    {subjectExams.length ? subjectExams.map((exam, index) => <button key={exam.id || index} type="button" onClick={() => handleOpenReader(exam, 'sujet')} style={{ width: '100%', padding: '8px 9px', border: '0', borderRadius: '8px', background: activeExam?.id === exam.id ? '#2563eb' : 'transparent', color: activeExam?.id === exam.id ? '#fff' : '#475569', textAlign: 'left', fontSize: '11px', fontWeight: 650, cursor: 'pointer' }}><span>{exam.titre || `Examen National ${exam.annee || ''}`}</span><span style={{ display: 'block', marginTop: '3px', color: activeExam?.id === exam.id ? '#dbeafe' : '#94a3b8', fontSize: '10px' }}>{exam.annee || 'Année inconnue'} · {exam.session || 'Normale'}</span></button>) : <div style={{ padding: '8px 9px', color: 'var(--text-secondary, #94a3b8)', fontSize: '11px' }}>Aucune épreuve pour cette matière.</div>}
-                  </div>}
-                </div>;
-              })}
-            </div>}
-          </aside>}
-          {activeExam && <div style={{ ...(activeExam && !isSidebarCollapsed ? { gridColumn: '1 / -1', gridRow: '1' } : {}), display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', width: '100%', position: 'sticky', top: 0, zIndex: 40, background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none', padding: 0 }}>
-            <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des examens' : 'Fermer le menu des examens'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '48px', height: '48px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '12px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '8px', marginLeft: 'auto' }}>
-              <button type="button" onClick={() => handleSelectDocument('sujet')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'sujet' ? '#2563eb' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff', color: activeDocType === 'sujet' ? '#2563eb' : '#475569', fontWeight: 700, cursor: 'pointer' }}>Sujet</button>
-              <button type="button" disabled={!activeExam.pdfCorrectionUrl && !activeExam.correctionPageImages?.length} onClick={() => handleSelectDocument('correction')} style={{ padding: '9px 15px', border: `1px solid ${activeDocType === 'correction' ? '#059669' : '#cbd5e1'}`, borderRadius: '9px', background: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff', color: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? '#059669' : '#94a3b8', fontWeight: 700, cursor: activeExam.pdfCorrectionUrl || activeExam.correctionPageImages?.length ? 'pointer' : 'not-allowed' }}>Corrigé</button>
-              <button type="button" onClick={handleFinishExam} disabled={isFinishingExam || activeExamCompleted} style={{ padding: '10px 16px', border: `1px solid ${activeExamCompleted ? '#059669' : '#1d4ed8'}`, borderRadius: '9px', background: activeExamCompleted ? '#059669' : '#2563eb', color: '#ffffff', fontWeight: 750, cursor: isFinishingExam ? 'wait' : activeExamCompleted ? 'default' : 'pointer', opacity: isFinishingExam ? 0.72 : 1, boxShadow: '0 3px 10px rgba(37,99,235,0.2)' }}>{isFinishingExam ? 'Enregistrement…' : activeExamCompleted ? 'Terminé ✓' : 'Terminer'}</button>
-              {finishExamError && <span role="alert" style={{ color: '#b91c1c', fontSize: '12px', fontWeight: 600 }}>{finishExamError}</span>}
-            </div>
-          </div>}
-          <main style={{ ...(activeExam && !isSidebarCollapsed ? { gridColumn: '2', gridRow: '2' } : {}), flex: '1 1 auto', width: '100%', minWidth: 0 }}>
-            {activeExam ? (
-              <div style={{ overflow: 'hidden' }}>
-                {(() => {
-                  const documentUrl = activeDocType === 'correction' ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl) : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
-                  const pages = getActivePages(activeExam, activeDocType);
-                  if (pages.length) return <div style={{ width: '100%', minHeight: 'calc(100vh - 211px)', overflowY: 'visible', background: 'var(--surface, #ffffff)' }}>{pages.map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Page ${index + 1}`} loading={index > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', background: 'var(--surface, #ffffff)' }} />)}</div>;
-                  if (documentUrl) return isPdfDocument(documentUrl)
-                    ? <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} style={{ width: '100%', height: 'calc(100vh - 211px)', minHeight: '460px', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }} />
-                    : <AutoHeightHtmlFrame key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(documentUrl)} title={activeExam.titre || 'Examen national'} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" integrated style={{ width: '100%', minHeight: '460px', border: 'none', display: 'block', background: 'transparent' }} />;
-                  return <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', padding: '36px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>Le document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} n’est pas encore disponible.</div>;
-                })()}
-              </div>
-            ) : null}
-          </main>
-        </div>
-      ) : activeExam ? (
-        <div style={{
-          position: 'relative',
-          width: '100%',
-          minHeight: 'calc(100vh - 76px)',
-          backgroundColor: 'var(--surface, #ffffff)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'visible',
-          margin: 0,
-          padding: '0 0 24px'
-        }}>
-          {/* Fil d'Ariane cliquable : Matières / Matière / Épreuve */}
-          <div style={{
-            height: '48px',
-            minHeight: '48px',
-            maxHeight: '48px',
-            backgroundColor: 'var(--surface, #ffffff)',
-            borderBottom: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-            fontSize: '13.5px',
-            fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
-            userSelect: 'none',
-            flexShrink: 0,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    const activePages = getActivePages(activeExam, activeDocType);
+    const hasCorrection = Boolean(activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0));
+
+    return (
+      <div className="client-examens-container">
+        <div className="client-exam-viewer">
+          {/* Barre de commande supérieure du lecteur */}
+          <div className="client-exam-viewer-bar">
+            <button
+              type="button"
+              className="client-exam-viewer-back"
+              onClick={() => setActiveExam(null)}
+              aria-label="Retourner à la liste des examens"
+            >
+              <span>←</span>
+              <span>Retour aux examens</span>
+            </button>
+
+            <div className="client-exam-viewer-controls">
+              {/* Sélecteur Sujet / Corrigé */}
               <button
-                onClick={() => {
-                  setActiveExam(null);
-                  setSelectedMatiereCard(null);
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#2563eb',
-                  cursor: 'pointer',
-                  fontWeight: 650,
-                  fontSize: '13.5px',
-                  padding: '4px 6px',
-                  borderRadius: '6px',
-                  transition: 'background 0.15s, color 0.15s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-              >
-                Matières
-              </button>
-
-              <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>/</span>
-
-              <button
-                onClick={() => {
-                  setActiveExam(null);
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#2563eb',
-                  cursor: 'pointer',
-                  fontWeight: 650,
-                  fontSize: '13.5px',
-                  padding: '4px 6px',
-                  borderRadius: '6px',
-                  transition: 'background 0.15s, color 0.15s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-              >
-                {getExamMatiere(activeExam) || selectedMatiereCard || 'Physique - Chimie'}
-              </button>
-
-              <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>/</span>
-
-              <span style={{
-                color: 'var(--text, #0f172a)',
-                fontWeight: 700,
-                fontSize: '13.5px',
-                padding: '4px 6px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}>
-                {activeExam.titre || `Examen National ${activeExam.annee || ''}`}
-              </span>
-            </div>
-
-            {/* Sélecteur Sujet / Corrigé discret à droite */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
+                type="button"
+                className={`client-exam-viewer-pill-btn ${activeDocType === 'sujet' ? 'is-active-sujet' : ''}`}
                 onClick={() => handleSelectDocument('sujet')}
-                style={{
-                  padding: '5px 14px',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 700,
-                  border: activeDocType === 'sujet' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                  backgroundColor: activeDocType === 'sujet' ? '#eff6ff' : '#ffffff',
-                  color: activeDocType === 'sujet' ? '#2563eb' : '#475569',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  transition: 'all 0.15s ease'
-                }}
               >
-                <span>📄</span> Sujet
+                <span>📄</span>
+                <span>Sujet</span>
               </button>
+
               <button
-                onClick={() => {
-                  if (activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0)) {
-                    handleSelectDocument('correction');
-                  }
-                }}
-                disabled={!activeExam.pdfCorrectionUrl && (!activeExam.correctionPageImages || activeExam.correctionPageImages.length === 0)}
-                style={{
-                  padding: '5px 14px',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 700,
-                  border: activeDocType === 'correction' ? '1.5px solid #059669' : '1px solid #cbd5e1',
-                  backgroundColor: activeDocType === 'correction' ? '#ecfdf5' : '#ffffff',
-                  color: activeDocType === 'correction' ? '#059669' : ((activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0)) ? '#475569' : '#94a3b8'),
-                  cursor: (activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0)) ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  transition: 'all 0.15s ease',
-                  opacity: (activeExam.pdfCorrectionUrl || (activeExam.correctionPageImages && activeExam.correctionPageImages.length > 0)) ? 1 : 0.6
-                }}
+                type="button"
+                className={`client-exam-viewer-pill-btn ${activeDocType === 'correction' ? 'is-active-correction' : ''}`}
+                onClick={() => handleSelectDocument('correction')}
+                disabled={!hasCorrection}
+                title={!hasCorrection ? 'Aucun corrigé déposé pour cette épreuve' : 'Consulter le corrigé officiel'}
               >
-                <span>✅</span> Corrigé
+                <span>✅</span>
+                <span>Corrigé</span>
               </button>
+
+              {/* Bouton Terminer */}
+              <button
+                type="button"
+                className={`client-exam-viewer-finish ${activeExamIsCompleted ? 'is-completed' : ''}`}
+                onClick={handleFinishExam}
+                disabled={isFinishingExam || activeExamIsCompleted}
+              >
+                {isFinishingExam ? 'Enregistrement…' : activeExamIsCompleted ? 'Terminé ✓' : 'Terminer'}
+              </button>
+              {finishExamError && (
+                <span role="alert" style={{ color: '#b91c1c', fontSize: '12px', fontWeight: 600 }}>
+                  {finishExamError}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Iframe occupant tout le reste de l'écran */}
-          {(() => {
-            const docUrl = activeDocType === 'correction'
-              ? (activeExam.pdfCorrectionUrl || activeExam.htmlUrl)
-              : (activeExam.pdfSujetUrl || activeExam.htmlUrl);
-
-            const pages = getActivePages(activeExam, activeDocType);
-
-            if (docUrl && !isPdfDocument(docUrl) && pages.length === 0) {
-              return (
-                <AutoHeightHtmlFrame
-                  src={getFullUrl(docUrl)}
-                  title={activeExam.titre || 'Examen National'}
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  integrated
-                  style={{
-                    width: '100%',
-                    height: 'calc(100vh - 48px)',
-                    border: 'none',
-                    display: 'block',
-                    backgroundColor: 'transparent',
-                    overflow: 'auto'
-                  }}
-                />
-              );
-            }
-
-            if (pages.length > 0) {
-              return (
-                <div style={{
-                  width: '100%',
-                  height: 'auto',
-                  overflowY: 'visible',
-                  backgroundColor: 'var(--surface, #ffffff)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  padding: 0,
-                  gap: 0
-                }}>
-                  {pages.map((imgUrl, pIdx) => (
-                    <img key={pIdx} src={imgUrl} alt={`Page ${pIdx + 1}`} loading={pIdx > 1 ? 'lazy' : 'eager'} style={{ width: '100%', height: 'auto', display: 'block', backgroundColor: 'var(--surface, #ffffff)' }} />
-                  ))}
-                </div>
-              );
-            }
-
-            if (docUrl && isPdfDocument(docUrl)) {
-              return <iframe key={`${activeExam.id}-${activeDocType}`} src={getFullUrl(docUrl)} title={activeExam.titre || 'Examen National'} style={{ width: '100%', height: 'calc(100vh - 48px)', minHeight: '460px', border: 'none', display: 'block', backgroundColor: 'var(--surface, #ffffff)' }} />;
-            }
-
-            return (
-              <div style={{
-                flex: 1,
-                height: 'calc(100vh - 48px)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'var(--bg, #f8fafc)',
-                padding: '40px 20px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)', marginBottom: '8px' }}>
-                  Document {activeDocType === 'correction' ? 'de correction' : 'de sujet'} non disponible
-                </h2>
-                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14.5px', maxWidth: '480px', marginBottom: '24px' }}>
-                  L'administrateur n'a pas encore ajouté le fichier pour cette épreuve.
-                </p>
-                <button
-                  onClick={() => setActiveExam(null)}
-                  style={{
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '11px 24px',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  ← Revenir à la liste
-                </button>
-              </div>
-            );
-          })()}
-        </div>
-      ) : selectedFiliere ? (
-        !selectedMatiereCard ? (
-          /* ═════════════════════════════════════════
-             STEP 1 : CARTES DES MATIÈRES DE LA FILIÈRE
-             ═════════════════════════════════════════ */
-          <div style={{ width: '100%', maxWidth: 'none', margin: '30px auto', padding: 0 }}>
-            <div style={{
-              marginBottom: '24px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              flexWrap: 'wrap',
-              gap: '16px'
-            }}>
-              <div>
-                <h2 style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                  Matières d'Examens Nationaux
-                </h2>
-                <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
-                  Sélectionnez une matière pour afficher les épreuves et corrections officielles ajoutées par l'administration.
-                </p>
-              </div>
-              <label style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-                color: 'var(--text-secondary, #475569)',
-                fontSize: '12px',
-                fontWeight: 700
-              }}>
-                Année
-                <select
-                  value={selectedFiliereAnnee}
-                  onChange={(e) => setSelectedFiliereAnnee(e.target.value)}
-                  disabled={loading || filiereAnneesList.length === 0}
-                  style={{
-                    minWidth: '190px',
-                    padding: '10px 14px',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    borderRadius: '12px',
-                    background: 'var(--surface, #ffffff)',
-                    color: 'var(--text, #0f172a)',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: loading || filiereAnneesList.length === 0 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <option value="">Toutes les années</option>
-                  {filiereAnneesList.map((annee) => (
-                    <option key={annee} value={annee}>{annee}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {/* Grille des cartes de matières */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {examMatieresWithCount.map((mat) => (
-                <div
-                  key={mat.id}
-                  onClick={() => setSelectedMatiereCard(mat.id)}
-                  style={{
-                    background: 'var(--surface, #ffffff)',
-                    borderRadius: '18px',
-                    border: '1px solid #e4ecf8',
-                    boxShadow: '0 3px 14px rgba(15, 23, 42, 0.035)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    minHeight: '94px',
-                    padding: '14px 20px',
-                    flexWrap: 'wrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 22px rgba(37, 99, 235, 0.08)';
-                    e.currentTarget.style.borderColor = '#bfdbfe';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 3px 14px rgba(15, 23, 42, 0.035)';
-                    e.currentTarget.style.borderColor = '#e4ecf8';
-                  }}
-                >
-                  <div style={{
-                    width: '54px',
-                    height: '54px',
-                    minWidth: '54px',
-                    borderRadius: '14px',
-                    background: mat.squareBg || mat.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {mat.renderSquareIcon ? mat.renderSquareIcon() : (
-                      <span style={{ color: '#fff', fontSize: '23px', fontWeight: 800 }}>
-                        {mat.nom.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ flex: '1 1 320px', minWidth: 0 }}>
-                    <h2 style={{ margin: '0 0 5px', fontSize: '17px', fontWeight: 800, color: '#12366d', letterSpacing: '-0.2px' }}>
-                      {mat.nom}
-                    </h2>
-                    <p style={{
-                      margin: 0,
-                      color: '#7186a8',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      lineHeight: 1.45,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {mat.desc}
-                    </p>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      background: '#f3f7ff', color: '#2563eb',
-                      padding: '7px 12px', borderRadius: '18px',
-                      fontSize: '12px', fontWeight: 700, border: '1px solid #e4edff',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="8" y1="13" x2="16" y2="13" />
-                        <line x1="8" y1="17" x2="14" y2="17" />
-                      </svg>
-                      {mat.count} examen{mat.count > 1 ? 's' : ''}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Voir les épreuves de ${mat.nom}`}
-                      onClick={(e) => { e.stopPropagation(); setSelectedMatiereCard(mat.id); }}
-                      style={{
-                        background: 'var(--surface, #ffffff)', color: '#2563eb', border: '1px solid #3b82f6',
-                        padding: '10px 18px', borderRadius: '13px',
-                        fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '9px',
-                        whiteSpace: 'nowrap', transition: 'background 0.15s ease, box-shadow 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f3f7ff';
-                        e.currentTarget.style.boxShadow = '0 3px 10px rgba(37, 99, 235, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#ffffff';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <span>Voir les épreuves</span>
-                      <span aria-hidden="true">→</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* ═════════════════════════════════════════
-             STEP 2 : CARTES DES ÉPREUVES DE LA MATIÈRE
-             ═════════════════════════════════════════ */
-          <div style={{ width: '100%', maxWidth: 'none', margin: '30px auto', padding: 0 }}>
-            {/* Breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px', fontSize: '14px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setSelectedMatiereCard(null)}
-                style={{
-                  background: 'none', border: 'none', color: '#2563eb',
-                  cursor: 'pointer', fontWeight: 700, padding: 0, display: 'flex', alignItems: 'center', gap: '5px'
-                }}
-              >
-                <span>📚 Matières</span>
-              </button>
-              <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
-              <span style={{ color: 'var(--text-secondary, #475569)', fontWeight: 600 }}>{selectedFiliere || 'Toutes options'}</span>
-              <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>/</span>
-              <span style={{ color: 'var(--text, #0f172a)', fontWeight: 800 }}>{selectedMatiereCard}</span>
-            </div>
-
-            {/* Header */}
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: '26px', flexWrap: 'wrap', gap: '16px'
-            }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '28px' }}>📝</span>
-                  <h1 style={{ margin: 0, fontSize: '27px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
-                    Épreuves — {selectedMatiereCard}
-                  </h1>
-                </div>
-                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
-                  Filière : <strong style={{ color: 'var(--text, #1e293b)' }}>{selectedFiliere || 'Toutes options'}</strong> • Sujets d'examens nationaux et corrections officielles
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedMatiereCard(null)}
-                style={{
-                  background: 'var(--surface, #fff)', border: '1.5px solid #cbd5e1',
-                  padding: '9px 18px', borderRadius: '12px',
-                  cursor: 'pointer', fontWeight: 700, fontSize: '13.5px', color: 'var(--text, #334155)',
-                  transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
-              >
-                ← Changer de matière
-              </button>
-            </div>
-
-            {/* Cartes des examens correspondants */}
+          {/* Affichage du contenu du document */}
+          <div className="client-exam-viewer-content">
             {(() => {
-              const list = filiereExamsForSelectedYear.filter(e => matchMatiere(getExamMatiere(e), selectedMatiereCard));
-
-              if (list.length === 0) {
+              if (activePages.length > 0) {
                 return (
-                  <div style={{
-                    background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1',
-                    padding: '60px 30px', textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '46px', marginBottom: '12px' }}>📂</div>
-                    <h3 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                      Aucun examen national trouvé pour cette matière
-                    </h3>
-                    <p style={{ margin: '0 0 20px', color: 'var(--text-secondary, #64748b)', fontSize: '14.5px' }}>
-                      L’administrateur n’a pas encore déposé d’épreuves pour la matière {selectedMatiereCard} dans cette filière.
-                    </p>
-                    <button
-                      onClick={() => setSelectedMatiereCard(null)}
-                      style={{
-                        background: '#2563eb', color: '#fff', border: 'none',
-                        padding: '11px 22px', borderRadius: '14px', fontSize: '13.5px', fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ← Retourner aux matières
-                    </button>
+                  <div style={{ width: '100%', minHeight: 'calc(100vh - 220px)' }}>
+                    {activePages.map((url, index) => (
+                      <img
+                        key={`${url}-${index}`}
+                        src={url}
+                        alt={`Page ${index + 1}`}
+                        loading={index > 1 ? 'lazy' : 'eager'}
+                        style={{ width: '100%', height: 'auto', display: 'block' }}
+                      />
+                    ))}
                   </div>
                 );
               }
 
+              if (docUrl && isPdfDocument(docUrl)) {
+                return (
+                  <iframe
+                    key={`${activeExam.id}-${activeDocType}`}
+                    src={getFullUrl(docUrl)}
+                    title={activeExam.titre || 'Examen National'}
+                    style={{
+                      width: '100%',
+                      height: 'calc(100vh - 200px)',
+                      minHeight: '600px',
+                      border: 'none',
+                      display: 'block',
+                    }}
+                  />
+                );
+              }
+
+              if (docUrl && !isPdfDocument(docUrl)) {
+                return (
+                  <AutoHeightHtmlFrame
+                    key={`${activeExam.id}-${activeDocType}`}
+                    src={getFullUrl(docUrl)}
+                    title={activeExam.titre || 'Examen National'}
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    integrated
+                    style={{
+                      width: '100%',
+                      minHeight: '600px',
+                      border: 'none',
+                      display: 'block',
+                      background: 'transparent'
+                    }}
+                  />
+                );
+              }
+
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '22px' }}>
-                  {list.map((exam, idx) => {
-                    const sujetPages = getActivePages(exam, 'sujet');
-                    const corrPages = getActivePages(exam, 'correction');
-                    const firstThumbnail = sujetPages.length > 0 ? sujetPages[0] : (corrPages.length > 0 ? corrPages[0] : null);
-
-                    return (
-                      <div
-                        key={exam.id || idx}
-                        style={{
-                          background: 'var(--surface, #ffffff)',
-                          borderRadius: '20px',
-                          border: '1.5px solid #e2e8f0',
-                          boxShadow: '0 4px 18px rgba(0,0,0,0.04)',
-                          overflow: 'hidden',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          transition: 'all 0.25s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px)';
-                          e.currentTarget.style.boxShadow = '0 16px 32px rgba(37,99,235,0.12)';
-                          e.currentTarget.style.borderColor = '#93c5fd';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.04)';
-                          e.currentTarget.style.borderColor = '#e2e8f0';
-                        }}
-                      >
-                        {/* En-tête de la carte */}
-                        <div style={{ padding: '20px 22px 14px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                            <span style={{ ...getMatiereBadgeStyle(getExamMatiere(exam)), padding: '4px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 800 }}>
-                              {getExamMatiere(exam) || selectedMatiereCard}
-                            </span>
-                            <span style={{ background: '#e0e7ff', color: '#3730a3', padding: '4px 10px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 800 }}>
-                              📅 {exam.annee}
-                            </span>
-                          </div>
-
-                          <h3 style={{ margin: '0 0 10px', fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', lineHeight: 1.35 }}>
-                            {exam.titre}
-                          </h3>
-
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>
-                            <span style={{ background: 'var(--surface-2, #f1f5f9)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-                              Session : {exam.session || 'Normale'}
-                            </span>
-                            <span style={{ background: 'var(--bg, #f8fafc)', border: '1px solid var(--border, #e2e8f0)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-                              {exam.optionBac || selectedFiliere}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Aperçu miniature si disponible */}
-                        {firstThumbnail && (
-                          <div
-                            onClick={() => handleOpenReader(exam, 'sujet')}
-                            style={{
-                              height: '140px',
-                              background: 'var(--bg, #f8fafc)',
-                              borderTop: '1px solid #f1f5f9',
-                              borderBottom: '1px solid #f1f5f9',
-                              overflow: 'hidden',
-                              position: 'relative',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <img
-                              src={firstThumbnail}
-                              alt="Aperçu"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
-                            />
-                            <div style={{
-                              position: 'absolute', inset: 0,
-                              background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.6) 100%)',
-                              display: 'flex', alignItems: 'flex-end', padding: '12px',
-                              color: '#fff', fontSize: '12px', fontWeight: 700
-                            }}>
-                              🔍 Cliquer pour feuilleter le document
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Boutons d'action : Sujet & Corrigé */}
-                        <div style={{ padding: '16px 20px', marginTop: 'auto', display: 'flex', gap: '10px' }}>
-                          <button
-                            onClick={() => handleOpenReader(exam, 'sujet')}
-                            style={{
-                              flex: 1,
-                              background: '#2563eb',
-                              color: '#ffffff',
-                              border: 'none',
-                              padding: '10px 14px',
-                              borderRadius: '12px',
-                              fontSize: '13px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px',
-                              boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
-                              transition: 'all 0.15s ease'
-                            }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = '#1d4ed8'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = '#2563eb'; }}
-                          >
-                            📄 Sujet ({exam.sujetTotalPages || exam.sujetPageImages?.length || 1} p.)
-                          </button>
-
-                          <button
-                            onClick={() => handleOpenReader(exam, 'correction')}
-                            style={{
-                              flex: 1,
-                              background: (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) ? '#059669' : '#f1f5f9',
-                              color: (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) ? '#ffffff' : '#94a3b8',
-                              border: 'none',
-                              padding: '10px 14px',
-                              borderRadius: '12px',
-                              fontSize: '13px',
-                              fontWeight: 700,
-                              cursor: (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) ? 'pointer' : 'not-allowed',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px',
-                              boxShadow: (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) ? '0 2px 8px rgba(5,150,105,0.25)' : 'none',
-                              transition: 'all 0.15s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) e.currentTarget.style.background = '#047857';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (exam.correctionPageImages?.length > 0 || exam.pdfCorrectionUrl) e.currentTarget.style.background = '#059669';
-                            }}
-                          >
-                            ✅ Corrigé
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '14px' }}>📄</div>
+                  <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
+                    Document {activeDocType === 'correction' ? 'de correction' : 'du sujet'} non disponible
+                  </h3>
+                  <p style={{ margin: '0 0 20px', fontSize: '14px' }}>
+                    L’administrateur n’a pas encore déposé ce fichier.
+                  </p>
+                  <button
+                    type="button"
+                    className="client-examens-reset-btn"
+                    onClick={() => setActiveExam(null)}
+                  >
+                    ← Retourner aux examens
+                  </button>
                 </div>
               );
             })()}
           </div>
-        )
-      ) : (
-        /* ==================== VUE 2 : CATALOGUE ET GRILLE DES EXAMENS NATIONAUX ==================== */
-        <div style={{ width: '100%', maxWidth: 'none', margin: '30px auto', padding: 0 }}>
-          
-          {/* BARRE DE RECHERCHE ET FILTRES PRO (PAR ANNEE ET PAR MATIERE) */}
-          <div style={{
-            background: 'var(--surface, #ffffff)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
-            border: '1px solid var(--border, #e2e8f0)',
-            marginBottom: '30px'
-          }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', alignItems: 'flex-end' }}>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                  🔍 Recherche mot-clé
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: 2024, Maths, Rattrapage..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1.5px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
+        </div>
+      </div>
+    );
+  }
 
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                  📚 Matière
-                </label>
-                <select
-                  value={selectedMatiere}
-                  onChange={(e) => setSelectedMatiere(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1.5px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'var(--surface, #ffffff)',
-                    cursor: 'pointer',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="">Toutes les matières</option>
-                  {matieresList.map((m, idx) => <option key={idx} value={m}>{m}</option>)}
-                </select>
-              </div>
+  // =========================================================================
+  // RENDU VUE 2 : CATALOGUE COMPLET DES EXAMENS (MATCH SCREENSHOT 1)
+  // =========================================================================
+  return (
+    <div className="client-examens-container">
+      {/* Barre de recherche globale */}
+      <div className="client-examens-search-wrap">
+        <span className="client-examens-search-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          className="client-examens-search-input"
+          placeholder="Rechercher un examen..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Rechercher un examen"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="client-examens-search-clear"
+            onClick={() => setSearchQuery('')}
+            aria-label="Effacer la recherche"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                  📅 Année
-                </label>
-                <select
-                  value={selectedAnnee}
-                  onChange={(e) => setSelectedAnnee(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1.5px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'var(--surface, #ffffff)',
-                    cursor: 'pointer',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="">Toutes les années</option>
-                  {anneesList.map((an, idx) => <option key={idx} value={an}>{an}</option>)}
-                </select>
-              </div>
+      {/* 3. Pilules de matières (Toutes | Mathématiques | Physique - Chimie...) */}
+      <div className="client-examens-pills-row" role="tablist" aria-label="Matières d'examens">
+        {SUBJECT_PILLS.map((pillLabel) => (
+          <button
+            key={pillLabel}
+            type="button"
+            className={`client-examens-pill ${selectedSubjectPill === pillLabel ? 'is-active' : ''}`}
+            onClick={() => setSelectedSubjectPill(pillLabel)}
+            role="tab"
+            aria-selected={selectedSubjectPill === pillLabel}
+          >
+            {pillLabel}
+          </button>
+        ))}
+      </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                  🏷️ Option / Filière
-                </label>
-                <select
-                  value={selectedOption}
-                  onChange={(e) => setSelectedOption(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1.5px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'var(--surface, #ffffff)',
-                    cursor: 'pointer',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="">Toutes les options</option>
-                  {optionsList.map((opt, idx) => <option key={idx} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-secondary, #64748b)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-                  ⏳ Session
-                </label>
-                <select
-                  value={selectedSession}
-                  onChange={(e) => setSelectedSession(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    border: '1.5px solid #cbd5e1',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'var(--surface, #ffffff)',
-                    cursor: 'pointer',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <option value="">Toutes les sessions</option>
-                  <option value="Normale">Session Normale</option>
-                  <option value="Rattrapage">Session Rattrapage</option>
-                </select>
-              </div>
-
-              {(searchQuery || selectedMatiere || selectedAnnee || selectedOption || selectedSession) && (
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedMatiere('');
-                    setSelectedAnnee('');
-                    setSelectedOption('');
-                    setSelectedSession('');
-                  }}
-                  style={{
-                    background: 'var(--surface-2, #f1f5f9)',
-                    color: 'var(--text-secondary, #475569)',
-                    border: '1.5px solid #cbd5e1',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    height: '42px'
-                  }}
-                >
-                  ✕ Réinitialiser
-                </button>
-              )}
-
-            </div>
+      {/* 4. Barre des filtres secondaires (Session & Année) */}
+      <div className="client-examens-filters-row">
+        {/* Contrôle segmenté de Session */}
+        <div className="client-examens-filter-group">
+          <span className="client-examens-filter-label">Session</span>
+          <div className="client-examens-segmented" role="group" aria-label="Filtrer par session">
+            {['Toutes', 'Normale', 'Rattrapage'].map((session) => (
+              <button
+                key={session}
+                type="button"
+                className={`client-examens-segmented-btn ${selectedSession === session ? 'is-active' : ''}`}
+                onClick={() => setSelectedSession(session)}
+              >
+                {session}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* État de chargement et erreurs */}
-          {loading && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary, #64748b)' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
-              <p style={{ fontWeight: 600, fontSize: '16px' }}>Chargement des examens nationaux...</p>
+        {/* Menu déroulant arrondi pour l'Année */}
+        <div className="client-examens-filter-group">
+          <span className="client-examens-filter-label">Année</span>
+          <div className="client-examens-select-wrap">
+            <select
+              className="client-examens-select"
+              value={selectedAnnee}
+              onChange={(e) => setSelectedAnnee(e.target.value)}
+              aria-label="Filtrer par année"
+            >
+              <option value="">Toutes les années</option>
+              {availableYears.map((annee) => (
+                <option key={annee} value={annee}>
+                  {annee}
+                </option>
+              ))}
+            </select>
+            <span className="client-examens-select-chevron" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Chargement / Erreur */}
+      {loading && (
+        <div className="client-examens-cards-grid">
+          {[1, 2, 3, 4, 5].map((skeletonIdx) => (
+            <div key={skeletonIdx} className="client-exam-skeleton">
+              <div className="client-exam-skeleton-banner" />
+              <div className="client-exam-skeleton-body">
+                <div className="client-exam-skeleton-line" style={{ width: '80%' }} />
+                <div className="client-exam-skeleton-line" style={{ width: '50%' }} />
+                <div className="client-exam-skeleton-line" style={{ width: '100%', marginTop: 'auto' }} />
+              </div>
             </div>
-          )}
-
-          {error && (
-            <div style={{ padding: '16px 20px', background: '#fef2f2', borderLeft: '4px solid #ef4444', color: '#991b1b', borderRadius: '8px', marginBottom: '24px' }}>
-              {error}
-            </div>
-          )}
-
-          {/* GRILLE DES EXAMENS NATIONAUX */}
-          {!loading && filteredExamens.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <div style={{ fontSize: '38px', marginBottom: '10px' }}>🎓</div>
-              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)', fontSize: '18px' }}>Aucun examen national trouvé</h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>Modifiez vos filtres ou réinitialisez la recherche.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
-              {filteredExamens.map((exam, idx) => {
-                const sujetPages = getActivePages(exam, 'sujet');
-                const corrPages = getActivePages(exam, 'correction');
-                const firstThumbnail = sujetPages.length > 0 ? sujetPages[0] : (corrPages.length > 0 ? corrPages[0] : null);
-
-                return (
-                  <div
-                    key={exam.id || idx}
-                    style={{
-                      background: 'var(--surface, #ffffff)',
-                      borderRadius: '16px',
-                      border: '1px solid var(--border, #e2e8f0)',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.09)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.04)';
-                    }}
-                  >
-                    {/* Header Image Thumbnail */}
-                    <div
-                      style={{
-                        height: '190px',
-                        background: 'var(--bg, #f8fafc)',
-                        borderBottom: '1px solid #f1f5f9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        position: 'relative',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleOpenReader(exam, 'sujet')}
-                    >
-                      {firstThumbnail ? (
-                        <img
-                          src={firstThumbnail}
-                          alt={exam.titre}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'top center',
-                            opacity: 0.95
-                          }}
-                        />
-                      ) : (
-                        <div style={{ textAlign: 'center', color: 'var(--text-secondary, #94a3b8)' }}>
-                          <span style={{ fontSize: '44px' }}>🎓</span>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginTop: '6px' }}>Examen National</div>
-                        </div>
-                      )}
-
-                      {/* Badges Flottants Année & Session */}
-                      <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '6px' }}>
-                        <span style={{
-                          background: 'rgba(15, 23, 42, 0.85)',
-                          color: '#ffffff',
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          backdropFilter: 'blur(4px)'
-                        }}>
-                          📅 {exam.annee}
-                        </span>
-                        <span style={{
-                          background: exam.session === 'Rattrapage' ? 'rgba(239, 68, 68, 0.9)' : 'rgba(37, 99, 235, 0.9)',
-                          color: '#ffffff',
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          backdropFilter: 'blur(4px)'
-                        }}>
-                          {exam.session || 'Normale'}
-                        </span>
-                      </div>
-
-                      {/* Badge Pages */}
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        background: 'rgba(15, 23, 42, 0.85)',
-                        color: '#ffffff',
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        backdropFilter: 'blur(4px)'
-                      }}>
-                        📄 {sujetPages.length || exam.sujetTotalPages || 1} Pages Sujet
-                      </span>
-                    </div>
-
-                    {/* Contenu de la Carte */}
-                    <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
-                        <span style={{ ...getMatiereBadgeStyle(getExamMatiere(exam)), padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                          {getExamMatiere(exam) || 'Matière'}
-                        </span>
-                        {exam.optionBac && (
-                          <span style={{ background: 'var(--surface-2, #f1f5f9)', color: 'var(--text-secondary, #475569)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
-                            🏷️ {exam.optionBac}
-                          </span>
-                        )}
-                      </div>
-
-                      <h3
-                        onClick={() => handleOpenReader(exam, 'sujet')}
-                        style={{
-                          margin: '0 0 16px',
-                          fontSize: '17px',
-                          fontWeight: 700,
-                          color: 'var(--text, #0f172a)',
-                          lineHeight: '1.4',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {exam.titre}
-                      </h3>
-
-                      {/* BOUTONS D'ACTIONS (SUJET & CORRIGE) */}
-                      <div style={{ marginTop: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
-                        <button
-                          onClick={() => handleOpenReader(exam, 'sujet')}
-                          style={{
-                            background: '#2563eb',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '10px 8px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '5px',
-                            boxShadow: '0 2px 6px rgba(37,99,235,0.25)'
-                          }}
-                        >
-                          📄 Voir Sujet
-                        </button>
-
-                        <button
-                          onClick={() => handleOpenReader(exam, 'correction')}
-                          style={{
-                            background: (corrPages.length > 0 || exam.pdfCorrectionUrl) ? '#059669' : '#e2e8f0',
-                            color: (corrPages.length > 0 || exam.pdfCorrectionUrl) ? '#ffffff' : '#94a3b8',
-                            border: 'none',
-                            padding: '10px 8px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            cursor: (corrPages.length > 0 || exam.pdfCorrectionUrl) ? 'pointer' : 'not-allowed',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '5px',
-                            boxShadow: (corrPages.length > 0 || exam.pdfCorrectionUrl) ? '0 2px 6px rgba(5,150,105,0.25)' : 'none'
-                          }}
-                        >
-                          ✅ Voir Corrigé
-                        </button>
-                      </div>
-
-                    </div>
-
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
+          ))}
         </div>
       )}
 
+      {error && !loading && (
+        <div className="client-examens-empty-state" style={{ borderColor: '#fca5a5' }}>
+          <div className="client-examens-empty-icon">⚠️</div>
+          <h3 className="client-examens-empty-title" style={{ color: '#dc2626' }}>
+            Erreur de chargement
+          </h3>
+          <p className="client-examens-empty-desc">{error}</p>
+          <button type="button" className="client-examens-reset-btn" onClick={fetchExamens}>
+            Réessayer
+          </button>
+        </div>
+      )}
+
+      {/* 6. Grille des matières et examens */}
+      {!loading && !error && (
+        <>
+          {(() => {
+            let totalRenderedExams = 0;
+
+            const sectionsContent = visibleSections.map((section) => {
+              const sectionExams = filteredExams.filter((exam) => {
+                const examMatiere = getExamMatiere(exam);
+                return matchMatiere(examMatiere, section.id);
+              });
+
+              if (sectionExams.length === 0) return null;
+              totalRenderedExams += sectionExams.length;
+
+              return (
+                <section key={section.id} className="client-examens-section">
+                  {/* Titre de section avec barre indicatrice bleue à gauche */}
+                  <div className="client-examens-section-heading">
+                    <div className="client-examens-indicator" />
+                    <h2 className="client-examens-section-title">{section.headingTitle}</h2>
+                  </div>
+                  <p className="client-examens-section-subtitle">{section.subtitle}</p>
+
+                  {/* Grille responsive des cartes d'examen (5 colonnes) */}
+                  <div className="client-examens-cards-grid">
+                    {sectionExams.map((exam, idx) => {
+                      const examKey = exam.id || `${section.id}-${idx}`;
+                      const session = getExamSession(exam);
+                      const isRattrapage = session === 'Rattrapage';
+                      const duration = exam.duree
+                        ? (String(exam.duree).toLowerCase().includes('h') ? exam.duree : `${exam.duree} h`)
+                        : section.defaultDuration;
+                      const progress = getExamProgressData(exam);
+
+                      return (
+                        <article key={examKey} className={`client-exam-card ${demoContentClass(exam)}`}>
+                          <DemoAccessBadge item={exam} />
+                          {/* Couverture : Dégradé bleu royal, abréviation, formules et mascotte */}
+                          <div className="client-exam-cover">
+                            {/* Formules en haut à droite */}
+                            <div className="client-exam-formulas">{section.formulas}</div>
+
+                            {/* Titre matière et pill sombre */}
+                            <div className="client-exam-cover-main">
+                              <h3 className="client-exam-subject-abbr">{section.tag}</h3>
+                              <span className="client-exam-subject-pill">{section.fullTag}</span>
+                            </div>
+
+                            {/* Mascotte chouette perchée dans le coin inférieur droit */}
+                            <div className="client-exam-mascot-wrap">
+                              <img src={cardMascot} alt="Mascotte E-Concours" aria-hidden="true" />
+                            </div>
+                          </div>
+
+                          {/* Corps de la carte */}
+                          <div className="client-exam-body">
+                            {/* Titre de l'épreuve */}
+                            <h4 className="client-exam-title">
+                              {exam.titre || `Examen National ${exam.annee || ''}`}
+                            </h4>
+
+                            {/* Badges : Session, Année, Durée */}
+                            <div className="client-exam-badges-row">
+                              <span
+                                className={`client-exam-badge ${
+                                  isRattrapage ? 'badge-session-rattrapage' : 'badge-session-normale'
+                                }`}
+                              >
+                                {session}
+                              </span>
+                              {exam.annee && (
+                                <span className="client-exam-badge badge-meta">
+                                  {exam.annee}
+                                </span>
+                              )}
+                              <span className="client-exam-badge badge-meta">
+                                {duration}
+                              </span>
+                            </div>
+
+                            {/* Barre de progression */}
+                            <div className="client-exam-progress-track">
+                              <div
+                                className={`client-exam-progress-fill ${
+                                  progress.pct === 100 ? 'fill-completed' : ''
+                                }`}
+                                style={{ width: `${progress.pct}%` }}
+                              />
+                            </div>
+
+                            {/* Ligne d'état de progression */}
+                            <div className="client-exam-progress-row">
+                              <span className={`client-exam-status-text ${progress.statusClass}`}>
+                                {progress.label}
+                              </span>
+                              <span className="client-exam-pct-text">
+                                {progress.pct} %
+                              </span>
+                            </div>
+
+                            {/* Bouton d'action principal */}
+                            <button
+                              type="button"
+                              className="client-exam-action-btn"
+                              onClick={guardDemoContent(exam, () => handleOpenReader(exam, 'sujet'))}
+                            >
+                              {progress.btnText}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            });
+
+            if (totalRenderedExams === 0) {
+              return (
+                <div className="client-examens-empty-state">
+                  <div className="client-examens-empty-icon">📂</div>
+                  <h3 className="client-examens-empty-title">
+                    Aucun examen disponible pour le moment
+                  </h3>
+                  <p className="client-examens-empty-desc">
+                    Aucune épreuve ne correspond à vos filtres actuels.
+                  </p>
+                  {(searchQuery || selectedSession !== 'Toutes' || selectedAnnee || selectedSubjectPill !== 'Toutes') && (
+                    <button
+                      type="button"
+                      className="client-examens-reset-btn"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedSession('Toutes');
+                        setSelectedAnnee('');
+                        setSelectedSubjectPill('Toutes');
+                      }}
+                    >
+                      Réinitialiser les filtres
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
+            return sectionsContent;
+          })()}
+        </>
+      )}
     </div>
   );
 }

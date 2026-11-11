@@ -63,6 +63,22 @@ public class AuthController {
         return ResponseEntity.status(401).body("Email ou mot de passe incorrect !");
     }
 
+    @PostMapping("/demo")
+    public ResponseEntity<?> createDemoSession() {
+        AuthSessionService.SessionCredentials session = authSessionService.createDemo();
+        Map<String, Object> demo = new LinkedHashMap<>();
+        demo.put("id", -1L);
+        demo.put("email", "demo@anonymous.invalid");
+        demo.put("nom", "Visiteur");
+        demo.put("prenom", "Démo");
+        demo.put("role", "demo");
+        demo.put("pack", "DEMO");
+        demo.put("active", 1);
+        demo.put("sessionToken", session.token());
+        demo.put("expiresAt", session.expiresAt());
+        return ResponseEntity.ok(demo);
+    }
+
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
         String credential = request.get("credential");

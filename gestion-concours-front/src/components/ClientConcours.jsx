@@ -1,171 +1,100 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { recordStudentActivity } from '../studentProgress';
-import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { filterByStudentPack } from '../packAccess';
+import { filterByStudentPack, getSchoolCode } from '../packAccess';
 import { toBackendResourceUrl } from '../backendResourceUrl';
+import { recordStudentActivity, getStudentScope } from '../studentProgress';
+import TrackedQcmFrame from './TrackedQcmFrame';
+import cardMascot from '../assets/logo-mascot.png';
+import { demoContentClass, DemoAccessBadge, isDemoFree, isDemoMode } from '../demoAccess';
 
 const API_BASE = '';
-
-// Couleurs et badges thématiques pour les matières
-const MATIERE_THEMES = {
-  'Mathématiques': { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: '📐' },
-  'Maths': { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: '📐' },
-  'Math': { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: '📐' },
-  'Physique-Chimie': { color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', icon: '⚡' },
-  'Physique': { color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', icon: '⚡' },
-  'Chimie': { color: '#0284c7', bg: '#f0f9ff', border: '#bae6fd', icon: '🧪' },
-  'SVT': { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '🌿' },
-  'Biologie': { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '🔬' },
-  'Français': { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '✍️' },
-  'Anglais': { color: '#ea580c', bg: '#fff7ed', border: '#ffedd5', icon: '🌐' },
-  'Culture Générale': { color: '#4f46e5', bg: '#eef2ff', border: '#c7d2fe', icon: '🌍' },
-  'Informatique': { color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc', icon: '💻' },
-  'Économie': { color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4', icon: '📊' }
-};
-
-const getMatiereTheme = (matiereName = '') => {
-  const trimmed = (matiereName || '').trim();
-  if (MATIERE_THEMES[trimmed]) return MATIERE_THEMES[trimmed];
-
-  const lower = trimmed.toLowerCase();
-  for (const [key, val] of Object.entries(MATIERE_THEMES)) {
-    if (lower === key.toLowerCase() || lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
-      return val;
-    }
-  }
-
-  return {
-    color: '#0f766e',
-    bg: '#f0fdfa',
-    border: '#99f6e4',
-    icon: '📚'
-  };
-};
-
-// Palettes et métadonnées pour les grandes écoles
-const ECOLE_METADATA = {
-  'ENSA': {
-    nomComplet: 'Écoles Nationales des Sciences Appliquées',
-    badgeColor: '#0d9488',
-    bgGradient: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
-    iconBg: '#ccfbf1',
-    type: 'Ingénierie & Sciences'
-  },
-  'ENCG': {
-    nomComplet: 'Écoles Nationales de Commerce et de Gestion',
-    badgeColor: '#2563eb',
-    bgGradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
-    iconBg: '#dbeafe',
-    type: 'Commerce & Management'
-  },
-  'ENSAM': {
-    nomComplet: 'École Nationale Supérieure d\'Arts et Métiers',
-    badgeColor: '#dc2626',
-    bgGradient: 'linear-gradient(135deg, #b91c1c 0%, #ef4444 100%)',
-    iconBg: '#fee2e2',
-    type: 'Génie Mécanique & Industriel'
-  },
-  'MEDECINE': {
-    nomComplet: 'Facultés de Médecine et de Pharmacie (FMP/FMD)',
-    badgeColor: '#059669',
-    bgGradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-    iconBg: '#d1fae5',
-    type: 'Santé & Sciences Médicales'
-  },
-  'FMP': {
-    nomComplet: 'Facultés de Médecine et de Pharmacie',
-    badgeColor: '#059669',
-    bgGradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-    iconBg: '#d1fae5',
-    type: 'Santé & Sciences Médicales'
-  },
-  'FST': {
-    nomComplet: 'Facultés des Sciences et Techniques',
-    badgeColor: '#7c3aed',
-    bgGradient: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
-    iconBg: '#ede9fe',
-    type: 'Sciences Appliquées & Technologies'
-  },
-  'APESA': {
-    nomComplet: 'Année Préparatoire aux Études Supérieures Agronomiques',
-    badgeColor: '#16a34a',
-    bgGradient: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)',
-    iconBg: '#dcfce7',
-    type: 'Agronomie & Vétérinaire'
-  },
-  'IAV': {
-    nomComplet: 'Institut Agronomique et Vétérinaire Hassan II',
-    badgeColor: '#15803d',
-    bgGradient: 'linear-gradient(135deg, #166534 0%, #15803d 100%)',
-    iconBg: '#dcfce7',
-    type: 'Agronomie & Vétérinaire'
-  }
-};
-
-const getEcoleMeta = (ecoleName = '') => {
-  const upper = (ecoleName || '').trim().toUpperCase();
-  for (const [key, val] of Object.entries(ECOLE_METADATA)) {
-    if (upper === key || upper.includes(key)) {
-      return val;
-    }
-  }
-  return {
-    nomComplet: `Concours d'accès - ${ecoleName}`,
-    badgeColor: '#0f766e',
-    bgGradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
-    iconBg: '#ccfbf1',
-    type: 'Grande École / Faculté'
-  };
-};
 
 const getPdfUrl = (url) => {
   if (!url) return '';
   const normalizedUrl = toBackendResourceUrl(url);
-  if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('/')) return normalizedUrl;
+  if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://') || normalizedUrl.startsWith('/')) {
+    return normalizedUrl;
+  }
   return `/uploads/${normalizedUrl}`;
 };
 
-const ALL_MATIERES = 'Toutes les matières';
+// Normalisation des matières pour affichage court dans les boutons
+const getSubjectShortCode = (rawName = '') => {
+  const trimmed = (rawName || '').trim();
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('math')) return 'MATH';
+  if (lower.includes('phys') || lower.includes('chim')) return 'PHYSIQUE';
+  if (lower.includes('svt') || lower.includes('bio') || lower.includes('terre')) return 'SVT';
+  if (lower.includes('philo')) return 'PHILOSOPHIE';
+  if (lower.includes('angl')) return 'ANGLAIS';
+  if (lower.includes('fran')) return 'FRANÇAIS';
+  if (lower.includes('info')) return 'INFORMATIQUE';
+  return trimmed.toUpperCase();
+};
+
+// Libellé de section élégant et compact pour le sidebar (inspiré de la capture : Maths, Physique, SVT)
+const getSubjectDisplayTitle = (rawName = '') => {
+  const trimmed = (rawName || '').trim();
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('math')) return 'Maths';
+  if (lower.includes('phys') || lower.includes('chim')) return 'Physique';
+  if (lower.includes('svt') || lower.includes('bio') || lower.includes('terre')) return 'SVT';
+  if (lower.includes('philo')) return 'Philosophie';
+  if (lower.includes('angl')) return 'Anglais';
+  if (lower.includes('fran')) return 'Français';
+  if (lower.includes('info')) return 'Informatique';
+  return trimmed || 'Général';
+};
 
 export default function ClientConcours() {
   const location = useLocation();
   const navigate = useNavigate();
   const requestedEcole = new URLSearchParams(location.search).get('ecole');
+
+  // Données réelles issues de l'API / Base de données
   const [concoursList, setConcoursList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Étapes de navigation :
-  // Étape 1 : selectedEcole === null (Afficher uniquement les écoles ajoutées par l'Admin)
-  // Étape 2 : selectedEcole !== null && selectedMatiere === null (Afficher les matières disponibles pour cette école)
-  // Étape 3 : selectedEcole !== null && selectedMatiere !== null (Afficher les concours classés par année du plus récent au plus ancien avec sélection de l'année)
-  const [selectedEcole, setSelectedEcole] = useState(null);
-  const [selectedMatiere, setSelectedMatiere] = useState(null);
-  const [selectedYear, setSelectedYear] = useState('');
-  const [expandedYear, setExpandedYear] = useState('');
-  const [expandedSubject, setExpandedSubject] = useState(null);
+  // Navigation et filtres
+  const [selectedYearFilter, setSelectedYearFilter] = useState('all');
+  const [openYear, setOpenYear] = useState(null); // null = Liste des cartes, string = Année ouverte (ex: '2025')
+  const [activeSubject, setActiveSubject] = useState(null); // Matière actuellement sélectionnée
+  const [activeQuestion, setActiveQuestion] = useState(1);
+  const [viewerTab, setViewerTab] = useState('sujet'); // 'sujet' | 'correction'
 
-  // Recherches rapides
-  const [searchEcole, setSearchEcole] = useState('');
-  const [searchMatiere, setSearchMatiere] = useState('');
-  const [searchConcours, setSearchConcours] = useState('');
+  useEffect(() => {
+    setSelectedYearFilter('all');
+    setOpenYear(null);
+    setActiveSubject(null);
+    setActiveQuestion(1);
+    setViewerTab('sujet');
+  }, [requestedEcole]);
 
-  // Modal de consultation du fichier (Sujet / Corrigé)
-  const [viewerModal, setViewerModal] = useState({
-    isOpen: false,
-    concours: null,
-    activeTab: 'sujet' // 'sujet' | 'correction'
+  // Clé de stockage de la progression spécifique à cet étudiant
+  const studentScope = useMemo(() => getStudentScope(), []);
+  const progressStorageKey = `econ_concours_progress:${studentScope}`;
+
+  // Progression réelle par concours : { [concoursId]: { answeredCount, correctCount, wrongCount, totalQuestions, score, percentage, status, answers: {} } }
+  const [progressMap, setProgressMap] = useState(() => {
+    try {
+      const saved = localStorage.getItem(progressStorageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {};
   });
-  const [isViewerSidebarCollapsed, setIsViewerSidebarCollapsed] = useState(false);
 
-  const returnToConcoursOptions = () => {
-    navigate('/client-dashboard', { state: { openSidebarMenu: 'concours' } });
-  };
+  const saveProgressMap = useCallback((newMap) => {
+    setProgressMap(newMap);
+    try {
+      localStorage.setItem(progressStorageKey, JSON.stringify(newMap));
+      window.dispatchEvent(new CustomEvent('student-progress-updated'));
+    } catch {}
+  }, [progressStorageKey]);
 
-  // Chargement des données live depuis la base de données
-  const fetchAllConcours = async () => {
+  // Chargement dynamique des concours réels depuis le serveur
+  const fetchAllConcours = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -178,1496 +107,1204 @@ export default function ClientConcours() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAllConcours();
-  }, []);
+  }, [fetchAllConcours]);
 
-  // 1. Liste UNIQUEMENT des écoles ajoutées par l'Admin (avec leurs concours et matières associées)
-  const ecolesSummary = useMemo(() => {
+  // Concours filtrés par école (si demandé dans l'URL par la navbar)
+  const scopedConcoursList = useMemo(() => {
+    if (!requestedEcole) return concoursList;
+    const requestedSchoolCode = getSchoolCode(requestedEcole);
+    const normalizeSchoolName = (value) => String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+
+    return concoursList.filter((concours) => {
+      if (requestedSchoolCode) return getSchoolCode(concours.ecole) === requestedSchoolCode;
+      return normalizeSchoolName(concours.ecole) === normalizeSchoolName(requestedEcole);
+    });
+  }, [concoursList, requestedEcole]);
+
+  // Regroupement 100% DYNAMIQUE par année à partir EXCLUSIVEMENT des données de la base de données
+  const dynamicYearsData = useMemo(() => {
     const map = {};
-    concoursList.forEach((c) => {
-      if (!c.ecole || !c.ecole.trim()) return;
-      const rawEcole = c.ecole.trim();
-      const key = rawEcole.toLowerCase();
 
-      if (!map[key]) {
-        map[key] = {
-          name: rawEcole,
-          count: 0,
-          years: new Set(),
-          matieresMap: {},
-          concours: []
+    scopedConcoursList.forEach(c => {
+      if (!c.annee) return;
+      const yr = String(c.annee).trim();
+      const subjectName = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
+
+      if (!map[yr]) {
+        map[yr] = {
+          year: yr,
+          concoursList: [],
+          subjectsMap: {}, // { [subjectName]: concoursObj }
+          subjectsList: [] // Liste des matières distinctes
         };
       }
-      map[key].count += 1;
-      if (c.annee) map[key].years.add(Number(c.annee));
 
-      const mat = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-      map[key].matieresMap[mat] = (map[key].matieresMap[mat] || 0) + 1;
-      map[key].concours.push(c);
+      map[yr].concoursList.push(c);
+      if (!map[yr].subjectsMap[subjectName]
+        || (isDemoMode() && isDemoFree(c) && !isDemoFree(map[yr].subjectsMap[subjectName]))) {
+        map[yr].subjectsMap[subjectName] = c;
+      }
+      if (!map[yr].subjectsList.includes(subjectName)) {
+        map[yr].subjectsList.push(subjectName);
+      }
     });
 
-    return Object.values(map).map(item => ({
-      ...item,
-      yearsList: Array.from(item.years).sort((a, b) => b - a),
-      matieresList: Object.keys(item.matieresMap).sort((a, b) => a.localeCompare(b))
-    })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [concoursList]);
+    const list = Object.values(map);
+    // Trier les années par ordre décroissant (du plus récent au plus ancien)
+    list.sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0));
+    return list;
+  }, [scopedConcoursList]);
 
-  // Sans école choisie, revenir au Dashboard où les écoles sont dans la sidebar.
+  // Liste des années réelles disponibles
+  const availableYears = useMemo(() => {
+    return dynamicYearsData.map(g => g.year);
+  }, [dynamicYearsData]);
+
+  // Années filtrées par le sélecteur "ANNÉE"
+  const filteredYears = useMemo(() => {
+    if (selectedYearFilter === 'all') return dynamicYearsData;
+    return dynamicYearsData.filter(g => g.year === selectedYearFilter);
+  }, [dynamicYearsData, selectedYearFilter]);
+
+  // Données de l'année actuellement ouverte en détail
+  const currentOpenYearData = useMemo(() => {
+    if (!openYear) return null;
+    return dynamicYearsData.find(g => g.year === openYear) || null;
+  }, [dynamicYearsData, openYear]);
+
+  // Liste des matières réellement uploadées pour l'année ouverte
+  const currentYearSubjects = useMemo(() => {
+    if (!currentOpenYearData) return [];
+    return currentOpenYearData.subjectsList;
+  }, [currentOpenYearData]);
+
+  // Concours spécifique actif
+  const currentActiveConcours = useMemo(() => {
+    if (!currentOpenYearData || !activeSubject) return null;
+    return currentOpenYearData.subjectsMap[activeSubject] || null;
+  }, [currentOpenYearData, activeSubject]);
+
+  // Synchronisation de la matière active lors de l'ouverture ou changement d'année
   useEffect(() => {
-    if (!requestedEcole) {
-      navigate('/client-dashboard', {
-        replace: true,
-        state: { openSidebarMenu: 'concours' }
-      });
+    if (currentOpenYearData && currentYearSubjects.length > 0) {
+      if (!activeSubject || !currentYearSubjects.includes(activeSubject)) {
+        const firstAvailable = isDemoMode()
+          ? currentYearSubjects.find((subject) => isDemoFree(currentOpenYearData.subjectsMap[subject]))
+          : null;
+        setActiveSubject(firstAvailable || currentYearSubjects[0]);
+        setActiveQuestion(1);
+      }
+    }
+  }, [currentOpenYearData, currentYearSubjects, activeSubject]);
+
+  // Calcul du suivi de progression pour un concours donné
+  const getConcoursProgress = useCallback((concours) => {
+    if (!concours || !concours.id) {
+      return {
+        answeredCount: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        totalQuestions: 10,
+        score: 0,
+        percentage: 0,
+        status: 'Nouveau'
+      };
+    }
+
+    const saved = progressMap[concours.id] || {};
+    const totalQuestions = saved.totalQuestions || 10;
+    const answeredCount = Math.min(totalQuestions, saved.answeredCount || 0);
+    const correctCount = saved.correctCount || 0;
+    const wrongCount = saved.wrongCount || 0;
+    const score = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+    const percentage = Math.min(100, Math.round((answeredCount / totalQuestions) * 100));
+
+    let status = 'Nouveau';
+    if (percentage === 100) status = 'Terminé';
+    else if (answeredCount > 0) status = 'En cours';
+
+    return {
+      answeredCount,
+      correctCount,
+      wrongCount,
+      totalQuestions,
+      score,
+      percentage,
+      status
+    };
+  }, [progressMap]);
+
+  // Calcul de la progression globale d'une année
+  const getYearOverallProgress = useCallback((yr) => {
+    const yrData = dynamicYearsData.find(g => g.year === yr);
+    if (!yrData || yrData.subjectsList.length === 0) {
+      return { percentage: 0, status: 'Nouveau', answered: 0, total: 0 };
+    }
+
+    let totalQuestions = 0;
+    let totalAnswered = 0;
+
+    yrData.subjectsList.forEach(subjectName => {
+      const conc = yrData.subjectsMap[subjectName];
+      const prog = getConcoursProgress(conc);
+      totalQuestions += prog.totalQuestions;
+      totalAnswered += prog.answeredCount;
+    });
+
+    const percentage = totalQuestions > 0 ? Math.min(100, Math.round((totalAnswered / totalQuestions) * 100)) : 0;
+    let status = 'Nouveau';
+    if (percentage === 100) status = 'Terminé';
+    else if (totalAnswered > 0) status = 'En cours';
+
+    return {
+      percentage,
+      status,
+      answered: totalAnswered,
+      total: totalQuestions
+    };
+  }, [dynamicYearsData, getConcoursProgress]);
+
+  // Écoute des réponses envoyées depuis l'iframe TrackedQcmFrame pour enregistrer la progression réelle
+  useEffect(() => {
+    const handleQcmMessage = (event) => {
+      if (!event.data || !currentActiveConcours) return;
+
+      // Détection d'une réponse à une question dans le QCM
+      if (event.data.type === 'econcourse-qcm-mistake' || event.data.type === 'econcourse-qcm-answer') {
+        const mistake = event.data.mistake;
+        const totalQ = Number(event.data.totalQuestions) || 10;
+        const concId = currentActiveConcours.id;
+        const qNum = mistake?.questionNumber ? Number(mistake.questionNumber) : activeQuestion;
+        const isWrong = mistake && mistake.selectedChoiceLabel !== mistake.correctChoiceLabel;
+
+        setProgressMap(prev => {
+          const current = prev[concId] || {
+            concoursId: concId,
+            year: openYear,
+            subject: activeSubject,
+            answeredCount: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            totalQuestions: totalQ,
+            answers: {}
+          };
+
+          const prevAnswer = current.answers?.[qNum];
+          const isNewAnswer = !prevAnswer;
+
+          const updatedAnswers = {
+            ...(current.answers || {}),
+            [qNum]: {
+              selected: mistake?.selectedChoiceLabel || 'answered',
+              isCorrect: !isWrong,
+              timestamp: Date.now()
+            }
+          };
+
+          const newAnsweredCount = Object.keys(updatedAnswers).length;
+          let newCorrect = 0;
+          let newWrong = 0;
+          Object.values(updatedAnswers).forEach(ans => {
+            if (ans.isCorrect) newCorrect++;
+            else newWrong++;
+          });
+
+          const newPercentage = Math.min(100, Math.round((newAnsweredCount / totalQ) * 100));
+          const newStatus = newPercentage === 100 ? 'Terminé' : (newAnsweredCount > 0 ? 'En cours' : 'Nouveau');
+
+          const updatedMap = {
+            ...prev,
+            [concId]: {
+              ...current,
+              totalQuestions: totalQ,
+              answeredCount: newAnsweredCount,
+              correctCount: newCorrect,
+              wrongCount: newWrong,
+              score: newAnsweredCount > 0 ? Math.round((newCorrect / newAnsweredCount) * 100) : 0,
+              percentage: newPercentage,
+              status: newStatus,
+              answers: updatedAnswers,
+              lastActiveQuestion: qNum,
+              updatedAt: new Date().toISOString()
+            }
+          };
+
+          try {
+            localStorage.setItem(progressStorageKey, JSON.stringify(updatedMap));
+          } catch {}
+
+          return updatedMap;
+        });
+
+        // Enregistrer l'activité dans le suivi général
+        recordStudentActivity({
+          type: 'Concours',
+          resourceId: `${currentActiveConcours.id}`,
+          title: currentActiveConcours.titre || `Concours ${openYear} - ${activeSubject}`,
+          subject: activeSubject,
+          chapter: String(openYear)
+        });
+      }
+
+      // Synchronisation de la question courante si modifiée dans le QCM
+      if (event.data.type === 'econcourse-qcm-cur-changed' && event.data.questionNumber) {
+        setActiveQuestion(Number(event.data.questionNumber));
+      }
+
+      // Synchronisation du nombre total réel de questions du QCM
+      if (event.data.type === 'econcourse-qcm-meta' && event.data.totalQuestions && currentActiveConcours) {
+        const detectedTotal = Number(event.data.totalQuestions);
+        if (detectedTotal > 0) {
+          setProgressMap(prev => {
+            const current = prev[currentActiveConcours.id] || {};
+            if (current.totalQuestions === detectedTotal) return prev;
+            return {
+              ...prev,
+              [currentActiveConcours.id]: {
+                ...current,
+                totalQuestions: detectedTotal
+              }
+            };
+          });
+        }
+      }
+    };
+
+    window.addEventListener('message', handleQcmMessage);
+    return () => window.removeEventListener('message', handleQcmMessage);
+  }, [currentActiveConcours, openYear, activeSubject, activeQuestion, progressStorageKey]);
+
+  // Clic sur un bouton matière en haut à droite d'une carte
+  const handleOpenSubjectFromCard = (year, subjectName) => {
+    const yrData = dynamicYearsData.find(g => g.year === year);
+    if (!yrData || !yrData.subjectsMap[subjectName]) return;
+
+    const conc = yrData.subjectsMap[subjectName];
+    if (isDemoMode() && !isDemoFree(conc)) {
+      window.dispatchEvent(new CustomEvent('econcours-demo-paywall'));
+      return;
+    }
+    const prog = getConcoursProgress(conc);
+    const nextQ = prog.answeredCount < prog.totalQuestions ? prog.answeredCount + 1 : 1;
+
+    setOpenYear(year);
+    setActiveSubject(subjectName);
+    setActiveQuestion(nextQ);
+    setViewerTab('sujet');
+
+    recordStudentActivity({
+      type: 'Concours',
+      resourceId: `${conc.id}`,
+      title: conc.titre || `Concours ${year} - ${subjectName}`,
+      subject: subjectName,
+      chapter: year
+    });
+  };
+
+  // Clic sur le gros bouton CTA (Commencer / Continuer / Revoir)
+  const handleOpenYearCTA = (year) => {
+    const yrData = dynamicYearsData.find(g => g.year === year);
+    if (!yrData || yrData.subjectsList.length === 0) return;
+
+    if (isDemoMode()) {
+      const freeSubject = yrData.subjectsList.find((subject) => isDemoFree(yrData.subjectsMap[subject]));
+      if (!freeSubject) {
+        window.dispatchEvent(new CustomEvent('econcours-demo-paywall'));
+        return;
+      }
+      handleOpenSubjectFromCard(year, freeSubject);
       return;
     }
 
-    const matchingEcole = ecolesSummary.find(
-      ecole => ecole.name.toLowerCase() === requestedEcole.trim().toLowerCase()
-    );
-    if (matchingEcole) {
-      handleOpenSchool(matchingEcole);
-    } else if (!loading) {
-      navigate('/client-dashboard', {
-        replace: true,
-        state: { openSidebarMenu: 'concours' }
+    // Trouver la première matière non terminée
+    let targetSub = yrData.subjectsList[0];
+    for (const sub of yrData.subjectsList) {
+      const conc = yrData.subjectsMap[sub];
+      const prog = getConcoursProgress(conc);
+      if (prog.status !== 'Terminé') {
+        targetSub = sub;
+        break;
+      }
+    }
+
+    handleOpenSubjectFromCard(year, targetSub);
+  };
+
+  // Sélection d'une question dans le sommaire et saut dans le QCM
+  const handleSelectQuestion = (qNum) => {
+    setActiveQuestion(qNum);
+    try {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(f => {
+        f.contentWindow?.postMessage({
+          type: 'goto-question',
+          index: qNum - 1,
+          questionNumber: qNum
+        }, '*');
       });
-    }
-  }, [requestedEcole, ecolesSummary, loading, navigate]);
-
-  // Écoles filtrées par la recherche globale
-  const filteredEcoles = useMemo(() => {
-    if (!searchEcole.trim()) return ecolesSummary;
-    const q = searchEcole.toLowerCase();
-    return ecolesSummary.filter(ec =>
-      ec.name.toLowerCase().includes(q) ||
-      getEcoleMeta(ec.name).nomComplet.toLowerCase().includes(q)
-    );
-  }, [ecolesSummary, searchEcole]);
-
-  // Données de l'école actuellement sélectionnée
-  const activeEcoleData = useMemo(() => {
-    if (!selectedEcole) return null;
-    return ecolesSummary.find(e => e.name.toLowerCase() === selectedEcole.toLowerCase()) || null;
-  }, [selectedEcole, ecolesSummary]);
-
-  // 2. Liste des matières disponibles pour l'école sélectionnée
-  const matieresForSelectedEcole = useMemo(() => {
-    if (!activeEcoleData) return [];
-
-    const list = activeEcoleData.matieresList.map(matName => {
-      const concs = activeEcoleData.concours.filter(c => {
-        const m = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-        return m.toLowerCase() === matName.toLowerCase();
-      });
-      const years = Array.from(new Set(concs.map(c => Number(c.annee)).filter(Boolean))).sort((a, b) => b - a);
-
-      return {
-        name: matName,
-        count: concs.length,
-        years,
-        latestYear: years.length > 0 ? years[0] : null
-      };
-    });
-
-    if (!searchMatiere.trim()) return list;
-    const q = searchMatiere.toLowerCase();
-    return list.filter(m => m.name.toLowerCase().includes(q));
-  }, [activeEcoleData, searchMatiere]);
-
-  // 3. Années disponibles pour l'école ET la matière sélectionnées
-  const availableYearsForSelectedMatiere = useMemo(() => {
-    if (!activeEcoleData || !selectedMatiere) return [];
-
-    const concs = activeEcoleData.concours.filter(c => {
-      const m = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-      return selectedMatiere === ALL_MATIERES || m.toLowerCase() === selectedMatiere.toLowerCase();
-    });
-
-    const years = Array.from(new Set(concs.map(c => Number(c.annee)).filter(Boolean)));
-    // Du plus récent au plus ancien
-    return years.sort((a, b) => b - a);
-  }, [activeEcoleData, selectedMatiere]);
-
-  // 4. Concours pour l'école ET matière sélectionnées, classés par année (du plus récent au plus ancien)
-  const filteredConcoursForDisplay = useMemo(() => {
-    if (!activeEcoleData || !selectedMatiere) return [];
-
-    let list = activeEcoleData.concours.filter(c => {
-      const m = (c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général';
-      return selectedMatiere === ALL_MATIERES || m.toLowerCase() === selectedMatiere.toLowerCase();
-    });
-
-    // Filtre Année choisie par l'étudiant
-    if (selectedYear) {
-      list = list.filter(c => String(c.annee) === String(selectedYear));
-    }
-
-    // Recherche mot-clé dans les concours
-    if (searchConcours.trim()) {
-      const q = searchConcours.toLowerCase();
-      list = list.filter(c =>
-        (c.titre && c.titre.toLowerCase().includes(q)) ||
-        (c.annee && String(c.annee).includes(q))
-      );
-    }
-
-    // RÈGLE OBLIGATOIRE : Classés par année du plus récent au plus ancien
-    return list.sort((a, b) => {
-      const diffAnnee = (Number(b.annee) || 0) - (Number(a.annee) || 0);
-      if (diffAnnee !== 0) return diffAnnee;
-      return (a.titre || '').localeCompare(b.titre || '');
-    });
-  }, [activeEcoleData, selectedMatiere, selectedYear, searchConcours]);
-
-  const concoursForNavigation = useMemo(() => {
-    if (!activeEcoleData || !selectedMatiere) return [];
-    return activeEcoleData.concours
-      .filter(c => selectedMatiere === ALL_MATIERES || ((c.matiere && c.matiere.trim()) ? c.matiere.trim() : 'Général').toLowerCase() === selectedMatiere.toLowerCase())
-      .sort((a, b) => (Number(b.annee) || 0) - (Number(a.annee) || 0));
-  }, [activeEcoleData, selectedMatiere]);
-
-  const concoursForNavigationYear = (year) => concoursForNavigation.filter(
-    concours => String(concours.annee || 'Sans année') === String(year)
-  );
-
-  // Gestion de l'ouverture du visualiseur
-  const handleOpenViewer = (concours, tab = 'sujet') => {
-    setIsViewerSidebarCollapsed(true);
-    let finalTab = tab;
-    if (tab === 'sujet' && !concours.htmlUrl && (concours.htmlCorrectionUrl || concours.pdfCorrectionUrl)) {
-      finalTab = 'correction';
-    } else if (tab === 'correction' && !concours.htmlCorrectionUrl && !concours.pdfCorrectionUrl && concours.htmlUrl) {
-      finalTab = 'sujet';
-    }
-
-    setViewerModal({
-      isOpen: true,
-      concours,
-      activeTab: finalTab
-    });
-    recordStudentActivity({
-      type: 'Concours',
-      resourceId: `${concours.id}:${finalTab}`,
-      title: concours.titre || concours.title || `${concours.ecole || 'Concours'} — ${concours.annee || ''}`.trim(),
-      subject: concours.matiere || selectedMatiere || '',
-      chapter: concours.annee ? String(concours.annee) : ''
-    });
+    } catch {}
   };
-
-  const handleOpenSchool = (ecole) => {
-    setSelectedEcole(ecole.name);
-    setSelectedMatiere(ALL_MATIERES);
-    setSelectedYear('');
-    setExpandedYear('');
-    setExpandedSubject(null);
-    setSearchMatiere('');
-    setSearchConcours('');
-    setIsViewerSidebarCollapsed(false);
-    setViewerModal({ isOpen: true, concours: null, activeTab: 'sujet' });
-  };
-
-  const closeViewerAndReturnToDashboard = () => {
-    setIsViewerSidebarCollapsed(false);
-    setViewerModal({ isOpen: false, concours: null, activeTab: 'sujet' });
-    setSelectedEcole(null);
-    setSelectedMatiere(null);
-    setSelectedYear('');
-    returnToConcoursOptions();
-  };
-
-  const currentViewerUrl = useMemo(() => {
-    if (!viewerModal.concours) return '';
-    if (viewerModal.activeTab === 'sujet') {
-      return getPdfUrl(viewerModal.concours.htmlUrl);
-    } else {
-      return getPdfUrl(viewerModal.concours.htmlCorrectionUrl || viewerModal.concours.pdfCorrectionUrl);
-    }
-  }, [viewerModal]);
-
-  if (!requestedEcole && !viewerModal.isOpen) return null;
 
   return (
-    <div style={{ minHeight: '100%', backgroundColor: 'var(--bg, #f8fafc)', padding: viewerModal.isOpen ? '0' : requestedEcole ? '20px 16px 40px' : '24px 28px 60px', color: 'var(--text, #0f172a)' }}>
-      {!viewerModal.isOpen && (
-      <>
-
+    <div style={{
+      maxWidth: 'none',
+      margin: '0',
+      padding: `${openYear ? '8px' : '24px'} 20px 80px`,
+      fontFamily: "'Nunito', -apple-system, BlinkMacSystemFont, sans-serif",
+      color: 'var(--text, #0f2a6b)'
+    }}>
       {/* =========================================================================
-          FIL D'ARIANE / NAVIGATION HIÉRARCHIQUE (ÉCOLES -> MATIÈRES -> CONCOURS)
+          ÉTAT DE CHARGEMENT & ERREURS
       ========================================================================= */}
-      {!requestedEcole && (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '8px',
-        marginBottom: '22px',
-        padding: '12px 18px',
-        backgroundColor: 'var(--surface, #ffffff)',
-        borderRadius: '12px',
-        border: '1px solid var(--border, #e2e8f0)',
-        fontSize: '13.5px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-      }}>
-        <button
-          onClick={() => {
-            setSelectedEcole(null);
-            setSelectedMatiere(null);
-            setSelectedYear('');
-            setSearchConcours('');
-            setSearchMatiere('');
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: selectedEcole ? '#2563eb' : '#0f172a',
-            fontWeight: selectedEcole ? 600 : 800,
-            cursor: selectedEcole ? 'pointer' : 'default',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            transition: 'background 0.15s ease'
-          }}
-        >
-          <span>🏫</span> Écoles ({ecolesSummary.length})
-        </button>
-
-        {selectedEcole && (
-          <>
-            <span style={{ color: 'var(--text-secondary, #94a3b8)', fontWeight: 600 }}>›</span>
-            <button
-              onClick={() => {
-                setSelectedMatiere(ALL_MATIERES);
-                setSelectedYear('');
-                setSearchConcours('');
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: selectedMatiere ? '#2563eb' : '#0f172a',
-                fontWeight: selectedMatiere ? 600 : 800,
-                cursor: selectedMatiere ? 'pointer' : 'default',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                transition: 'background 0.15s ease'
-              }}
-            >
-              <span>🏛️</span> {selectedEcole}
-            </button>
-          </>
-        )}
-
-        {selectedMatiere && (
-          <>
-            <span style={{ color: 'var(--text-secondary, #94a3b8)', fontWeight: 600 }}>›</span>
-            <span style={{
-              color: 'var(--text, #0f172a)',
-              fontWeight: 800,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 8px',
-              backgroundColor: 'var(--surface-2, #f1f5f9)',
-              borderRadius: '6px'
-            }}>
-              <span>{getMatiereTheme(selectedMatiere).icon}</span> {selectedMatiere}
-            </span>
-          </>
-        )}
-      </div>
-      )}
-
-      {/* Message d'erreur éventuel */}
-      {error && (
+      {loading ? (
+        <div style={{
+          backgroundColor: 'var(--surface, #ffffff)',
+          borderRadius: '20px',
+          padding: '80px 20px',
+          textAlign: 'center',
+          border: '1px solid var(--border, #e2e8f0)',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            display: 'inline-block',
+            width: '42px',
+            height: '42px',
+            border: '4px solid #dbeafe',
+            borderTopColor: '#2563eb',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            marginBottom: '16px'
+          }} />
+          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+          <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text, #0f2a6b)' }}>
+            Chargement des concours...
+          </div>
+          <div style={{ fontSize: '13.5px', color: 'var(--text-secondary, #64748b)', marginTop: '4px' }}>
+            Synchronisation en direct avec la base de données
+          </div>
+        </div>
+      ) : error ? (
         <div style={{
           backgroundColor: '#fef2f2',
           border: '1px solid #fecaca',
-          borderRadius: '14px',
-          padding: '16px 20px',
+          borderRadius: '16px',
+          padding: '20px 24px',
           color: '#b91c1c',
-          marginBottom: '24px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          marginBottom: '24px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600 }}>
-            <span>⚠️</span> {error}
+          <div style={{ fontSize: '14px', fontWeight: 700 }}>
+            ⚠️ {error}
           </div>
           <button
             onClick={fetchAllConcours}
             style={{
-              background: 'var(--surface, #ffffff)',
+              background: '#ffffff',
               border: '1px solid #fca5a5',
-              padding: '6px 14px',
+              padding: '7px 16px',
               borderRadius: '8px',
               color: '#b91c1c',
-              fontWeight: 700,
-              fontSize: '12px',
+              fontWeight: 800,
+              fontSize: '13px',
               cursor: 'pointer'
             }}
           >
             Réessayer
           </button>
         </div>
-      )}
+      ) : dynamicYearsData.length === 0 ? (
 
-      {/* État de chargement */}
-      {loading ? (
+        /* Aucun concours trouvé dans la base de données pour cette école */
         <div style={{
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '20px',
+          backgroundColor: 'var(--surface, #ffffff)',
+          borderRadius: '24px',
           padding: '80px 20px',
           textAlign: 'center',
-          border: '1px solid var(--border, #e2e8f0)'
+          border: '2px dashed var(--border, #cbd5e1)'
         }}>
-          <div style={{
-            display: 'inline-block',
-            width: '42px',
-            height: '42px',
-            border: '4px solid #ccfbf1',
-            borderTopColor: '#0d9488',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-            marginBottom: '16px'
-          }} />
-          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text, #1e293b)' }}>
-            Chargement des données...
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '4px' }}>
-            Récupération des écoles et concours ajoutés par l'administrateur
-          </div>
+          <div style={{ fontSize: '50px', marginBottom: '14px' }}>📚</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 850, color: 'var(--text, #0f2a6b)', margin: '0 0 8px 0' }}>
+            Aucun concours disponible pour le moment
+          </h2>
+          <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 20px 0', maxWidth: '480px', marginInline: 'auto' }}>
+            {requestedEcole
+              ? `L'administrateur n'a pas encore ajouté de concours pour l'école « ${requestedEcole} ».`
+              : "Seuls les concours réellement téléversés et publiés par l'administrateur depuis le panneau d'administration apparaîtront ici."}
+          </p>
+          <button
+            onClick={fetchAllConcours}
+            style={{
+              background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+              color: '#ffffff',
+              border: 'none',
+              padding: '10px 22px',
+              borderRadius: '9999px',
+              fontWeight: 800,
+              fontSize: '13.5px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(24, 101, 242, 0.28)'
+            }}
+          >
+            Actualiser
+          </button>
         </div>
-      ) : selectedEcole === null ? (
+      ) : openYear === null ? (
 
         /* =========================================================================
-            ÉTAPE 1 : AFFICHER UNIQUEMENT LES ÉCOLES AJOUTÉES PAR L'ADMIN
+            VUE 1 : GRILLE DES CARTES DE CONCOURS DYNAMIQUES (SCREENSHOT 1)
         ========================================================================= */
         <div>
-          {/* Header de la section Écoles avec recherche */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            marginBottom: '24px'
-          }}>
-            <div>
-              <h1 style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                color: 'var(--text, #0f172a)',
-                margin: 0,
-                letterSpacing: '-0.3px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px'
-              }}>
-                Grandes Écoles Disponibles
-                <span style={{
-                  fontSize: '12.5px',
-                  fontWeight: 700,
-                  backgroundColor: '#ccfbf1',
-                  color: '#0f766e',
-                  padding: '3px 10px',
-                  borderRadius: '20px'
-                }}>
-                  {filteredEcoles.length} école{filteredEcoles.length > 1 ? 's' : ''}
-                </span>
-              </h1>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '13.5px' }}>
-                Cliquez sur une école pour afficher les matières et épreuves publiées par l'administration.
-              </p>
-            </div>
-
-            {/* Barre de recherche d'école */}
-            {ecolesSummary.length > 0 && (
-              <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)' }}>🔍</span>
-                <input
-                  type="text"
-                  placeholder="Rechercher une école..."
-                  value={searchEcole}
-                  onChange={(e) => setSearchEcole(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 14px 9px 36px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '13.5px',
-                    backgroundColor: 'var(--surface, #ffffff)',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Aucune école ajoutée par l'admin */}
-          {filteredEcoles.length === 0 ? (
-            <div style={{
-              background: 'var(--surface, #ffffff)',
-              borderRadius: '20px',
-              padding: '70px 20px',
-              textAlign: 'center',
-              border: '2px dashed #cbd5e1'
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '14px' }}>🎓</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 8px 0' }}>
-                {searchEcole ? `Aucune école ne correspond à "${searchEcole}"` : 'Aucune école disponible pour le moment'}
-              </h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 18px 0', maxWidth: '480px', marginInline: 'auto' }}>
-                {searchEcole
-                  ? 'Essayez de modifier votre mot-clé de recherche ou réinitialisez le filtre.'
-                  : 'Seules les écoles ajoutées par l\'administrateur apparaîtront ici dès leur publication.'}
-              </p>
-              {searchEcole ? (
-                <button
-                  onClick={() => setSearchEcole('')}
-                  style={{
-                    background: '#0d9488',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '9px 20px',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Effacer la recherche
-                </button>
-              ) : (
-                <button
-                  onClick={fetchAllConcours}
-                  style={{
-                    background: '#0d9488',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '9px 20px',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Actualiser la liste
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '24px'
-            }}>
-              {filteredEcoles.map((ec) => {
-                const meta = getEcoleMeta(ec.name);
-                const latestYear = ec.yearsList.length > 0 ? ec.yearsList[0] : null;
-
-                return (
-                  <div
-                    key={ec.name}
-                    onClick={() => handleOpenSchool(ec)}
-                    style={{
-                      backgroundColor: 'var(--surface, #ffffff)',
-                      borderRadius: '18px',
-                      border: '1px solid var(--border, #e2e8f0)',
-                      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
-                      padding: '24px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 14px 28px rgba(0, 0, 0, 0.08)';
-                      e.currentTarget.style.borderColor = meta.badgeColor;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.04)';
-                      e.currentTarget.style.borderColor = '#e2e8f0';
-                    }}
-                  >
-                    {/* Bande de couleur en haut */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '5px',
-                      background: meta.bgGradient
-                    }} />
-
-                    <div>
-                      {/* En-tête de la carte */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div style={{
-                          width: '52px',
-                          height: '52px',
-                          borderRadius: '14px',
-                          backgroundColor: meta.iconBg,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: meta.badgeColor,
-                          fontWeight: 900,
-                          fontSize: '18px',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                        }}>
-                          {ec.name.substring(0, 4)}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <span style={{
-                            backgroundColor: 'var(--surface-2, #f1f5f9)',
-                            color: 'var(--text, #334155)',
-                            fontSize: '12px',
-                            fontWeight: 800,
-                            padding: '4px 10px',
-                            borderRadius: '8px'
-                          }}>
-                            {ec.matieresList.length} matière{ec.matieresList.length > 1 ? 's' : ''}
-                          </span>
-                          <span style={{
-                            backgroundColor: 'var(--bg, #f8fafc)',
-                            border: '1px solid var(--border, #e2e8f0)',
-                            color: 'var(--text-secondary, #64748b)',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            padding: '4px 10px',
-                            borderRadius: '8px'
-                          }}>
-                            {ec.count} épreuve{ec.count > 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Titre et détails de l'école */}
-                      <h2 style={{
-                        fontSize: '21px',
-                        fontWeight: 800,
-                        color: 'var(--text, #0f172a)',
-                        margin: '0 0 4px 0',
-                        letterSpacing: '-0.3px'
-                      }}>
-                        {ec.name}
-                      </h2>
-
-                      <div style={{
-                        fontSize: '13px',
-                        color: 'var(--text-secondary, #64748b)',
-                        fontWeight: 600,
-                        marginBottom: '14px',
-                        minHeight: '36px',
-                        lineHeight: 1.4
-                      }}>
-                        {meta.nomComplet}
-                      </div>
-
-                      {/* Matières disponibles */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '18px' }}>
-                        {latestYear && (
-                          <span style={{
-                            background: 'var(--bg, #f8fafc)',
-                            border: '1px solid var(--border, #e2e8f0)',
-                            color: 'var(--text, #0f172a)',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '6px'
-                          }}>
-                            📅 Jusqu'à {latestYear}
-                          </span>
-                        )}
-
-                        {ec.matieresList.slice(0, 3).map((mat) => (
-                          <span
-                            key={mat}
-                            style={{
-                              background: 'var(--bg, #f8fafc)',
-                              border: '1px solid var(--border, #e2e8f0)',
-                              color: 'var(--text-secondary, #475569)',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              padding: '3px 8px',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            {mat}
-                          </span>
-                        ))}
-
-                        {ec.matieresList.length > 3 && (
-                          <span style={{
-                            fontSize: '11px',
-                            color: 'var(--text-secondary, #94a3b8)',
-                            fontWeight: 700,
-                            padding: '3px 4px'
-                          }}>
-                            +{ec.matieresList.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Bouton d'action */}
-                    <div style={{
-                      paddingTop: '14px',
-                      borderTop: '1px solid #f1f5f9',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      color: meta.badgeColor,
-                      fontWeight: 800,
-                      fontSize: '13.5px'
-                    }}>
-                      <span>Choisir cette école</span>
-                      <span style={{ fontSize: '18px' }}>→</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-      ) : selectedMatiere === null ? (
-
-        /* =========================================================================
-            ÉTAPE 2 : AFFICHER LES MATIÈRES DISPONIBLES POUR L'ÉCOLE SÉLECTIONNÉE
-        ========================================================================= */
-        <div>
-          {/* Barre supérieure : Retour aux écoles + Titre de l'école */}
-          <div style={{
-            background: 'var(--surface, #ffffff)',
-            borderRadius: '16px',
-            padding: '20px 24px',
-            border: '1px solid var(--border, #e2e8f0)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
-            marginBottom: '24px'
-          }}>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '14px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <button
-                  onClick={returnToConcoursOptions}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'var(--surface-2, #f1f5f9)',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    color: 'var(--text, #334155)',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; }}
-                >
-                  ← Retour aux écoles
-                </button>
-
-                <div>
-                  <h2 style={{
-                    margin: 0,
-                    fontSize: '20px',
-                    fontWeight: 800,
-                    color: 'var(--text, #0f172a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    Matières disponibles pour {selectedEcole}
-                    <span style={{
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      backgroundColor: '#ccfbf1',
-                      color: '#0f766e',
-                      padding: '2px 8px',
-                      borderRadius: '6px'
-                    }}>
-                      {matieresForSelectedEcole.length} matière{matieresForSelectedEcole.length > 1 ? 's' : ''}
-                    </span>
-                  </h2>
-                  <div style={{ fontSize: '13px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
-                    {getEcoleMeta(selectedEcole).nomComplet}
-                  </div>
-                </div>
-              </div>
-
-              {/* Champ de recherche de matière si besoin */}
-              {activeEcoleData && activeEcoleData.matieresList.length > 4 && (
-                <div style={{ position: 'relative', width: '240px' }}>
-                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)', fontSize: '12px' }}>🔍</span>
-                  <input
-                    type="text"
-                    placeholder="Filtrer les matières..."
-                    value={searchMatiere}
-                    onChange={(e) => setSearchMatiere(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '7px 10px 7px 30px',
-                      borderRadius: '8px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '13px',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Grille des matières */}
-          {matieresForSelectedEcole.length === 0 ? (
-            <div style={{
-              background: 'var(--surface, #ffffff)',
-              borderRadius: '20px',
-              padding: '60px 20px',
-              textAlign: 'center',
-              border: '2px dashed #cbd5e1'
-            }}>
-              <div style={{ fontSize: '42px', marginBottom: '10px' }}>📚</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px 0' }}>
-                Aucune matière trouvée
-              </h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 16px 0' }}>
-                Aucune matière n'est actuellement associée à cette école.
-              </p>
-              <button
-                onClick={returnToConcoursOptions}
+          {/* Header de la page */}
+          <div style={{ marginBottom: '28px' }}>
+            {/* Label & Filtre ANNÉE (Uniquement les années réelles de la base) */}
+            <div style={{ position: 'relative', display: 'inline-block', minWidth: '240px' }}>
+              <select
+                value={selectedYearFilter}
+                onChange={(e) => setSelectedYearFilter(e.target.value)}
                 style={{
-                  background: '#0d9488',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '8px 18px',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: 'pointer'
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  width: '100%',
+                  padding: '11px 42px 11px 20px',
+                  borderRadius: '9999px',
+                  border: '1.5px solid var(--border, #e2e8f0)',
+                  backgroundColor: 'var(--surface, #ffffff)',
+                  color: 'var(--text, #0f2a6b)',
+                  fontSize: '14px',
+                  fontWeight: 750,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+                  outline: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232d8cff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 18px center'
                 }}
               >
-                Retour aux écoles
-              </button>
+                <option value="all">Toutes les années</option>
+                {availableYears.map(yr => (
+                  <option key={yr} value={yr}>{yr}</option>
+                ))}
+              </select>
             </div>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '20px'
-            }}>
-              {matieresForSelectedEcole.map((mat) => {
-                const theme = getMatiereTheme(mat.name);
+          </div>
 
-                return (
-                  <div
-                    key={mat.name}
-                    onClick={() => {
-                      setSelectedMatiere(mat.name);
-                      setSelectedYear('');
-                      setSearchConcours('');
-                    }}
-                    style={{
-                      backgroundColor: 'var(--surface, #ffffff)',
-                      borderRadius: '16px',
-                      border: '1.5px solid #e2e8f0',
-                      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.03)',
-                      padding: '22px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      position: 'relative'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.06)';
-                      e.currentTarget.style.borderColor = theme.color;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.03)';
-                      e.currentTarget.style.borderColor = '#e2e8f0';
-                    }}
-                  >
-                    <div>
-                      {/* Icône et badge */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{
-                          width: '46px',
-                          height: '46px',
-                          borderRadius: '12px',
-                          backgroundColor: theme.bg,
-                          color: theme.color,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '22px'
-                        }}>
-                          {theme.icon}
-                        </div>
+          {/* Grille des cartes par année (100% dynamiques) */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 394px))',
+            gap: '24px'
+          }}>
+            {filteredYears.map(item => {
+              const yr = item.year;
+              const subs = item.subjectsList; // Uniquement les matières réelles uploadées par l'admin !
+              const overallProg = getYearOverallProgress(yr);
+              const isOk = overallProg.status === 'Terminé';
+              const isInProgress = overallProg.status === 'En cours';
+              const ctaText = isOk ? 'Revoir' : (isInProgress ? 'Continuer' : 'Commencer');
+              const demoAccessItem = item.concoursList.find(isDemoFree) || item.concoursList[0];
 
-                        <span style={{
-                          backgroundColor: 'var(--surface-2, #f1f5f9)',
-                          color: 'var(--text, #334155)',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          padding: '4px 10px',
-                          borderRadius: '6px'
-                        }}>
-                          {mat.count} épreuve{mat.count > 1 ? 's' : ''}
-                        </span>
-                      </div>
-
-                      {/* Nom de la matière */}
-                      <h3 style={{
-                        margin: '0 0 8px 0',
-                        fontSize: '18px',
-                        fontWeight: 800,
-                        color: 'var(--text, #0f172a)'
-                      }}>
-                        {mat.name}
-                      </h3>
-
-                      {/* Années couvertes */}
-                      <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', marginBottom: '16px' }}>
-                        {mat.years.length > 0 ? (
-                          <span>
-                            📅 Années : <strong>{mat.years.slice(0, 4).join(', ')}{mat.years.length > 4 ? '...' : ''}</strong>
-                          </span>
-                        ) : (
-                          <span>Années non spécifiées</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Footer carte matière */}
+              return (
+                <div
+                  key={yr}
+                  className={demoContentClass(demoAccessItem)}
+                  style={{
+                    position: 'relative',
+                    backgroundColor: 'var(--surface, #ffffff)',
+                    borderRadius: '26px',
+                    border: '1px solid var(--border, #e2e8f0)',
+                    boxShadow: '0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 12px 30px -4px rgba(24, 101, 242, 0.16)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 20px -2px rgba(24, 101, 242, 0.08)';
+                  }}
+                >
+                  <DemoAccessBadge item={demoAccessItem} />
+                  {/* Bannière bleue dégradée avec grande année, mascotte et boutons matières réelles (hauteur identique à la page Cours : 182px) */}
+                  <div style={{
+                    position: 'relative',
+                    height: '182px',
+                    background: 'linear-gradient(135deg, #1859cf 0%, #2563eb 52%, #38a3ff 100%)',
+                    overflow: 'hidden',
+                    userSelect: 'none'
+                  }}>
+                    {/* Boutons matières réelles en haut à droite (cliquables !) */}
                     <div style={{
-                      paddingTop: '12px',
-                      borderTop: '1px solid #f1f5f9',
+                      position: 'absolute',
+                      top: '14px',
+                      right: '16px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      color: theme.color,
-                      fontWeight: 700,
-                      fontSize: '13px'
+                      flexWrap: 'wrap',
+                      gap: '6px',
+                      zIndex: 5
                     }}>
-                      <span>Voir les concours</span>
-                      <span style={{ fontSize: '16px' }}>→</span>
+                      {subs.map(s => {
+                        const shortCode = getSubjectShortCode(s);
+                        const subjectConcours = item.subjectsMap[s];
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenSubjectFromCard(yr, s);
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: 'rgba(255, 255, 255, 0.92)',
+                              opacity: isDemoMode() && !isDemoFree(subjectConcours) ? 0.58 : 1,
+                              fontFamily: 'inherit',
+                              fontSize: '11px',
+                              fontWeight: 850,
+                              letterSpacing: '0.6px',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              lineHeight: 1.2
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#ffffff';
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.92)';
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                            title={`Ouvrir le concours ${s} ${yr}`}
+                          >
+                            {shortCode}{isDemoMode() && !isDemoFree(subjectConcours) ? ' 🔒' : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Grande Année sur le côté gauche */}
+                    <div style={{
+                      position: 'absolute',
+                      left: '20px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '46px',
+                      fontWeight: 900,
+                      color: '#ffffff',
+                      lineHeight: 1,
+                      letterSpacing: '-1.5px',
+                      zIndex: 2,
+                      textShadow: '0 2px 10px rgba(0, 0, 0, 0.15)'
+                    }}>
+                      {yr}
+                    </div>
+
+                    {/* Mascotte E-Concours peeking bottom right (style identique à la page Cours & Concours Blancs) */}
+                    <div style={{
+                      position: 'absolute',
+                      right: '-6px',
+                      bottom: '-8px',
+                      width: 'min(58%, 220px)',
+                      aspectRatio: '577 / 350',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                      filter: 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22))'
+                    }}>
+                      <img
+                        src={cardMascot}
+                        alt="Mascotte E-Concours"
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          objectPosition: 'right bottom'
+                        }}
+                      />
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
 
+                  {/* Corps de la carte */}
+                  <div style={{
+                    padding: '20px 22px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    flex: 1
+                  }}>
+                    <h3 style={{
+                      margin: 0,
+                      fontSize: '18px',
+                      fontWeight: 850,
+                      color: 'var(--text, #0f2a6b)',
+                      letterSpacing: '-0.2px'
+                    }}>
+                      Concours {yr}
+                    </h3>
+
+                    {/* Pastilles type & nombre réel de matières */}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        padding: '4px 12px',
+                        borderRadius: '9999px',
+                        backgroundColor: '#eff6ff',
+                        color: '#1865f2'
+                      }}>
+                        Concours
+                      </span>
+                      <span style={{
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        padding: '4px 12px',
+                        borderRadius: '9999px',
+                        backgroundColor: 'var(--surface-2, #f8fafc)',
+                        color: 'var(--text-secondary, #64748b)',
+                        border: '1px solid var(--border, #e2e8f0)'
+                      }}>
+                        {subs.length} matière{subs.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    {/* Barre de progression */}
+                    <div style={{
+                      height: '6px',
+                      backgroundColor: 'var(--border, #e2e8f0)',
+                      borderRadius: '9999px',
+                      overflow: 'hidden',
+                      marginTop: '2px'
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${overallProg.percentage}%`,
+                        backgroundColor: isOk ? '#10b981' : '#1865f2',
+                        borderRadius: '9999px',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+
+                    {/* Statut & Pourcentage réel */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '12.5px',
+                      fontWeight: 800,
+                      color: 'var(--text-secondary, #64748b)'
+                    }}>
+                      <span style={{
+                        color: isOk ? '#10b981' : (isInProgress ? '#1865f2' : 'var(--text-secondary, #64748b)'),
+                        fontWeight: 800
+                      }}>
+                        {overallProg.status}
+                      </span>
+                      <span>{overallProg.percentage} %</span>
+                    </div>
+
+                    {/* Gros bouton CTA */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenYearCTA(yr)}
+                      style={{
+                        border: 'none',
+                        borderRadius: '9999px',
+                        padding: '12px 20px',
+                        fontFamily: 'inherit',
+                        fontWeight: 800,
+                        fontSize: '14px',
+                        color: '#ffffff',
+                        background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 14px rgba(24, 101, 242, 0.28)',
+                        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                        width: '100%',
+                        marginTop: '4px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 6px 18px rgba(24, 101, 242, 0.38)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 14px rgba(24, 101, 242, 0.28)';
+                      }}
+                    >
+                      {ctaText}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : (
 
         /* =========================================================================
-            ÉTAPE 3 : CONCOURS CORRESPONDANTS CLASSÉS PAR ANNÉE (RÉCENT -> ANCIEN)
-                      AVEC SÉLECTION DE L'ANNÉE DU CONCOURS
+            VUE 2 : PAGE DÉDIÉE AU CONCOURS SÉLECTIONNÉ AVEC SIDEBAR COMPACT
         ========================================================================= */
-        <div>
-          {/* Header de navigation et filtres */}
-          <div style={{
-            background: 'var(--surface, #ffffff)',
-            borderRadius: '16px',
-            padding: '20px 24px',
-            border: '1px solid var(--border, #e2e8f0)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
-            marginBottom: '24px'
+        <div className="concours-layout-grid">
+          <style>{`
+            .concours-layout-grid {
+              display: grid;
+              grid-template-columns: 168px minmax(0, 1fr);
+              gap: 24px;
+              align-items: start;
+            }
+            .concours-sidebar-wrap {
+              width: 100%;
+              min-width: 0;
+              box-sizing: border-box;
+              scrollbar-width: none;
+              -ms-overflow-style: none;
+              background: transparent !important;
+              border: none !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+            }
+            .concours-sidebar-wrap::-webkit-scrollbar {
+              display: none;
+              width: 0;
+            }
+            html[data-theme="dark"] .concours-question-item:not(.is-current) {
+              background: var(--surface, #1b2940) !important;
+              border-color: var(--border-subtle, #223247) !important;
+            }
+            html[data-theme="dark"] .concours-question-item.is-current {
+              background: var(--surface-hover, #263854) !important;
+              border-color: var(--primary, #60a5fa) !important;
+            }
+            html[data-theme="dark"] .concours-question-item > span:first-child {
+              color: #e2e8f0 !important;
+            }
+            html[data-theme="dark"] .concours-question-item.is-current > span:first-child,
+            html[data-theme="dark"] .concours-question-status {
+              color: #93c5fd !important;
+            }
+            .concours-qcm-heading {
+              display: none !important;
+            }
+            @media (max-width: 900px) {
+              .concours-layout-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+              }
+              .concours-sidebar-wrap {
+                position: static !important;
+                width: min(100%, 210px) !important;
+                max-width: 210px !important;
+                max-height: none !important;
+                margin-bottom: 4px !important;
+                padding: 10px 8px !important;
+              }
+              .concours-sidebar-section {
+                margin-bottom: 0 !important;
+              }
+              .concours-question-list {
+                flex-direction: row !important;
+                gap: 8px !important;
+                overflow-x: auto;
+                padding-bottom: 6px;
+                scrollbar-width: thin;
+                -webkit-overflow-scrolling: touch;
+              }
+              .concours-question-item {
+                flex: 0 0 58px !important;
+                min-height: 46px;
+                justify-content: center !important;
+                padding: 10px !important;
+              }
+              .concours-question-status,
+              .concours-question-item svg {
+                display: none !important;
+              }
+              .concours-qcm-panel {
+                min-height: calc(100vh - 190px) !important;
+                padding: 8px 0 !important;
+              }
+            }
+          `}</style>
+
+          {/* SIDEBAR VERTICAL COMPACT (INSPIRÉ DE LA CAPTURE FOURNIE) */}
+          <aside className="concours-sidebar-wrap" style={{
+            position: 'sticky',
+            top: '8px',
+            maxHeight: 'calc(100vh - 110px)',
+            overflowY: 'auto',
+            width: '100%',
+            minWidth: 0,
+            boxSizing: 'border-box',
+            padding: '12px 8px',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-            {/* Rangée 1 : Bouton retour + Titre */}
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-              paddingBottom: '16px',
-              borderBottom: '1px solid #f1f5f9',
-              marginBottom: '16px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button
-                  onClick={() => {
-                    setSelectedMatiere(ALL_MATIERES);
-                    setSelectedYear('');
-                    setSearchConcours('');
-                  }}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'var(--surface-2, #f1f5f9)',
-                    border: '1px solid var(--border, #cbd5e1)',
-                    color: 'var(--text, #334155)',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; }}
-                >
-                  ← Tous les concours
-                </button>
-
-                <div>
-                  <h2 style={{
-                    margin: 0,
-                    fontSize: '20px',
-                    fontWeight: 800,
-                    color: 'var(--text, #0f172a)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    Concours {selectedMatiere === ALL_MATIERES ? '' : `${selectedMatiere} • `}{selectedEcole}
-                    <span style={{
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      backgroundColor: '#e0f2fe',
-                      color: '#0369a1',
-                      padding: '2px 8px',
-                      borderRadius: '6px'
-                    }}>
-                      {filteredConcoursForDisplay.length} concours
-                    </span>
-                  </h2>
-                  <div style={{ fontSize: '12.5px', color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>
-                    {getEcoleMeta(selectedEcole).nomComplet}
-                  </div>
-                </div>
-              </div>
-
-              {/* Règle de classement : du plus récent au plus ancien */}
-              <div style={{
+            {/* Bouton Changer de concours (Pill bleu doux avec chevron gauche) */}
+            <button
+              type="button"
+              onClick={() => setOpenYear(null)}
+              style={{
+                alignSelf: 'flex-start',
+                border: '1px solid #dbeafe',
+                backgroundColor: '#eff6ff',
+                color: '#2563eb',
+                fontFamily: 'inherit',
+                fontWeight: 750,
                 fontSize: '12px',
-                fontWeight: 700,
-                color: '#0d9488',
-                background: '#ccfbf1',
-                padding: '6px 12px',
-                borderRadius: '8px',
+                cursor: 'pointer',
+                padding: '6px 7px',
+                borderRadius: '9999px',
+                marginBottom: '14px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px'
-              }}>
-                <span>⏳</span> Classés du plus récent au plus ancien
-              </div>
-            </div>
+                gap: '4px',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span style={{ fontSize: '11px' }}>Changer de concours</span>
+            </button>
 
-            {/* Rangée 2 : Sélecteur d'année + Barre de recherche de concours */}
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '14px'
-            }}>
-              {/* Sélecteur d'année (Pastilles interactives) */}
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-secondary, #475569)', marginRight: '4px' }}>
-                  📅 Sélectionner l'Année :
-                </span>
+            {/* Matières réelles sous forme de sections accordéon sans icônes */}
+            {currentYearSubjects.map(subKey => {
+              const conc = currentOpenYearData.subjectsMap[subKey];
+              const prog = getConcoursProgress(conc);
+              const isExpanded = (subKey === activeSubject);
+              const displayName = getSubjectDisplayTitle(subKey);
 
-                <button
-                  onClick={() => setSelectedYear('')}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    fontSize: '12.5px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    border: selectedYear === '' ? '1.5px solid #0f172a' : '1px solid #cbd5e1',
-                    backgroundColor: selectedYear === '' ? '#0f172a' : '#ffffff',
-                    color: selectedYear === '' ? '#ffffff' : '#334155',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  Toutes les années
-                </button>
-
-                {availableYearsForSelectedMatiere.map((yr) => (
-                  <button
-                    key={yr}
-                    onClick={() => setSelectedYear(String(yr))}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      fontSize: '12.5px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      border: String(selectedYear) === String(yr) ? '1.5px solid #0d9488' : '1px solid #cbd5e1',
-                      backgroundColor: String(selectedYear) === String(yr) ? '#0d9488' : '#ffffff',
-                      color: String(selectedYear) === String(yr) ? '#ffffff' : '#334155',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    Année {yr}
-                  </button>
-                ))}
-              </div>
-
-              {/* Recherche par mot-clé */}
-              <div style={{ position: 'relative', width: '220px' }}>
-                <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary, #94a3b8)', fontSize: '12px' }}>🔍</span>
-                <input
-                  type="text"
-                  placeholder="Rechercher épreuve..."
-                  value={searchConcours}
-                  onChange={(e) => setSearchConcours(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '7px 10px 7px 30px',
-                    borderRadius: '8px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Grille des concours correspondants */}
-          {filteredConcoursForDisplay.length === 0 ? (
-            <div style={{
-              background: 'var(--surface, #ffffff)',
-              borderRadius: '20px',
-              padding: '60px 20px',
-              textAlign: 'center',
-              border: '2px dashed #cbd5e1'
-            }}>
-              <div style={{ fontSize: '42px', marginBottom: '10px' }}>📄</div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)', margin: '0 0 6px 0' }}>
-                Aucun concours disponible pour ces critères
-              </h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: '0 0 16px 0' }}>
-                {selectedYear ? `Aucune épreuve trouvée pour l'année ${selectedYear}.` : 'Aucune épreuve n\'a été publiée pour cette matière.'}
-              </p>
-              {selectedYear && (
-                <button
-                  onClick={() => setSelectedYear('')}
-                  style={{
-                    background: '#0d9488',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '8px 18px',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Voir toutes les années
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-              gap: '20px'
-            }}>
-              {filteredConcoursForDisplay.map((c) => {
-                const theme = getMatiereTheme(c.matiere);
-                const hasSujet = Boolean(c.htmlUrl);
-                const hasCorrection = Boolean(c.htmlCorrectionUrl || c.pdfCorrectionUrl);
-
+              if (isExpanded) {
                 return (
-                  <div
-                    key={c.id}
-                    style={{
-                      background: 'var(--surface, #ffffff)',
-                      borderRadius: '16px',
-                      border: '1px solid var(--border, #e2e8f0)',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 10px 24px rgba(0, 0, 0, 0.07)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.03)';
-                    }}
-                  >
-                    <div>
-                      {/* Top tags: Année sélectionnée + Matière */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '12px' }}>
-                        <span style={{
-                          background: '#0f172a',
-                          color: '#ffffff',
-                          fontSize: '12.5px',
-                          fontWeight: 800,
-                          padding: '4px 12px',
-                          borderRadius: '6px',
-                          letterSpacing: '0.3px',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}>
-                          📅 {c.annee || 'Année non spécifiée'}
-                        </span>
-
-                        <span style={{
-                          backgroundColor: theme.bg,
-                          color: theme.color,
-                          border: `1px solid ${theme.border}`,
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          padding: '3px 10px',
-                          borderRadius: '6px'
-                        }}>
-                          {c.matiere || selectedMatiere}
-                        </span>
-                      </div>
-
-                      {/* Titre du Concours */}
-                      <h3 style={{
-                        fontSize: '17px',
-                        fontWeight: 800,
-                        color: 'var(--text, #0f172a)',
-                        margin: '0 0 10px 0',
-                        lineHeight: 1.4
+                  <div key={subKey} className="concours-sidebar-section" style={{ marginBottom: '12px' }}>
+                    {/* En-tête de la matière ouverte : Nom en gras + badge score/questions */}
+                    <div
+                      onClick={() => setActiveSubject(null)}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '10px',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        userSelect: 'none'
+                      }}
+                      title="Cliquer pour réduire cette matière"
+                    >
+                      <h2 style={{
+                        margin: 0,
+                        fontSize: '22px',
+                        fontWeight: 850,
+                        color: 'var(--text, #0f2a6b)',
+                        letterSpacing: '-0.35px',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
                       }}>
-                        {c.titre}
-                      </h3>
-
-                      {/* Indicateurs de disponibilité des fichiers ajoutés par l'Admin */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-                          <span>{hasSujet ? '🟢' : '⚪'}</span>
-                          <span style={{ color: hasSujet ? '#15803d' : '#94a3b8', fontWeight: hasSujet ? 700 : 500 }}>
-                            {hasSujet ? 'Fichier Sujet disponible' : 'Sujet non disponible'}
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-                          <span>{hasCorrection ? '🟢' : '⚪'}</span>
-                          <span style={{ color: hasCorrection ? '#15803d' : '#94a3b8', fontWeight: hasCorrection ? 700 : 500 }}>
-                            {hasCorrection ? 'Correction détaillée disponible' : 'Correction en attente'}
-                          </span>
-                        </div>
-                      </div>
+                        {displayName}
+                      </h2>
+                      <span style={{
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        padding: '5px 9px',
+                        flexShrink: 0,
+                        borderRadius: '9999px',
+                        backgroundColor: 'var(--surface-2, #f1f5f9)',
+                        color: 'var(--text, #0f2a6b)',
+                        border: '1px solid var(--border, #e2e8f0)'
+                      }}>
+                        {prog.answeredCount}/{prog.totalQuestions}
+                      </span>
                     </div>
 
-                    {/* Boutons d'Action pour Consulter les Fichiers */}
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: hasSujet && hasCorrection ? '1fr 1fr' : '1fr',
-                      gap: '8px',
-                      paddingTop: '14px',
-                      borderTop: '1px solid #f1f5f9'
-                    }}>
-                      {/* Bouton Consulter le Sujet */}
-                      {hasSujet ? (
-                        <button
-                          onClick={() => handleOpenViewer(c, 'sujet')}
-                          style={{
-                            background: 'var(--surface-2, #eff6ff)',
-                            color: '#1d4ed8',
-                            border: '1px solid #bfdbfe',
-                            padding: '9px 12px',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            transition: 'all 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#dbeafe'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = '#eff6ff'; }}
-                        >
-                          <span>📄</span> Consulter Sujet
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          style={{
-                            background: 'var(--bg, #f8fafc)',
-                            color: 'var(--text-secondary, #94a3b8)',
-                            border: '1px solid var(--border, #e2e8f0)',
-                            padding: '9px 12px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'not-allowed'
-                          }}
-                        >
-                          Sujet non dispo
-                        </button>
-                      )}
+                    {/* Liste des questions Q1, Q2, Q3... sans doublons */}
+                    <div className="concours-question-list" style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                      {Array.from({ length: prog.totalQuestions }, (_, i) => {
+                        const qNum = i + 1;
+                        const isCurrent = (qNum === activeQuestion);
 
-                      {/* Bouton Consulter la Correction */}
-                      {hasCorrection ? (
-                        <button
-                          onClick={() => handleOpenViewer(c, 'correction')}
-                          style={{
-                            background: '#f0fdf4',
-                            color: '#15803d',
-                            border: '1px solid #bbf7d0',
-                            padding: '9px 12px',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            transition: 'all 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#dcfce7'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = '#f0fdf4'; }}
-                        >
-                          <span>✅</span> Consulter Corrigé
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          style={{
-                            background: 'var(--bg, #f8fafc)',
-                            color: 'var(--text-secondary, #94a3b8)',
-                            border: '1px solid var(--border, #e2e8f0)',
-                            padding: '9px 12px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'not-allowed'
-                          }}
-                        >
-                          Corrigé en attente
-                        </button>
-                      )}
+                        return (
+                          <div
+                            key={qNum}
+                            className={`concours-question-item${isCurrent ? ' is-current' : ''}`}
+                            onClick={() => handleSelectQuestion(qNum)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '9px 12px',
+                              minHeight: '44px',
+                              boxSizing: 'border-box',
+                              borderRadius: '11px',
+                              cursor: 'pointer',
+                              border: isCurrent ? '1px solid var(--primary, #2563eb)' : '1px solid var(--border-subtle, #e8edf5)',
+                              backgroundColor: isCurrent ? 'var(--surface-hover, #eff6ff)' : 'var(--surface, #ffffff)',
+                              boxShadow: isCurrent ? '0 2px 8px rgba(37, 99, 235, 0.12)' : '0 1px 2px rgba(15, 42, 107, 0.03)',
+                              transition: 'background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
+                              userSelect: 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isCurrent) {
+                                e.currentTarget.style.backgroundColor = '#f8fafc';
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isCurrent) {
+                                e.currentTarget.style.backgroundColor = 'var(--surface, #ffffff)';
+                                e.currentTarget.style.borderColor = '#e8edf5';
+                              }
+                            }}
+                          >
+                            <span style={{
+                              fontSize: '14px',
+                              fontWeight: 800,
+                              color: isCurrent ? 'var(--primary, #1d4ed8)' : 'var(--text, #0f2a6b)'
+                            }}>
+                              Q{qNum}
+                            </span>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {isCurrent && (
+                                <span className="concours-question-status" style={{
+                                  fontSize: '12.5px',
+                                  fontWeight: 750,
+                                  color: '#2563eb'
+                                }}>
+                                  En cours
+                                </span>
+                              )}
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke={isCurrent ? '#2563eb' : '#94a3b8'}
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="9 18 15 12 9 6" />
+                              </svg>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+              }
 
-      {/* =========================================================================
-          MODAL DE CONSULTATION DU FICHIER CONCOURS (SUJET / CORRIGÉ)
-      ========================================================================= */}
-      </>
-      )}
+              // Section matière réduite : barre bleue à gauche, libellé sans icône, chevron bas
+              return (
+                <div
+                  key={subKey}
+                  onClick={() => {
+                    setActiveSubject(subKey);
+                    const nextQ = prog.answeredCount < prog.totalQuestions ? prog.answeredCount + 1 : 1;
+                    setActiveQuestion(nextQ);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                padding: '10px 12px',
+                borderRadius: '11px',
+                border: '1px solid #e8edf5',
+                backgroundColor: 'var(--surface, #ffffff)',
+                    cursor: 'pointer',
+                    marginBottom: '8px',
+                    transition: 'all 0.15s ease',
+                    userSelect: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f8fafc';
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                    e.currentTarget.style.borderColor = '#e8edf5';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '3.5px',
+                      height: '18px',
+                      borderRadius: '9999px',
+                      backgroundColor: '#1865f2'
+                    }} />
+                    <span style={{
+                      fontSize: '15.5px',
+                      fontWeight: 800,
+                      color: '#0f2a6b'
+                    }}>
+                      {displayName}
+                    </span>
+                  </div>
 
-      {viewerModal.isOpen && (
-        <div style={{
-          position: 'relative',
-          width: '100%',
-          minHeight: 'calc(100vh - 76px)',
-          backgroundColor: 'var(--bg, #f8fafc)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 0,
-          boxSizing: 'border-box'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--bg, #f8fafc)',
-            width: '100%',
-            minHeight: 'calc(100vh - 76px)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'visible'
-          }}>
-            {/* Contenu du Document (Iframe) */}
-            <div style={{
-              flex: 1,
-              minHeight: 'calc(100vh - 116px)',
-              backgroundColor: 'var(--surface-2, #f1f5f9)',
-              padding: '32px 16px 20px',
-              display: 'grid',
-              gridTemplateColumns: isViewerSidebarCollapsed
-                ? '38px minmax(0, 1fr)'
-                : !viewerModal.concours
-                ? 'minmax(0, 1fr)'
-                : 'minmax(240px, 290px) minmax(0, 1fr)',
-              gap: '18px',
-              overflow: 'visible',
-              alignItems: 'stretch'
-            }}>
-              {isViewerSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des concours" title="Ouvrir le menu" onClick={() => setIsViewerSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: viewerModal.concours ? '0 0 290px' : '1 1 auto', width: viewerModal.concours ? '290px' : '100%', minWidth: viewerModal.concours ? '240px' : 0, maxHeight: viewerModal.concours ? 'calc(100vh - 116px)' : 'none', overflowY: viewerModal.concours ? 'auto' : 'visible', padding: viewerModal.concours ? '14px 18px' : 0, background: viewerModal.concours ? '#ffffff' : 'transparent', border: viewerModal.concours ? '1px solid #dbeafe' : 'none', borderRadius: viewerModal.concours ? '16px' : 0, boxShadow: viewerModal.concours ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: viewerModal.concours ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
-                <div style={{ display: 'grid', width: '90%', maxWidth: '1600px', margin: '0 auto', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', alignItems: 'start', gap: '10px' }}>
-                  {availableYearsForSelectedMatiere.map((year) => {
-                    const yearConcours = concoursForNavigationYear(year);
-                    const yearKey = String(year);
-                    const isExpandedYear = expandedYear === yearKey;
-                    const concoursBySubject = yearConcours.reduce((groups, concours) => {
-                      const subject = (concours.matiere || 'G\u00e9n\u00e9ral').trim();
-                      if (!groups[subject]) groups[subject] = [];
-                      groups[subject].push(concours);
-                      return groups;
-                    }, {});
-
-                    return (
-                      <div key={year}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedYear(yearKey);
-                            setExpandedYear(current => current === yearKey ? '' : yearKey);
-                            setExpandedSubject(null);
-                          }}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 10px', border: '1px solid', borderColor: isExpandedYear ? '#60a5fa' : '#dbeafe', borderRadius: '12px', background: isExpandedYear ? '#eff6ff' : '#ffffff', color: isExpandedYear ? '#1d4ed8' : '#1e293b', textAlign: 'left', fontWeight: 750, fontSize: '13px', cursor: 'pointer', boxShadow: isExpandedYear ? '0 4px 12px rgba(37,99,235,.12)' : '0 2px 6px rgba(15,23,42,.04)', transition: 'all .15s ease' }}
-                        >
-                          <span style={{ width: '36px', height: '36px', flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: '10px', background: isExpandedYear ? '#dbeafe' : '#f1f5f9', color: '#2563eb' }} aria-hidden="true">
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M7 3.75h7l5 5v11.5a1.75 1.75 0 0 1-1.75 1.75h-10.5A1.75 1.75 0 0 1 5 20.25V5.5a1.75 1.75 0 0 1 2-1.75Z" />
-                              <path d="M14 4v5h5M8.5 13h7M8.5 16.5h7" />
-                            </svg>
-                          </span>
-                          <span style={{ flex: 1 }}>Concours {year}</span>
-                          <span style={{ fontSize: '21px', lineHeight: 1, color: isExpandedYear ? '#2563eb' : '#94a3b8' }} aria-hidden="true">{isExpandedYear ? '\u2304' : '\u203a'}</span>
-                        </button>
-                        {isExpandedYear && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '5px 0 2px 9px', paddingLeft: '9px', borderLeft: '2px solid #bfdbfe' }}>
-                            {Object.entries(concoursBySubject).map(([subject, subjectConcours]) => {
-                              const subjectKey = `${yearKey}:${subject}`;
-                              const isExpandedSubject = expandedSubject === subjectKey;
-                              return (
-                                <div key={subjectKey}>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (subjectConcours.length === 1) {
-                                        const concours = subjectConcours[0];
-                                        setSelectedYear(String(concours.annee || ''));
-                                        handleOpenViewer(concours, 'sujet');
-                                        return;
-                                      }
-                                      setExpandedSubject(current => current === subjectKey ? null : subjectKey);
-                                    }}
-                                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '8px 10px', border: 0, borderRadius: '8px', background: isExpandedSubject ? '#dbeafe' : 'transparent', color: isExpandedSubject ? '#1d4ed8' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
-                                  >
-                                    <span>{subject}</span>
-                                  </button>
-                                  {isExpandedSubject && subjectConcours.map(concours => {
-                                    const activeConcours = String(viewerModal.concours?.id) === String(concours.id);
-                                    return (
-                                      <button
-                                        key={concours.id}
-                                        type="button"
-                                        onClick={() => {
-                                          setSelectedYear(String(concours.annee || ''));
-                                          handleOpenViewer(concours, 'sujet');
-                                        }}
-                                        style={{ width: '100%', marginTop: '3px', padding: '8px 10px 8px 16px', border: 0, borderRadius: '8px', background: activeConcours ? '#2563eb' : 'transparent', color: activeConcours ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: activeConcours ? 750 : 600, cursor: 'pointer' }}
-                                      >
-                                        {concours.titre || `QCM ${concours.id}`}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#0f2a6b"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </div>
-              </aside>}
-              {viewerModal.concours && <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-              {currentViewerUrl ? (
-                viewerModal.activeTab === 'sujet' && viewerModal.concours.htmlUrl ? (
-                  <div style={{ width: '100%', minWidth: 0 }}>
+              );
+            })}
+          </aside>
+
+          {/* CONTENU PRINCIPAL DE DROITE (CHARGEMENT DIRECT DU CONTENU QCM HTML DE L'ADMIN) */}
+          <main className="concours-qcm-panel" style={{
+            padding: '8px 0',
+            minHeight: '640px',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {currentActiveConcours ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Barre de titre et onglets Sujet / Corrigé */}
+                <div style={{
+                  display: (currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl) ? 'flex' : 'none',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  paddingBottom: '14px',
+                  borderBottom: '1px solid var(--border, #e2e8f0)'
+                }}>
+                  <div className="concours-qcm-heading">
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: 850,
+                      color: '#1865f2',
+                      letterSpacing: '0.6px',
+                      textTransform: 'uppercase'
+                    }}>
+                      {activeSubject?.toUpperCase()} · CONCOURS {openYear}
+                    </span>
+                    <h3 style={{ margin: '3px 0 0', fontSize: '20px', fontWeight: 850, color: 'var(--text, #0f2a6b)' }}>
+                      {currentActiveConcours.titre || `Concours ${openYear} — ${activeSubject}`}
+                    </h3>
+                  </div>
+
+                  {/* Boutons Sujet / Corrigé si le corrigé existe */}
+                  {(currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl) && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setViewerTab('sujet')}
+                        style={{
+                          padding: '7px 16px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 750,
+                          cursor: 'pointer',
+                          border: viewerTab === 'sujet' ? '1.5px solid #1865f2' : '1px solid var(--border, #cbd5e1)',
+                          backgroundColor: viewerTab === 'sujet' ? '#eff6ff' : '#ffffff',
+                          color: viewerTab === 'sujet' ? '#1865f2' : 'var(--text-secondary, #64748b)'
+                        }}
+                      >
+                        📄 Sujet
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewerTab('correction')}
+                        style={{
+                          padding: '7px 16px',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: 750,
+                          cursor: 'pointer',
+                          border: viewerTab === 'correction' ? '1.5px solid #10b981' : '1px solid var(--border, #cbd5e1)',
+                          backgroundColor: viewerTab === 'correction' ? '#ecfdf5' : '#ffffff',
+                          color: viewerTab === 'correction' ? '#047857' : 'var(--text-secondary, #64748b)'
+                        }}
+                      >
+                        ✅ Corrigé
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Affichage du QCM HTML réel ajouté par l'administrateur */}
+                {currentActiveConcours.htmlUrl ? (
+                  <div style={{ flex: 1, minHeight: '680px', borderRadius: '16px', overflow: 'hidden' }}>
                     <TrackedQcmFrame
-                      src={currentViewerUrl}
-                      title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
+                      src={getPdfUrl(viewerTab === 'sujet' ? currentActiveConcours.htmlUrl : (currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl || currentActiveConcours.htmlUrl))}
+                      title={`${currentActiveConcours.titre} - ${viewerTab}`}
                       sourceType="Concours"
-                      resourceId={viewerModal.concours.id}
-                      resourceTitle={viewerModal.concours.titre || viewerModal.concours.title}
-                      subject={viewerModal.concours.matiere || selectedMatiere || ''}
-                      school={viewerModal.concours.ecole || selectedEcole || ''}
-                      year={viewerModal.concours.annee || ''}
-                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
+                      resourceId={currentActiveConcours.id}
+                      resourceTitle={currentActiveConcours.titre}
+                      subject={activeSubject}
+                      school={currentActiveConcours.ecole || requestedEcole || ''}
+                      year={openYear}
+                      style={{ width: '100%', height: '80vh', border: 'none', display: 'block', background: 'transparent' }}
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
-                    <iframe
-                      src={currentViewerUrl}
-                      title={`${viewerModal.concours.titre} - ${viewerModal.activeTab}`}
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                      style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
-                    />
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    backgroundColor: 'var(--bg, #f8fafc)',
+                    borderRadius: '16px',
+                    border: '1.5px dashed var(--border, #cbd5e1)',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 800, color: 'var(--text, #0f2a6b)' }}>
+                      Aucun fichier QCM HTML téléversé
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--text-secondary, #64748b)', maxWidth: '420px' }}>
+                      L'administrateur n'a pas encore ajouté de fichier QCM pour l'épreuve de {activeSubject} ({openYear}). Dès qu'un fichier sera téléversé depuis le panneau Admin, il apparaîtra ici automatiquement.
+                    </p>
                   </div>
-                )
-              ) : (
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '40px',
-                  backgroundColor: 'var(--surface, #ffffff)',
-                  borderRadius: '12px',
-                  border: '1px dashed #cbd5e1'
-                }}>
-                  <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
-                  <h4 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                    Aucun fichier {viewerModal.activeTab === 'sujet' ? 'Sujet' : 'Corrigé'} disponible
-                  </h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary, #64748b)', maxWidth: '380px', textAlign: 'center' }}>
-                    L'administrateur n'a pas encore téléversé le document correspondant pour cette épreuve.
-                  </p>
-                </div>
-              )}
-                </div>
-              </div>}
-            </div>
-
-          </div>
+                )}
+              </div>
+            ) : (
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-secondary, #64748b)'
+              }}>
+                Sélectionnez une matière pour afficher son contenu.
+              </div>
+            )}
+          </main>
         </div>
       )}
-
     </div>
   );
 }

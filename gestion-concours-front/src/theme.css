@@ -1928,9 +1928,10 @@ html.dark #root :is(
   textarea,
   .form-control
 ) {
-  background-color: var(--input-bg) !important;
+  background: var(--input-bg) !important;
   border: 1px solid var(--border) !important;
   color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
 }
 
 html[data-theme="dark"] #root :is(

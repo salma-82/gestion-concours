@@ -703,6 +703,40 @@
   color: #1e40af;
 }
 
+html[data-theme="dark"] .summary-insight-head-text h3,
+html.dark .summary-insight-head-text h3 {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .summary-insight-head-text p,
+html.dark .summary-insight-head-text p {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] .summary-insight-item,
+html.dark .summary-insight-item {
+  background: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .summary-insight-item-title,
+html.dark .summary-insight-item-title {
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .is-top .summary-insight-item-meta,
+html.dark .is-top .summary-insight-item-meta {
+  background: rgba(139, 92, 246, .18) !important;
+  color: #c4b5fd !important;
+}
+
+html[data-theme="dark"] .is-discover .summary-insight-item-meta,
+html.dark .is-discover .summary-insight-item-meta {
+  background: rgba(59, 130, 246, .18) !important;
+  color: #93c5fd !important;
+}
+
 /* --------------------------------------------------------------------------
    6. SESSIONS & HISTORY TABLE
    -------------------------------------------------------------------------- */

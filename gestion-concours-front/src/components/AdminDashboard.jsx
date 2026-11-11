@@ -279,6 +279,7 @@ export default function AdminDashboard() {
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [editingExamId, setEditingExamId] = useState(null);
   const [examTitre, setExamTitre] = useState('');
+  const [examEcole, setExamEcole] = useState('');
   const [examMatiere, setExamMatiere] = useState('');
   const [examOption, setExamOption] = useState('Sciences Mathématiques A');
   const [examSession, setExamSession] = useState('Normale');
@@ -357,6 +358,80 @@ export default function AdminDashboard() {
       setExamAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
       setExamOptionsList([...new Set(data.map(item => item.optionBac).filter(Boolean))]);
     } catch (err) { console.error("Erreur examens:", err); }
+  };
+
+  const handleExamSubmit = async (e) => {
+    e.preventDefault();
+    if (loadingExam) return;
+
+    setLoadingExam(true);
+    const formData = new FormData();
+    formData.append('titre', examTitre.trim());
+    formData.append('ecole', examEcole.trim());
+    formData.append('matiere', normalizeExamNationalSubject(examMatiere, examTitre) || examMatiere.trim());
+    formData.append('optionBac', examOption.trim() || 'Toutes options');
+    formData.append('session', examSession || 'Normale');
+    formData.append('annee', String(examAnnee));
+    if (examFileSujet) formData.append('fileSujet', examFileSujet);
+    if (examFileCorrection) formData.append('fileCorrection', examFileCorrection);
+
+    try {
+      if (editingExamId) {
+        await axios.put(`/api/examens-nationaux/${editingExamId}`, formData, { withCredentials: true });
+      } else {
+        await axios.post('/api/examens-nationaux', formData, { withCredentials: true });
+      }
+
+      setIsExamModalOpen(false);
+      setEditingExamId(null);
+      setExamTitre('');
+      setExamEcole('');
+      setExamMatiere('');
+      setExamOption('Sciences Mathématiques A');
+      setExamSession('Normale');
+      setExamAnnee('2024');
+      setExamFileSujet(null);
+      setExamFileCorrection(null);
+      await fetchExamens();
+      alert(editingExamId ? 'Examen mis a jour avec succes.' : 'Examen ajoute avec succes.');
+    } catch (err) {
+      console.error('Erreur enregistrement examen national:', err);
+      const responseMessage = err.response?.data;
+      const detail = typeof responseMessage === 'string'
+        ? responseMessage.trim()
+        : responseMessage?.message;
+      alert(detail || err.message || "Impossible d'enregistrer l'examen. Verifiez le serveur et les fichiers PDF.");
+    } finally {
+      setLoadingExam(false);
+    }
+  };
+
+  const handleEditExam = (item) => {
+    setEditingExamId(item.id);
+    setExamTitre(item.titre || '');
+    setExamEcole(item.ecole || '');
+    setExamMatiere(normalizeExamNationalSubject(item.matiere, item.titre) || item.matiere || '');
+    setExamOption(item.optionBac || 'Toutes options');
+    setExamSession(item.session || 'Normale');
+    setExamAnnee(String(item.annee || new Date().getFullYear()));
+    setExamFileSujet(null);
+    setExamFileCorrection(null);
+    setIsExamModalOpen(true);
+  };
+
+  const handleDeleteExam = async (id) => {
+    if (!window.confirm('Voulez-vous vraiment supprimer cet examen national ?')) return;
+
+    try {
+      await axios.delete(`/api/examens-nationaux/${id}`, { withCredentials: true });
+      await fetchExamens();
+      alert('Examen supprime avec succes.');
+    } catch (err) {
+      console.error('Erreur suppression examen national:', err);
+      const responseMessage = err.response?.data;
+      const detail = typeof responseMessage === 'string' ? responseMessage.trim() : responseMessage?.message;
+      alert(detail || err.message || "Impossible de supprimer l'examen.");
+    }
   };
 
   const fetchCoursBac = async () => {
@@ -1360,6 +1435,8 @@ export default function AdminDashboard() {
     { key: 'resumes', icon: '💡', label: 'Résumés & Astuces', count: resumesList.length, countType: 'default', onClick: () => { setActiveTab('resumes'); fetchResumes(); } },
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
   ];
+
+  sidebarItems.push({ key: 'demoContent', icon: '🔓', label: 'Accès démo gratuit', count: null, onClick: () => navigate('/admin-demo-content') });
 
   return (
     <div style={styles.wrapper}>
@@ -3419,6 +3496,17 @@ export default function AdminDashboard() {
                   value={examTitre}
                   onChange={(e) => setExamTitre(e.target.value)}
                   required
+                  style={styles.formInput}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>École (facultatif)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: ENSA, ENSAM, ENCG..."
+                  value={examEcole}
+                  onChange={(e) => setExamEcole(e.target.value)}
                   style={styles.formInput}
                 />
               </div>

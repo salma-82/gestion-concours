@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>E-Concours – Concours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3f6fb;
+  --card: #ffffff;
+  --card-subtle: #f8fafc;
+  --text: #0f2a6b;
+  --text-dark: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1859cf;
+  --blue-vibrant: #1865f2;
+  --blue2: #2d8cff;
+  --blue-grad: linear-gradient(135deg, #1859cf 0%, #2563eb 52%, #38a3ff 100%);
+  --btn-grad: linear-gradient(90deg, #1859cf 0%, #2563eb 100%);
+  --soft: #eff6ff;
+  --soft-border: #bfdbfe;
+  --green: #10b981;
+  --green-soft: #ecfdf5;
+  --orange: #f59e0b;
+  --shadow: 0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 30px -4px rgba(24, 101, 242, 0.14), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --card: #131c30;
+  --card-subtle: #19243d;
+  --text: #e6edff;
+  --text-dark: #cbd5e1;
+  --muted: #93a1bd;
+  --line: #23304d;
+  --soft: #1a2a4d;
+  --soft-border: #2b4578;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1220;
+    --card: #131c30;
+    --card-subtle: #19243d;
+    --text: #e6edff;
+    --text-dark: #cbd5e1;
+    --muted: #93a1bd;
+    --line: #23304d;
+    --soft: #1a2a4d;
+    --soft-border: #2b4578;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAVBAR IDENTIQUE AUX SCREENSHOTS */
+.nav-wrap {
+  position: sticky;
+  top: 14px;
+  z-index: 100;
+  max-width: 1220px;
+  width: calc(100% - 32px);
+  margin: 14px auto 0;
+}
+
+.nav {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  color: var(--blue-vibrant);
+}
+
+.nav-brand-logo span.accent {
+  color: var(--orange);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.nav-link:hover {
+  color: var(--blue-vibrant);
+  background: var(--soft);
+}
+
+.nav-link.active {
+  color: var(--blue-vibrant);
+  background: var(--soft);
+  border-color: var(--soft-border);
+  box-shadow: 0 2px 8px rgba(24, 101, 242, 0.08);
+}
+
+.nav-link svg.icon {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+
+.nav-chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+.nav-item.open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu (ENSA / ENSAM) */
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 150px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 120;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.nav-item.open .nav-dropdown {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+}
+
+.nav-dropdown-link:hover {
+  background: var(--soft);
+  color: var(--blue-vibrant);
+}
+
+.nav-dropdown-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.nav-dropdown-link:hover .nav-dropdown-dot {
+  background: var(--blue-vibrant);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text-dark);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.nav-icon-btn:hover {
+  background: var(--soft);
+  color: var(--blue-vibrant);
+  border-color: var(--soft-border);
+}
+
+.nav-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 800;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--card);
+}
+
+.nav-profile-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blue);
+  cursor: pointer;
+}
+
+/* MAIN CONTENT */
+main {
+  max-width: 1220px;
+  width: calc(100% - 32px);
+  margin: 32px auto 80px;
+  flex: 1;
+}
+
+/* EN-TETE DE PAGE */
+.page-header {
+  margin-bottom: 24px;
+}
+
+h1.page-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 850;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+p.page-sub {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.field-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* SELECT ROUNDED INPUT */
+.sel-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 260px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.sel {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 42px 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232d8cff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;
+  color: var(--text);
+  font: inherit;
+  font-weight: 750;
+  font-size: 13.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+
+.sel:hover,
+.sel:focus {
+  border-color: var(--blue2);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.15);
+}
+
+.sel option {
+  background: var(--card);
+  color: var(--text);
+}
+
+/* GRILLE DES CARTES */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 394px));
+  gap: 24px;
+}
+
+/* CARTE DE CONCOURS */
+.cc {
+  background: var(--card);
+  border-radius: 26px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cc:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* BANNIERE BLEUE AVEC DÉGRADÉ & MASCOTTE */
+.bn {
+  position: relative;
+  height: 182px;
+  background: var(--blue-grad);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* BOUTONS MATIERES EN HAUT A DROITE (CLIQUABLES !) */
+.bn-subjects {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+}
+
+.sj-btn {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.sj-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.sj-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* GRANDE ANNEE SUR LE COTE */
+.bn-year {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 46px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  z-index: 2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* MASCOTTE HIBOU */
+.bn-mascot {
+  position: absolute;
+  right: -6px;
+  bottom: -8px;
+  width: min(58%, 220px);
+  aspect-ratio: 577 / 350;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+  pointer-events: none;
+  z-index: 10;
+  display: block;
+  object-fit: contain;
+  object-position: right bottom;
+}
+
+/* CORPS DE LA CARTE */
+.bd {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.bd h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 850;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  line-height: 1.3;
+}
+
+.chip-type {
+  background: var(--soft);
+  color: var(--blue-vibrant);
+}
+
+.chip-count {
+  background: var(--card-subtle);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+/* BARRE DE PROGRESSION */
+.progress-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.progress-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--blue-vibrant);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-fill.ok {
+  background: var(--green);
+}
+
+/* STATUT & POURCENTAGE */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.stat-tag {
+  font-weight: 800;
+}
+
+.stat-tag.ok {
+  color: var(--green);
+}
+
+.stat-tag.in-progress {
+  color: var(--blue-vibrant);
+}
+
+.stat-tag.new {
+  color: var(--muted);
+}
+
+/* GROS BOUTON CTA */
+.btn {
+  border: 0;
+  border-radius: 9999px;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  color: #ffffff;
+  background: var(--btn-grad);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(24, 101, 242, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  text-align: center;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(24, 101, 242, 0.38);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* PAGE DE DETAIL DU CONCOURS (SCREENSHOT 3 & 4) */
+.det {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .det {
+    grid-template-columns: 1fr;
+  }
+}
+
+.box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+/* SIDEBAR DES QUESTIONS */
+.side {
+  position: sticky;
+  top: 90px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px;
+}
+
+.side-back {
+  align-self: flex-start;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: var(--blue-vibrant);
+  font-family: inherit;
+  font-weight: 750;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.side-back:hover {
+  background: #dbeafe;
+}
+
+/* SECTIONS PAR MATIÈRE */
+.sec-active-title {
+  font-size: 24px;
+  font-weight: 850;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+.sec-active-counter {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--card-subtle);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.sec-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.sec-collapsed:hover {
+  background: var(--card-subtle);
+}
+
+/* LISTE DES QUESTIONS (1..10) */
+.q-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.q-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.q-row:hover {
+  background: var(--card-subtle);
+}
+
+.q-row.current {
+  border-color: var(--blue-vibrant);
+  background: #eff6ff;
+  color: var(--blue-vibrant);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+}
+
+/* BADGE DU NUMERO DE QUESTION */
+.q-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+/* STATUT TERMINE (CHECKMARK VERT) */
+.q-row.done .q-badge {
+  background: var(--green);
+  border-color: var(--green);
+  color: #ffffff;
+}
+
+.q-row.done .q-status {
+  color: var(--green);
+  font-weight: 750;
+}
+
+/* STATUT EN COURS (BLEU CADRE) */
+.q-row.current {
+  background: var(--soft);
+  border: 1.5px solid var(--blue2);
+  color: var(--blue-vibrant);
+}
+
+.q-row.current .q-badge {
+  background: #ffffff;
+  border-color: var(--blue-vibrant);
+  color: var(--blue-vibrant);
+}
+
+:root[data-theme="dark"] .q-row.current .q-badge {
+  background: var(--card);
+}
+
+.q-row.current .q-status {
+  color: var(--blue-vibrant);
+  font-weight: 800;
+}
+
+.q-title {
+  flex: 1;
+}
+
+.q-status {
+  font-size: 12px;
+  font-weight: 700;
+  font-style: normal;
+  margin-left: auto;
+}
+
+/* CONTENU PRINCIPAL DE LA QUESTION */
+.det-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 540px;
+}
+
+.q-subject-label {
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--blue-vibrant);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.det-main h3 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 850;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+/* BOITE DE L'ENONCE */
+.q-statement {
+  background: var(--bg);
+  border: 1.5px dashed var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  color: var(--text-dark);
+  font-size: 14.5px;
+  line-height: 1.65;
+  margin-bottom: 22px;
+}
+
+/* OPTIONS DE RÉPONSE A, B, C, D */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.op {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.op:hover {
+  border-color: var(--blue2);
+  background: var(--card-subtle);
+}
+
+.op b {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--blue-vibrant);
+  font-size: 13px;
+  font-weight: 850;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.op.on {
+  border-color: var(--blue-vibrant);
+  background: var(--soft);
+  box-shadow: 0 0 0 1px var(--blue-vibrant);
+}
+
+.op.on b {
+  background: var(--blue-vibrant);
+  color: #ffffff;
+}
+
+/* ACTIONS (PRECEDENT / SUIVANT) */
+.q-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.btn-secondary {
+  border: 1.5px solid var(--line);
+  border-radius: 9999px;
+  padding: 11px 24px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: auto;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--muted);
+  background: var(--card-subtle);
+}
+
+.btn-primary-action {
+  border: 0;
+  border-radius: 9999px;
+  padding: 12px 28px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  color: #ffffff;
+  background: var(--btn-grad);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(24, 101, 242, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  width: auto;
+}
+
+.btn-primary-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(24, 101, 242, 0.38);
+}
+
+/* BOUTON FLOTTANT WHATSAPP "Aide" (SCREENSHOT 2) */
+.wa-help {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 99;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #1e293b;
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+:root[data-theme="dark"] .wa-help {
+  background: #131c30;
+  border-color: #23304d;
+  color: #e6edff;
+}
+
+.wa-help:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+}
+
+.wa-icon {
+  width: 22px;
+  height: 22px;
+  fill: #22c55e;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR EN PILULE (SCREENSHOT 2) -->
+<div class="nav-wrap">
+  <nav class="nav" aria-label="Navigation principale">
+    <div class="nav-brand" onclick="open=null;render();">
+      <div class="nav-brand-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue-vibrant)">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <span>E-<span class="accent">CONCOURS</span></span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-item">
+        <a class="nav-link" href="#accueil">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Accueil
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#calendrier">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          Calendrier
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#cours">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+          Cours
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#examens">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Examens
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+      </li>
+      <li class="nav-item" id="navConcoursItem">
+        <button class="nav-link active" id="navConcoursBtn" type="button" aria-expanded="false" onclick="toggleNavDropdown(event)">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Concours
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="nav-dropdown" id="navConcoursDropdown">
+          <button class="nav-dropdown-link" type="button" onclick="selectSchool('all')">
+            <span class="nav-dropdown-dot"></span>Tous les concours
+          </button>
+          <button class="nav-dropdown-link" type="button" onclick="selectSchool('ENSA')">
+            <span class="nav-dropdown-dot"></span>ENSA
+          </button>
+          <button class="nav-dropdown-link" type="button" onclick="selectSchool('ENSAM')">
+            <span class="nav-dropdown-dot"></span>ENSAM
+          </button>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#concours-blancs">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+          Concours Blancs
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#resumes">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          Résumés
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#erreurs">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          Mes erreurs
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+      </li>
+    </ul>
+
+    <div class="nav-actions">
+      <!-- Dark mode switch -->
+      <button class="nav-icon-btn" id="themeBtn" type="button" aria-label="Changer de thème" onclick="toggleTheme()">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      <!-- Notifications -->
+      <button class="nav-icon-btn" type="button" aria-label="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="nav-badge">2</span>
+      </button>
+
+      <!-- Profil Étudiant -->
+      <div class="nav-profile-btn" title="Profil étudiant">SB</div>
+    </div>
+  </nav>
+</div>
+
+<!-- CONTENEUR DE L'APPLICATION -->
+<main id="app"></main>
+
+<!-- WIDGET AIDE WHATSAPP FLOTTANT (SCREENSHOT 2) -->
+<a class="wa-help" href="https://wa.me/212600000000" target="_blank" rel="noopener noreferrer" aria-label="Aide sur WhatsApp">
+  <svg class="wa-icon" viewBox="0 0 24 24">
+    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.19-.09-1.1-.54-1.27-.6-.17-.06-.29-.09-.42.09-.12.19-.48.6-.59.72-.11.12-.22.14-.41.05-.19-.09-.79-.29-1.5-.93-.56-.49-.93-1.1-1.04-1.29-.11-.19-.01-.29.08-.38.09-.08.19-.22.28-.33.1-.11.13-.19.19-.31.06-.13.03-.24-.02-.33-.05-.09-.42-1.01-.58-1.39-.15-.36-.3-.31-.41-.32h-.35c-.12 0-.32.05-.49.23-.17.19-.65.64-.65 1.56 0 .92.67 1.81.76 1.94.1.12 1.32 2.02 3.2 2.83.45.19.8.31 1.07.4.45.14.86.12 1.18.07.36-.05 1.1-.45 1.26-.88.15-.44.15-.81.11-.88-.05-.08-.17-.13-.36-.23"/>
+  </svg>
+  <span>Aide</span>
+</a>
+
+<script>
+// Mascotte E-Concours originale avec toque bleue & lunettes dorées
+const OWL = 'data:image/png;base64,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'
+;
+
+// DONNEES : chaque année contient UNIQUEMENT les matières réellement uploadées par l'Admin
+// Si une matière n'a pas été uploadée par l'admin pour cette année, elle N'EST PAS présente dans l'objet.
+const P = {
+  '2025': { MATH: 3, PHYSIQUE: 0, SVT: 0 },
+  '2024': { MATH: 0, PHYSIQUE: 0, SVT: 0 },
+  '2021': { MATH: 10, PHYSIQUE: 10, SVT: 10 }
+};
+
+const Y = ['2025', '2024', '2021'];
+
+const N = {
+  MATH: 'Mathématiques',
+  PHYSIQUE: 'Physique - Chimie',
+  SVT: 'Sciences de la Vie et de la Terre'
+};
+
+// Renvoie uniquement les matières existantes uploadées pour l'année donnée
+function getSubjects(year) {
+  if (!P[year]) return [];
+  return Object.keys(P[year]);
+}
+
+let yr = 'all';          // Filtre Année sélectionné
+let open = null;         // Année du concours actuellement ouvert en détail (null = liste)
+let sub = 'MATH';        // Matière active
+let q = 1;               // Numéro de question active (1..10)
+let pick = null;         // Option cochée ('A'|'B'|'C'|'D'|null)
+
+const app = document.getElementById('app');
+
+// Calcul du total des questions terminées pour une année
+function tot(y) {
+  const subs = getSubjects(y);
+  return subs.reduce((acc, k) => acc + (P[y][k] || 0), 0);
+}
+
+// 1) FONCTION METIER : CLIC SUR UN BOUTON DE MATIERE DANS LA CARTE (ex: MATH 2021)
+// Ouvre directement le concours de cette matière pour cette année, à la première question non terminée (ou Q1 si tout terminé).
+function startSubject(year, subject) {
+  if (!P[year] || P[year][subject] === undefined) return;
+  open = year;
+  sub = subject;
+  q = (P[year][subject] < 10) ? (P[year][subject] + 1) : 1;
+  pick = null;
+}
+
+// 2) FONCTION METIER : CLIC SUR LE GROS BOUTON CTA (Commencer / Continuer / Revoir)
+// Ouvre le concours de l'année avec la première matière non terminée (ou la première matière si tout est terminé).
+function start(y) {
+  const subs = getSubjects(y);
+  if (!subs.length) return;
+  const k = subs.find(x => (P[y][x] || 0) < 10);
+  open = y;
+  sub = k || subs[0];
+  q = k ? ((P[y][k] || 0) + 1) : 1;
+  pick = null;
+}
+
+// RENDU DE LA PAGE LISTE (CARTE DES CONCOURS PAR ANNEE)
+function list() {
+  const ys = Y.filter(y => yr === 'all' || y === yr);
+
+  let html = `
+    <div class="page-header">
+      <h1 class="page-title">Concours</h1>
+      <p class="page-sub">Choisissez un concours pour commencer.</p>
+      <div class="field-label">ANNÉE</div>
+      <div class="sel-wrap">
+        <select class="sel" data-ysel aria-label="Filtrer par année">
+          <option value="all" ${yr === 'all' ? 'selected' : ''}>Toutes les années</option>
+          ${Y.map(y => `<option value="${y}" ${yr === y ? 'selected' : ''}>${y}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid">
+  `;
+
+  html += ys.map(y => {
+    const subs = getSubjects(y);
+    const maxQ = subs.length * 10;
+    const currentQ = tot(y);
+    const p = maxQ > 0 ? Math.round((currentQ / maxQ) * 100) : 0;
+    const ok = p === 100;
+    const st = ok ? 'Terminé' : (p > 0 ? 'Commencé' : 'Nouveau');
+    const stClass = ok ? 'ok' : (p > 0 ? 'in-progress' : 'new');
+    const ctaText = ok ? 'Revoir' : (p > 0 ? 'Continuer' : 'Commencer');
+
+    return `
+      <article class="cc">
+        <div class="bn">
+          <!-- BOUTONS MATIERES DYNAMIQUES & CLIQUABLES -->
+          <div class="bn-subjects">
+            ${subs.map(s => `
+              <button 
+                type="button" 
+                class="sj-btn" 
+                data-year="${y}" 
+                data-subject="${s}" 
+                aria-label="Ouvrir ${s} ${y}" 
+                title="Ouvrir ${N[s] || s} ${y}">
+                ${s}
+              </button>
+            `).join('')}
+          </div>
+          <div class="bn-year">${y}</div>
+          <img class="bn-mascot" src="${OWL}" alt="Mascotte E-Concours">
+        </div>
+
+        <div class="bd">
+          <h3>Concours ${y}</h3>
+          <div class="chips">
+            <span class="chip chip-type">Concours</span>
+            <span class="chip chip-count">${subs.length} matière${subs.length > 1 ? 's' : ''}</span>
+          </div>
+          <div class="progress-bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100">
+            <i class="progress-bar-fill ${ok ? 'ok' : ''}" style="width: ${p}%"></i>
+          </div>
+          <div class="stat-row">
+            <span class="stat-tag ${stClass}">${st}</span>
+            <span>${p} %</span>
+          </div>
+          <button type="button" class="btn" data-open="${y}">${ctaText}</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  html += `</div>`;
+  return html;
+}
+
+// RENDU DE LA PAGE DE DÉTAIL (SIDEBAR + QUESTION CARD)
+function detail() {
+  const subs = getSubjects(open);
+  // Sécurité si la matière active n'est pas dans l'année ouverte
+  if (!subs.includes(sub)) {
+    sub = subs[0] || 'MATH';
+  }
+
+  const firstSub = subs[0];
+  const lastSub = subs[subs.length - 1];
+  const isFirst = (sub === firstSub && q === 1);
+  const isLast = (sub === lastSub && q === 10);
+
+  return `
+    <div class="det">
+      <!-- SIDEBAR QUESTIONS (AFFICHE UNIQUEMENT LES MATIERES DE L'ANNEE OUVERTE) -->
+      <aside class="box side" aria-label="Sommaire des questions">
+        <button type="button" class="side-back" data-back>‹ Changer de concours</button>
+
+        ${subs.map(k => {
+          const d = P[open][k] || 0;
+          const isCurrentSub = (k === sub);
+          const displayLabel = k === 'MATH' ? 'Maths' : (k === 'PHYSIQUE' ? 'Physique' : (k === 'SVT' ? 'SVT' : k));
+
+          if (isCurrentSub) {
+            return `
+              <div class="sec" style="margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; cursor:pointer;" data-switch-sub="${k}">
+                  <span class="sec-active-title">${displayLabel}</span>
+                  <span class="sec-active-counter">${d}/10</span>
+                </div>
+
+                <div class="q-list">
+                  ${Array.from({ length: 10 }, (_, i) => {
+                    const n = i + 1;
+                    const isDone = n <= d;
+                    const isCurrent = (n === q);
+                    return `
+                      <button 
+                        type="button" 
+                        class="q-row ${isCurrent ? 'current' : ''}" 
+                        data-sq="${k}:${n}" 
+                        aria-current="${isCurrent ? 'true' : 'false'}">
+                        <span>Q${n}</span>
+                        <span style="display:flex; align-items:center; gap:8px;">
+                          ${isCurrent ? '<em style="font-style:normal; font-size:12px; font-weight:750; color:#2563eb;">En cours</em>' : ''}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${isCurrent ? '#2563eb' : '#94a3b8'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </span>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="sec-collapsed" data-switch-sub="${k}">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:3.5px; height:18px; border-radius:9999px; background:var(--blue-vibrant);"></div>
+                <span style="font-size:15.5px; font-weight:800; color:var(--text);">${displayLabel}</span>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          `;
+        }).join('')}
+      </aside>
+
+      <!-- ZONE QUESTION PRINCIPALE -->
+      <section class="box det-main">
+        <div class="q-subject-label">${(N[sub] || sub).toUpperCase()} · QUESTION ${q}/10</div>
+        <h3>Concours ${open}</h3>
+
+        <div class="q-statement">
+          L’énoncé de la question ${q} s’affiche ici (contenu fourni par votre base de données : texte, formules, image).
+        </div>
+
+        <div class="options-list">
+          ${['A', 'B', 'C', 'D'].map(letter => `
+            <button 
+              type="button" 
+              class="op ${pick === letter ? 'on' : ''}" 
+              data-pick="${letter}">
+              <b>${letter}</b>
+              <span>Réponse ${letter}</span>
+            </button>
+          `).join('')}
+        </div>
+
+        <div class="q-actions">
+          <button 
+            type="button" 
+            class="btn-secondary" 
+            data-prev 
+            ${isFirst ? 'disabled style="opacity:.45;cursor:not-allowed;"' : ''}>
+            Précédent
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn-primary-action" 
+            data-next>
+            ${isLast ? 'Terminer' : 'Valider et suivant'}
+          </button>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+// AFFICHAGE PRINCIPAL
+function render() {
+  app.innerHTML = open ? detail() : list();
+}
+
+// GESTIONNAIRE D'EVENEMENTS AU CLIC (DELEGATION UNIQUE)
+app.onclick = e => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  const D = t.dataset;
+
+  // 1. CLIC MATIERE DANS LA CARTE (PRIORITE ABSOLUE)
+  if (D.subject !== undefined) {
+    startSubject(D.year, D.subject);
+  }
+  // 2. GROS BOUTON CTA (COMMENCER / CONTINUER / REVOIR)
+  else if (D.open !== undefined) {
+    start(D.open);
+  }
+  // 3. RETOUR A LA LISTE DES CONCOURS
+  else if (D.back !== undefined) {
+    open = null;
+  }
+  // 4. CLIC SUR UNE QUESTION DANS LA SIDEBAR
+  else if (D.sq) {
+    const parts = D.sq.split(':');
+    sub = parts[0];
+    q = +parts[1];
+    pick = null;
+  }
+  // 5. CLIC SUR L'EN-TETE D'UNE MATIERE DANS LA SIDEBAR
+  else if (D.switchSub) {
+    sub = D.switchSub;
+    q = (P[open][sub] < 10) ? (P[open][sub] + 1) : 1;
+    pick = null;
+  }
+  // 6. CHOIX D'UNE REPONSE A, B, C, D
+  else if (D.pick) {
+    pick = D.pick;
+  }
+  // 7. BOUTON PRECEDENT (NAVIGUE UNIQUEMENT ENTRE LES MATIERES EXISTANTES)
+  else if (D.prev !== undefined) {
+    const subs = getSubjects(open);
+    if (q > 1) {
+      q--;
+    } else {
+      const idx = subs.indexOf(sub);
+      if (idx > 0) {
+        sub = subs[idx - 1];
+        q = 10;
+      }
+    }
+    pick = null;
+  }
+  // 8. BOUTON SUIVANT / TERMINER (NAVIGUE UNIQUEMENT ENTRE LES MATIERES EXISTANTES)
+  else if (D.next !== undefined) {
+    const subs = getSubjects(open);
+    // Sauvegarde de l'avancement dans la matière courante
+    if (q > (P[open][sub] || 0)) {
+      P[open][sub] = q;
+    }
+
+    if (q < 10) {
+      q++;
+    } else {
+      const idx = subs.indexOf(sub);
+      if (idx < subs.length - 1) {
+        sub = subs[idx + 1];
+        q = 1;
+      } else {
+        // Concours entièrement terminé
+        open = null;
+      }
+    }
+    pick = null;
+  }
+
+  render();
+};
+
+// GESTION DU CHANGEMENT D'ANNEE DANS LES SELECTS
+app.onchange = e => {
+  const t = e.target;
+  if (t.dataset.ysel !== undefined) {
+    yr = t.value;
+    render();
+  } else if (t.dataset.osel !== undefined) {
+    start(t.value);
+    render();
+  }
+};
+
+// GESTION DU MENU DÉROULANT NAVBAR (ENSA / ENSAM)
+function toggleNavDropdown(e) {
+  e.stopPropagation();
+  const item = document.getElementById('navConcoursItem');
+  const btn = document.getElementById('navConcoursBtn');
+  const isOpen = item.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+function selectSchool(school) {
+  const item = document.getElementById('navConcoursItem');
+  if (item) item.classList.remove('open');
+  // Ferme la vue détail pour afficher la liste
+  open = null;
+  render();
+}
+
+// Fermeture des menus au clic en dehors
+document.addEventListener('click', e => {
+  const item = document.getElementById('navConcoursItem');
+  if (item && !item.contains(e.target)) {
+    item.classList.remove('open');
+  }
+});
+
+// GESTION DU MODE SOMBRE
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  try {
+    localStorage.setItem('econ_theme', newTheme);
+  } catch (err) {}
+}
+
+// Restauration du thème sauvegardé
+(function initTheme() {
+  try {
+    const saved = localStorage.getItem('econ_theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+  } catch (err) {}
+})();
+
+// Lancement initial
+render();
+</script>
+</body>
+</html>
+

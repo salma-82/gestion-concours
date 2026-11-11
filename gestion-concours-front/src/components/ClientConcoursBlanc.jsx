@@ -1,130 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { recordStudentActivity } from '../studentProgress';
-import TrackedQcmFrame from './TrackedQcmFrame';
 import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  fetchStudentActivityCompletionMap,
+  getStudentActivityStatusKey,
+  recordStudentActivity
+} from '../studentProgress';
 import { toBackendResourceUrl } from '../backendResourceUrl';
+import TrackedQcmFrame from './TrackedQcmFrame';
+import cardMascot from '../assets/logo-mascot.png';
+import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
 
 const API = '';
 
-const MATIERES_CONFIG = [
-  { 
-    id: 'Mathématiques', 
-    nom: 'Mathématiques', 
+/* ─────────────────────────────────────────────────────────
+   CONFIGURATION DES 3 MATIÈRES (CONCOURS BLANCS)
+   ───────────────────────────────────────────────────────── */
+const SECTIONS_CONFIG = [
+  {
+    id: 'MATH',
+    nom: 'Math',
+    fullName: 'Mathématiques',
+    filterLabel: 'Mathématiques',
+    tag: 'MATH',
     color: '#2563eb',
-    btnGradient: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
-    badgeBg: '#eff6ff',
-    badgeColor: '#2563eb',
-    desc: 'Analyse, Algèbre, Probabilités, Géométrie...',
-    renderIcon: () => (
-      <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Triangle / Règle d'équerre */}
-        <path d="M18 78L18 24C18 20.6863 20.6863 18 24 18L78 78H24C20.6863 78 18 75.3137 18 78Z" fill="#93c5fd" opacity="0.6"/>
-        <path d="M22 28V74H68L22 28Z" fill="#3b82f6" opacity="0.2"/>
-        <path d="M30 46L30 70H54L30 46Z" fill="#eff6ff"/>
-        {/* Symboles Math Pi, X, Calculatrice */}
-        <text x="38" y="32" fill="#ffffff" fontSize="16" fontWeight="bold" fontFamily="sans-serif">π</text>
-        <text x="56" y="44" fill="#ffffff" fontSize="14" fontWeight="bold" fontFamily="sans-serif">√x</text>
-        {/* Calculatrice 3D flottante */}
-        <g transform="translate(42, 42)">
-          <rect width="36" height="46" rx="8" fill="#1e40af" stroke="#ffffff" strokeWidth="2.5" />
-          <rect x="5" y="6" width="26" height="10" rx="3" fill="#93c5fd" />
-          <circle cx="10" cy="23" r="2.5" fill="#ffffff" />
-          <circle cx="18" cy="23" r="2.5" fill="#ffffff" />
-          <circle cx="26" cy="23" r="2.5" fill="#ffffff" />
-          <circle cx="10" cy="31" r="2.5" fill="#ffffff" />
-          <circle cx="18" cy="31" r="2.5" fill="#ffffff" />
-          <circle cx="26" cy="31" r="2.5" fill="#ffffff" />
-          <circle cx="10" cy="39" r="2.5" fill="#ffffff" />
-          <circle cx="18" cy="39" r="2.5" fill="#ffffff" />
-          <circle cx="26" cy="39" r="2.5" fill="#38bdf8" />
-        </g>
-      </svg>
-    )
+    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+    formulas: '∑ f(x) ≡ ∫dx'
   },
-  { 
-    id: 'Physique-Chimie', 
-    nom: 'Physique-Chimie', 
-    color: '#8b5cf6',
-    btnGradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
-    badgeBg: '#f5f3ff',
-    badgeColor: '#7c3aed',
-    desc: 'Mécanique, Électricité, Ondes, Transformations chimiques...',
-    renderIcon: () => (
-      <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Erlenmeyer / Fiole Chimique */}
-        <path d="M42 22H58V34L74 68C76 72 73 78 68 78H32C27 78 24 72 26 68L42 34V22Z" fill="#c4b5fd" opacity="0.5" />
-        <path d="M30 64L38 48H62L70 64C72 68 69 74 64 74H36C31 74 28 68 30 64Z" fill="#a78bfa" />
-        <path d="M32 68C42 62 58 72 68 68V74H32V68Z" fill="#7c3aed" />
-        <circle cx="44" cy="56" r="3" fill="#ffffff" opacity="0.8" />
-        <circle cx="54" cy="62" r="2" fill="#ffffff" opacity="0.8" />
-        <circle cx="48" cy="66" r="4" fill="#ffffff" opacity="0.8" />
-        {/* Atome & Orbites */}
-        <g transform="translate(56, 32)">
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(30 16 16)" stroke="#ffffff" strokeWidth="2" strokeDasharray="3 1" fill="none" />
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(-30 16 16)" stroke="#ffffff" strokeWidth="2" fill="none" />
-          <circle cx="16" cy="16" r="5" fill="#facc15" />
-          <circle cx="30" cy="12" r="2.5" fill="#ffffff" />
-          <circle cx="6" cy="24" r="2.5" fill="#ffffff" />
-        </g>
-      </svg>
-    )
+  {
+    id: 'PHYSIQUE',
+    nom: 'Physique - Chimie',
+    fullName: 'Physique - Chimie',
+    filterLabel: 'Physique - Chimie',
+    tag: 'PHYSIQUE',
+    color: '#7c3aed',
+    gradient: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)',
+    formulas: 'E = mc²'
   },
-  { 
-    id: 'SVT', 
-    nom: 'SVT', 
+  {
+    id: 'SVT',
+    nom: 'SVT',
+    fullName: 'Sciences de la Vie et de la Terre',
+    filterLabel: 'Sciences de la Vie et de la Terre',
+    tag: 'SVT',
     color: '#059669',
-    btnGradient: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
-    badgeBg: '#ecfdf5',
-    badgeColor: '#059669',
-    desc: 'Génétique, Immunologie, Écologie, Géologie...',
-    renderIcon: () => (
-      <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Feuille de plante */}
-        <path d="M52 48C52 48 64 36 76 40C88 44 88 60 76 66C64 72 56 64 52 48Z" fill="#34d399" />
-        <path d="M54 50C62 60 70 66 78 68" stroke="#065f46" strokeWidth="1.5" />
-        <path d="M46 56C46 56 50 68 44 76C38 84 26 80 26 68C26 56 38 52 46 56Z" fill="#10b981" opacity="0.9" />
-        {/* Hélice d'ADN 3D stylisée */}
-        <g transform="translate(18, 20)">
-          <path d="M12 10C24 20 24 35 12 45C0 55 0 70 12 80" stroke="#38bdf8" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-          <path d="M26 10C14 20 14 35 26 45C38 55 38 70 26 80" stroke="#f43f5e" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-          <line x1="16" y1="18" x2="22" y2="18" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="19" y1="28" x2="19" y2="28" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-          <line x1="14" y1="38" x2="24" y2="38" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="14" y1="52" x2="24" y2="52" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="19" y1="62" x2="19" y2="62" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-          <line x1="16" y1="72" x2="22" y2="72" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-        </g>
-      </svg>
-    )
+    gradient: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+    formulas: 'ADN ATP CO₂ O₂'
   }
 ];
+
+const FILTER_PILLS = [
+  'Toutes',
+  'Mathématiques',
+  'Physique - Chimie',
+  'Sciences de la Vie et de la Terre'
+];
+
+const getFullUrl = (url) => {
+  if (!url) return '';
+  const normalizedUrl = toBackendResourceUrl(url);
+  if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
+  return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
+};
+
+const formatDuree = (minutes) => {
+  if (!minutes || isNaN(minutes)) return '1h30';
+  const m = Number(minutes);
+  const hours = Math.floor(m / 60);
+  const remainingMins = m % 60;
+  if (hours > 0 && remainingMins > 0) return `${hours}h${remainingMins > 9 ? remainingMins : `0${remainingMins}`}`;
+  if (hours > 0) return `${hours}h`;
+  return `${m} min`;
+};
+
+const matchSection = (concoursMatiere = '', sectionId = '') => {
+  const m = (concoursMatiere || '').toLowerCase().trim();
+  if (sectionId === 'MATH') return m.includes('math');
+  if (sectionId === 'PHYSIQUE') return m.includes('phys') || m.includes('chim') || m === 'pc';
+  if (sectionId === 'SVT') return m.includes('svt') || m.includes('vie') || m.includes('terre') || m.includes('bio');
+  return false;
+};
 
 export default function ClientConcoursBlanc() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Extraction du filtre de matière depuis l'URL
   const requestedMatiere = new URLSearchParams(location.search).get('matiere');
 
-  // Navigation steps: 'matieres' -> 'chapitres' -> 'qcms' -> 'player'
-  const [currentStep, setCurrentStep] = useState('loading');
-  const [selectedMatiere, setSelectedMatiere] = useState(null);
-  const [selectedChapitre, setSelectedChapitre] = useState(null);
-  const [activeConcours, setActiveConcours] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // Synchronisation avec l'URL : MATH -> Mathématiques, PHYSIQUE -> Physique - Chimie, SVT -> SVT
+  const activePill = useMemo(() => {
+    if (!requestedMatiere) return 'Toutes';
+    const lower = requestedMatiere.toLowerCase().trim();
+    if (lower.includes('math')) return 'Mathématiques';
+    if (lower.includes('phys') || lower.includes('chim')) return 'Physique - Chimie';
+    if (lower.includes('svt') || lower.includes('vie') || lower.includes('terre') || lower.includes('bio')) {
+      return 'Sciences de la Vie et de la Terre';
+    }
+    return 'Toutes';
+  }, [requestedMatiere]);
 
+  // États locaux
+  const [searchQuery, setSearchQuery] = useState('');
   const [concoursList, setConcoursList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [completionStatuses, setCompletionStatuses] = useState({});
 
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage: currentStep } }));
-  }, [currentStep]);
+  // QCM actif pour le lecteur
+  const [activeConcours, setActiveConcours] = useState(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  useEffect(() => {
-    fetchConcours();
-  }, []);
-
-  const fetchConcours = async () => {
+  // 1. Récupération des concours blancs publiés
+  const fetchConcours = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -141,781 +129,699 @@ export default function ClientConcoursBlanc() {
 
       setConcoursList(dataToSet);
     } catch (err) {
-      console.error("Erreur chargement concours:", err);
-      setError("Erreur lors de la récupération des concours blancs.");
+      console.error("Erreur chargement concours blancs:", err);
+      setError("Impossible de charger les concours blancs pour le moment.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getFullUrl = (url) => {
-    if (!url) return '';
-    const normalizedUrl = toBackendResourceUrl(url);
-    if (normalizedUrl.startsWith('http://') || normalizedUrl.startsWith('https://')) return normalizedUrl;
-    return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
-  };
-
-  // 1. Matières existantes
-  const getMatiereConfig = (matName) => {
-    const found = MATIERES_CONFIG.find(m => m.nom.toLowerCase() === (matName || '').toLowerCase() || matName?.toLowerCase().includes(m.nom.toLowerCase().substring(0, 4)));
-    if (found) return found;
-    return {
-      id: matName,
-      nom: matName,
-      icon: '📚',
-      color: '#0f766e',
-      btnGradient: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
-      gradient: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-      badgeBg: '#eff6ff',
-      badgeColor: '#1d4ed8',
-      desc: 'Concours blancs et épreuves'
-    };
-  };
-
-  const htmlConcoursList = concoursList.filter(concours =>
-    typeof concours.htmlUrl === 'string' && concours.htmlUrl.trim()
-  );
+  // 2. Récupération des statuts de complétion de l'étudiant
+  const refreshCompletion = useCallback(() => {
+    fetchStudentActivityCompletionMap()
+      .then((statuses) => setCompletionStatuses(statuses || {}))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
-    if (loading) return;
+    fetchConcours();
+    refreshCompletion();
+  }, [fetchConcours, refreshCompletion]);
 
-    if (!requestedMatiere) {
-      navigate('/client-dashboard', { replace: true, state: { openSidebarMenu: 'concours-blanc' } });
-      return;
-    }
-
-    setSelectedChapitre(null);
-    setActiveConcours(null);
-    const matchingConcours = requestedMatiere
-      ? htmlConcoursList.filter(concours =>
-          typeof concours.matiere === 'string'
-          && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
-        )
-      : htmlConcoursList;
-    const firstQcm = matchingConcours[0];
-    const matiereConfig = firstQcm
-      ? getMatiereConfig(firstQcm.matiere)
-      : requestedMatiere ? getMatiereConfig(requestedMatiere) : null;
-    const firstChapitre = firstQcm
-      ? firstQcm.chapitre || 'GÃ©nÃ©ral / Sans Chapitre'
-      : null;
-    setSelectedMatiere(matiereConfig);
-    setSelectedChapitre(null);
-    setActiveConcours(null);
-    setIsSidebarCollapsed(false);
-    setCurrentStep(matiereConfig ? 'chapitres-menu' : 'matieres');
-
-  }, [requestedMatiere, loading, concoursList, navigate]);
-
-  const filteredConcoursList = requestedMatiere
-    ? htmlConcoursList.filter(concours =>
-        typeof concours.matiere === 'string'
-        && concours.matiere.trim().toLowerCase() === requestedMatiere.trim().toLowerCase()
-      )
-    : htmlConcoursList;
-
-  // Seules les matières qui ont au moins une épreuve HTML sont proposées.
-  const availableMatieres = Array.from(new Set(
-    htmlConcoursList
-      .map(concours => typeof concours.matiere === 'string' ? concours.matiere.trim() : '')
-      .filter(Boolean)
-  )).sort((a, b) => a.localeCompare(b)).map(matiere => {
-    const config = getMatiereConfig(matiere);
-    const count = htmlConcoursList.filter(concours =>
-      typeof concours.matiere === 'string'
-      && concours.matiere.trim().toLowerCase() === matiere.toLowerCase()
-    ).length;
-    return { ...config, id: matiere, nom: matiere, count };
-  });
-
-  // 2. Chapitres pour la matière sélectionnée (ceux entrés par l'admin)
-  const getChapitresForMatiere = (mat) => {
-    if (!mat) return [];
-    const matchedConcours = filteredConcoursList.filter(c =>
-      (c.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4))
-    );
-    const uniqueChapitres = [...new Set(matchedConcours.map(c => c.chapitre || 'Général / Sans Chapitre'))];
-    return uniqueChapitres.map(chapName => {
-      const count = matchedConcours.filter(c => (c.chapitre || 'Général / Sans Chapitre') === chapName).length;
-      return { nom: chapName, count };
-    });
-  };
-
-  // 3. Concours pour le chapitre sélectionné
-  const getConcoursForChapitre = (mat, chapNom) => {
-    if (!mat || !chapNom) return [];
-    return filteredConcoursList.filter(c =>
-      (c.matiere || '').toLowerCase().includes(mat.nom.toLowerCase().substring(0, 4)) &&
-      (c.chapitre || 'Général / Sans Chapitre') === chapNom
-    );
-  };
-
-  // Handlers de navigation
-  const handleSelectMatiere = (cfg) => {
-    setSelectedMatiere(cfg);
-    const firstChapitre = getChapitresForMatiere(cfg)[0]?.nom || null;
-    setSelectedChapitre(firstChapitre);
-    setActiveConcours(null);
-    setIsSidebarCollapsed(false);
-    setCurrentStep(firstChapitre ? 'qcms' : 'chapitres-menu');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSelectChapitre = (chapNom) => {
-    handleNavigateChapitre(chapNom);
-  };
-
-  const handleNavigateChapitre = (chapNom) => {
-    const qcms = getConcoursForChapitre(selectedMatiere, chapNom);
-    setSelectedChapitre(chapNom);
-    if (qcms.length > 0) {
-      handleOpenQcm(qcms[0], chapNom);
+  // Gestion du clic sur une pilule de matière
+  const handlePillClick = (label) => {
+    if (label === 'Toutes') {
+      navigate('/client-concours-blanc');
+    } else if (label === 'Mathématiques') {
+      navigate('/client-concours-blanc?matiere=MATH');
+    } else if (label === 'Physique - Chimie') {
+      navigate('/client-concours-blanc?matiere=PHYSIQUE');
+    } else if (label === 'Sciences de la Vie et de la Terre') {
+      navigate('/client-concours-blanc?matiere=SVT');
     }
   };
 
-  const handleOpenQcm = (concours, chapterOverride = selectedChapitre, matiereOverride = selectedMatiere) => {
+  // Ouverture du lecteur de QCM
+  const handleOpenQcm = (concours) => {
     setActiveConcours(concours);
-    setIsSidebarCollapsed(true);
-    setCurrentStep('player');
+    setIsPlayerOpen(true);
     recordStudentActivity({
       type: 'Concours blanc',
       resourceId: concours.id,
       title: concours.titre || concours.title || 'Concours blanc',
-      subject: concours.matiere || matiereOverride?.nom || '',
-      chapter: concours.chapitre || chapterOverride || ''
+      subject: concours.matiere || '',
+      chapter: concours.chapitre || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleBackToMatieres = () => {
-    navigate('/client-dashboard', { state: { openSidebarMenu: 'concours-blanc' } });
-  };
-
-  const handleBackToChapitres = () => {
-    setIsSidebarCollapsed(false);
-    setCurrentStep('chapitres-menu');
-    setSelectedChapitre(null);
+  const handleClosePlayer = () => {
+    setIsPlayerOpen(false);
     setActiveConcours(null);
+    refreshCompletion();
   };
 
-  if (!requestedMatiere) return null;
+  // Filtrage des sections selon la pilule active
+  const displayedSections = useMemo(() => {
+    if (activePill === 'Toutes') return SECTIONS_CONFIG;
+    return SECTIONS_CONFIG.filter(sec => sec.filterLabel === activePill);
+  }, [activePill]);
 
+  // Filtrage des concours blancs par matière et recherche
+  const getConcoursForSection = useCallback((sectionId) => {
+    const q = searchQuery.trim().toLowerCase();
+    return concoursList.filter(c => {
+      // Vérification matière
+      if (!matchSection(c.matiere, sectionId)) return false;
+      // Vérification recherche par titre
+      if (q && !(c.titre || '').toLowerCase().includes(q) && !(c.description || '').toLowerCase().includes(q)) {
+        return false;
+      }
+      return true;
+    });
+  }, [concoursList, searchQuery]);
+
+  // Vérifier si au moins une carte est affichée
+  const hasAnyResults = useMemo(() => {
+    return displayedSections.some(sec => getConcoursForSection(sec.id).length > 0);
+  }, [displayedSections, getConcoursForSection]);
+
+  // Calcul du statut de carte pour chaque concours
+  const getCardStatus = useCallback((concours) => {
+    const key = getStudentActivityStatusKey('Concours blanc', concours.id);
+    const isCompleted = completionStatuses[key] === true;
+
+    if (isCompleted) {
+      return {
+        label: 'Terminé',
+        statusClass: 'status-completed',
+        pct: 100,
+        pctLabel: '100%',
+        btnLabel: '✓ Terminé',
+        btnClass: 'btn-completed',
+        isCompleted: true
+      };
+    }
+
+    return {
+      label: 'Nouveau',
+      statusClass: 'status-new',
+      pct: 0,
+      pctLabel: '0%',
+      btnLabel: 'Commencer',
+      btnClass: 'btn-primary',
+      isCompleted: false
+    };
+  }, [completionStatuses]);
+
+  /* ══════════════════════════════════════════════════════════
+     VUE JOUEUR / PLAYER DU QCM
+     ══════════════════════════════════════════════════════════ */
+  if (isPlayerOpen && activeConcours) {
+    return (
+      <div style={{
+        width: '100%',
+        maxWidth: 'none',
+        margin: '0',
+        padding: '20px 20px 60px',
+        boxSizing: 'border-box',
+        fontFamily: "'Nunito', system-ui, -apple-system, sans-serif"
+      }}>
+        {/* Barre retour */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+          paddingBottom: '14px',
+          borderBottom: '1px solid var(--border, #e2e8f0)'
+        }}>
+          <button
+            type="button"
+            onClick={handleClosePlayer}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'var(--surface, #ffffff)',
+              border: '1.5px solid var(--border, #cbd5e1)',
+              borderRadius: '9999px',
+              padding: '9px 18px',
+              fontSize: '13.5px',
+              fontWeight: 800,
+              color: 'var(--text, #0f172a)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-2, #f1f5f9)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface, #ffffff)'; }}
+          >
+            ← Retour aux concours blancs
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontSize: '12px',
+              fontWeight: 800,
+              padding: '4px 12px',
+              borderRadius: '9999px'
+            }}>
+              {activeConcours.matiere || 'Concours blanc'}
+            </span>
+            <span style={{ fontSize: '15px', fontWeight: 850, color: 'var(--text, #0f172a)' }}>
+              {activeConcours.titre}
+            </span>
+          </div>
+        </div>
+
+        {/* Cadre du QCM */}
+        <div style={{
+          background: 'var(--surface, #ffffff)',
+          borderRadius: '20px',
+          border: '1px solid var(--border, #e2e8f0)',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+        }}>
+          {activeConcours.htmlUrl ? (
+            <TrackedQcmFrame
+              src={getFullUrl(activeConcours.htmlUrl)}
+              title={activeConcours.titre}
+              sourceType="Concours blanc"
+              resourceId={activeConcours.id}
+              resourceTitle={activeConcours.titre || activeConcours.title}
+              subject={activeConcours.matiere || ''}
+              chapter={activeConcours.chapitre || ''}
+              year={activeConcours.annee || ''}
+              school={activeConcours.ecole || ''}
+              style={{ width: '100%', height: '84vh', border: 'none', display: 'block' }}
+            />
+          ) : (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>📝</div>
+              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)' }}>Aucun document interactif</h3>
+              <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)' }}>Le fichier HTML de cette épreuve n'est pas encore disponible.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     VUE PRINCIPALE : RECHERCHE + PILLS + SECTIONS MATIÈRES
+     ══════════════════════════════════════════════════════════ */
   return (
-    <div style={{ minHeight: 'calc(100vh - 76px)', background: 'var(--bg, #f8fafc)', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+    <div style={{
+      width: '100%',
+      maxWidth: 'none',
+      margin: '0',
+      padding: '24px 24px 60px',
+      boxSizing: 'border-box',
+      fontFamily: "'Nunito', system-ui, -apple-system, sans-serif",
+      color: 'var(--text, #0f172a)'
+    }}>
 
-      {currentStep === 'loading' && (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary, #64748b)' }}>
-          <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
-          <p style={{ fontWeight: 600 }}>Chargement du contenu...</p>
-        </div>
-      )}
+      {/* ── 1. Barre de recherche arrondie en haut ── */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: '1100px', marginBottom: '18px' }}>
+        <span style={{
+          position: 'absolute',
+          left: '18px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: 'var(--text-secondary, #94a3b8)',
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          placeholder="Rechercher un concours blanc…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Rechercher un concours blanc"
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '13px 44px 13px 48px',
+            fontFamily: 'inherit',
+            fontSize: '14.5px',
+            fontWeight: 600,
+            color: 'var(--text, #0f172a)',
+            backgroundColor: 'var(--surface, #ffffff)',
+            border: '1.5px solid var(--border, #cbd5e1)',
+            borderRadius: '9999px',
+            outline: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+            transition: 'border-color 0.2s, box-shadow 0.2s'
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border, #cbd5e1)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)'; }}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            aria-label="Effacer la recherche"
+            style={{
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'var(--surface-2, #f1f5f9)',
+              border: 'none',
+              borderRadius: '9999px',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-secondary, #64748b)',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
-      {currentStep === 'chapitres-menu' && selectedMatiere && (
-        <section style={{ width: 'calc(100% - min(6cm, 12vw))', margin: '0 auto', minHeight: 'calc(100vh - 120px)', padding: '24px 28px', boxSizing: 'border-box' }}>
-          <h2 style={{ margin: '2px 4px 14px', color: '#1e3a8a', fontSize: '17px', fontWeight: 750 }}></h2>
-          {getChapitresForMatiere(selectedMatiere).length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {getChapitresForMatiere(selectedMatiere).map((chapitre) => (
-                <button
-                  key={chapitre.nom}
-                  type="button"
-                  onClick={() => handleSelectChapitre(chapitre.nom)}
-                  style={{ width: '100%', padding: '12px 14px', border: '1px solid #93c5fd', borderRadius: '12px', background: 'var(--surface-2, #eff6ff)', color: '#1d4ed8', textAlign: 'left', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-                >
-                  {chapitre.nom}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div style={{ padding: '12px 14px', border: '1px solid var(--border, #e2e8f0)', borderRadius: '12px', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
-              Aucun chapitre disponible pour cette matière.
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ========================================================
-          ÉTAPE 4 : LECTEUR DU QCM / FICHIER HTML INTERACTIF
-      ======================================================== */}
-      {currentStep === 'player' && activeConcours && (
-        <div style={{ display: 'grid', gridTemplateColumns: isSidebarCollapsed ? '38px minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px', width: '100%' }}>
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres et QCM" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', marginTop: '-12px', marginLeft: '62px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid #0B3675', borderRadius: '11px', background: '#0B3675', color: '#ffffff', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 59, 104, 0.22)' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: '0 0 280px', width: '280px', minWidth: '220px', maxHeight: 'calc(100vh - 116px)', overflowY: 'auto', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', position: 'sticky', top: '12px', boxSizing: 'border-box' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
-              {getChapitresForMatiere(selectedMatiere).map((chapitre) => {
-                const qcms = getConcoursForChapitre(selectedMatiere, chapitre.nom);
-                const isActiveChapter = selectedChapitre === chapitre.nom;
-                return (
-                  <div key={chapitre.nom}>
-                    <button
-                      type="button"
-                      onClick={() => handleNavigateChapitre(chapitre.nom)}
-                      style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActiveChapter ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActiveChapter ? '#eff6ff' : '#ffffff', color: isActiveChapter ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}
-                    >
-                      {chapitre.nom}
-                    </button>
-                    {isActiveChapter && qcms.length > 1 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
-                        {qcms.map((qcm, index) => {
-                          const isActiveQcm = String(activeConcours.id) === String(qcm.id);
-                          return (
-                            <button
-                              key={qcm.id || index}
-                              type="button"
-                              onClick={() => handleOpenQcm(qcm, chapitre.nom)}
-                              style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: isActiveQcm ? '#2563eb' : 'transparent', color: isActiveQcm ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: isActiveQcm ? 750 : 600, cursor: 'pointer' }}
-                            >
-                              {qcm.titre || qcm.title || `QCM ${index + 1}`}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </aside>}
-
-          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
-            {activeConcours.htmlUrl ? (
-              <div style={{ minWidth: 0 }}>
-                <TrackedQcmFrame
-                  src={getFullUrl(activeConcours.htmlUrl)}
-                  title={activeConcours.titre}
-                  sourceType="Concours blanc"
-                  resourceId={activeConcours.id}
-                  resourceTitle={activeConcours.titre || activeConcours.title}
-                  subject={activeConcours.matiere || selectedMatiere?.nom || ''}
-                  chapter={activeConcours.chapitre || selectedChapitre || ''}
-                  year={activeConcours.annee || ''}
-                  school={activeConcours.ecole || ''}
-                  style={{ width: '100%', height: '84vh', border: 'none', display: 'block', background: 'var(--surface, #ffffff)' }}
-                />
-              </div>
-            ) : activeConcours.pdfUrl ? (
-              <div style={{ background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
-                <iframe src={getFullUrl(activeConcours.pdfUrl)} title={activeConcours.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                <p>Aucun fichier HTML n'est rattaché à cette épreuve.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================
-          ÉTAPE 1 : CHOIX DE LA MATIÈRE (MATH / PHYSIQUE / SVT)
-      ======================================================== */}
-      {currentStep === 'matieres' && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
-              🎓 Concours Blancs
-            </h1>
-            <p style={{ margin: '8px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '15px' }}>
-              Choisissez une matière pour accéder aux chapitres et fichiers HTML disponibles
-            </p>
-          </div>
-
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary, #64748b)' }}>
-              <div style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</div>
-              <p style={{ fontWeight: 600 }}>Chargement des épreuves...</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-              {availableMatieres.map((mat) => (
-                <div
-                  key={mat.id}
-                  onClick={() => handleSelectMatiere(mat)}
-                  style={{
-                    background: 'var(--surface, #ffffff)',
-                    borderRadius: '26px',
-                    border: '1.5px solid #e2e8f0',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: '125px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.borderColor = mat.color;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)';
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                  }}
-                >
-                  {/* Left rounded gradient container with custom 3D illustration */}
-                  <div style={{
-                    width: '180px',
-                    minWidth: '180px',
-                    height: '100%',
-                    minHeight: '125px',
-                    background: mat.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : mat.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-                    borderRadius: '24px 70px 70px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
-                    padding: '10px'
-                  }}>
-                    {mat.renderIcon ? mat.renderIcon() : <span style={{ fontSize: '48px' }}>📚</span>}
-                  </div>
-
-                  {/* Middle content: Title & Description */}
-                  <div style={{ flex: 1, padding: '0 32px' }}>
-                    <h2 style={{
-                      margin: '0 0 6px',
-                      fontSize: '24px',
-                      fontWeight: 800,
-                      color: 'var(--text, #0f172a)',
-                      letterSpacing: '-0.3px'
-                    }}>
-                      {mat.nom}
-                    </h2>
-                    <p style={{
-                      margin: 0,
-                      color: 'var(--text-secondary, #64748b)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      lineHeight: 1.4
-                    }}>
-                      {mat.desc}
-                    </p>
-                  </div>
-
-                  {/* Right side: Badge & Button */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: '12px',
-                    paddingRight: '36px'
-                  }}>
-                    <span style={{
-                      background: mat.badgeBg,
-                      color: mat.badgeColor,
-                      padding: '5px 16px',
-                      borderRadius: '20px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      letterSpacing: '0.2px'
-                    }}>
-                      {mat.count} QCM
-                    </span>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectMatiere(mat);
-                      }}
-                      style={{
-                        background: mat.btnGradient,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '11px 24px',
-                        borderRadius: '22px',
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s ease, transform 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
-                    >
-                      <span>Accéder aux chapitres</span>
-                      <span style={{ fontSize: '15px' }}>→</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================
-          ÉTAPE 2 : CHOIX DU CHAPITRE (DÉJÀ ENTRÉ PAR L'ADMIN)
-      ======================================================== */}
-      {currentStep === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          <div style={{ marginBottom: '20px' }}>
+      {/* ── 2. Filtres en pilules arrondies ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        flexWrap: 'wrap',
+        marginBottom: '32px'
+      }} role="tablist" aria-label="Filtre par matière">
+        {FILTER_PILLS.map((pillLabel) => {
+          const isActive = activePill === pillLabel;
+          return (
             <button
-              onClick={handleBackToMatieres}
+              key={pillLabel}
+              type="button"
+              onClick={() => handlePillClick(pillLabel)}
+              role="tab"
+              aria-selected={isActive}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #cbd5e1)',
-                padding: '10px 16px', borderRadius: '12px',
-                cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb'
-              }}
-            >
-              <span aria-hidden="true">←</span>
-              Retour aux matières
-            </button>
-          </div>
-
-          <div style={{ marginBottom: '28px' }}>
-            <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
-              📖 Chapitres — {selectedMatiere.nom}
-            </h1>
-            <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
-              Choisissez un chapitre pour découvrir les épreuves QCM correspondantes
-            </p>
-          </div>
-
-          {/* Horizontal Pill Cards des Chapitres - EXACT MÊME STYLE QUE LES MATIÈRES */}
-          {getChapitresForMatiere(selectedMatiere).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
-              <div style={{ fontSize: '42px', marginBottom: '12px' }}>📂</div>
-              <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800 }}>Aucun chapitre disponible</h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de concours pour cette matière.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-              {getChapitresForMatiere(selectedMatiere).map((chap, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => handleSelectChapitre(chap.nom)}
-                  style={{
-                    background: 'var(--surface, #ffffff)',
-                    borderRadius: '26px',
-                    border: '1.5px solid #e2e8f0',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: '125px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.borderColor = selectedMatiere.color;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)';
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                  }}
-                >
-                  {/* Left rounded gradient container with Book / Chapter illustration */}
-                  <div style={{
-                    width: '180px',
-                    minWidth: '180px',
-                    height: '100%',
-                    minHeight: '125px',
-                    background: selectedMatiere.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : selectedMatiere.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-                    borderRadius: '24px 70px 70px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
-                    padding: '10px'
-                  }}>
-                    <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      {/* Livre ouvert 3D stylisé */}
-                      <path d="M50 32C42 26 28 26 18 30V74C28 70 42 70 50 76C58 70 72 70 82 74V30C72 26 58 26 50 32Z" fill="#ffffff" opacity="0.95"/>
-                      <path d="M50 32V76" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round"/>
-                      {/* Lignes de texte du livre */}
-                      <line x1="26" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="26" y1="50" x2="40" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="26" y1="58" x2="36" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="42" x2="74" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="50" x2="72" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="58" x2="68" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      {/* Marque-page dore */}
-                      <path d="M47 22H53V38L50 35L47 38V22Z" fill="#facc15"/>
-                    </svg>
-                  </div>
-
-                  {/* Middle content: Chapter Title & Info */}
-                  <div style={{ flex: 1, padding: '0 32px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{
-                        background: selectedMatiere.badgeBg,
-                        color: selectedMatiere.badgeColor,
-                        padding: '3px 10px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        fontWeight: 800
-                      }}>
-                        {selectedMatiere.nom}
-                      </span>
-                      <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>•</span>
-                      <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', fontWeight: 600 }}>
-                        Chapitre {idx + 1}
-                      </span>
-                    </div>
-
-                    <h2 style={{
-                      margin: '0 0 6px',
-                      fontSize: '24px',
-                      fontWeight: 800,
-                      color: 'var(--text, #0f172a)',
-                      letterSpacing: '-0.3px'
-                    }}>
-                      {chap.nom}
-                    </h2>
-                    <p style={{
-                      margin: 0,
-                      color: 'var(--text-secondary, #64748b)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      lineHeight: 1.4
-                    }}>
-                      Entraînement complet & épreuves corrigées
-                    </p>
-                  </div>
-
-                  {/* Right side: Badge & Button */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: '12px',
-                    paddingRight: '36px'
-                  }}>
-                    <span style={{
-                      background: selectedMatiere.badgeBg,
-                      color: selectedMatiere.badgeColor,
-                      padding: '5px 16px',
-                      borderRadius: '20px',
-                      fontSize: '13px',
-                      fontWeight: 800,
-                      letterSpacing: '0.2px'
-                    }}>
-                      {chap.count} QCM
-                    </span>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectChapitre(chap.nom);
-                      }}
-                      style={{
-                        background: selectedMatiere.btnGradient,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '11px 24px',
-                        borderRadius: '22px',
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s ease, transform 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
-                    >
-                      <span>Accéder aux QCM</span>
-                      <span style={{ fontSize: '15px' }}>→</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================
-          ÉTAPE 3 : LISTE DES QCM POUR LE CHAPITRE CHOISI
-      ======================================================== */}
-      {currentStep === 'qcms' && selectedMatiere && selectedChapitre && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '14px' }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
-                🎯 Épreuves & QCM — {selectedChapitre}
-              </h1>
-              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
-                Cliquez sur une épreuve pour démarrer le test en ligne interactif
-              </p>
-            </div>
-            <button
-              onClick={handleBackToChapitres}
-              style={{
-                background: 'var(--surface, #ffffff)',
-                border: '1px solid var(--border, #cbd5e1)',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
+                appearance: 'none',
+                border: isActive ? '1.5px solid #2563eb' : '1.5px solid var(--border, #cbd5e1)',
+                background: isActive ? '#eff6ff' : 'var(--surface, #ffffff)',
+                color: isActive ? '#1d4ed8' : 'var(--text, #334155)',
+                fontFamily: 'inherit',
                 fontSize: '13px',
-                color: 'var(--text, #334155)'
+                fontWeight: 750,
+                padding: '8px 18px',
+                borderRadius: '9999px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.18s cubic-bezier(0.4,0,0.2,1)',
+                boxShadow: isActive ? '0 2px 8px rgba(37,99,235,0.16)' : '0 1px 3px rgba(0,0,0,0.02)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.borderColor = '#93c5fd';
+                  e.currentTarget.style.color = '#1d4ed8';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.borderColor = 'var(--border, #cbd5e1)';
+                  e.currentTarget.style.color = 'var(--text, #334155)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
               }}
             >
-              ← Retour aux chapitres
+              {pillLabel}
             </button>
+          );
+        })}
+      </div>
+
+      {/* ── 3. État de chargement & Erreur ── */}
+      {loading ? (
+        <div style={{
+          textAlign: 'center',
+          padding: '80px 20px',
+          background: 'var(--surface, #ffffff)',
+          borderRadius: '24px',
+          border: '1px solid var(--border, #e2e8f0)'
+        }}>
+          <div style={{
+            display: 'inline-block',
+            width: '38px',
+            height: '38px',
+            border: '4px solid #dbeafe',
+            borderTopColor: '#2563eb',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            marginBottom: '14px'
+          }} />
+          <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
+            Chargement des concours blancs...
           </div>
+        </div>
+      ) : error ? (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '16px',
+          padding: '18px 22px',
+          color: '#b91c1c',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '24px'
+        }}>
+          <span style={{ fontSize: '14px', fontWeight: 700 }}>⚠️ {error}</span>
+          <button
+            onClick={fetchConcours}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #fca5a5',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              color: '#b91c1c',
+              fontWeight: 800,
+              fontSize: '12px',
+              cursor: 'pointer'
+            }}
+          >
+            Réessayer
+          </button>
+        </div>
+      ) : !hasAnyResults ? (
 
-          {/* Horizontal Pill Cards des QCMs */}
-          {getConcoursForChapitre(selectedMatiere, selectedChapitre).length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <div style={{ fontSize: '36px', marginBottom: '10px' }}>📝</div>
-              <h3 style={{ margin: '0 0 6px', color: 'var(--text, #0f172a)' }}>Aucun QCM disponible</h3>
-              <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>Aucun concours blanc n'a été rattaché à ce chapitre pour l'instant.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {getConcoursForChapitre(selectedMatiere, selectedChapitre).map((qcm, idx) => (
-                <div
-                  key={qcm.id || idx}
-                  onClick={() => handleOpenQcm(qcm)}
-                  style={{
-                    background: 'var(--surface, #ffffff)',
-                    borderRadius: '26px',
-                    border: '1.5px solid #e2e8f0',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: '115px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.borderColor = selectedMatiere.color;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)';
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                  }}
-                >
-                  {/* Left rounded gradient container with Quiz illustration */}
-                  <div style={{
-                    width: '160px',
-                    minWidth: '160px',
-                    height: '100%',
-                    minHeight: '115px',
-                    background: selectedMatiere.color === '#2563eb' 
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)' 
-                      : selectedMatiere.color === '#8b5cf6'
-                      ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                      : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-                    borderRadius: '24px 60px 60px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
-                    padding: '10px'
-                  }}>
-                    <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      {/* Presse-papier / Test QCM */}
-                      <rect x="25" y="24" width="50" height="64" rx="8" fill="#ffffff" opacity="0.95"/>
-                      <rect x="38" y="18" width="24" height="10" rx="4" fill="#93c5fd"/>
-                      <circle cx="50" cy="23" r="2.5" fill="#1e40af"/>
-                      {/* Checkmarks & options */}
-                      <circle cx="36" cy="42" r="4.5" fill="#10b981"/>
-                      <path d="M34 42L36 44L40 40" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round"/>
-                      <line x1="46" y1="42" x2="65" y2="42" stroke="#334155" strokeWidth="2.5" strokeLinecap="round"/>
-                      <circle cx="36" cy="56" r="4.5" fill="#3b82f6"/>
-                      <line x1="46" y1="56" x2="65" y2="56" stroke="#334155" strokeWidth="2.5" strokeLinecap="round"/>
-                      <circle cx="36" cy="70" r="4.5" fill="#cbd5e1"/>
-                      <line x1="46" y1="70" x2="60" y2="70" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-
-                  {/* Middle content: QCM Title & Badges */}
-                  <div style={{ flex: 1, padding: '0 32px' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
-                      <span style={{ background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor, padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                        {selectedMatiere.nom}
-                      </span>
-                      {qcm.dureeMnutes && (
-                        <span style={{ background: '#fef3c7', color: '#92400e', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
-                          ⏱️ {qcm.dureeMnutes} min
-                        </span>
-                      )}
-                      <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                        🌐 HTML Web
-                      </span>
-                    </div>
-
-                    <h2 style={{
-                      margin: '0 0 4px',
-                      fontSize: '20px',
-                      fontWeight: 800,
-                      color: 'var(--text, #0f172a)',
-                      letterSpacing: '-0.3px'
-                    }}>
-                      {qcm.titre}
-                    </h2>
-                    {qcm.description ? (
-                      <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '13px', lineHeight: 1.4 }}>
-                        {qcm.description}
-                      </p>
-                    ) : (
-                      <p style={{ margin: 0, color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>
-                        Épreuve interactive avec chronomètre et réponses détaillées
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Right side: Button */}
-                  <div style={{ paddingRight: '36px' }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenQcm(qcm);
-                      }}
-                      style={{
-                        background: selectedMatiere.btnGradient,
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '11px 24px',
-                        borderRadius: '22px',
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s ease, transform 0.2s ease',
-                        whiteSpace: 'nowrap'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
-                    >
-                      <span>Commencer le QCM</span>
-                      <span style={{ fontSize: '15px' }}>🚀</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        /* ── Aucun résultat ── */
+        <div style={{
+          textAlign: 'center',
+          padding: '70px 20px',
+          background: 'var(--surface, #ffffff)',
+          borderRadius: '24px',
+          border: '2px dashed var(--border, #cbd5e1)'
+        }}>
+          <div style={{ fontSize: '42px', marginBottom: '12px' }}>🔍</div>
+          <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 850, color: 'var(--text, #0f172a)' }}>
+            Aucun résultat
+          </h3>
+          <p style={{ margin: '0 0 16px', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
+            {searchQuery
+              ? `Aucun concours blanc ne correspond à « ${searchQuery} ».`
+              : "Aucun concours blanc n'a été publié pour cette matière."}
+          </p>
+          {(searchQuery || activePill !== 'Toutes') && (
+            <button
+              onClick={() => { setSearchQuery(''); navigate('/client-concours-blanc'); }}
+              style={{
+                background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '9px 20px',
+                borderRadius: '9999px',
+                fontWeight: 800,
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(24, 101, 242, 0.25)'
+              }}
+            >
+              Afficher tous les concours blancs
+            </button>
           )}
         </div>
-      )}
+      ) : (
 
+        /* ── 4. Sections de matières avec grille de cartes ── */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '38px' }}>
+          {displayedSections.map((sec) => {
+            const list = getConcoursForSection(sec.id);
+            if (list.length === 0) return null; // Si aucune carte pour cette section après filtrage, la masquer
+
+            return (
+              <section key={sec.id} aria-labelledby={`heading-${sec.id}`}>
+                {/* En-tête de section avec barre verticale colorée à gauche */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{
+                    width: '4px',
+                    height: '30px',
+                    borderRadius: '9999px',
+                    backgroundColor: sec.color,
+                    flexShrink: 0
+                  }} />
+                  <h2
+                    id={`heading-${sec.id}`}
+                    style={{
+                      margin: 0,
+                      fontSize: '22px',
+                      fontWeight: 850,
+                      color: 'var(--text, #0f172a)',
+                      letterSpacing: '-0.3px'
+                    }}
+                  >
+                    {sec.nom}
+                  </h2>
+                </div>
+
+                {/* Grille responsive des cartes (max ~490px) */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 394px))',
+                  gap: '20px'
+                }}>
+                  {list.map((c) => {
+                    const cardStatus = getCardStatus(c);
+                    const qCount = c.nombreQuestions || 20;
+                    const durationText = formatDuree(c.dureeMnutes);
+
+                    return (
+                      <article
+                        key={c.id}
+                        className={demoContentClass(c)}
+                        style={{
+                          position: 'relative',
+                          backgroundColor: 'var(--surface, #ffffff)',
+                          border: '1.5px solid var(--border, #e2e8f0)',
+                          borderRadius: '24px',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          boxShadow: '0 3px 10px rgba(0,0,0,0.04)',
+                          transition: 'transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s, border-color 0.22s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.08)';
+                          e.currentTarget.style.borderColor = '#93c5fd';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.04)';
+                          e.currentTarget.style.borderColor = 'var(--border, #e2e8f0)';
+                        }}
+                      >
+                        <DemoAccessBadge item={c} />
+                        {/* Couverture avec dégradé de la matière */}
+                        <div style={{
+                          height: '182px',
+                          background: sec.gradient,
+                          position: 'relative',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          padding: '12px 16px',
+                          boxSizing: 'border-box',
+                          userSelect: 'none'
+                        }}>
+                          {/* Texte formule en haut à gauche */}
+                          <div style={{
+                            fontSize: '14.5px',
+                            fontWeight: 750,
+                            letterSpacing: '1.2px',
+                            color: 'rgba(255, 255, 255, 0.88)',
+                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                            position: 'relative',
+                            zIndex: 2,
+                            maxWidth: '50%',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {sec.formulas}
+                          </div>
+
+                          {/* Nom de la matière en bas à gauche en gros, blanc, gras */}
+                          <div style={{ position: 'relative', zIndex: 1, marginTop: '6px', maxWidth: '48%', pointerEvents: 'none' }}>
+                            <h3 style={{
+                              margin: 0,
+                              fontSize: 'clamp(20px, 2vw, 28px)',
+                              fontWeight: 900,
+                              color: '#ffffff',
+                              letterSpacing: '0.5px',
+                              lineHeight: 1.1,
+                              textShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
+                              textTransform: 'uppercase',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}>
+                              {sec.tag}
+                            </h3>
+                          </div>
+
+                          {/* Mascotte officielle (identique à la page Cours) */}
+                          <div style={{
+                            position: 'absolute',
+                            right: '-6px',
+                            bottom: '-8px',
+                            width: 'min(58%, 220px)',
+                            aspectRatio: '577 / 350',
+                            pointerEvents: 'none',
+                            zIndex: 10,
+                            filter: 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22))'
+                          }}>
+                            <img
+                              src={cardMascot}
+                              alt="Mascotte E-Concours"
+                              style={{
+                                display: 'block',
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'right bottom'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Corps de la carte */}
+                        <div style={{
+                          padding: '16px 18px 18px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          flex: 1
+                        }}>
+                          {/* Titre du concours blanc */}
+                          <h4
+                            title={c.titre}
+                            style={{
+                              margin: '0 0 10px 0',
+                              fontSize: '16px',
+                              fontWeight: 850,
+                              color: 'var(--text, #0f172a)',
+                              lineHeight: 1.35,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                          >
+                            {c.titre}
+                          </h4>
+
+                          {/* Ligne d'infos : nombre de questions et durée */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            fontSize: '12.5px',
+                            fontWeight: 650,
+                            color: 'var(--text-secondary, #64748b)',
+                            marginBottom: '14px'
+                          }}>
+                            <span>{qCount} questions</span>
+                            <span>{durationText}</span>
+                          </div>
+
+                          {/* Progression et statut si existant */}
+                          {cardStatus.isCompleted && (
+                            <div style={{ marginBottom: '12px' }}>
+                              <div style={{
+                                height: '5px',
+                                backgroundColor: '#d1fae5',
+                                borderRadius: '9999px',
+                                overflow: 'hidden',
+                                marginBottom: '6px'
+                              }}>
+                                <div style={{
+                                  height: '100%',
+                                  width: '100%',
+                                  backgroundColor: '#10b981',
+                                  borderRadius: '9999px'
+                                }} />
+                              </div>
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                fontSize: '11.5px',
+                                fontWeight: 800,
+                                color: '#059669'
+                              }}>
+                                <span>Terminé</span>
+                                <span>100%</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Bouton pilule pleine largeur Commencer / Continuer / Terminé */}
+                          <button
+                            type="button"
+                            onClick={guardDemoContent(c, () => handleOpenQcm(c))}
+                            style={{
+                              marginTop: 'auto',
+                              width: '100%',
+                              padding: '11px 20px',
+                              borderRadius: '9999px',
+                              border: 'none',
+                              fontFamily: 'inherit',
+                              fontSize: '14px',
+                              fontWeight: 800,
+                              color: '#ffffff',
+                              background: cardStatus.isCompleted
+                                ? '#10b981'
+                                : 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+                              cursor: 'pointer',
+                              boxShadow: cardStatus.isCompleted
+                                ? '0 4px 12px rgba(16, 185, 129, 0.28)'
+                                : '0 4px 14px rgba(24, 101, 242, 0.28)',
+                              transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = cardStatus.isCompleted
+                                ? '0 6px 16px rgba(16, 185, 129, 0.38)'
+                                : '0 6px 18px rgba(24, 101, 242, 0.38)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = cardStatus.isCompleted
+                                ? '0 4px 12px rgba(16, 185, 129, 0.28)'
+                                : '0 4px 14px rgba(24, 101, 242, 0.28)';
+                            }}
+                          >
+                            {cardStatus.btnLabel}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

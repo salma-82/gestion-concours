@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import medcineImg from '../assets/MEDCINE.jpg';
@@ -13,7 +14,7 @@ import logoEnsaMarocImg from '../assets/logo-ensa-maroc.jpg';
 import logoEnsamiImg from '../assets/logo-ensam-umi-transparent.png';
 import logoFmpcImg from '../assets/logo-fmpc.png';
 import navLogoImg from '../assets/logo-navbar-transparent.png';
-import navMascotImg from '../assets/logo-mascot.png';
+import mascotJarabImg from '../assets/jarab.png';
 import './LandingPage.css';
 import ThemeToggle from './ThemeToggle';
 
@@ -139,192 +140,15 @@ function createHeroDecorationPositions() {
   );
 }
 
-export function LandingMascot({ className = '', showCap = true, wave = false, holdingNotebook = false, gaze = 'center', brandCap = false, glasses = false }) {
-  const mascotId = useId().replace(/:/g, '');
-  const mascotClassName = `${className}${wave ? ' lp-mascot--wave' : ''}${holdingNotebook ? ' lp-mascot--holding-notebook' : ''}`.trim();
-  const pupilGazeTransform = gaze === 'left' ? 'translate(-5 -2)' : 'translate(0 0)';
+export function LandingMascot({ className = '' }) {
   return (
-    <svg
-      className={mascotClassName}
-      viewBox={brandCap ? '0 0 240 185' : '0 0 240 260'}
-      preserveAspectRatio={brandCap ? 'xMidYMin meet' : undefined}
-      role="img"
-      aria-label="Mascotte hibou diplômé ECONCOURS"
-    >
-      <defs>
-        <linearGradient id={`${mascotId}-owlBrown`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8c4b28" />
-          <stop offset="60%" stopColor="#733b1e" />
-          <stop offset="100%" stopColor="#572b13" />
-        </linearGradient>
-        <linearGradient id={`${mascotId}-owlBelly`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#fff8eb" />
-          <stop offset="100%" stopColor="#f5e4c8" />
-        </linearGradient>
-        <radialGradient id={`${mascotId}-owlEye`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ffe033" />
-          <stop offset="70%" stopColor="#ffb000" />
-          <stop offset="100%" stopColor="#e68a00" />
-        </radialGradient>
-        <linearGradient id={`${mascotId}-bookCover`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2563eb" />
-          <stop offset="100%" stopColor="#1d4ed8" />
-        </linearGradient>
-        <filter id={`${mascotId}-softShadow`} x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity=".2" />
-        </filter>
-      </defs>
-      <ellipse cx="120" cy="235" rx="55" ry="10" fill="#000" opacity=".12" />
-      <g stroke="#ff7700" strokeWidth="6" strokeLinecap="round">
-        <path d="m90 220-12 16m12-16v18m0-18 10 15m50-15-10 15m10-15v18m0-18 12 16" />
-      </g>
-      <ellipse cx="120" cy="155" rx="68" ry="72" fill={`url(#${mascotId}-owlBrown)`} />
-      <ellipse cx="120" cy="165" rx="46" ry="50" fill={`url(#${mascotId}-owlBelly)`} />
-      <path d="M102 150q8 6 16 0m4 0q8 6 16 0M98 168q12 7 24 0m-2 0q10 7 22 0" stroke="#d1b894" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {brandCap && (
-        <g fill="#87502e" stroke="#4a2817" strokeWidth="3.5" strokeLinejoin="round">
-          <ellipse cx="54" cy="164" rx="22" ry="14" />
-          <ellipse cx="186" cy="164" rx="22" ry="14" />
-          <path d="M45 156v15m9-13v17m9-16v14m123-17v15m9-13v17m9-16v14" fill="none" strokeWidth="2.2" strokeLinecap="round" />
-        </g>
-      )}
-      
-      {!holdingNotebook && (
-        <>
-          <g className="lp-mascot-wing lp-mascot-wing-left">
-            <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
-          </g>
-          <g className={`lp-mascot-wing lp-mascot-wing-right${wave ? ' lp-mascot-wing-right--raised' : ''}`}>
-            {wave ? (
-              <>
-                <path d="M174 143C190 128 199 103 207 77C211 64 219 59 225 64C231 69 226 82 223 92C230 81 237 82 239 89C241 96 234 105 230 111C223 130 212 153 190 169Z" fill="#5e2e15" />
-                <path d="M189 145C203 125 211 102 219 76" stroke="#87502e" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity=".7" />
-              </>
-            ) : (
-              <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
-            )}
-          </g>
-        </>
-      )}
-
-      {/* NOTEBOOK HOLDING GROUP ("ktab dyal note") */}
-      {holdingNotebook && (
-        <g className="lp-mascot-notebook-layer" filter={`url(#${mascotId}-softShadow)`}>
-          {/* Notebook Main Group */}
-          <g transform="rotate(-5 120 185)">
-            {/* Blue back cover */}
-            <rect x="76" y="138" width="86" height="92" rx="8" fill={`url(#${mascotId}-bookCover)`} stroke="#1e3a8a" strokeWidth="2" />
-            
-            {/* White paper sheet */}
-            <rect x="83" y="142" width="75" height="84" rx="5" fill="#ffffff" />
-            
-            {/* Orange header tab */}
-            <rect x="83" y="142" width="75" height="18" rx="5" fill="#ea580c" />
-            <rect x="83" y="152" width="75" height="8" fill="#ea580c" />
-            <text x="120" y="155" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="900" fontFamily="sans-serif" letterSpacing="1.2">
-              NOTES
-            </text>
-
-            {/* Ruled lines */}
-            <g stroke="#bfdbfe" strokeWidth="1.6" strokeLinecap="round">
-              <line x1="91" y1="168" x2="149" y2="168" />
-              <line x1="91" y1="178" x2="149" y2="178" />
-              <line x1="91" y1="188" x2="149" y2="188" />
-              <line x1="91" y1="198" x2="149" y2="198" />
-              <line x1="91" y1="208" x2="149" y2="208" />
-              <line x1="91" y1="218" x2="140" y2="218" />
-            </g>
-
-            {/* Handwritten style notes & checkmarks */}
-            <g fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800">
-              <text x="93" y="176" fill="#1e3a8a" fontSize="7.5">✓ ENSA · ENSAM</text>
-              <text x="93" y="186" fill="#ea580c" fontSize="7">✓ QCM + Résumés</text>
-              <text x="93" y="196" fill="#059669" fontSize="7">lim f(x) = 20/20</text>
-              <text x="93" y="206" fill="#4338ca" fontSize="6.5">Objectif Admis ★</text>
-            </g>
-
-            {/* Spiral binding rings along left edge */}
-            <g fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2">
-              <rect x="73" y="146" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="156" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="166" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="176" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="186" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="196" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="206" width="9" height="3.5" rx="1.5" />
-              <rect x="73" y="216" width="9" height="3.5" rx="1.5" />
-            </g>
-          </g>
-
-          {/* Left Wing holding the notebook */}
-          <path d="M52 142 C65 150 78 168 85 186 C74 195 62 188 50 166 Z" fill="#6b3519" stroke="#572b13" strokeWidth="2" strokeLinejoin="round" />
-          <ellipse cx="80" cy="182" rx="7" ry="9" fill="#733b1e" transform="rotate(-15 80 182)" />
-
-          {/* Right Wing & Pencil */}
-          <g transform="translate(162, 175) rotate(-22)">
-            {/* Pencil body */}
-            <rect x="-4" y="-22" width="8" height="30" rx="1" fill="#f59e0b" stroke="#b45309" strokeWidth="1" />
-            {/* Pencil wood tip */}
-            <polygon points="-4,-22 4,-22 0,-32" fill="#fed7aa" stroke="#b45309" strokeWidth="1" />
-            {/* Pencil graphite point */}
-            <polygon points="-1.5,-28 1.5,-28 0,-32" fill="#1e293b" />
-            {/* Pencil metal ferrule */}
-            <rect x="-4" y="4" width="8" height="6" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
-            {/* Pencil eraser */}
-            <rect x="-4" y="8" width="8" height="6" rx="2" fill="#f43f5e" />
-            
-            {/* Right Wing clutching the pencil */}
-            <ellipse cx="-2" cy="0" rx="12" ry="14" fill="#5e2e15" stroke="#451e0c" strokeWidth="1.5" />
-            <circle cx="2" cy="-4" r="5" fill="#733b1e" />
-          </g>
-        </g>
-      )}
-
-      {/* Head and eyes */}
-      <g className="lp-mascot-head">
-        <ellipse cx="120" cy="95" rx="60" ry="52" fill={`url(#${mascotId}-owlBrown)`} />
-        <path d="M70 55Q55 20 85 42ZM170 55q15-35-15-13Z" fill="#572b13" />
-        <circle cx="94" cy="95" r="28" fill="#fff8eb" />
-        <circle cx="146" cy="95" r="28" fill="#fff8eb" />
-        <g className="lp-mascot-eye">
-          <circle cx="94" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
-          <g transform={pupilGazeTransform}>
-            <circle cx="96" cy="95" r="12" fill="#140b04" />
-            <circle cx="100" cy="90" r="4.5" fill="#fff" />
-            <circle cx="92" cy="98" r="2" fill="#fff" />
-          </g>
-        </g>
-        <g className="lp-mascot-eye">
-          <circle cx="146" cy="95" r="22" fill={`url(#${mascotId}-owlEye)`} stroke="#e68a00" />
-          <g transform={pupilGazeTransform}>
-            <circle cx="144" cy="95" r="12" fill="#140b04" />
-            <circle cx="148" cy="90" r="4.5" fill="#fff" />
-            <circle cx="140" cy="98" r="2" fill="#fff" />
-          </g>
-        </g>
-        {glasses && (
-          <g className="lp-mascot-glasses" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="94" cy="95" r="26" stroke="#172d4f" strokeWidth="4.5" />
-            <circle cx="146" cy="95" r="26" stroke="#172d4f" strokeWidth="4.5" />
-            <circle cx="94" cy="95" r="22.5" stroke="#f4be57" strokeWidth="1.8" />
-            <circle cx="146" cy="95" r="22.5" stroke="#f4be57" strokeWidth="1.8" />
-            <path d="M120 91q-2-3-5-1m10 0q-3-2-5 1" stroke="#172d4f" strokeWidth="4" />
-            <path d="m68 90-7-2m111 2 7-2" stroke="#172d4f" strokeWidth="3.2" />
-          </g>
-        )}
-        <path d="m114 102 12 0-6 18Z" fill="#ff7700" />
-        {showCap && (
-          <g transform="translate(0 -18)" filter={`url(#${mascotId}-softShadow)`}>
-            <rect x="94" y="42" width="52" height="18" rx="3" fill="#1e2b37" />
-            <polygon points="120,20 182,38 120,56 58,38" fill="#243342" />
-            <polygon points="120,20 182,38 120,41 58,38" fill="#324558" />
-            <circle cx="120" cy="38" r="4" fill="#ffaa00" />
-            <path d="M120 38q40 4 45 27" stroke="#ffb700" strokeWidth="3" fill="none" strokeLinecap="round" />
-            <path d="m161 65 8 0-2 13h-4Z" fill="#ffb700" />
-          </g>
-        )}
-      </g>
-    </svg>
+    <img
+      className={className}
+      src={mascotJarabImg}
+      alt="Mascotte hibou diplômé E-CONCOURS"
+      loading="lazy"
+      decoding="async"
+    />
   );
 }
 
@@ -411,6 +235,8 @@ export default function LandingPage({ onNavigateToAuth }) {
   const [hasScrolled, setHasScrolled] = useState(false);
   const [activeNavSection, setActiveNavSection] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [demoStarting, setDemoStarting] = useState(false);
+  const [demoError, setDemoError] = useState('');
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [featureShowcasePaused, setFeatureShowcasePaused] = useState(false);
   const [selectedArchiveSchool, setSelectedArchiveSchool] = useState('ENSA');
@@ -426,6 +252,23 @@ export default function LandingPage({ onNavigateToAuth }) {
   const featureShowcaseFocusedRef = useRef(false);
   const featureProgressGradientId = `feature-progress-${useId().replace(/:/g, '')}`;
 
+  const handleStartDemo = async () => {
+    if (demoStarting) return;
+    setDemoStarting(true);
+    setDemoError('');
+    try {
+      const { data } = await axios.post('/api/auth/demo');
+      if (!data?.sessionToken) throw new Error('La session démo n’a pas pu être créée.');
+      const { sessionToken, ...user } = data;
+      localStorage.setItem('authToken', sessionToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/client-dashboard', { replace: true });
+    } catch (error) {
+      setDemoError(error.response?.data?.message || error.message || 'Impossible de démarrer la démo. Réessayez.');
+      setDemoStarting(false);
+    }
+  };
+
   useEffect(() => {
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion || featureShowcasePaused) return undefined;
@@ -439,15 +282,21 @@ export default function LandingPage({ onNavigateToAuth }) {
 
   useLayoutEffect(() => {
     const traveler = travelingMascotRef.current;
-    const source = heroMascotRef.current;
+    const sourceContainer = heroMascotRef.current;
     const destinationContainer = motivationMascotRef.current;
+    const source = sourceContainer?.querySelector('.lp-hero-mascot-art');
     const destination = destinationContainer?.querySelector('.lp-motivation-banner-owl');
     if (!traveler || !source || !destination) return undefined;
 
     let frame = 0;
+    let started = false;
+    let completed = false;
+    let disposed = false;
+    let highestProgress = 0;
+    let travelerMascot = null;
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
     const updatePosition = () => {
-      if (frame) return;
+      if (disposed || completed || frame) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
         const sourceRect = source.getBoundingClientRect();
@@ -460,8 +309,25 @@ export default function LandingPage({ onNavigateToAuth }) {
         const startTop = sourceRect.top + scrollY;
         const endLeft = destinationRect.left + scrollX;
         const endTop = destinationRect.top + scrollY;
-        const endScroll = Math.max(1, endTop);
-        const progress = clamp(scrollY / endScroll, 0, 1);
+        const triggerScroll = Math.max(0, startTop - window.innerHeight * 0.22);
+        if (scrollY < triggerScroll) return;
+
+        if (!started) {
+          started = true;
+          travelerMascot = source.cloneNode(true);
+          travelerMascot.className = 'lp-traveling-mascot-art';
+          travelerMascot.alt = '';
+          travelerMascot.setAttribute('aria-hidden', 'true');
+          travelerMascot.style.width = '100%';
+          travelerMascot.style.height = '100%';
+          travelerMascot.style.objectFit = 'contain';
+          traveler.replaceChildren(travelerMascot);
+          traveler.style.visibility = 'visible';
+          destination.style.opacity = '0';
+        }
+
+        const progress = Math.max(highestProgress, clamp((scrollY - triggerScroll) / Math.max(1, endTop - triggerScroll), 0, 1));
+        highestProgress = progress;
         const eased = progress * progress * (3 - 2 * progress);
         const width = sourceRect.width + (destinationRect.width - sourceRect.width) * eased;
         const height = sourceRect.height + (destinationRect.height - sourceRect.height) * eased;
@@ -470,29 +336,36 @@ export default function LandingPage({ onNavigateToAuth }) {
         traveler.style.top = `${startTop + (endTop - startTop) * eased - Math.sin(progress * Math.PI) * 64 - scrollY}px`;
         traveler.style.width = `${width}px`;
         traveler.style.height = `${height}px`;
-        traveler.style.visibility = 'visible';
-        destination.style.opacity = '0';
-        traveler.querySelectorAll('.lp-traveling-mascot-art').forEach((mascot) => {
-          mascot.style.width = `${75 + 25 * eased}%`;
-          mascot.style.height = `${84 + 16 * eased}%`;
-        });
+
+        if (progress >= 1) {
+          const landedMascot = travelerMascot.cloneNode(true);
+          landedMascot.className = 'lp-motivation-banner-owl';
+          landedMascot.removeAttribute('style');
+          landedMascot.alt = '';
+          landedMascot.setAttribute('aria-hidden', 'true');
+          destination.replaceWith(landedMascot);
+          traveler.replaceChildren();
+          traveler.style.visibility = 'hidden';
+          completed = true;
+          window.removeEventListener('scroll', updatePosition);
+          window.removeEventListener('resize', updatePosition);
+        }
       });
     };
 
-    updatePosition();
     window.addEventListener('scroll', updatePosition, { passive: true });
     window.addEventListener('resize', updatePosition);
-    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updatePosition) : null;
-    resizeObserver?.observe(source);
-    resizeObserver?.observe(destinationContainer);
     document.fonts?.ready?.then(updatePosition);
+    if (window.scrollY > 0) updatePosition();
 
     return () => {
+      disposed = true;
       window.removeEventListener('scroll', updatePosition);
       window.removeEventListener('resize', updatePosition);
-      resizeObserver?.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
-      destination.style.opacity = '';
+      if (!completed && destination.isConnected) destination.style.opacity = '';
+      traveler.replaceChildren();
+      traveler.style.visibility = 'hidden';
     };
   }, []);
 
@@ -833,11 +706,7 @@ export default function LandingPage({ onNavigateToAuth }) {
       <div className="lp-grain" aria-hidden="true" />
 
       {typeof document !== 'undefined' && createPortal(
-        <div className="lp-traveling-mascot" ref={travelingMascotRef} aria-hidden="true">
-          <span className="lp-travel-mascot-layer">
-            <img className="lp-traveling-mascot-art" src={navMascotImg} alt="" />
-          </span>
-        </div>,
+        <div className="lp-traveling-mascot" ref={travelingMascotRef} aria-hidden="true" />,
         document.body
       )}
 
@@ -1223,11 +1092,14 @@ export default function LandingPage({ onNavigateToAuth }) {
                 className="lp-hero-mascot-companion"
                 ref={heroMascotRef}
                 aria-hidden="true"
-              />
-              <button className="lp-btn-hero-primary" type="button" onClick={() => handleScrollTo('methodologie')}>
-                <span>Jarab fabor</span>
+              >
+                <img className="lp-hero-mascot-art" src={mascotJarabImg} alt="" />
+              </div>
+              <button className="lp-btn-hero-primary" type="button" onClick={handleStartDemo} disabled={demoStarting} aria-busy={demoStarting}>
+                <span>{demoStarting ? 'Préparation…' : 'Jarab fabor'}</span>
               </button>
             </div>
+            {demoError && <p className="lp-demo-error" role="alert">{demoError}</p>}
           </div>
           <div className="lp-editorial-doodle lp-editorial-doodle--book" aria-hidden="true">
             <svg viewBox="0 0 100 72" fill="none">
@@ -1356,7 +1228,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
           <div className="lp-motivation-banner-visual" ref={motivationMascotRef} aria-hidden="true">
             <div className="lp-motivation-banner-ground" />
-            <img className="lp-motivation-banner-owl" src={navMascotImg} alt="" />
+            <img className="lp-motivation-banner-owl" src={mascotJarabImg} alt="" />
           </div>
         </div>
       </section>

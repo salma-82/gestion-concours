@@ -1,107 +1,24 @@
-import React, { useState, useEffect, useId, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 import ThemeToggle from './ThemeToggle';
+import loginMascotImg from '../assets/v1-mascot.png';
+import registerMascotImg from '../assets/v3-mascot.png';
 
-/* ─────────────────────────────────────────────
-   OWL MASCOT  (same SVG as LandingPage)
-───────────────────────────────────────────── */
-function AuthOwl({ className = '' }) {
-  const id = useId().replace(/:/g, '');
+/* Mascot artwork: V1 for login and V3 for registration. */
+function AuthOwl({ className = '', variant = 'register' }) {
+  const src = variant === 'login' ? loginMascotImg : registerMascotImg;
   return (
-    <svg
+    <img
       className={`auth-owl ${className}`}
-      viewBox="0 0 240 260"
-      role="img"
-      aria-label="Mascotte hibou diplômé E-CONCOURS"
-    >
-      <defs>
-        <linearGradient id={`${id}-owlBrown`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8c4b28" />
-          <stop offset="60%" stopColor="#733b1e" />
-          <stop offset="100%" stopColor="#572b13" />
-        </linearGradient>
-        <linearGradient id={`${id}-owlBelly`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#fff8eb" />
-          <stop offset="100%" stopColor="#f5e4c8" />
-        </linearGradient>
-        <radialGradient id={`${id}-owlEye`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ffe033" />
-          <stop offset="70%" stopColor="#ffb000" />
-          <stop offset="100%" stopColor="#e68a00" />
-        </radialGradient>
-        <filter id={`${id}-shadow`} x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity=".2" />
-        </filter>
-      </defs>
-
-      {/* Shadow */}
-      <ellipse cx="120" cy="235" rx="55" ry="10" fill="#000" opacity=".10" />
-
-      {/* Feet */}
-      <g stroke="#ff7700" strokeWidth="6" strokeLinecap="round">
-        <path d="m90 220-12 16m12-16v18m0-18 10 15m50-15-10 15m10-15v18m0-18 12 16" />
-      </g>
-
-      {/* Body */}
-      <ellipse cx="120" cy="155" rx="68" ry="72" fill={`url(#${id}-owlBrown)`} />
-      <ellipse cx="120" cy="165" rx="46" ry="50" fill={`url(#${id}-owlBelly)`} />
-      <path
-        d="M102 150q8 6 16 0m4 0q8 6 16 0M98 168q12 7 24 0m-2 0q10 7 22 0"
-        stroke="#d1b894" strokeWidth="3" fill="none" strokeLinecap="round"
-      />
-
-      {/* Wings */}
-      <g className="auth-owl-wing auth-owl-wing-left">
-        <path d="M58 135q-30 15-20 50 22 0 26-37Z" fill="#6b3519" />
-      </g>
-      <g className="auth-owl-wing auth-owl-wing-right">
-        <path d="M182 135q30 15 20 50-22 0-26-37Z" fill="#5e2e15" />
-      </g>
-
-      {/* Head */}
-      <g className="auth-owl-head">
-        <ellipse cx="120" cy="95" rx="60" ry="52" fill={`url(#${id}-owlBrown)`} />
-        {/* Ear tufts */}
-        <path d="M70 55Q55 20 85 42ZM170 55q15-35-15-13Z" fill="#572b13" />
-        {/* Eye rings */}
-        <circle cx="94" cy="95" r="28" fill="#fff8eb" />
-        <circle cx="146" cy="95" r="28" fill="#fff8eb" />
-        {/* Left eye */}
-        <g className="auth-owl-eye">
-          <circle cx="94" cy="95" r="22" fill={`url(#${id}-owlEye)`} stroke="#e68a00" />
-          <circle cx="96" cy="95" r="12" fill="#140b04" />
-          <circle cx="100" cy="90" r="4.5" fill="#fff" />
-          <circle cx="92" cy="98" r="2" fill="#fff" />
-        </g>
-        {/* Right eye */}
-        <g className="auth-owl-eye">
-          <circle cx="146" cy="95" r="22" fill={`url(#${id}-owlEye)`} stroke="#e68a00" />
-          <circle cx="144" cy="95" r="12" fill="#140b04" />
-          <circle cx="148" cy="90" r="4.5" fill="#fff" />
-          <circle cx="140" cy="98" r="2" fill="#fff" />
-        </g>
-        {/* Beak */}
-        <path d="m114 102 12 0-6 18Z" fill="#ff7700" />
-
-        {/* Graduation cap */}
-        <g transform="translate(0 -18)" filter={`url(#${id}-shadow)`}>
-          <rect x="94" y="42" width="52" height="18" rx="3" fill="#1e2b37" />
-          <polygon points="120,20 182,38 120,56 58,38" fill="#243342" />
-          <polygon points="120,20 182,38 120,41 58,38" fill="#324558" />
-          <circle cx="120" cy="38" r="4" fill="#ffaa00" />
-          <path d="M120 38q40 4 45 27" stroke="#ffb700" strokeWidth="3" fill="none" strokeLinecap="round" />
-          <path d="m161 65 8 0-2 13h-4Z" fill="#ffb700" />
-        </g>
-      </g>
-    </svg>
+      src={src}
+      alt="Mascotte hibou diplômé E-CONCOURS"
+      loading="lazy"
+      decoding="async"
+    />
   );
 }
-
-/* ─────────────────────────────────────────────
-   LOGO MARK  (same as LandingPage navbar)
-───────────────────────────────────────────── */
 function LogoMark() {
   return (
     <div className="auth-logo">
@@ -354,8 +271,8 @@ export default function AuthPage({ initialMode = 'login', onBackToHome }) {
           <LogoMark />
 
           {/* Mascot */}
-          <div className="ecauth-mascot-badge">
-            <AuthOwl className="ecauth-mascot-art" />
+          <div className={`ecauth-mascot-badge ${isLogin ? 'ecauth-mascot-badge--login' : 'ecauth-mascot-badge--register'}`}>
+            <AuthOwl className="ecauth-mascot-art" variant={isLogin ? 'login' : 'register'} />
           </div>
 
           {/* Headline */}

@@ -1,224 +1,196 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
+import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
+import { toBackendResourceUrl } from '../backendResourceUrl';
+import { filterByStudentPack } from '../packAccess';
 import {
   fetchStudentActivityCompletionMap,
   getStudentActivityStatusKey,
+  readStudentProgress,
   recordStudentActivity,
   setStudentActivityCompleted
 } from '../studentProgress';
-import { filterByStudentPack } from '../packAccess';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import AutoHeightHtmlFrame from './AutoHeightHtmlFrame';
-import { toBackendResourceUrl } from '../backendResourceUrl';
+import cardMascot from '../assets/logo-mascot.png';
+import './ClientResumesPage.css';
+import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
 
 const API = '';
 
+const isPdfDocument = (url) => /\.pdf(?:$|[?#])/i.test(String(url || ''));
+
 /* ─────────────────────────────────────────────
-   CONFIGURATION DES 3 MATIÈRES
+   CONFIGURATION VISUELLE DES MATIÈRES DE RÉSUMÉS
    ───────────────────────────────────────────── */
-const MATIERES = [
+const RESUME_SUBJECTS = [
   {
     id: 'Mathématiques',
     nom: 'Mathématiques',
-    color: '#2563eb',
-    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
-    btnGradient: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
-    badgeBg: '#eff6ff',
-    badgeColor: '#1d4ed8',
-    lightBg: '#dbeafe',
-    desc: 'Analyse, Algèbre, Limites, Intégrales, Probabilités, Géométrie…',
-    emoji: '📐',
-    renderIcon: () => (
-      <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M18 78L18 24C18 20.69 20.69 18 24 18L78 78H24C20.69 78 18 75.31 18 78Z" fill="#93c5fd" opacity=".6" />
-        <path d="M22 28V74H68L22 28Z" fill="#3b82f6" opacity=".2" />
-        <path d="M30 46L30 70H54L30 46Z" fill="#eff6ff" />
-        <text x="38" y="32" fill="#fff" fontSize="16" fontWeight="bold" fontFamily="sans-serif">π</text>
-        <text x="56" y="44" fill="#fff" fontSize="14" fontWeight="bold" fontFamily="sans-serif">√x</text>
-        <g transform="translate(42,42)">
-          <rect width="36" height="46" rx="8" fill="#1e40af" stroke="#fff" strokeWidth="2.5" />
-          <rect x="5" y="6" width="26" height="10" rx="3" fill="#93c5fd" />
-          <circle cx="10" cy="23" r="2.5" fill="#fff" /><circle cx="18" cy="23" r="2.5" fill="#fff" /><circle cx="26" cy="23" r="2.5" fill="#fff" />
-          <circle cx="10" cy="31" r="2.5" fill="#fff" /><circle cx="18" cy="31" r="2.5" fill="#fff" /><circle cx="26" cy="31" r="2.5" fill="#fff" />
-          <circle cx="10" cy="39" r="2.5" fill="#fff" /><circle cx="18" cy="39" r="2.5" fill="#fff" /><circle cx="26" cy="39" r="2.5" fill="#38bdf8" />
-        </g>
-      </svg>
-    )
+    headingTitle: 'Math',
+    tag: 'MATH',
+    subtitle: 'Chapitres et résumés de mathématiques.',
+    formulas: '∑  f(x)  ∫dx  lim',
+    fontClass: 'font-large'
   },
   {
-    id: 'Physique-Chimie',
+    id: 'Physique - Chimie',
     nom: 'Physique - Chimie',
-    color: '#8b5cf6',
-    gradient: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)',
-    btnGradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
-    badgeBg: '#f5f3ff',
-    badgeColor: '#6d28d9',
-    lightBg: '#ede9fe',
-    desc: 'Ondes, Électricité, Mécanique de Newton, Transformations chimiques…',
-    emoji: '⚗️',
-    renderIcon: () => (
-      <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M42 22H58V34L74 68C76 72 73 78 68 78H32C27 78 24 72 26 68L42 34V22Z" fill="#c4b5fd" opacity=".5" />
-        <path d="M30 64L38 48H62L70 64C72 68 69 74 64 74H36C31 74 28 68 30 64Z" fill="#a78bfa" />
-        <path d="M32 68C42 62 58 72 68 68V74H32V68Z" fill="#7c3aed" />
-        <circle cx="44" cy="56" r="3" fill="#fff" opacity=".8" />
-        <circle cx="54" cy="62" r="2" fill="#fff" opacity=".8" />
-        <circle cx="48" cy="66" r="4" fill="#fff" opacity=".8" />
-        <g transform="translate(56,32)">
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(30 16 16)" stroke="#fff" strokeWidth="2" strokeDasharray="3 1" fill="none" />
-          <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(-30 16 16)" stroke="#fff" strokeWidth="2" fill="none" />
-          <circle cx="16" cy="16" r="5" fill="#facc15" />
-          <circle cx="30" cy="12" r="2.5" fill="#fff" />
-          <circle cx="6" cy="24" r="2.5" fill="#fff" />
-        </g>
-      </svg>
-    )
+    headingTitle: 'Physique - Chimie',
+    tag: 'PHYSIQUE',
+    subtitle: 'Chapitres et résumés de physique-chimie.',
+    formulas: 'E=mc²  F=ma  U=RI  λ',
+    fontClass: 'font-small'
   },
   {
     id: 'SVT',
-    nom: 'SVT (Sciences de la Vie et de la Terre)',
-    color: '#059669',
-    gradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-    btnGradient: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
-    badgeBg: '#ecfdf5',
-    badgeColor: '#047857',
-    lightBg: '#d1fae5',
-    desc: 'Génétique humaine & moléculaire, Immunologie, Écologie, Géologie…',
-    emoji: '🧬',
-    renderIcon: () => (
-      <svg width="68" height="68" viewBox="0 0 100 100" fill="none">
-        <path d="M52 48C52 48 64 36 76 40C88 44 88 60 76 66C64 72 56 64 52 48Z" fill="#34d399" />
-        <path d="M54 50C62 60 70 66 78 68" stroke="#065f46" strokeWidth="1.5" />
-        <path d="M46 56C46 56 50 68 44 76C38 84 26 80 26 68C26 56 38 52 46 56Z" fill="#10b981" opacity=".9" />
-        <g transform="translate(18,20)">
-          <path d="M12 10C24 20 24 35 12 45C0 55 0 70 12 80" stroke="#38bdf8" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-          <path d="M26 10C14 20 14 35 26 45C38 55 38 70 26 80" stroke="#f43f5e" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-          <line x1="16" y1="18" x2="22" y2="18" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="14" y1="38" x2="24" y2="38" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="14" y1="52" x2="24" y2="52" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="16" y1="72" x2="22" y2="72" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-        </g>
-      </svg>
-    )
+    nom: 'SVT',
+    headingTitle: 'SVT',
+    tag: 'SVT',
+    subtitle: 'Chapitres et résumés de SVT.',
+    formulas: 'ADN  ATP  CO₂  O₂',
+    fontClass: 'font-large'
   }
 ];
 
+const SUBJECT_PILLS = ['Toutes', 'Mathématiques', 'Physique - Chimie', 'SVT'];
+
 /* ─────────────────────────────────────────────
-   HELPER : matière matching flexible
+   HELPERS : Matière matching flexible
    ───────────────────────────────────────────── */
 const matchMatiere = (value, configId) => {
   if (!value || !configId) return false;
-  const v = value.toLowerCase().trim();
-  const c = configId.toLowerCase().trim();
+  const v = value.toLowerCase().replace(/[\s\-_]/g, '');
+  const c = configId.toLowerCase().replace(/[\s\-_]/g, '');
   if (c.includes('math')) return v.includes('math');
-  if (c.includes('phys')) return v.includes('phys') || v.includes('chimie') || v === 'pc';
-  if (c.includes('svt')) return v.includes('svt') || v.includes('vie') || v.includes('terre');
+  if (c.includes('phys') || c.includes('chim')) return v.includes('phys') || v.includes('chim') || v === 'pc';
+  if (c.includes('svt') || c.includes('vie') || c.includes('terre')) return v.includes('svt') || v.includes('vie') || v.includes('terre');
   return v.includes(c) || c.includes(v);
 };
 
+const normalizeSubjectChip = (param) => {
+  if (!param) return 'Toutes';
+  const p = param.toLowerCase().replace(/[\s\-_]/g, '');
+  if (p.includes('math')) return 'Mathématiques';
+  if (p.includes('phys') || p.includes('chim')) return 'Physique - Chimie';
+  if (p.includes('svt') || p.includes('vie') || p.includes('terre')) return 'SVT';
+  return 'Toutes';
+};
+
 /* ─────────────────────────────────────────────
-   COMPOSANT PRINCIPAL
+   HELPER : Découpage du titre et du numéro de chapitre
    ───────────────────────────────────────────── */
+const parseChapterInfo = (resume, index) => {
+  const rawChapter = String(resume?.chapitre || '').trim();
+  const rawTitle = String(resume?.titre || '').trim();
+  const fullText = rawChapter || rawTitle || `Chapitre ${index + 1}`;
+
+  // Cas 1 : "Chapitre X : Titre" ou "Chapitre X - Titre" ou "Ch X : Titre"
+  const colonMatch = fullText.match(/^(?:Chapitre|Ch\.?)\s*(\d+)\s*[:\-–]\s*(.*)$/i);
+  if (colonMatch) {
+    return {
+      chapterNum: `Chapitre ${colonMatch[1]}`,
+      title: colonMatch[2].trim() || rawTitle || rawChapter
+    };
+  }
+
+  // Cas 2 : Numéro de chapitre dans le texte
+  const numMatch = fullText.match(/(?:Chapitre|Ch\.?)\s*(\d+)/i);
+  const chapterNum = numMatch ? `Chapitre ${numMatch[1]}` : `Chapitre ${index + 1}`;
+
+  // Titre propre sans préfixe "Chapitre X"
+  let cleanTitle = rawTitle;
+  if (!cleanTitle || cleanTitle.toLowerCase().startsWith('chapitre')) {
+    cleanTitle = rawChapter.replace(/^(?:Chapitre|Ch\.?)\s*\d+\s*[:\-–]?\s*/i, '').trim() || rawTitle || `Chapitre ${index + 1}`;
+  }
+
+  return { chapterNum, title: cleanTitle };
+};
+
 export default function ClientResumesPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedMatiere = searchParams.get('matiere') || '';
-  const initialMatiere = MATIERES.find(m =>
-    m.id.toLowerCase() === requestedMatiere.toLowerCase()
-    || m.nom.toLowerCase() === requestedMatiere.toLowerCase()
-  ) || null;
 
-  // Steps: 'matieres' → 'chapitres' → 'reader'
-  const [step, setStep] = useState(initialMatiere ? 'chapitres' : 'matieres');
-  const [selectedMatiere, setSelectedMatiere] = useState(initialMatiere);
-  const [selectedChapitre, setSelectedChapitre] = useState(null);
-  const [activeResume, setActiveResume] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // Filtres
+  const [selectedSubjectChip, setSelectedSubjectChip] = useState(() => normalizeSubjectChip(requestedMatiere));
+  const [selectedStatus, setSelectedStatus] = useState('Tous'); // 'Tous' | 'Commencé' | 'Terminé'
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Données
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Progression étudiant
   const [completionStatuses, setCompletionStatuses] = useState({});
+  const [progressList, setProgressList] = useState(() => readStudentProgress());
   const [completingActivityKey, setCompletingActivityKey] = useState('');
   const [completionErrorKey, setCompletionErrorKey] = useState('');
 
-  const iframeRef = useRef(null);
+  // Mode Lecteur
+  const [activeResume, setActiveResume] = useState(null);
 
-  const activeResumeStatusKey = activeResume?.id
-    ? getStudentActivityStatusKey('Résumé', activeResume.id)
-    : '';
-  const activeResumeCompleted = completionStatuses[activeResumeStatusKey] === true;
-
-  const handleCompleteResume = async (event, resume) => {
-    event?.stopPropagation();
-    if (!resume?.id) return;
-    const statusKey = getStudentActivityStatusKey('Résumé', resume.id);
-    if (completionStatuses[statusKey] === true || completingActivityKey === statusKey) return;
-
-    setCompletingActivityKey(statusKey);
-    setCompletionErrorKey('');
-    try {
-      const saved = await setStudentActivityCompleted(`Résumé:${resume.id}`, true);
-      if (!saved) throw new Error('Impossible d’enregistrer la progression.');
-      setCompletionStatuses((current) => ({ ...current, [statusKey]: true }));
-    } catch (saveError) {
-      console.error('Erreur lors de l’enregistrement de la progression du résumé:', saveError);
-      setCompletionErrorKey(statusKey);
-    } finally {
-      setCompletingActivityKey('');
-    }
-  };
-
+  // Synchronisation avec les changements de l'URL (?matiere=...)
   useEffect(() => {
-    const stage = activeResume ? 'reader' : (selectedMatiere ? 'chapitres' : 'matieres');
-    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage } }));
-  }, [step, selectedMatiere, activeResume]);
-
-  useEffect(() => {
-    const matiereParam = searchParams.get('matiere') || '';
-    const matiere = MATIERES.find(m =>
-      m.id.toLowerCase() === matiereParam.toLowerCase()
-      || m.nom.toLowerCase() === matiereParam.toLowerCase()
-    );
-
-    if (!matiere) {
-      navigate('/client-dashboard', { replace: true });
-      return;
-    }
-
-    setSelectedMatiere(matiere);
-    setSelectedChapitre(null);
+    const chip = normalizeSubjectChip(searchParams.get('matiere'));
+    setSelectedSubjectChip(chip);
     setActiveResume(null);
-    setIsSidebarCollapsed(false);
-    setStep('chapitres');
-  }, [searchParams, navigate]);
+  }, [searchParams]);
 
-  /* ─── Fetch uniquement la table "resumes" ─── */
+  // Synchronisation avec la mascotte globale du layout
   useEffect(() => {
+    const stage = activeResume ? 'reader' : 'selection';
+    const context = activeResume
+      ? [activeResume.matiere, activeResume.chapitre || activeResume.titre].filter(Boolean).join(' · ')
+      : [selectedSubjectChip !== 'Toutes' ? selectedSubjectChip : '', selectedStatus !== 'Tous' ? selectedStatus : ''].filter(Boolean).join(' · ');
+    window.dispatchEvent(new CustomEvent('client-mascot-stage', { detail: { stage, context } }));
+  }, [activeResume, selectedSubjectChip, selectedStatus]);
+
+  // Chargement des résumés depuis l'API
+  useEffect(() => {
+    let isMounted = true;
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         const { data } = await axios.get(`${API}/api/resumes`);
+        if (!isMounted) return;
         const list = Array.isArray(data) ? data : (data?.value || data?.resumes || (data ? [data] : []));
         setResumes(filterByStudentPack(list, 'ecole', true));
       } catch (err) {
+        if (!isMounted) return;
         console.error('Erreur chargement résumés:', err);
-        setError("Impossible de récupérer les résumés.");
+        setError('Impossible de récupérer les résumés.');
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     })();
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchStudentActivityCompletionMap()
-      .then((statuses) => { if (isMounted) setCompletionStatuses(statuses); })
-      .catch(() => {});
     return () => { isMounted = false; };
   }, []);
 
-  /* ─── Helpers ─── */
+  // Chargement de la map de complétion
+  useEffect(() => {
+    let isMounted = true;
+    fetchStudentActivityCompletionMap()
+      .then((statuses) => { if (isMounted) setCompletionStatuses(statuses || {}); })
+      .catch(() => {});
+
+    const handleProgressUpdate = () => {
+      setProgressList(readStudentProgress());
+      fetchStudentActivityCompletionMap()
+        .then((statuses) => { if (isMounted) setCompletionStatuses(statuses || {}); })
+        .catch(() => {});
+    };
+
+    window.addEventListener('student-progress-updated', handleProgressUpdate);
+    window.addEventListener('student-server-activity-updated', handleProgressUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('student-progress-updated', handleProgressUpdate);
+      window.removeEventListener('student-server-activity-updated', handleProgressUpdate);
+    };
+  }, []);
+
   const getFullUrl = (url) => {
     if (!url) return '';
     const normalizedUrl = toBackendResourceUrl(url);
@@ -226,589 +198,484 @@ export default function ClientResumesPage() {
     return `/${normalizedUrl.startsWith('/') ? normalizedUrl.substring(1) : normalizedUrl}`;
   };
 
-  const resumesForMatiere = (mat) => resumes.filter(r => matchMatiere(r.matiere, mat.id));
+  // Calcul du statut et pourcentage d'un résumé
+  const getResumeProgress = useCallback((resume) => {
+    const resumeId = resume?.id;
+    const statusKey = getStudentActivityStatusKey('Résumé', resumeId);
+    const isCompleted = completionStatuses[statusKey] === true;
 
-  const chapitresForMatiere = (mat) => {
-    const matched = resumesForMatiere(mat);
-    const map = new Map();
-    matched.forEach(r => {
-      const ch = (r.chapitre || '').trim();
-      if (ch) {
-        const key = ch.toLowerCase();
-        if (!map.has(key)) map.set(key, ch);
-      }
-    });
-    const chapList = Array.from(map.values());
-
-    // Résumés sans chapitre
-    if (matched.some(r => !(r.chapitre || '').trim())) {
-      chapList.push('Général');
+    if (isCompleted) {
+      return {
+        status: 'Terminé',
+        pct: 100,
+        btnText: 'Relire',
+        statusClass: 'status-completed'
+      };
     }
 
-    return chapList.map(name => {
-      const count = matched.filter(r => {
-        const c = (r.chapitre || '').trim();
-        if (name === 'Général') return !c;
-        return c.toLowerCase() === name.toLowerCase();
-      }).length;
-      return { nom: name, count };
-    });
-  };
+    const activity = progressList.find(
+      (p) =>
+        p.id === `Résumé:${resumeId}` ||
+        (p.title && resume.titre && p.title.trim().toLowerCase() === resume.titre.trim().toLowerCase())
+    );
 
-  const resumesForChapitre = (mat, chapNom) => {
-    return resumes.filter(r => {
-      if (!matchMatiere(r.matiere, mat.id)) return false;
-      const c = (r.chapitre || '').trim();
-      if (chapNom === 'Général') return !c;
-      return c.toLowerCase() === chapNom.toLowerCase();
-    });
-  };
-
-  /* ─── Navigation ─── */
-  const goMatieres = () => navigate('/client-dashboard', { state: { openSidebarMenu: 'resumes' } });
-  const goChapitres = (mat) => { setIsSidebarCollapsed(false); setSelectedMatiere(mat); setSelectedChapitre(null); setActiveResume(null); setStep('chapitres'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-
-  const goReader = (chapNom) => {
-    setSelectedChapitre(chapNom);
-    const list = resumesForChapitre(selectedMatiere, chapNom);
-    if (list.length > 0) {
-      setActiveResume(list[0]);
-      setIsSidebarCollapsed(true);
-      setStep('chapitres');
-      recordStudentActivity({
-        type: 'Résumé',
-        resourceId: list[0].id,
-        title: list[0].titre || `Résumé — ${chapNom}`,
-        subject: list[0].matiere || selectedMatiere?.nom,
-        chapter: list[0].chapitre || chapNom
-      });
+    if (activity && (activity.visits > 0 || activity.durationSeconds > 0)) {
+      const pct = activity.durationSeconds > 180 ? 60 : activity.durationSeconds > 40 ? 40 : 30;
+      return {
+        status: 'Commencé',
+        pct,
+        btnText: 'Continuer',
+        statusClass: 'status-in-progress'
+      };
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
+    return {
+      status: 'Nouveau',
+      pct: 0,
+      btnText: 'Lire',
+      statusClass: 'status-new'
+    };
+  }, [completionStatuses, progressList]);
+
+  // Ouverture du lecteur pour un résumé
   const openResume = (resume) => {
     setActiveResume(resume);
-    setIsSidebarCollapsed(true);
-    setStep('chapitres');
     recordStudentActivity({
       type: 'Résumé',
       resourceId: resume.id,
-      title: resume.titre || resume.nom || 'Résumé',
-      subject: resume.matiere || selectedMatiere?.nom,
-      chapter: resume.chapitre || selectedChapitre || ''
+      title: resume.titre || resume.chapitre || 'Résumé',
+      subject: resume.matiere || '',
+      chapter: resume.chapitre || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /* ─── Matières avec compteurs ─── */
-  const matieresWithCount = MATIERES.map(m => ({ ...m, count: resumesForMatiere(m).length }));
+  // Marquer le résumé comme terminé
+  const activeResumeStatusKey = activeResume?.id
+    ? getStudentActivityStatusKey('Résumé', activeResume.id)
+    : '';
+  const activeResumeCompleted = completionStatuses[activeResumeStatusKey] === true;
 
-  /* ═══════════════════════════════════════════
-     RENDER
-     ═══════════════════════════════════════════ */
-  return (
-    <div style={{ minHeight: 'calc(100vh - 76px)', background: 'var(--bg, #f8fafc)', padding: requestedMatiere ? '20px 16px' : '32px 36px', fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif" }}>
+  const handleCompleteActiveResume = async () => {
+    if (!activeResume?.id || activeResumeCompleted || completingActivityKey === activeResumeStatusKey) return;
+    setCompletingActivityKey(activeResumeStatusKey);
+    setCompletionErrorKey('');
+    try {
+      const saved = await setStudentActivityCompleted(`Résumé:${activeResume.id}`, true);
+      if (!saved) throw new Error('Impossible d’enregistrer la progression.');
+      setCompletionStatuses((current) => ({ ...current, [activeResumeStatusKey]: true }));
+      setProgressList(readStudentProgress());
+    } catch (saveError) {
+      console.error('Erreur lors de l’enregistrement de la progression du résumé:', saveError);
+      setCompletionErrorKey(activeResumeStatusKey);
+    } finally {
+      setCompletingActivityKey('');
+    }
+  };
 
-      {/* ─────────────────────────────────────
-          STEP 1 : CHOIX DE LA MATIÈRE
-      ───────────────────────────────────── */}
-      {step === 'matieres' && (
-        <div style={{ width: 'calc(100% - min(6cm, 12vw))', maxWidth: 'calc(1200px - 6cm)', margin: '12px auto 0' }}>
-          {/* Header */}
-          <div style={{ marginBottom: '36px' }}>
-            <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 900, color: 'var(--text, #0f172a)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '32px' }}>📚</span>
-              <span>Résumés de Cours</span>
-            </h1>
-            <p style={{ margin: '10px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '15px', maxWidth: '700px', lineHeight: 1.6 }}>
-              Sélectionnez une matière pour parcourir les chapitres et consulter les résumés interactifs ajoutés par l'administrateur.
-            </p>
-          </div>
+  // Filtrage des résumés selon la recherche et le statut
+  const filteredResumes = useMemo(() => {
+    return resumes.filter((r) => {
+      // Filtre texte
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const title = String(r.titre || '').toLowerCase();
+        const ch = String(r.chapitre || '').toLowerCase();
+        const mat = String(r.matiere || '').toLowerCase();
+        if (!title.includes(q) && !ch.includes(q) && !mat.includes(q)) {
+          return false;
+        }
+      }
 
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '80px 0' }}>
-              <div style={{
-                width: '56px', height: '56px', border: '4px solid #e2e8f0', borderTopColor: '#2563eb',
-                borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite'
-              }} />
-              <p style={{ fontWeight: 600, color: 'var(--text-secondary, #64748b)', fontSize: '15px' }}>Chargement des résumés…</p>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            </div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #fff)', borderRadius: '20px', border: '1px solid #fecaca' }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
-              <p style={{ color: '#dc2626', fontWeight: 700 }}>{error}</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-              {matieresWithCount.map((mat) => (
-                <div
-                  key={mat.id}
-                  onClick={() => goChapitres(mat)}
-                  style={{
-                    background: 'var(--surface, #ffffff)',
-                    borderRadius: '26px',
-                    border: '1.5px solid #e2e8f0',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    minHeight: '125px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.borderColor = mat.color;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)';
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                  }}
-                >
-                  {/* Illustration */}
-                  <div style={{
-                    width: '180px', minWidth: '180px', height: '100%', minHeight: '125px',
-                    background: mat.color === '#2563eb'
-                      ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)'
-                      : mat.color === '#8b5cf6'
-                        ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                        : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-                    borderRadius: '24px 70px 70px 24px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
-                    padding: '10px'
-                  }}>
-                    {mat.renderIcon()}
-                  </div>
+      // Filtre statut ('Tous' | 'Commencé' | 'Terminé')
+      if (selectedStatus !== 'Tous') {
+        const progress = getResumeProgress(r);
+        if (progress.status !== selectedStatus) {
+          return false;
+        }
+      }
 
-                  {/* Contenu central */}
-                  <div style={{ flex: 1, padding: '0 32px' }}>
-                    <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: '-0.3px' }}>
-                      {mat.nom}
-                    </h2>
-                    <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
-                      {mat.desc}
-                    </p>
-                  </div>
+      return true;
+    });
+  }, [resumes, searchQuery, selectedStatus, getResumeProgress]);
 
-                  {/* Badge + Bouton */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', paddingRight: '36px' }}>
-                    <span style={{
-                      background: mat.badgeBg, color: mat.badgeColor,
-                      padding: '5px 16px', borderRadius: '20px',
-                      fontSize: '13px', fontWeight: 800, letterSpacing: '0.2px'
-                    }}>
-                      {mat.count} Résumé{mat.count > 1 ? 's' : ''}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); goChapitres(mat); }}
-                      style={{
-                        background: mat.btnGradient, color: '#fff', border: 'none',
-                        padding: '11px 24px', borderRadius: '22px',
-                        fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                        transition: 'opacity 0.2s ease, transform 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
-                    >
-                      <span>Voir les chapitres</span>
-                      <span>→</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+  // Sections visibles selon le chip matière
+  const visibleSubjects = useMemo(() => {
+    if (selectedSubjectChip === 'Toutes') {
+      return RESUME_SUBJECTS;
+    }
+    return RESUME_SUBJECTS.filter((s) => s.nom === selectedSubjectChip || s.id === selectedSubjectChip);
+  }, [selectedSubjectChip]);
 
-      {/* ─────────────────────────────────────
-          STEP 2 : CHAPITRES DE LA MATIÈRE
-      ───────────────────────────────────── */}
-      {step === 'chapitres' && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'grid', gridTemplateColumns: isSidebarCollapsed || !activeResume ? 'minmax(0, 1fr)' : 'minmax(220px, 280px) minmax(0, 1fr)', alignItems: 'stretch', gap: '18px' }}>
-          {activeResume && (
-            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', minWidth: 0, position: 'sticky', top: 0, zIndex: 30, padding: '7px 0', background: 'var(--bg, #f8fafc)' }}>
-              <button type="button" aria-label={isSidebarCollapsed ? 'Ouvrir le menu des chapitres' : 'Fermer le menu des chapitres'} title={isSidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'} onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)} style={{ width: '38px', height: '38px', display: 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '10px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '10px' }}>
-                {completionErrorKey === activeResumeStatusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '11px' }}>Enregistrement impossible. Réessayez.</span>}
-                <button type="button" disabled={activeResumeCompleted || completingActivityKey === activeResumeStatusKey} onClick={(event) => handleCompleteResume(event, activeResume)} style={{ padding: '9px 16px', border: 0, borderRadius: '10px', background: activeResumeCompleted ? '#16a34a' : '#2563eb', color: '#fff', fontSize: '12px', fontWeight: 750, cursor: activeResumeCompleted ? 'default' : 'pointer', opacity: completingActivityKey === activeResumeStatusKey ? 0.7 : 1 }}>{activeResumeCompleted ? '✓ Terminé' : completingActivityKey === activeResumeStatusKey ? 'Enregistrement…' : 'Terminer'}</button>
-              </div>
-            </div>
-          )}
-          {isSidebarCollapsed ? <button type="button" aria-label="Rouvrir le menu des chapitres" title="Ouvrir le menu" onClick={() => setIsSidebarCollapsed(false)} style={{ width: '38px', height: '38px', display: activeResume ? 'none' : 'grid', placeItems: 'center', flex: '0 0 auto', border: '1px solid var(--border, #dbeafe)', borderRadius: '10px', background: 'var(--surface, #ffffff)', color: '#1e3a8a', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button> : <aside style={{ flex: activeResume ? '0 0 280px' : '1 1 auto', width: activeResume ? '280px' : 'calc(100% - min(6cm, 12vw))', marginInline: activeResume ? 0 : 'auto', minWidth: activeResume ? '220px' : 0, maxHeight: activeResume ? 'calc(100vh - 116px)' : 'none', overflowY: activeResume ? 'auto' : 'visible', background: activeResume ? '#ffffff' : 'transparent', border: activeResume ? '1px solid #dbeafe' : 'none', borderRadius: activeResume ? '16px' : 0, padding: activeResume ? '18px 16px' : 0, boxShadow: activeResume ? '0 4px 16px rgba(0,0,0,0.04)' : 'none', position: activeResume ? 'sticky' : 'static', top: '12px', boxSizing: 'border-box' }}>
-            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
-              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
-                const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
-                const isActive = selectedChapitre === chapitre.nom;
-                return <div key={chapitre.nom}>
-                  <button type="button" onClick={() => goReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
-                  {isActive && chapterResumes.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
-                    {chapterResumes.map((resume, index) => {
-                      const statusKey = getStudentActivityStatusKey('Résumé', resume.id);
-                      const isCompleted = completionStatuses[statusKey] === true;
-                      return <div key={resume.id || index} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                        <button type="button" onClick={() => openResume(resume)} style={{ flex: '1 1 150px', padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>
-                        <span style={{ padding: '4px 8px', borderRadius: '999px', background: isCompleted ? '#dcfce7' : '#fef3c7', color: isCompleted ? '#15803d' : '#92400e', fontSize: '10px', fontWeight: 750, whiteSpace: 'nowrap' }}>{isCompleted ? 'Terminé' : 'En cours'}</span>
-                        <button type="button" disabled={isCompleted || completingActivityKey === statusKey} onClick={(event) => handleCompleteResume(event, resume)} style={{ padding: '6px 9px', border: 0, borderRadius: '8px', background: isCompleted ? '#16a34a' : '#eff6ff', color: isCompleted ? '#fff' : '#1d4ed8', fontSize: '10px', fontWeight: 750, cursor: isCompleted ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
-                          {isCompleted ? '✓ Terminé' : completingActivityKey === statusKey ? 'Enregistrement…' : 'Terminer'}
-                        </button>
-                        {completionErrorKey === statusKey && <span role="alert" style={{ color: '#b91c1c', fontSize: '10px' }}>Erreur d’enregistrement.</span>}
-                      </div>;
-                    })}
-                  </div>}
-                </div>;
-              })}
-            </div>
-          </aside>}
-          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
-            {activeResume && (
-              <>
-                <div style={activeResume.htmlUrl ? { overflow: 'visible' } : { background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                {activeResume.htmlUrl ? (
-                  <AutoHeightHtmlFrame
-                    src={getFullUrl(activeResume.htmlUrl)}
-                    title={activeResume.titre || selectedChapitre}
-                    sandbox="allow-scripts allow-same-origin allow-forms"
-                    integrated
-                    style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block', background: 'transparent' }}
-                  />
-                ) : activeResume.pdfUrl ? (
-                  <iframe src={getFullUrl(activeResume.pdfUrl)} title={activeResume.titre || selectedChapitre} style={{ width: '100%', height: 'calc(100vh - 150px)', minHeight: '520px', border: 'none', display: 'block' }} />
-                ) : activeResume.pageImages?.length ? (
-                  <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                    {activeResume.pageImages.map((url, index) => <img key={`${url}-${index}`} src={getFullUrl(url)} alt={`Page ${index + 1}`} style={{ width: '100%', maxWidth: '950px', height: 'auto', borderRadius: '10px' }} />)}
-                  </div>
-                ) : activeResume.contenu?.trim() ? (
-                  <div style={{ padding: '24px', color: 'var(--text, #334155)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{activeResume.contenu}</div>
-                ) : <div style={{ padding: '48px 24px', color: 'var(--text-secondary, #64748b)', textAlign: 'center' }}>Aucun document rattachÃ© Ã  ce rÃ©sumÃ©.</div>}
-                </div>
-              </>
-            )}
-            <div style={{ display: 'none' }}>
-              <div style={{ marginBottom: '20px' }}>
+  // =========================================================================
+  // VUE 1 : LECTEUR DU RÉSUMÉ (PLEIN ÉCRAN)
+  // =========================================================================
+  if (activeResume) {
+    const hasPdf = Boolean(activeResume.pdfUrl);
+
+    return (
+      <div className="client-resumes-container">
+        <div className="client-resume-viewer">
+          {/* Barre de navigation supérieure du lecteur */}
+          <div className="client-resume-viewer-bar">
+            <button
+              type="button"
+              className="client-resume-viewer-back"
+              onClick={() => setActiveResume(null)}
+              aria-label="Retourner à la liste des résumés"
+            >
+              <span>←</span>
+              <span>Retour aux résumés</span>
+            </button>
+
+            <div className="client-resume-viewer-controls">
+              {hasPdf && (
                 <button
-                  onClick={goMatieres}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #cbd5e1)',
-                    padding: '10px 16px', borderRadius: '12px',
-                    cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#2563eb',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
+                  type="button"
+                  className="client-resume-viewer-download-btn"
+                  onClick={() => window.open(getFullUrl(activeResume.pdfUrl), '_blank')}
+                  title="Télécharger le résumé officiel en PDF"
                 >
-                  <span aria-hidden="true">←</span>
-                  Retour aux matières
+                  <span>📥</span>
+                  <span>Télécharger PDF</span>
                 </button>
-              </div>
+              )}
 
-              <div style={{ marginBottom: '28px' }}>
-                <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: 'var(--text, #0f172a)' }}>
-                  📖 Chapitres — {selectedMatiere.nom}
-                </h1>
-                <p style={{ margin: '6px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
-                  Cliquez sur un chapitre pour consulter le résumé HTML interactif
-                </p>
-              </div>
-
-              {/* Liste des chapitres */}
-              {chapitresForMatiere(selectedMatiere).length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #fff)', borderRadius: '24px', border: '1.5px dashed #cbd5e1' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '14px' }}>📂</div>
-                  <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800, fontSize: '18px' }}>Aucun chapitre disponible</h3>
-                  <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de résumé pour cette matière.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                  {chapitresForMatiere(selectedMatiere).map((chap, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => goReader(chap.nom)}
-                      style={{
-                        background: 'var(--surface, #fff)', borderRadius: '26px', border: '1.5px solid #e2e8f0',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.04)', overflow: 'hidden',
-                        cursor: 'pointer', transition: 'all 0.25s ease',
-                        display: 'flex', alignItems: 'center', minHeight: '125px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-3px)';
-                        e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.08)';
-                        e.currentTarget.style.borderColor = selectedMatiere.color;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)';
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                      }}
-                    >
-                      {/* Illustration chapitre */}
-                      <div style={{
-                        width: '180px', minWidth: '180px', height: '100%', minHeight: '125px',
-                        background: selectedMatiere.color === '#2563eb'
-                          ? 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)'
-                          : selectedMatiere.color === '#8b5cf6'
-                            ? 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)'
-                            : 'linear-gradient(135deg, #047857 0%, #10b981 100%)',
-                        borderRadius: '24px 70px 70px 24px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25)',
-                        padding: '10px'
-                      }}>
-                        <svg width="74" height="74" viewBox="0 0 100 100" fill="none">
-                          <path d="M50 32C42 26 28 26 18 30V74C28 70 42 70 50 76C58 70 72 70 82 74V30C72 26 58 26 50 32Z" fill="#fff" opacity=".95" />
-                          <path d="M50 32V76" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round" />
-                          <line x1="26" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <line x1="26" y1="50" x2="40" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <line x1="26" y1="58" x2="36" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <line x1="58" y1="42" x2="74" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <line x1="58" y1="50" x2="72" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <line x1="58" y1="58" x2="68" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
-                          <path d="M47 22H53V38L50 35L47 38V22Z" fill="#facc15" />
-                        </svg>
-                      </div>
-
-                      {/* Contenu du chapitre */}
-                      <div style={{ flex: 1, padding: '0 32px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                          <span style={{
-                            background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-                            padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 800
-                          }}>
-                            {selectedMatiere.nom}
-                          </span>
-                          <span style={{ color: 'var(--text-secondary, #94a3b8)', fontSize: '13px' }}>•</span>
-                          <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '13px', fontWeight: 600 }}>Chapitre {idx + 1}</span>
-                        </div>
-                        <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 800, color: 'var(--text, #0f172a)', letterSpacing: '-0.3px' }}>
-                          {chap.nom}
-                        </h2>
-                        <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '14px', fontWeight: 500, lineHeight: 1.4 }}>
-                          Résumé interactif avec formules et cours complet
-                        </p>
-                      </div>
-
-                      {/* Badge + Bouton */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', paddingRight: '36px' }}>
-                        <span style={{
-                          background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-                          padding: '5px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 800, letterSpacing: '0.2px'
-                        }}>
-                          {chap.count} Résumé{chap.count > 1 ? 's' : ''}
-                        </span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); goReader(chap.nom); }}
-                          style={{
-                            background: selectedMatiere.btnGradient, color: '#fff', border: 'none',
-                            padding: '11px 24px', borderRadius: '22px',
-                            fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px',
-                            boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
-                            transition: 'opacity 0.2s ease, transform 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.92'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
-                        >
-                          <span>Ouvrir le résumé</span>
-                          <span>🌐</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <button
+                type="button"
+                className={`client-resume-viewer-finish ${activeResumeCompleted ? 'is-completed' : ''}`}
+                onClick={handleCompleteActiveResume}
+                disabled={activeResumeCompleted || completingActivityKey === activeResumeStatusKey}
+              >
+                {activeResumeCompleted ? '✓ Terminé' : completingActivityKey === activeResumeStatusKey ? 'Enregistrement…' : 'Terminer'}
+              </button>
+              {completionErrorKey === activeResumeStatusKey && (
+                <span role="alert" style={{ color: '#b91c1c', fontSize: '11px', fontWeight: 600 }}>
+                  Erreur d’enregistrement.
+                </span>
               )}
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ─────────────────────────────────────
-          STEP 3 : LECTEUR HTML DU RÉSUMÉ
-      ───────────────────────────────────── */}
-      {step === 'reader' && activeResume && selectedMatiere && (
-        <div style={{ width: '100%', maxWidth: 'none', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '18px' }}>
-          <aside style={{ flex: '0 0 auto', width: '100%', minWidth: 0, maxHeight: 'none', overflowY: 'visible', background: 'var(--surface, #ffffff)', border: '1px solid var(--border, #dbeafe)', borderRadius: '16px', padding: '18px 22px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-            <h2 style={{ margin: '2px 4px 12px', fontSize: '15px', color: '#1e3a8a' }}>Chapitres et résumés</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', alignItems: 'start', gap: '9px 12px' }}>
-              {chapitresForMatiere(selectedMatiere).map((chapitre) => {
-                const chapterResumes = resumesForChapitre(selectedMatiere, chapitre.nom);
-                const isActive = selectedChapitre === chapitre.nom;
-                return <div key={chapitre.nom}>
-                  <button type="button" onClick={() => goReader(chapitre.nom)} style={{ width: '100%', padding: '10px 11px', border: '1px solid', borderColor: isActive ? '#93c5fd' : '#e2e8f0', borderRadius: '10px', background: isActive ? '#eff6ff' : '#ffffff', color: isActive ? '#1d4ed8' : '#334155', textAlign: 'left', fontWeight: 750, fontSize: '12px', cursor: 'pointer' }}>{chapitre.nom}</button>
-                  {isActive && chapterResumes.length > 1 && <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', margin: '6px 0 2px 10px', paddingLeft: '10px', borderLeft: '2px solid #bfdbfe' }}>
-                    {chapterResumes.map((resume, index) => <button key={resume.id || index} type="button" onClick={() => openResume(resume)} style={{ padding: '8px 9px', border: 0, borderRadius: '8px', background: String(activeResume.id) === String(resume.id) ? '#2563eb' : 'transparent', color: String(activeResume.id) === String(resume.id) ? '#ffffff' : '#475569', textAlign: 'left', fontSize: '12px', fontWeight: 650, cursor: 'pointer' }}>{resume.titre || `Résumé ${index + 1}`}</button>)}
-                  </div>}
-                </div>;
-              })}
-            </div>
-          </aside>
-          <div style={{ flex: '1 1 auto', width: '100%', minWidth: 0 }}>
-            {/* Top bar */}
-            <div style={{
-              background: 'var(--surface, #fff)', borderRadius: '18px',
-              padding: '16px 24px', marginBottom: '18px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-              border: '1px solid var(--border, #e2e8f0)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              flexWrap: 'wrap', gap: '14px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <button
-                  onClick={() => { setStep('chapitres'); setActiveResume(null); }}
-                  style={{
-                    background: 'var(--surface-2, #f1f5f9)', border: '1px solid var(--border, #cbd5e1)', color: 'var(--text, #1e293b)',
-                    padding: '9px 16px', borderRadius: '10px', cursor: 'pointer',
-                    fontWeight: 700, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
-                >
-                  ← Retour aux chapitres
-                </button>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                    <span style={{
-                      background: selectedMatiere.badgeBg, color: selectedMatiere.badgeColor,
-                      padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 800
-                    }}>
-                      {selectedMatiere.nom}
-                    </span>
-                    {activeResume.chapitre && (
-                      <span style={{ background: 'var(--surface-2, #f1f5f9)', color: 'var(--text-secondary, #475569)', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600 }}>
-                        📌 {activeResume.chapitre}
-                      </span>
-                    )}
-                    {(activeResume.htmlUrl || activeResume.fileType === 'HTML') && (
-                      <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
-                        🌐 Fiche Web (MathJax)
-                      </span>
-                    )}
-                  </div>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                    {activeResume.titre}
-                  </h2>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                {/* Switcher si plusieurs résumés dans le chapitre */}
-                {selectedChapitre && resumesForChapitre(selectedMatiere, selectedChapitre).length > 1 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg, #f8fafc)', padding: '5px 10px', borderRadius: '10px', border: '1px solid var(--border, #e2e8f0)' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #64748b)' }}>Fiches :</span>
-                    {resumesForChapitre(selectedMatiere, selectedChapitre).map((r, i) => {
-                      const isCurrent = activeResume.id === r.id;
-                      return (
-                        <button
-                          key={r.id || i}
-                          onClick={() => openResume(r)}
-                          style={{
-                            background: isCurrent ? selectedMatiere.color : '#fff',
-                            color: isCurrent ? '#fff' : '#334155',
-                            border: isCurrent ? 'none' : '1px solid #cbd5e1',
-                            borderRadius: '6px', padding: '4px 10px',
-                            fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                            transition: 'all 0.15s'
-                          }}
-                        >
-                          {r.titre ? (r.titre.length > 22 ? r.titre.substring(0, 20) + '…' : r.titre) : `Fiche ${i + 1}`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Plein écran */}
-                {activeResume.htmlUrl && (
-                  <a
-                    href={getFullUrl(activeResume.htmlUrl)}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      background: selectedMatiere.gradient, color: '#fff',
-                      padding: '9px 18px', borderRadius: '10px',
-                      textDecoration: 'none', fontSize: '13px', fontWeight: 700,
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      transition: 'opacity 0.2s'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-                  >
-                    ↗ Plein écran
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Contenu du résumé */}
-            {activeResume.htmlUrl || activeResume.fileType === 'HTML' ? (
-              <div style={{
-                background: 'var(--surface, #fff)', borderRadius: '18px',
-                overflow: 'hidden',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-                border: '1px solid var(--border, #e2e8f0)'
-              }}>
-                {/* Sub-header */}
-                <div style={{
-                  padding: '12px 20px', background: 'var(--bg, #f8fafc)',
-                  borderBottom: '1px solid #e2e8f0',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  fontSize: '13px', color: 'var(--text-secondary, #475569)', fontWeight: 600
-                }}>
-                  <span>📐 Résumé Interactif (Formules & Cours complet)</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)' }}>MathJax activé</span>
-                </div>
-                {/* Iframe */}
-                <AutoHeightHtmlFrame
-                  src={getFullUrl(activeResume.htmlUrl)}
-                  title={activeResume.titre}
-                  sandbox="allow-scripts allow-same-origin allow-forms"
-                  style={{
-                    width: '100%', height: '84vh',
-                    border: 'none', display: 'block',
-                    background: 'var(--surface, #fff)'
-                  }}
-                />
-              </div>
+          {/* Affichage du document */}
+          <div className="client-resume-viewer-content">
+            {activeResume.htmlUrl ? (
+              <AutoHeightHtmlFrame
+                src={getFullUrl(activeResume.htmlUrl)}
+                title={activeResume.titre || activeResume.chapitre || 'Résumé'}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                integrated
+                hideDocumentHeader
+                style={{
+                  width: '100%',
+                  minHeight: '620px',
+                  border: 'none',
+                  display: 'block',
+                  background: 'transparent'
+                }}
+              />
             ) : activeResume.pdfUrl ? (
-              <div style={{ background: 'var(--surface, #fff)', borderRadius: '18px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
-                <iframe
-                  src={getFullUrl(activeResume.pdfUrl)}
-                  title={activeResume.titre}
-                  style={{ width: '100%', height: '84vh', border: 'none' }}
-                />
-              </div>
-            ) : activeResume.pageImages && activeResume.pageImages.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-                {activeResume.pageImages.map((url, idx) => (
-                  <div key={idx} style={{
-                    width: '100%', maxWidth: '950px', background: 'var(--surface, #fff)',
-                    borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                    border: '1px solid var(--border, #cbd5e1)', overflow: 'hidden'
-                  }}>
-                    <img src={getFullUrl(url)} alt={`Page ${idx + 1}`} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                  </div>
+              <iframe
+                src={getFullUrl(activeResume.pdfUrl)}
+                title={activeResume.titre || activeResume.chapitre || 'Résumé'}
+                style={{
+                  width: '100%',
+                  height: 'calc(100vh - 200px)',
+                  minHeight: '620px',
+                  border: 'none',
+                  display: 'block',
+                  background: 'transparent'
+                }}
+              />
+            ) : activeResume.pageImages?.length ? (
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 0, background: 'transparent' }}>
+                {activeResume.pageImages.map((url, index) => (
+                  <img
+                    key={`${url}-${index}`}
+                    src={getFullUrl(url)}
+                    alt={`Page ${index + 1}`}
+                    style={{ width: '100%', maxWidth: 'none', height: 'auto', borderRadius: 0 }}
+                  />
                 ))}
               </div>
+            ) : activeResume.contenu?.trim() ? (
+              <div style={{ padding: '32px', color: 'var(--text, #334155)', lineHeight: 1.75, whiteSpace: 'pre-wrap', background: 'transparent' }}>
+                {activeResume.contenu}
+              </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '80px', background: 'var(--surface, #fff)', borderRadius: '18px', border: '1.5px dashed #cbd5e1' }}>
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>
                 <div style={{ fontSize: '48px', marginBottom: '14px' }}>📄</div>
-                <h3 style={{ margin: '0 0 8px', color: 'var(--text, #0f172a)', fontWeight: 800 }}>Aucun document rattaché</h3>
-                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', margin: 0 }}>L'administrateur n'a pas encore ajouté de fichier HTML ou PDF pour ce résumé.</p>
+                <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
+                  Document non disponible
+                </h3>
+                <p style={{ margin: '0 0 20px', fontSize: '14px' }}>
+                  Aucun fichier n'a encore été rattaché à ce résumé par l'administrateur.
+                </p>
+                <button
+                  type="button"
+                  className="client-resumes-reset-btn"
+                  onClick={() => setActiveResume(null)}
+                >
+                  ← Retourner aux résumés
+                </button>
               </div>
             )}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VUE 2 : CATALOGUE COMPLET DES RÉSUMÉS (MATCH SCREENSHOT 2 & 3)
+  // =========================================================================
+  return (
+    <div className="client-resumes-container">
+      {/* 1. Titre et sous-titre de la page */}
+      {/* 2. Barre de recherche globale */}
+      <div className="client-resumes-search-wrap">
+        <span className="client-resumes-search-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          className="client-resumes-search-input"
+          placeholder="Rechercher un résumé..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Rechercher un résumé"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="client-resumes-search-clear"
+            onClick={() => setSearchQuery('')}
+            aria-label="Effacer la recherche"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* 3. Pilules de matières (Toutes | Mathématiques | Physique - Chimie | SVT) */}
+      <div className="client-resumes-pills-row" role="tablist" aria-label="Matières des résumés">
+        {SUBJECT_PILLS.map((pillLabel) => (
+          <button
+            key={pillLabel}
+            type="button"
+            className={`client-resumes-pill ${selectedSubjectChip === pillLabel ? 'is-active' : ''}`}
+            onClick={() => setSelectedSubjectChip(pillLabel)}
+            role="tab"
+            aria-selected={selectedSubjectChip === pillLabel}
+          >
+            {pillLabel}
+          </button>
+        ))}
+      </div>
+
+      {/* 4. Barre du filtre de Statut (Tous | Commencé | Terminé) */}
+      <div className="client-resumes-filters-row">
+        <div className="client-resumes-filter-group">
+          <span className="client-resumes-filter-label">Statut</span>
+          <div className="client-resumes-segmented" role="group" aria-label="Filtrer par statut">
+            {['Tous', 'Commencé', 'Terminé'].map((status) => (
+              <button
+                key={status}
+                type="button"
+                className={`client-resumes-segmented-btn ${selectedStatus === status ? 'is-active' : ''}`}
+                onClick={() => setSelectedStatus(status)}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 5. État de chargement / Erreur */}
+      {loading && (
+        <div className="client-resumes-cards-grid">
+          {[1, 2, 3, 4, 5].map((skeletonIdx) => (
+            <div key={skeletonIdx} className="client-resume-skeleton">
+              <div className="client-resume-skeleton-banner" />
+              <div className="client-resume-skeleton-body">
+                <div className="client-resume-skeleton-line" style={{ width: '80%' }} />
+                <div className="client-resume-skeleton-line" style={{ width: '50%' }} />
+                <div className="client-resume-skeleton-line" style={{ width: '100%', marginTop: 'auto' }} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
+      {error && !loading && (
+        <div className="client-resumes-empty-state" style={{ borderColor: '#fca5a5' }}>
+          <div className="client-resumes-empty-icon">⚠️</div>
+          <h3 className="client-resumes-empty-title" style={{ color: '#dc2626' }}>
+            Erreur de chargement
+          </h3>
+          <p className="client-resumes-empty-desc">{error}</p>
+        </div>
+      )}
+
+      {/* 6. Grille des matières et chapitres */}
+      {!loading && !error && (
+        <>
+          {(() => {
+            let totalRendered = 0;
+
+            const sectionsContent = visibleSubjects.map((subject) => {
+              const subjectResumes = filteredResumes.filter((r) => matchMatiere(r.matiere, subject.id));
+
+              if (subjectResumes.length === 0) return null;
+              totalRendered += subjectResumes.length;
+
+              return (
+                <section key={subject.id} className="client-resumes-section">
+                  {/* Titre de la section avec barre bleue verticale */}
+                  <div className="client-resumes-section-heading">
+                    <div className="client-resumes-indicator" />
+                    <h2 className="client-resumes-section-title">{subject.headingTitle}</h2>
+                  </div>
+                  <p className="client-resumes-section-subtitle">{subject.subtitle}</p>
+
+                  {/* Grille responsive des cartes de résumés */}
+                  <div className="client-resumes-cards-grid">
+                    {subjectResumes.map((resume, idx) => {
+                      const resumeKey = resume.id || `${subject.id}-${idx}`;
+                      const { chapterNum, title } = parseChapterInfo(resume, idx);
+                      const progress = getResumeProgress(resume);
+                      const hasPdf = Boolean(resume.pdfUrl);
+
+                      return (
+                        <article key={resumeKey} className={`client-resume-card ${demoContentClass(resume)}`}>
+                          <DemoAccessBadge item={resume} />
+                          {/* Bannière de couverture avec abréviation et mascotte */}
+                          <div className="client-resume-cover">
+                            {/* Formules en haut à droite */}
+                            <div className="client-resume-formulas">{subject.formulas}</div>
+
+                            {/* Nom de la matière en grand sur la gauche */}
+                            <div className="client-resume-cover-left">
+                              <h3 className={`client-resume-subject-title ${subject.fontClass}`}>
+                                {subject.tag}
+                              </h3>
+                            </div>
+
+                            {/* Mascotte chouette perchée dans le coin inférieur droit */}
+                            <div className="client-resume-mascot-wrap">
+                              <img src={cardMascot} alt="Mascotte E-Concours" aria-hidden="true" />
+                            </div>
+                          </div>
+
+                          {/* Corps de la carte */}
+                          <div className="client-resume-body">
+                            {/* Titre du chapitre */}
+                            <h4 className="client-resume-title" title={title}>
+                              {title}
+                            </h4>
+
+                            {/* Badges : Résumé + Chapitre X */}
+                            <div className="client-resume-badges-row">
+                              <span className="client-resume-badge badge-blue">
+                                Résumé
+                              </span>
+                              <span className="client-resume-badge badge-gray">
+                                {chapterNum}
+                              </span>
+                            </div>
+
+                            {/* Barre de progression */}
+                            <div className="client-resume-progress-track">
+                              <div
+                                className={`client-resume-progress-fill ${
+                                  progress.pct === 100 ? 'fill-completed' : ''
+                                }`}
+                                style={{ width: `${progress.pct}%` }}
+                              />
+                            </div>
+
+                            {/* Ligne d'état de progression */}
+                            <div className="client-resume-progress-row">
+                              <span className={`client-resume-status-text ${progress.statusClass}`}>
+                                {progress.status}
+                              </span>
+                              <span className="client-resume-pct-text">
+                                {progress.pct} %
+                              </span>
+                            </div>
+
+                            {/* Bouton d'action + Téléchargement PDF */}
+                            <div className="client-resume-actions-row">
+                              <button
+                                type="button"
+                                className="client-resume-action-btn"
+                                onClick={guardDemoContent(resume, () => openResume(resume))}
+                              >
+                                {progress.btnText}
+                              </button>
+
+                              {hasPdf && (
+                                <button
+                                  type="button"
+                                  className="client-resume-pdf-btn"
+                                  title="Télécharger le résumé en PDF"
+                                  aria-label="Télécharger le résumé en PDF"
+                                  onClick={guardDemoContent(resume, (e) => {
+                                    e.stopPropagation();
+                                    window.open(getFullUrl(resume.pdfUrl), '_blank');
+                                  })}
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            });
+
+            if (totalRendered === 0) {
+              return (
+                <div className="client-resumes-empty-state">
+                  <div className="client-resumes-empty-icon">📂</div>
+                  <h3 className="client-resumes-empty-title">
+                    Aucun résumé disponible pour le moment
+                  </h3>
+                  <p className="client-resumes-empty-desc">
+                    Aucun résumé ne correspond à vos critères de recherche.
+                  </p>
+                  {(searchQuery || selectedStatus !== 'Tous' || selectedSubjectChip !== 'Toutes') && (
+                    <button
+                      type="button"
+                      className="client-resumes-reset-btn"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedStatus('Tous');
+                        setSelectedSubjectChip('Toutes');
+                      }}
+                    >
+                      Réinitialiser les filtres
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
+            return sectionsContent;
+          })()}
+        </>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Optional;
@@ -26,24 +27,45 @@ public class AuthSessionService {
 
     @Transactional
     public String create(User user) {
+        return createSession(user, Duration.ofDays(SESSION_DAYS)).token();
+    }
+
+    @Transactional
+    public SessionCredentials createDemo() {
+        return createSession(null, Duration.ofHours(24));
+    }
+
+    private SessionCredentials createSession(User user, Duration lifetime) {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = now.plus(lifetime);
         AuthSession session = new AuthSession();
         session.setTokenHash(hash(token));
         session.setUser(user);
         session.setCreatedAt(now);
-        session.setExpiresAt(now.plusDays(SESSION_DAYS));
+        session.setExpiresAt(expiresAt);
         sessions.deleteByExpiresAtBefore(now);
         sessions.save(session);
-        return token;
+        return new SessionCredentials(token, expiresAt);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> resolve(String token) {
         if (token == null || token.isBlank()) return Optional.empty();
-        return sessions.findByTokenHashAndExpiresAtAfter(hash(token), LocalDateTime.now()).map(AuthSession::getUser);
+        return sessions.findByTokenHashAndExpiresAtAfter(hash(token), LocalDateTime.now()).map(session -> {
+            if (session.getUser() != null) return session.getUser();
+            return User.builder()
+                    .id(-1L)
+                    .email("demo@anonymous.invalid")
+                    .nom("Visiteur")
+                    .prenom("Démo")
+                    .role("demo")
+                    .pack("DEMO")
+                    .active(1)
+                    .build();
+        });
     }
 
     @Transactional
@@ -59,4 +81,6 @@ public class AuthSessionService {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }
+
+    public record SessionCredentials(String token, LocalDateTime expiresAt) {}
 }

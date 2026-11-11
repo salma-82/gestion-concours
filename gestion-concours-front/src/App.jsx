@@ -15,6 +15,7 @@ import Register from './components/Register';
 import AdminDashboard from './components/AdminDashboard';
 import AdminResumes from './components/AdminResumes';
 import AdminConcoursBlanc from './components/ConcoursBlancManager';
+import AdminDemoContent from './components/AdminDemoContent';
 
 // Client
 import ClientLayout from './components/ClientLayout';
@@ -47,6 +48,7 @@ function AppRoutes() {
   const { pathname } = useLocation();
   const showWhatsAppButton = pathname !== '/login'
     && pathname !== '/register'
+    && !pathname.startsWith('/client')
     && !pathname.startsWith('/admin');
 
   return (
@@ -79,6 +81,7 @@ function AppRoutes() {
           path="/admin-concours"
           element={<AdminConcoursBlanc />}
         />
+        <Route path="/admin-demo-content" element={<AdminDemoContent />} />
 
 
         {/* =========================

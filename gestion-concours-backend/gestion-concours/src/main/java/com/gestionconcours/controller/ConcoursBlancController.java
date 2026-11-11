@@ -3,6 +3,7 @@ package com.gestionconcours.controller;
 import com.gestionconcours.model.ConcoursBlanc;
 import com.gestionconcours.repository.ConcoursBlancRepository;
 import com.gestionconcours.repository.StudentActivityEventRepository;
+import com.gestionconcours.service.DemoContentAccessService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,14 @@ public class ConcoursBlancController {
 
     private final ConcoursBlancRepository concoursBlancRepository;
     private final StudentActivityEventRepository studentActivityEventRepository;
+    private final DemoContentAccessService demoAccess;
 
     public ConcoursBlancController(ConcoursBlancRepository concoursBlancRepository,
-                                    StudentActivityEventRepository studentActivityEventRepository) {
+                                    StudentActivityEventRepository studentActivityEventRepository,
+                                    DemoContentAccessService demoAccess) {
         this.concoursBlancRepository = concoursBlancRepository;
         this.studentActivityEventRepository = studentActivityEventRepository;
+        this.demoAccess = demoAccess;
     }
 
     private final String UPLOAD_DIR = "uploads/";
@@ -35,18 +39,23 @@ public class ConcoursBlancController {
     // GET - Liste complète (admin)
     // =====================================================================
     @GetMapping
-    public List<ConcoursBlanc> getAllConcours() {
-        return concoursBlancRepository.findAll();
+    public List<ConcoursBlanc> getAllConcours(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        List<ConcoursBlanc> items = concoursBlancRepository.findAll();
+        demoAccess.protectConcoursBlancs(items, authorization);
+        return items;
     }
 
     // =====================================================================
     // GET - Liste publiée uniquement (clients)
     // =====================================================================
     @GetMapping("/publies")
-    public List<ConcoursBlanc> getConcoursPublies(@RequestParam(value = "filiere", required = false) String filiere) {
-        return filiere == null || filiere.isBlank()
+    public List<ConcoursBlanc> getConcoursPublies(@RequestParam(value = "filiere", required = false) String filiere,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        List<ConcoursBlanc> items = filiere == null || filiere.isBlank()
                 ? concoursBlancRepository.findByPublieTrue()
                 : concoursBlancRepository.findPublishedForFiliereOrAll(filiere.trim());
+        demoAccess.protectConcoursBlancs(items, authorization);
+        return items;
     }
 
     // =====================================================================
@@ -91,9 +100,20 @@ public class ConcoursBlancController {
     @GetMapping("/par-chapitre")
     public ResponseEntity<?> getByMatiereAndChapitre(
             @RequestParam String matiere,
-            @RequestParam String chapitre) {
+            @RequestParam String chapitre,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         List<ConcoursBlanc> list = concoursBlancRepository.findByMatiereAndChapitreAndPublieTrue(matiere, chapitre);
+        demoAccess.protectConcoursBlancs(list, authorization);
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getConcoursBlancById(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        Optional<ConcoursBlanc> item = concoursBlancRepository.findById(id);
+        if (item.isEmpty()) return ResponseEntity.notFound().build();
+        if (demoAccess.isLocked(item.get().isFree(), authorization)) return demoAccess.forbidden();
+        return ResponseEntity.ok(item.get());
     }
 
     // =====================================================================

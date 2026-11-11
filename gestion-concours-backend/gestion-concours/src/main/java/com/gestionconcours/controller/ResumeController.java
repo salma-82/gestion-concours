@@ -4,6 +4,7 @@ import com.gestionconcours.model.Resume;
 import com.gestionconcours.repository.ResumeRepository;
 import com.gestionconcours.repository.StudentActivityEventRepository;
 import com.gestionconcours.service.PdfPageConverterService;
+import com.gestionconcours.service.DemoContentAccessService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class ResumeController {
     private final ResumeRepository resumeRepository;
     private final StudentActivityEventRepository studentActivityEventRepository;
     private final PdfPageConverterService pdfPageConverterService;
+    private final DemoContentAccessService demoAccess;
     private final String UPLOAD_DIR = "uploads/";
 
     @GetMapping("/api/resumes/matieres")
@@ -45,7 +47,8 @@ public class ResumeController {
     public List<Resume> getResumes(
             @PathVariable(required = false) Long clientId,
             @RequestParam(required = false) String matiere,
-            @RequestParam(required = false) String chapitre) {
+            @RequestParam(required = false) String chapitre,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
 
         List<Resume> list;
         if (matiere != null && chapitre != null && !chapitre.isEmpty()) {
@@ -57,23 +60,28 @@ public class ResumeController {
         }
 
         // Auto-génération des images si un ancien résumé a le PDF mais pas encore les pages PNG
+        boolean demoUser = demoAccess.isDemo(authorization);
         for (Resume resume : list) {
+            if (demoUser && !resume.isFree()) continue;
             if ((resume.getPageImages() == null || resume.getPageImages().isEmpty()) && resume.getPdfUrl() != null) {
                 ensureResumePageImages(resume);
             }
         }
 
+        demoAccess.protectResumes(list, authorization);
         return list;
     }
 
     @GetMapping("/api/resumes/{id}")
-    public ResponseEntity<?> getResumeById(@PathVariable Long id) {
+    public ResponseEntity<?> getResumeById(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         Optional<Resume> optionalResume = resumeRepository.findById(id);
         if (optionalResume.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Resume resume = optionalResume.get();
+        if (demoAccess.isLocked(resume.isFree(), authorization)) return demoAccess.forbidden();
         if ((resume.getPageImages() == null || resume.getPageImages().isEmpty()) && resume.getPdfUrl() != null) {
             ensureResumePageImages(resume);
         }

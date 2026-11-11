@@ -1,6 +1,7 @@
 package com.gestionconcours.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -23,6 +24,12 @@ public class CoursBac {
 
     @Column(length = 500)
     private String htmlUrl;   // Lien dyal fichier HTML uploadé
+
+    @Column(name = "is_free", nullable = false)
+    private boolean isFree = false;
+
+    @JsonProperty("isFree")
+    public boolean isFree() { return isFree; }
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

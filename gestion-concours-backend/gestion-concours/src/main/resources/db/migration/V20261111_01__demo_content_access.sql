@@ -1,0 +1,9 @@
+-- MySQL migration for anonymous 24-hour demo sessions and demo content gating.
+ALTER TABLE auth_sessions MODIFY COLUMN user_id BIGINT NULL;
+
+ALTER TABLE cours_bac ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE resumes ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE examens_nationaux ADD COLUMN ecole VARCHAR(255) NULL;
+ALTER TABLE examens_nationaux ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE concours ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE concours_blancs ADD COLUMN is_free BOOLEAN NOT NULL DEFAULT FALSE;

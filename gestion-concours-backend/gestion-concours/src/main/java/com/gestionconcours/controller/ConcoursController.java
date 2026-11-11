@@ -3,6 +3,7 @@ package com.gestionconcours.controller;
 import com.gestionconcours.model.Concours;
 import com.gestionconcours.repository.ConcoursRepository;
 import com.gestionconcours.repository.StudentActivityEventRepository;
+import com.gestionconcours.service.DemoContentAccessService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +25,14 @@ public class ConcoursController {
 
     private final ConcoursRepository concoursRepository;
     private final StudentActivityEventRepository studentActivityEventRepository;
+    private final DemoContentAccessService demoAccess;
 
     public ConcoursController(ConcoursRepository concoursRepository,
-                              StudentActivityEventRepository studentActivityEventRepository) {
+                              StudentActivityEventRepository studentActivityEventRepository,
+                              DemoContentAccessService demoAccess) {
         this.concoursRepository = concoursRepository;
         this.studentActivityEventRepository = studentActivityEventRepository;
+        this.demoAccess = demoAccess;
     }
 
     private final String UPLOAD_DIR = "uploads/";
@@ -38,9 +42,11 @@ public class ConcoursController {
     public List<Concours> getConcours(
             @RequestParam(required = false) String ecole,
             @RequestParam(required = false) String matiere,
-            @RequestParam(required = false) Integer annee) {
-        
-        return concoursRepository.filterConcours(ecole, matiere, annee);
+            @RequestParam(required = false) Integer annee,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        List<Concours> items = concoursRepository.filterConcours(ecole, matiere, annee);
+        demoAccess.protectConcours(items, authorization);
+        return items;
     }
 
     // 1b. GET: Liste des écoles distinctes (pour le client)
@@ -51,16 +57,21 @@ public class ConcoursController {
 
     // 1c. GET: Concours par école, triés par année décroissante (pour le client)
     @GetMapping("/by-ecole")
-    public List<Concours> getConcoursByEcole(@RequestParam String ecole) {
-        return concoursRepository.findByEcoleOrderByAnneeDesc(ecole);
+    public List<Concours> getConcoursByEcole(@RequestParam String ecole,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        List<Concours> items = concoursRepository.findByEcoleOrderByAnneeDesc(ecole);
+        demoAccess.protectConcours(items, authorization);
+        return items;
     }
 
     // 2. GET by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getConcoursById(@PathVariable Long id) {
-        return concoursRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getConcoursById(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        Optional<Concours> item = concoursRepository.findById(id);
+        if (item.isEmpty()) return ResponseEntity.notFound().build();
+        if (demoAccess.isLocked(item.get().isFree(), authorization)) return demoAccess.forbidden();
+        return ResponseEntity.ok(item.get());
     }
 
     // 3. POST: Ajout Concours avec fichiers HTML (Sujet et Correction)

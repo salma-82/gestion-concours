@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
-export default function AutoHeightHtmlFrame({ src, title, sandbox, style = {}, integrated = false }) {
+export default function AutoHeightHtmlFrame({ src, title, sandbox, style = {}, integrated = false, hideDocumentHeader = false }) {
   const frameRef = useRef(null);
   const [html, setHtml] = useState(null);
   const [height, setHeight] = useState(800);
@@ -22,7 +22,10 @@ export default function AutoHeightHtmlFrame({ src, title, sandbox, style = {}, i
       else documentHtml = `${base}${documentHtml}`;
 
       if (integrated) {
-        const siteStyle = `<style id="site-content-integration">html,body{margin:0!important;padding:0!important;background:transparent!important;color:#1e293b!important}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.65!important}.cols{max-width:min(1200px,100%)!important}section{border-color:#dbeafe!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(15,23,42,.06)!important}section h2{background:#0b3675!important;font-family:inherit!important;font-size:1.05rem!important}</style>`;
+        const hideHeaderStyle = hideDocumentHeader
+          ? '<style id="hide-document-header">.container > .header:first-child, main > .header:first-child, body .header:first-child, body .resume-header:first-child, body .page-header:first-child, body .document-header:first-child, body > .header:first-of-type, body > header:first-of-type, .container > header:first-child, main > header:first-child { display: none !important; }</style>'
+          : '';
+        const siteStyle = `<style id="site-content-integration">html,body{margin:0!important;padding:0!important;background:transparent!important;color:#1e293b!important}body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.65!important}.cols{max-width:min(1200px,100%)!important}section{border-color:#dbeafe!important;border-radius:14px!important;box-shadow:0 3px 12px rgba(15,23,42,.06)!important}section h2{background:#0b3675!important;font-family:inherit!important;font-size:1.05rem!important}</style>${hideHeaderStyle}`;
         if (/<\/head>/i.test(documentHtml)) documentHtml = documentHtml.replace(/<\/head>/i, `${siteStyle}</head>`);
         else documentHtml = `${siteStyle}${documentHtml}`;
       }
@@ -34,7 +37,7 @@ export default function AutoHeightHtmlFrame({ src, title, sandbox, style = {}, i
     }).catch(() => {});
 
     return () => { cancelled = true; };
-  }, [src]);
+  }, [src, integrated, hideDocumentHeader]);
 
   useEffect(() => {
     const handleMessage = (event) => {

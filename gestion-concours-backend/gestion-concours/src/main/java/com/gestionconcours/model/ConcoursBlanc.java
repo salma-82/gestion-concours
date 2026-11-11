@@ -1,6 +1,7 @@
 package com.gestionconcours.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,6 +37,8 @@ public class ConcoursBlanc {
     private Integer dureeMnutes;       // Durée du test en minutes
     private Integer nombreQuestions;   // Nombre de questions
     private Boolean publie = false;    // Publié ou non
+    @Column(name = "is_free", nullable = false)
+    private boolean isFree = false;
     private LocalDateTime dateCreation = LocalDateTime.now();
 
     // Constructeur vide
@@ -95,6 +98,10 @@ public class ConcoursBlanc {
 
     public Integer getDureeMnutes() { return dureeMnutes; }
     public void setDureeMnutes(Integer dureeMnutes) { this.dureeMnutes = dureeMnutes; }
+
+    @JsonProperty("isFree")
+    public boolean isFree() { return isFree; }
+    public void setFree(boolean free) { isFree = free; }
 
     public Integer getNombreQuestions() { return nombreQuestions; }
     public void setNombreQuestions(Integer nombreQuestions) { this.nombreQuestions = nombreQuestions; }

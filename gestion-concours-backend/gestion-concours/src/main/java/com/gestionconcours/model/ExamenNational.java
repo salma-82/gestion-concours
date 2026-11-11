@@ -1,6 +1,7 @@
 package com.gestionconcours.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class ExamenNational {
     private Long id;
 
     private String titre;            // Ex: Examen National 2024
+    private String ecole;
     private String matiere;          // Ex: Mathématiques, Physique-Chimie, SVT...
     private String optionBac;        // Ex: SM-A, SM-B, PC, SVT, STE, STM, Eco...
     private String session;          // Ex: Normale, Rattrapage
@@ -30,6 +32,16 @@ public class ExamenNational {
 
     private String pdfSujetUrl;      // Lien PDF dyal le sujet
     private String pdfCorrectionUrl; // Lien PDF dyal la correction
+
+    @Column(name = "is_free", nullable = false)
+    private boolean isFree = false;
+
+    @JsonProperty("isFree")
+    public boolean isFree() { return isFree; }
+
+    public String getDemoFreeGroup() {
+        return ecole == null || ecole.isBlank() ? optionBac : ecole;
+    }
 
     private Integer sujetTotalPages = 0;
 

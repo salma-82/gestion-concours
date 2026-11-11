@@ -4,6 +4,7 @@ import com.gestionconcours.model.ExamenNational;
 import com.gestionconcours.repository.ExamenNationalRepository;
 import com.gestionconcours.repository.StudentActivityEventRepository;
 import com.gestionconcours.service.PdfPageConverterService;
+import com.gestionconcours.service.DemoContentAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class ExamenNationalController {
     private final ExamenNationalRepository examenNationalRepository;
     private final StudentActivityEventRepository studentActivityEventRepository;
     private final PdfPageConverterService pdfPageConverterService;
+    private final DemoContentAccessService demoAccess;
     private final String UPLOAD_DIR = "uploads/";
 
     // 1. GET: Liste des examens nationaux (avec ou sans filtres)
@@ -36,7 +38,8 @@ public class ExamenNationalController {
             @RequestParam(required = false) String matiere,
             @RequestParam(required = false) Integer annee,
             @RequestParam(required = false) String optionBac,
-            @RequestParam(required = false) String session) {
+            @RequestParam(required = false) String session,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
 
         String cleanMatiere = (matiere != null && !matiere.trim().isEmpty()) ? matiere.trim() : null;
         String cleanOption = (optionBac != null && !optionBac.trim().isEmpty()) ? optionBac.trim() : null;
@@ -50,10 +53,13 @@ public class ExamenNationalController {
         }
 
         // Auto-génération des images si un examen a le PDF mais pas encore les pages PNG
+        boolean demoUser = demoAccess.isDemo(authorization);
         for (ExamenNational ex : list) {
+            if (demoUser && !ex.isFree()) continue;
             ensureExamenPageImages(ex);
         }
 
+        demoAccess.protectExams(list, authorization);
         return list;
     }
 
@@ -82,12 +88,14 @@ public class ExamenNationalController {
 
     // 4. GET: Détail d'un examen par ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getExamenById(@PathVariable Long id) {
+    public ResponseEntity<?> getExamenById(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         Optional<ExamenNational> optional = examenNationalRepository.findById(id);
         if (optional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         ExamenNational examen = optional.get();
+        if (demoAccess.isLocked(examen.isFree(), authorization)) return demoAccess.forbidden();
         ensureExamenPageImages(examen);
         return ResponseEntity.ok(examen);
     }
@@ -96,6 +104,7 @@ public class ExamenNationalController {
     @PostMapping
     public ResponseEntity<?> createExamen(
             @RequestParam("titre") String titre,
+            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam("matiere") String matiere,
             @RequestParam(value = "optionBac", required = false) String optionBac,
             @RequestParam(value = "session", required = false) String session,
@@ -111,6 +120,7 @@ public class ExamenNationalController {
 
             ExamenNational examen = new ExamenNational();
             examen.setTitre(titre != null ? titre.trim() : "Examen National " + annee);
+            examen.setEcole(ecole != null && !ecole.isBlank() ? ecole.trim() : null);
             examen.setMatiere(matiere != null ? matiere.trim() : "");
             examen.setOptionBac(optionBac != null && !optionBac.trim().isEmpty() ? optionBac.trim() : "Toutes options");
             examen.setSession(session != null && !session.trim().isEmpty() ? session.trim() : "Normale");
@@ -176,6 +186,7 @@ public class ExamenNationalController {
     public ResponseEntity<?> updateExamen(
             @PathVariable Long id,
             @RequestParam("titre") String titre,
+            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam("matiere") String matiere,
             @RequestParam(value = "optionBac", required = false) String optionBac,
             @RequestParam(value = "session", required = false) String session,
@@ -192,6 +203,7 @@ public class ExamenNationalController {
             File uploadDir = new File(UPLOAD_DIR);
             ExamenNational examen = optional.get();
             examen.setTitre(titre != null ? titre.trim() : examen.getTitre());
+            if (ecole != null) examen.setEcole(ecole.isBlank() ? null : ecole.trim());
             examen.setMatiere(matiere != null ? matiere.trim() : examen.getMatiere());
             if (optionBac != null) examen.setOptionBac(optionBac.trim());
             if (session != null) examen.setSession(session.trim());

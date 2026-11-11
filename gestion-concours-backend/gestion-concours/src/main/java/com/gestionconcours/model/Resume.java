@@ -1,6 +1,7 @@
 package com.gestionconcours.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,6 +34,12 @@ public class Resume {
 
     @Column(columnDefinition = "TEXT")
     private String contenu;    // Contenu texte ou description
+
+    @Column(name = "is_free", nullable = false)
+    private boolean isFree = false;
+
+    @JsonProperty("isFree")
+    public boolean isFree() { return isFree; }
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

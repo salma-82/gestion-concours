@@ -350,6 +350,7 @@
   box-sizing: border-box;
 }
 
+/* Vertical capsule shortcut rail matching the top navbar style */
 .dashboard-quick-rail {
   position: sticky;
   top: 24px;
@@ -359,24 +360,32 @@
   width: 72px;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 0;
   height: fit-content;
   margin-top: 36px;
-  padding: 16px 8px;
+  padding: 14px 6px;
   box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 32px;
-  background: linear-gradient(110deg, #2b5195 0%, #24478d 48%, #24478d 100%);
-  box-shadow: 0 20px 40px -8px rgba(15, 30, 68, 0.4), 0 10px 20px -6px rgba(15, 30, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  border: 1px solid #aaa !important;
+  border-radius: 999px;
+  background: #fff !important;
+  box-shadow: 0 2px 5px rgba(24, 31, 42, .24), inset 0 1px 2px #fff, inset 0 -2px 3px rgba(74, 74, 74, .2) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+[data-theme="dark"] .dashboard-quick-rail,
+.dark .dashboard-quick-rail {
+  border-color: var(--border) !important;
+  background: var(--bg-elevated) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .dashboard-rail-link {
   display: flex;
   width: 100%;
-  min-height: 64px;
+  min-height: 56px;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
@@ -384,12 +393,12 @@
   gap: 4px;
   padding: 8px 4px;
   border: 1px solid transparent;
-  border-radius: 22px;
+  border-radius: 999px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  color: #29313d;
   font-family: inherit;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 650;
   line-height: 1.15;
   letter-spacing: 0.1px;
   text-align: center;
@@ -403,20 +412,20 @@
 
 .dashboard-rail-link span {
   display: block;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 9.5px;
+  font-weight: 650;
   color: inherit;
   white-space: nowrap;
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
 
-.dashboard-rail-link:hover {
+.dashboard-rail-link:hover,
+.dashboard-rail-link:focus-visible {
+  border-color: #d4d9e0;
+  background: rgba(255, 255, 255, .7);
+  color: #174c91;
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .dashboard-rail-link:focus-visible {
@@ -426,11 +435,11 @@
 
 .dashboard-rail-icon {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   flex: 0 0 auto;
   fill: none;
-  stroke: currentColor;
+  stroke: currentColor !important;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -438,20 +447,61 @@
 }
 
 .dashboard-rail-link:hover .dashboard-rail-icon {
-  transform: scale(1.12);
+  transform: scale(1.1);
 }
 
+/* Active pill-shaped button style matching top navbar items */
 .dashboard-rail-link.is-active {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.14) 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  box-shadow: 0 6px 16px rgba(10, 20, 50, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  border-color: #b6c5d9;
+  outline: 0;
+  background: linear-gradient(180deg, #e8eff9, #cbd9ed);
+  color: #174c91;
+  box-shadow: 0 2px 5px rgba(31, 61, 105, .2), inset 0 1px 1px #fff;
+  font-weight: 750;
 }
 
 .dashboard-rail-link.is-active span {
   font-weight: 800;
+  color: #174c91;
+  text-shadow: none;
+}
+
+.dashboard-rail-link.is-active .dashboard-rail-icon {
+  stroke: #174c91 !important;
+}
+
+/* Dark theme for rail links */
+[data-theme="dark"] .dashboard-rail-link,
+.dark .dashboard-rail-link {
+  color: #edf2fa;
+}
+
+[data-theme="dark"] .dashboard-rail-link:hover,
+[data-theme="dark"] .dashboard-rail-link:focus-visible,
+.dark .dashboard-rail-link:hover,
+.dark .dashboard-rail-link:focus-visible {
+  border-color: #596b84;
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+}
+
+[data-theme="dark"] .dashboard-rail-link.is-active,
+.dark .dashboard-rail-link.is-active {
+  border-color: #627999;
+  background: linear-gradient(180deg, #526b8d, #384e6d);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .2);
+}
+
+[data-theme="dark"] .dashboard-rail-link.is-active span,
+.dark .dashboard-rail-link.is-active span {
   color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  font-weight: 800;
+}
+
+[data-theme="dark"] .dashboard-rail-link.is-active .dashboard-rail-icon,
+.dark .dashboard-rail-link.is-active .dashboard-rail-icon {
+  stroke: #ffffff !important;
 }
 
 .dashboard-with-rail > .client-dashboard { min-width: 0; flex: 1 1 auto; padding: 0; background: transparent; }
@@ -488,8 +538,8 @@
 
 @media (max-width: 640px) {
   .dashboard-with-rail { gap: 10px; padding: 14px 8px 24px; }
-  .dashboard-quick-rail { top: calc(50vh - 220px); flex-basis: 54px; width: 54px; min-height: 360px; height: auto; margin-top: max(0px, calc(50vh - 234px)); gap: 5px; padding: 10px 4px; }
-  .dashboard-rail-link { min-height: 48px; gap: 3px; padding: 4px 1px; border-radius: 14px; font-size: 9px; }
+  .dashboard-quick-rail { top: calc(50vh - 220px); flex-basis: 54px; width: 54px; min-height: 360px; height: auto; margin-top: max(0px, calc(50vh - 234px)); gap: 5px; padding: 10px 4px; border-radius: 999px; }
+  .dashboard-rail-link { min-height: 48px; gap: 3px; padding: 4px 1px; border-radius: 999px; font-size: 9px; }
   .dashboard-rail-icon { width: 17px; height: 17px; }
   .dashboard-rail-link span { font-size: 9px; }
   .dashboard-with-rail > .client-dashboard { padding: 0; }
@@ -1039,18 +1089,18 @@
     margin: 0;
     padding: 5px;
     overflow-x: auto;
-    border-radius: 16px;
+    border-radius: 999px;
     scrollbar-width: thin;
   }
   .dashboard-rail-link,
   .dashboard-rail-link.is-primary {
-    width: 42px;
-    min-width: 42px;
+    width: 44px;
+    min-width: 44px;
     min-height: 44px;
-    flex: 0 0 42px;
+    flex: 0 0 44px;
     gap: 3px;
     padding: 4px 2px;
-    border-radius: 11px;
+    border-radius: 999px;
     font-size: 8px;
   }
   .dashboard-rail-link.is-primary { height: 44px; }

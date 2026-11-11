@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import logoImg from '../assets/logo.png';
-import { LandingMascot } from './LandingPage';
+import navLogoImg from '../assets/logo-navbar-transparent.png';
 import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
 import './ClientCompact.css';
 import ThemeToggle from './ThemeToggle';
+import { isDemoMode } from '../demoAccess';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export default function ClientLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [demoPaywallOpen, setDemoPaywallOpen] = useState(false);
   // Kept for the hidden legacy sidebar markup while all visible navigation uses the top bar.
   const [isSidebarOpen] = useState(false);
   const [coursOpen, setCoursOpen] = useState(location.pathname.startsWith('/client-cours'));
@@ -57,6 +58,31 @@ export default function ClientLayout() {
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, []);
+
+  useEffect(() => {
+    const openPaywall = () => setDemoPaywallOpen(true);
+    window.addEventListener('econcours-demo-paywall', openPaywall);
+    return () => window.removeEventListener('econcours-demo-paywall', openPaywall);
+  }, []);
+
+  useEffect(() => {
+    let demoUser = {};
+    try { demoUser = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
+    if (String(demoUser.role || '').toLowerCase() !== 'demo' || !demoUser.expiresAt) return undefined;
+    const delay = new Date(demoUser.expiresAt).getTime() - Date.now();
+    if (delay <= 0) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      navigate('/');
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      navigate('/');
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [navigate]);
 
   // Chargement dynamique des filières depuis la base de données
   useEffect(() => {
@@ -316,6 +342,7 @@ export default function ClientLayout() {
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const userName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
+  const demoUser = isDemoMode();
 
   // Calculate user initials (default to "SB" if user is Salma or default)
   let userInitials = 'SB';
@@ -375,7 +402,7 @@ export default function ClientLayout() {
             }}
           >
             <img
-              src={logoImg}
+              src={navLogoImg}
               alt="ECONCOURS"
               style={{
                 height: '62px',
@@ -389,17 +416,16 @@ export default function ClientLayout() {
             {navItems.map((item, index) => {
               const isMistakes = item.id === 'mistakes';
               const isSelected = location.pathname === item.path
-                && !currentFiliereParam
-                && !(item.path === '/client-resumes' && currentResumeMatiere);
+                && !currentFiliereParam;
               const isCours = item.path === '/client-cours';
               const isExamens = item.path === '/client-examens';
               const isResumes = item.path === '/client-resumes';
               const isConcours = item.path === '/client-concours';
               const isConcoursBlanc = item.path === '/client-concours-blanc';
-              const hasSubmenu = isCours || isExamens || isResumes || isConcours || isConcoursBlanc || isMistakes;
+              const hasSubmenu = isCours || isExamens || isConcours || isMistakes;
               const isSubmenuOpen = isCours
                 ? coursOpen
-                : (isExamens ? examensOpen : (isResumes ? resumesOpen : (isConcours ? concoursOpen : (isConcoursBlanc ? concoursBlancOpen : (isMistakes ? mistakesOpen : false)))));
+                : (isExamens ? examensOpen : (isConcours ? concoursOpen : (isMistakes ? mistakesOpen : false)));
 
               const handleItemClick = () => {
                 if (isMistakes) {
@@ -417,21 +443,13 @@ export default function ClientLayout() {
                     setExamensOpen(true);
                     navigate('/client-dashboard', { state: { openSidebarMenu: 'examens' } });
                   }
-                } else if (isResumes) {
-                  setResumesOpen(true);
-                  if (location.pathname !== '/client-dashboard') {
-                    navigate('/client-dashboard');
-                  }
                 } else if (isConcours) {
                   setConcoursOpen(true);
                   if (location.pathname !== '/client-dashboard') {
                     navigate('/client-dashboard');
                   }
                 } else if (isConcoursBlanc) {
-                  setConcoursBlancOpen(true);
-                  if (location.pathname !== '/client-dashboard') {
-                    navigate('/client-dashboard');
-                  }
+                  navigate('/client-concours-blanc');
                 } else {
                   navigate(item.path);
                 }
@@ -502,7 +520,6 @@ export default function ClientLayout() {
                           e.stopPropagation();
                           if (isCours) setCoursOpen(prev => !prev);
                           if (isExamens) setExamensOpen(prev => !prev);
-                          if (isResumes) setResumesOpen(prev => !prev);
                           if (isConcours) setConcoursOpen(prev => !prev);
                           if (isConcoursBlanc) setConcoursBlancOpen(prev => !prev);
                           if (isMistakes) setMistakesOpen(prev => !prev);
@@ -658,64 +675,7 @@ export default function ClientLayout() {
                     </div>
                   )}
 
-                  {isResumes && isSubmenuOpen && (
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '3px',
-                      paddingLeft: '14px',
-                      marginTop: '4px',
-                      marginBottom: '6px',
-                      borderLeft: '2px solid #e2e8f0',
-                      marginLeft: '26px'
-                    }}>
-                      {resumesMatieres.map((matiere) => {
-                        const label = matiere === 'Physique-Chimie' ? 'Physique - Chimie' : matiere;
-                        const isSubSelected = location.pathname === '/client-resumes'
-                          && currentResumeMatiere === matiere;
-                        return (
-                          <div
-                            key={`resume-matiere-${matiere}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/client-resumes?matiere=${encodeURIComponent(matiere)}`);
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '7px 10px',
-                              borderRadius: '10px',
-                              cursor: 'pointer',
-                              fontSize: '12.5px',
-                              fontWeight: isSubSelected ? 750 : 600,
-                              color: isSubSelected ? '#1865f2' : '#475569',
-                              backgroundColor: isSubSelected ? '#eff6ff' : 'transparent',
-                              transition: 'all 0.15s ease',
-                              userSelect: 'none'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSubSelected) e.currentTarget.style.backgroundColor = '#f8fafc';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSubSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <span style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              backgroundColor: isSubSelected ? '#1865f2' : '#cbd5e1',
-                              flexShrink: 0
-                            }} />
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={label}>
-                              {label}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+
 
                   {isConcours && isSubmenuOpen && (
                     <div style={{
@@ -775,63 +735,7 @@ export default function ClientLayout() {
                     </div>
                   )}
 
-                  {isConcoursBlanc && isSubmenuOpen && (
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '3px',
-                      paddingLeft: '14px',
-                      marginTop: '4px',
-                      marginBottom: '6px',
-                      borderLeft: '2px solid #e2e8f0',
-                      marginLeft: '26px'
-                    }}>
-                      {concoursBlancMatieres.map((matiere) => {
-                        const isSubSelected = location.pathname === '/client-concours-blanc'
-                          && currentConcoursBlancMatiere?.toLowerCase() === matiere.toLowerCase();
-                        return (
-                          <div
-                            key={`concours-blanc-matiere-${matiere}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/client-concours-blanc?matiere=${encodeURIComponent(matiere)}`);
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '7px 10px',
-                              borderRadius: '10px',
-                              cursor: 'pointer',
-                              fontSize: '12.5px',
-                              fontWeight: isSubSelected ? 750 : 600,
-                              color: isSubSelected ? '#1865f2' : '#475569',
-                              backgroundColor: isSubSelected ? '#eff6ff' : 'transparent',
-                              transition: 'all 0.15s ease',
-                              userSelect: 'none'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSubSelected) e.currentTarget.style.backgroundColor = '#f8fafc';
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSubSelected) e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <span style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              backgroundColor: isSubSelected ? '#1865f2' : '#cbd5e1',
-                              flexShrink: 0
-                            }} />
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={matiere}>
-                              {matiere}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+
 
                   {isMistakes && isSubmenuOpen && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '14px', marginTop: '4px', marginBottom: '6px', borderLeft: '2px solid #e2e8f0', marginLeft: '26px' }}>
@@ -921,11 +825,7 @@ export default function ClientLayout() {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.015)'
         }}>
           <button className="client-brand" type="button" onClick={() => navigate('/client-dashboard')} aria-label="E-CONCOURS, accueil">
-            <span className="client-brand-mascot"><LandingMascot className="client-boma-mascot" /></span>
-            <span className="client-brand-copy">
-              <span className="client-brand-name">E-<span className="client-brand-accent">CONCOURS</span></span>
-              <span className="client-brand-tagline">Ton avenir, notre priorité</span>
-            </span>
+            <img className="client-brand-logo" src={navLogoImg} alt="E-Concours" />
           </button>
 
           <button className="client-nav-toggle" type="button" aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'} aria-expanded={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen((open) => !open)}>
@@ -939,10 +839,8 @@ export default function ClientLayout() {
               if (path === '/client-erreurs') links = [{ label: 'Mes erreurs', path: '/client-erreurs?view=all' }, { label: 'Mes erreurs sauvegardées', path: '/client-erreurs?view=saved' }];
               if (path === '/client-examens') links = examensFilieres.map((f) => ({ label: f, path: `/client-examens?filiere=${encodeURIComponent(f)}` }));
               if (path === '/client-cours') links = coursFilieres.map((f) => ({ label: f, path: `/client-cours?filiere=${encodeURIComponent(f)}` }));
-              if (path === '/client-resumes') links = resumesMatieres.map((m) => ({ label: m === 'Physique-Chimie' ? 'Physique - Chimie' : m, path: `/client-resumes?matiere=${encodeURIComponent(m)}` }));
               if (path === '/client-concours') links = concoursEcoles.map((e) => ({ label: e, path: `/client-concours?ecole=${encodeURIComponent(e)}` }));
-              if (path === '/client-concours-blanc') links = concoursBlancMatieres.map((m) => ({ label: m, path: `/client-concours-blanc?matiere=${encodeURIComponent(m)}` }));
-              const hasDropdown = links.length > 0 || path === '/client-concours' || path === '/client-concours-blanc';
+              const hasDropdown = links.length > 0 || path === '/client-concours';
               const active = location.pathname === path;
               const menuId = path.replace('/client-', '');
               return (
@@ -953,7 +851,6 @@ export default function ClientLayout() {
                   </button>
                   {hasDropdown && openMenu === menuId && <div className="client-nav-dropdown">
                     {path === '/client-concours' && links.length === 0 && <div className="client-nav-dropdown-link">Aucune école disponible</div>}
-                    {path === '/client-concours-blanc' && links.length === 0 && <div className="client-nav-dropdown-link">Aucune matière disponible</div>}
                     <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-cours' ? 'les cours' : path === '/client-examens' ? 'les examens' : path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>
                     {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => selectNavbarOption(path, link)}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
                   </div>}
@@ -1069,8 +966,21 @@ export default function ClientLayout() {
           backgroundColor: 'var(--bg, #f3f6fb)',
           position: 'relative'
         }} ref={pageRegionRef}>
+          {demoUser && <div className="demo-mode-banner">
+            <span>Mode démo – accès limité</span>
+            <a href="/register" onClick={(event) => { event.preventDefault(); navigate('/register'); }}>Créer mon compte</a>
+          </div>}
           <Outlet />
         </main>
+        {demoPaywallOpen && <div className="demo-paywall-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDemoPaywallOpen(false); }}>
+          <section className="demo-paywall-dialog" role="dialog" aria-modal="true" aria-labelledby="demo-paywall-title">
+            <button className="demo-paywall-close" type="button" aria-label="Fermer" onClick={() => setDemoPaywallOpen(false)}>×</button>
+            <span className="demo-paywall-lock" aria-hidden="true">🔒</span>
+            <h2 id="demo-paywall-title">Contenu réservé aux abonnés</h2>
+            <p>Créez votre compte et choisissez une formule pour accéder à tous les contenus.</p>
+            <button className="demo-paywall-subscribe" type="button" onClick={() => navigate('/register')}>S’abonner</button>
+          </section>
+        </div>}
       </div>
     </div>
   );

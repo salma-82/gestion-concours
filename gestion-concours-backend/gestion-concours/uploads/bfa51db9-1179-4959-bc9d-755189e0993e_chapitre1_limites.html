@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapitre 1 : Calcul des limites</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1b1e2b;--blue:#0000c8;--head:#fff;--border:#c9cce0;--title-bg:#eef0ff}
+@media (prefers-color-scheme:dark){:root{--bg:#14161f;--card:#1d2030;--text:#e8eaf5;--blue:#3a3ad8;--border:#3a3f5c;--title-bg:#22264a}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;line-height:1.5}
+header{max-width:1200px;margin:0 auto 8px;padding:16px;text-align:center;background:var(--title-bg);border:1.5px solid var(--blue);border-radius:12px}
+header h1{margin:0;font-size:1.6rem}
+header p{margin:4px 0 0;font-size:1.1rem}
+.note{text-align:center;font-style:italic;margin:10px 0 20px;font-size:.95rem}
+.grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.col{display:flex;flex-direction:column;gap:20px}
+section{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+section h2{margin:0;padding:8px 14px;background:var(--blue);color:var(--head);font-size:1.05rem}
+section .body{padding:10px 16px}
+ul{margin:6px 0;padding-left:22px}
+li{margin:7px 0}
+table{border-collapse:collapse;margin:8px auto}
+td,th{border:1px solid var(--border);padding:4px 14px;text-align:center}
+h3{font-size:1rem;margin:12px 0 2px}
+.overflow{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Chapitre 1 : Calcul des limites (fonctions usuelles et approximations)</h1>
+</header>
+<p class="note">Note : Sauf mention contraire, toutes les limites s’entendent lorsque \(x\to+\infty\) ou \(x\to0\).</p>
+
+<div class="grid">
+<div class="col">
+
+<section>
+<h2>1- Croissance comparée</h2>
+<div class="body">
+<p>Au voisinage de \(+\infty\) :</p>
+<table>
+<tr><th>Ordre</th><th>Fonctions</th></tr>
+<tr><td>Faible</td><td>\(\ln(x)\)</td></tr>
+<tr><td>↓</td><td>\(\sqrt[n]{x}\ll x\ll x^n\)</td></tr>
+<tr><td>Fort</td><td>\(e^{\sqrt[n]{x}}\ll e^{x}\)</td></tr>
+</table>
+<h3>Formes Indéterminées (FI) :</h3>
+<p>\(\frac00;\ \frac\infty\infty;\ 0\times\infty;\ +\infty-(+\infty);\ 1^\infty;\ 0^0\)</p>
+</div>
+</section>
+
+<section>
+<h2>2- Limites de Logarithmes</h2>
+<div class="body"><ul>
+<li>\(\lim_{x\to0^+}x^\alpha\ln(x)=0\)</li>
+<li>\(\lim_{x\to+\infty}\frac{\ln(x)}{x^\alpha}=0\)</li>
+<li>\(\lim_{x\to0}\frac{\ln(1+\alpha x)}{\beta x}=\frac{\alpha}{\beta}\)</li>
+<li>\(\lim_{x\to+\infty}\frac{\ln(\alpha x)}{\ln(\beta x)}=1\)</li>
+<li>\(\lim_{x\to0}\frac{\ln(\cos\alpha x)}{\ln(\cos\beta x)}=\frac{\alpha^2}{\beta^2}\)</li>
+<li>\(\lim_{x\to\infty}\frac{\ln(P(x))}{Q(x)}=0\)</li>
+</ul></div>
+</section>
+
+<section>
+<h2>3- Utilisation du nombre dérivé</h2>
+<div class="body">
+<h3>Règle de L’HOSPITAL :</h3>
+\[\lim_{x\to a}\frac fg=\lim_{x\to a}\frac{f'}{g'}\]
+<h3>Dérivée en \(a\) :</h3>
+\[\lim_{x\to a}\frac{f(x)-f(a)}{x-a}=f'(a)\]
+<h3>Formule utile :</h3>
+\[\lim_{x\to a}\frac{xf(a)-af(x)}{x-a}=f(a)-af'(a)\]
+</div>
+</section>
+
+</div>
+<div class="col">
+
+<section>
+<h2>4- Approximations (DL)</h2>
+<div class="body">
+<p>Au voisinage de 0 :</p>
+<ul>
+<li>\(e^x\sim1+x\)</li>
+<li>\(\ln(1+x)\sim x\)</li>
+<li>\(\sin x\sim x\)</li>
+<li>\(\tan x\sim x\)</li>
+<li>\(\cos x\sim1-\frac{x^2}{2}\)</li>
+<li>\((1+x)^\alpha\sim1+\alpha x\)</li>
+<li>\(\sqrt{1+x}\sim1+\frac x2\)</li>
+<li>\(\frac1{1+x}\sim1-x\)</li>
+<li>\(\frac1{1-x}\sim1+x\)</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>5- Limites d’Exponentielles</h2>
+<div class="body"><ul>
+<li>\(\lim_{x\to-\infty}e^x=0^+\)</li>
+<li>\(\lim_{x\to-\infty}x^\alpha e^{\beta x}=0\)</li>
+<li>\(\lim_{x\to+\infty}\frac{e^{\beta x}}{x^\alpha}=+\infty\)</li>
+<li>\(\lim_{x\to0}\frac{e^{\alpha x}-1}{\beta x}=\frac\alpha\beta\)</li>
+<li>\(\lim_{x\to0}\frac{e^{\alpha x}-e^{\beta x}}{x}=\alpha-\beta\)</li>
+<li>\(\lim_{x\to0}\frac{a^x-1}{x}=\ln a\)</li>
+</ul></div>
+</section>
+
+<section>
+<h2>6- Limites de Suites</h2>
+<div class="body">
+<p>Lorsque \(n\to+\infty\) :</p>
+<ul>
+<li>\(\lim_{n\to+\infty}\sqrt[n]{n^m}=1\)</li>
+<li>\(\lim_{n\to+\infty}\frac{n^n}{n!}=+\infty\)</li>
+<li>\(\lim_{n\to+\infty}\frac{n^a}{q^n}=0\ (q>1)\)</li>
+<li>\(\lim_{n\to+\infty}\frac{\cos(n)}{n}=0\)</li>
+</ul>
+</div>
+</section>
+
+</div>
+<div class="col">
+
+<section>
+<h2>7- Formes en "e" &amp; Autres</h2>
+<div class="body"><ul>
+<li>\(\lim_{n\to+\infty}\left(1+\frac{a}{n+b}\right)^{n+c}=e^a\)</li>
+<li>\(\lim_{n\to+\infty}\left(1+\frac{a}{bn}\right)^{cn}=e^{\frac{ca}{b}}\)</li>
+<li>\(\lim_{n\to+\infty}n\left(a^{\frac1n}-1\right)=\ln a\)</li>
+<li>\(\lim_{n\to+\infty}n\left(a^{\frac1n}-b^{\frac1n}\right)=\ln\left(\frac ab\right)\)</li>
+<li>\(\lim_{n\to+\infty}\left(a^n+b^n\right)^{\frac1n}=a\ (a>b)\)</li>
+</ul></div>
+</section>
+
+<section>
+<h2>8- Radicaux Complexes</h2>
+<div class="body"><ul class="overflow">
+<li>\(\lim_{x\to\infty}\sqrt{x^{2\alpha}+\beta}-x^\alpha=0\)</li>
+<li>\(\lim_{x\to+\infty}\sqrt{x+\ldots\sqrt{x}}-\sqrt{x+\ldots\sqrt{x}}=0\)</li>
+</ul></div>
+</section>
+
+</div>
+</div>
+</body>
+</html>
