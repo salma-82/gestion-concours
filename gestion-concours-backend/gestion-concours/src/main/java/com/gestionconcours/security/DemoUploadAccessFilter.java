@@ -59,7 +59,10 @@ public class DemoUploadAccessFilter extends OncePerRequestFilter {
             response.getWriter().write("{\"code\":\"SESSION_EXPIRED\",\"message\":\"Session expirée. Reconnectez-vous.\"}");
             return;
         }
-        if (access.isDemo(authorization)) {
+        // Demo file-level blocking applies only to /uploads/ paths.
+        // API listing endpoints (/api/...) are handled by their own controllers
+        // via DemoContentAccessService.protect*() which nullify URLs for non-free items.
+        if (access.isDemo(authorization) && path.startsWith("/uploads/")) {
             String filename = URLDecoder.decode(
                     request.getRequestURI().substring(request.getRequestURI().lastIndexOf('/') + 1),
                     StandardCharsets.UTF_8);

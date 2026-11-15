@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../assets/logo.png';
 import AdminOverview from './AdminOverview';
+import AdminDemoContent from './AdminDemoContent';
 import CompetitionCalendar from './CompetitionCalendar';
 import MathContent from './MathContent';
 import { PACK_OPTIONS } from '../packAccess';
@@ -124,7 +125,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     const token = localStorage.getItem('authToken');
-    if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => { });
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
@@ -174,7 +175,7 @@ export default function AdminDashboard() {
   // ==================== STATES DYAL RESUMES ====================
   const [resumesList, setResumesList] = useState([]);
   const [filteredResumes, setFilteredResumes] = useState([]);
-  
+
   const [searchResTitre, setSearchResTitre] = useState('');
   const [selectedResMatiere, setSelectedResMatiere] = useState('');
   const [selectedResChapitre, setSelectedResChapitre] = useState('');
@@ -234,7 +235,7 @@ export default function AdminDashboard() {
   // ==================== STATES DYAL CONCOURS BLANCS ====================
   const [concoursList, setConcoursList] = useState([]);
   const [filteredConcours, setFilteredConcours] = useState([]);
-  
+
   const [searchConTitre, setSearchConTitre] = useState('');
   const [selectedConMatiere, setSelectedConMatiere] = useState('');
   const [selectedConChapitre, setSelectedConChapitre] = useState('');
@@ -583,7 +584,7 @@ export default function AdminDashboard() {
     let result = usersList;
     if (searchUser) {
       const q = searchUser.toLowerCase();
-      result = result.filter(u => 
+      result = result.filter(u =>
         (u.nom && u.nom.toLowerCase().includes(q)) ||
         (u.prenom && u.prenom.toLowerCase().includes(q)) ||
         (u.username && u.username.toLowerCase().includes(q)) ||
@@ -613,7 +614,7 @@ export default function AdminDashboard() {
     let result = resumesList;
     if (searchResTitre) {
       const q = searchResTitre.toLowerCase();
-      result = result.filter(item => 
+      result = result.filter(item =>
         (item.titre && item.titre.toLowerCase().includes(q)) ||
         (item.chapitre && item.chapitre.toLowerCase().includes(q)) ||
         (item.matiere && item.matiere.toLowerCase().includes(q))
@@ -663,7 +664,7 @@ export default function AdminDashboard() {
     let result = coursBacList;
     if (searchCoursTitre) {
       const q = searchCoursTitre.toLowerCase();
-      result = result.filter(item => 
+      result = result.filter(item =>
         (item.titre && item.titre.toLowerCase().includes(q)) ||
         (item.chapitre && item.chapitre.toLowerCase().includes(q)) ||
         (item.matiere && item.matiere.toLowerCase().includes(q)) ||
@@ -1436,7 +1437,7 @@ export default function AdminDashboard() {
     { key: 'concours', icon: '📝', label: 'Concours Blancs', count: null, onClick: () => setActiveTab('concours') },
   ];
 
-  sidebarItems.push({ key: 'demoContent', icon: '🔓', label: 'Accès démo gratuit', count: null, onClick: () => navigate('/admin-demo-content') });
+  sidebarItems.push({ key: 'demoContent', icon: '🎁', label: 'Gestion Jarab Fabor', count: null, onClick: () => setActiveTab('demoContent') });
 
   return (
     <div style={styles.wrapper}>
@@ -1512,6 +1513,8 @@ export default function AdminDashboard() {
             onNavigate={setActiveTab}
           />
         )}
+
+        {activeTab === 'demoContent' && <AdminDemoContent embedded />}
 
         {/* ==================== SECTION: DEMANDES ==================== */}
         {activeTab === 'demandes' && (
@@ -2060,22 +2063,22 @@ export default function AdminDashboard() {
             <div style={styles.filterBar}>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Recherche par Titre ou Astuce</label>
-                <input 
-                  type="text" 
-                  placeholder="Recherche par titre, mot-clé d'astuce..." 
-                  value={searchResTitre} 
-                  onChange={(e) => setSearchResTitre(e.target.value)} 
-                  style={styles.input} 
+                <input
+                  type="text"
+                  placeholder="Recherche par titre, mot-clé d'astuce..."
+                  value={searchResTitre}
+                  onChange={(e) => setSearchResTitre(e.target.value)}
+                  style={styles.input}
                 />
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Matière</label>
-                <select 
-                  value={selectedResMatiere} 
-                  onChange={(e) => { 
-                    setSelectedResMatiere(e.target.value); 
-                    setSelectedResChapitre(''); 
-                  }} 
+                <select
+                  value={selectedResMatiere}
+                  onChange={(e) => {
+                    setSelectedResMatiere(e.target.value);
+                    setSelectedResChapitre('');
+                  }}
                   style={styles.select}
                 >
                   <option value="">Toutes les matières (Math, Physique, SVT)</option>
@@ -2089,9 +2092,9 @@ export default function AdminDashboard() {
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Chapitre</label>
-                <select 
-                  value={selectedResChapitre} 
-                  onChange={(e) => setSelectedResChapitre(e.target.value)} 
+                <select
+                  value={selectedResChapitre}
+                  onChange={(e) => setSelectedResChapitre(e.target.value)}
                   style={styles.select}
                 >
                   <option value="">Tous les chapitres</option>
@@ -2240,22 +2243,22 @@ export default function AdminDashboard() {
             <div style={styles.filterBar}>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Recherche par Titre</label>
-                <input 
-                  type="text" 
-                  placeholder="Recherche par titre du cours..." 
-                  value={searchCoursTitre} 
-                  onChange={(e) => setSearchCoursTitre(e.target.value)} 
-                  style={styles.input} 
+                <input
+                  type="text"
+                  placeholder="Recherche par titre du cours..."
+                  value={searchCoursTitre}
+                  onChange={(e) => setSearchCoursTitre(e.target.value)}
+                  style={styles.input}
                 />
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Matière</label>
-                <select 
-                  value={selectedCoursMatiere} 
-                  onChange={(e) => { 
-                    setSelectedCoursMatiere(e.target.value); 
-                    setSelectedCoursChapitre(''); 
-                  }} 
+                <select
+                  value={selectedCoursMatiere}
+                  onChange={(e) => {
+                    setSelectedCoursMatiere(e.target.value);
+                    setSelectedCoursChapitre('');
+                  }}
                   style={styles.select}
                 >
                   <option value="">Toutes les matières (Math, Physique, SVT, Philo, Anglais)</option>
@@ -2271,9 +2274,9 @@ export default function AdminDashboard() {
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>🏷️ Filière</label>
-                <select 
-                  value={selectedCoursFiliere} 
-                  onChange={(e) => setSelectedCoursFiliere(e.target.value)} 
+                <select
+                  value={selectedCoursFiliere}
+                  onChange={(e) => setSelectedCoursFiliere(e.target.value)}
                   style={styles.select}
                 >
                   <option value="">Toutes les filières</option>
@@ -2284,9 +2287,9 @@ export default function AdminDashboard() {
               </div>
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Chapitre</label>
-                <select 
-                  value={selectedCoursChapitre} 
-                  onChange={(e) => setSelectedCoursChapitre(e.target.value)} 
+                <select
+                  value={selectedCoursChapitre}
+                  onChange={(e) => setSelectedCoursChapitre(e.target.value)}
                   style={styles.select}
                 >
                   <option value="">Tous les chapitres</option>
@@ -2609,11 +2612,11 @@ export default function AdminDashboard() {
               {/* Fichier HTML Sujet */}
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>🌐 Fichier HTML Sujet (.html, .htm)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setRealFileSujet(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setRealFileSujet(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#2563eb', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
                   📄 Document HTML interactif du sujet (MathJax, styles CSS supportés).
@@ -2623,11 +2626,11 @@ export default function AdminDashboard() {
               {/* Fichier HTML Correction */}
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>✅ Fichier HTML Correction (.html, .htm)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setRealFileCorrection(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setRealFileCorrection(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#16a34a', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
                   ✓ Corrigé détaillé et barème au format HTML.
@@ -2679,11 +2682,11 @@ export default function AdminDashboard() {
               {/* Remplacer Sujet HTML */}
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>🌐 Remplacer le Fichier HTML Sujet (Optionnel)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setRealFileSujet(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setRealFileSujet(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
                   Laissez vide pour conserver le sujet actuel.
@@ -2693,11 +2696,11 @@ export default function AdminDashboard() {
               {/* Remplacer Correction HTML */}
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>✅ Remplacer le Fichier HTML Correction (Optionnel)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setRealFileCorrection(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setRealFileCorrection(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
                   Laissez vide pour conserver la correction actuelle.
@@ -2777,25 +2780,25 @@ export default function AdminDashboard() {
             <form onSubmit={handleResumeSubmit}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du résumé ou astuce *</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: Astuces Calcul des Limites & Formes Indéterminées" 
-                  value={resTitre} 
-                  onChange={(e) => setResTitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  placeholder="Ex: Astuces Calcul des Limites & Formes Indéterminées"
+                  value={resTitre}
+                  onChange={(e) => setResTitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
               </div>
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Matière du Concours / BAC *</label>
-                <select 
-                  value={resMatiere} 
-                  onChange={(e) => { 
-                    setResMatiere(e.target.value); 
-                    setResChapitre(''); 
-                  }} 
-                  required 
+                <select
+                  value={resMatiere}
+                  onChange={(e) => {
+                    setResMatiere(e.target.value);
+                    setResChapitre('');
+                  }}
+                  required
                   style={styles.formInput}
                 >
                   <option value="Mathématiques">📐 Mathématiques</option>
@@ -2818,14 +2821,14 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
-                <input 
-                  type="text" 
-                  list="add-chapitres-bac-list" 
-                  placeholder="Sélectionnez ou tapez le nom du chapitre..." 
-                  value={resChapitre} 
-                  onChange={(e) => setResChapitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="add-chapitres-bac-list"
+                  placeholder="Sélectionnez ou tapez le nom du chapitre..."
+                  value={resChapitre}
+                  onChange={(e) => setResChapitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
                 <datalist id="add-chapitres-bac-list">
                   {getBacChapitresList(resMatiere).map((ch, idx) => (
@@ -2842,12 +2845,12 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Fichier HTML du Résumé / Astuce *</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,.pdf,application/pdf" 
-                  onChange={(e) => setResFile(e.target.files[0])} 
-                  required 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,.pdf,application/pdf"
+                  onChange={(e) => setResFile(e.target.files[0])}
+                  required
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#15803d', display: 'block', marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>
                   🌐 Fichiers .html recommandés : affichage direct avec formules MathJax/KaTeX, tableaux et styles interactifs.
@@ -2881,24 +2884,24 @@ export default function AdminDashboard() {
             <form onSubmit={handleEditResumeSubmit}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du résumé ou astuce *</label>
-                <input 
-                  type="text" 
-                  value={editResTitre} 
-                  onChange={(e) => setEditResTitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  value={editResTitre}
+                  onChange={(e) => setEditResTitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
               </div>
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Matière du Concours / BAC *</label>
-                <select 
-                  value={editResMatiere} 
-                  onChange={(e) => { 
-                    setEditResMatiere(e.target.value); 
-                    setEditResChapitre(''); 
-                  }} 
-                  required 
+                <select
+                  value={editResMatiere}
+                  onChange={(e) => {
+                    setEditResMatiere(e.target.value);
+                    setEditResChapitre('');
+                  }}
+                  required
                   style={styles.formInput}
                 >
                   <option value="Mathématiques">📐 Mathématiques</option>
@@ -2921,13 +2924,13 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
-                <input 
-                  type="text" 
-                  list="edit-chapitres-bac-list" 
-                  value={editResChapitre} 
-                  onChange={(e) => setEditResChapitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="edit-chapitres-bac-list"
+                  value={editResChapitre}
+                  onChange={(e) => setEditResChapitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
                 <datalist id="edit-chapitres-bac-list">
                   {getBacChapitresList(editResMatiere).map((ch, idx) => (
@@ -2941,11 +2944,11 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Remplacer le fichier HTML (Optionnel)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,.pdf,application/pdf" 
-                  onChange={(e) => setEditResFile(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,.pdf,application/pdf"
+                  onChange={(e) => setEditResFile(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
                   💡 Laissez ce champ vide pour conserver le fichier HTML actuel.
@@ -2976,10 +2979,10 @@ export default function AdminDashboard() {
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {previewResume.htmlUrl && (
-                  <a 
-                    href={getPdfUrl(previewResume.htmlUrl)} 
-                    target="_blank" 
-                    rel="noreferrer" 
+                  <a
+                    href={getPdfUrl(previewResume.htmlUrl)}
+                    target="_blank"
+                    rel="noreferrer"
                     style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600, textDecoration: 'none', background: '#eff6ff', padding: '6px 12px', borderRadius: '6px' }}
                   >
                     Plein écran ↗
@@ -3075,25 +3078,25 @@ export default function AdminDashboard() {
             <form onSubmit={handleCoursBacSubmit}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du cours *</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: Cours complet - Calcul des Limites & Fonctions" 
-                  value={coursTitre} 
-                  onChange={(e) => setCoursTitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  placeholder="Ex: Cours complet - Calcul des Limites & Fonctions"
+                  value={coursTitre}
+                  onChange={(e) => setCoursTitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
               </div>
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Matière (Math, Physique, SVT, Philo, Anglais) *</label>
-                <select 
-                  value={coursMatiere} 
-                  onChange={(e) => { 
-                    setCoursMatiere(e.target.value); 
-                    setCoursChapitre(''); 
-                  }} 
-                  required 
+                <select
+                  value={coursMatiere}
+                  onChange={(e) => {
+                    setCoursMatiere(e.target.value);
+                    setCoursChapitre('');
+                  }}
+                  required
                   style={styles.formInput}
                 >
                   <option value="Mathématiques">📐 Mathématiques</option>
@@ -3106,13 +3109,13 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Filière / Option</label>
-                <input 
-                  type="text" 
-                  list="add-cours-filieres-list" 
-                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)" 
-                  value={coursFiliere} 
-                  onChange={(e) => setCoursFiliere(e.target.value)} 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="add-cours-filieres-list"
+                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)"
+                  value={coursFiliere}
+                  onChange={(e) => setCoursFiliere(e.target.value)}
+                  style={styles.formInput}
                 />
                 <datalist id="add-cours-filieres-list">
                   {BAC_FILIERES_LIST.map((fil, idx) => (
@@ -3126,14 +3129,14 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
-                <input 
-                  type="text" 
-                  list="add-cours-chapitres-list" 
-                  placeholder="Sélectionnez ou tapez le nom du chapitre..." 
-                  value={coursChapitre} 
-                  onChange={(e) => setCoursChapitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="add-cours-chapitres-list"
+                  placeholder="Sélectionnez ou tapez le nom du chapitre..."
+                  value={coursChapitre}
+                  onChange={(e) => setCoursChapitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
                 <datalist id="add-cours-chapitres-list">
                   {getBacChapitresList(coursMatiere).map((ch, idx) => (
@@ -3147,12 +3150,12 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Upload du fichier HTML (.html, .htm) *</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setCoursHtmlFile(e.target.files[0])} 
-                  required 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setCoursHtmlFile(e.target.files[0])}
+                  required
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#15803d', display: 'block', marginTop: '6px', fontSize: '12px', fontWeight: 600 }}>
                   🌐 Fichier HTML interactif sauvegardé dans le dossier uploads/ et lié au cours.
@@ -3186,24 +3189,24 @@ export default function AdminDashboard() {
             <form onSubmit={handleEditCoursSubmit}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du cours *</label>
-                <input 
-                  type="text" 
-                  value={editCoursTitre} 
-                  onChange={(e) => setEditCoursTitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  value={editCoursTitre}
+                  onChange={(e) => setEditCoursTitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
               </div>
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Matière *</label>
-                <select 
-                  value={editCoursMatiere} 
-                  onChange={(e) => { 
-                    setEditCoursMatiere(e.target.value); 
-                    setEditCoursChapitre(''); 
-                  }} 
-                  required 
+                <select
+                  value={editCoursMatiere}
+                  onChange={(e) => {
+                    setEditCoursMatiere(e.target.value);
+                    setEditCoursChapitre('');
+                  }}
+                  required
                   style={styles.formInput}
                 >
                   <option value="Mathématiques">📐 Mathématiques</option>
@@ -3216,13 +3219,13 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Filière / Option</label>
-                <input 
-                  type="text" 
-                  list="edit-cours-filieres-list" 
-                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)" 
-                  value={editCoursFiliere} 
-                  onChange={(e) => setEditCoursFiliere(e.target.value)} 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="edit-cours-filieres-list"
+                  placeholder="Sélectionnez ou tapez la filière (ex: Sciences Mathématiques A, PC, SVT...)"
+                  value={editCoursFiliere}
+                  onChange={(e) => setEditCoursFiliere(e.target.value)}
+                  style={styles.formInput}
                 />
                 <datalist id="edit-cours-filieres-list">
                   {BAC_FILIERES_LIST.map((fil, idx) => (
@@ -3236,13 +3239,13 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
-                <input 
-                  type="text" 
-                  list="edit-cours-chapitres-list" 
-                  value={editCoursChapitre} 
-                  onChange={(e) => setEditCoursChapitre(e.target.value)} 
-                  required 
-                  style={styles.formInput} 
+                <input
+                  type="text"
+                  list="edit-cours-chapitres-list"
+                  value={editCoursChapitre}
+                  onChange={(e) => setEditCoursChapitre(e.target.value)}
+                  required
+                  style={styles.formInput}
                 />
                 <datalist id="edit-cours-chapitres-list">
                   {getBacChapitresList(editCoursMatiere).map((ch, idx) => (
@@ -3256,11 +3259,11 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Remplacer le fichier HTML (Optionnel)</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setEditCoursHtmlFile(e.target.files[0])} 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setEditCoursHtmlFile(e.target.files[0])}
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
                   💡 Laissez vide pour conserver le fichier HTML actuel.
@@ -3361,12 +3364,12 @@ export default function AdminDashboard() {
 
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Fichier HTML du Concours Blanc *</label>
-                <input 
-                  type="file" 
-                  accept=".html,.htm,text/html" 
-                  onChange={(e) => setConHtmlFile(e.target.files[0])} 
-                  required 
-                  style={styles.formFile} 
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => setConHtmlFile(e.target.files[0])}
+                  required
+                  style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '4px', fontSize: '11px' }}>
                   💡 Fichier HTML complet (QCM interactif, styles, timer et corrigé).

@@ -27,7 +27,16 @@ export const guardDemoContent = (item, action) => (event) => {
 
 export function DemoAccessBadge({ item }) {
   if (!isDemoMode()) return null
-  return isDemoFree(item)
-    ? <span className="demo-access-badge is-free">Gratuit</span>
-    : <span className="demo-access-badge is-locked" aria-label="Contenu verrouillé">🔒</span>
+  // Si le contenu est autorisé : affichage 100% normal, aucun badge, aucun cadenas
+  if (isDemoFree(item)) return null
+
+  // Si le contenu est bloqué : badge PREMIUM avec cadenas
+  return (
+    <div className="demo-locked-badge-wrap">
+      <span className="demo-premium-badge">
+        <span className="demo-lock-icon" aria-hidden="true">🔒</span>
+        PREMIUM
+      </span>
+    </div>
+  )
 }

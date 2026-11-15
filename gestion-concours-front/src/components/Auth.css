@@ -5,14 +5,14 @@
 
 /* ── Design tokens (mirrors LandingPage :root) ── */
 :root {
-  --lp-primary: #2457e6;
-  --lp-primary-dark: #173db4;
+  --lp-primary: #24478d;
+  --lp-primary-dark: #1b3976;
   --lp-primary-light: #eaf0ff;
-  --lp-ink: #14213d;
+  --lp-ink: #142d52;
   --lp-ink-soft: #5e6b85;
   --lp-line: #e4eaf4;
   --lp-surface: #ffffff;
-  --lp-bg: #f6f8fc;
+  --lp-bg: #f8faff;
   --lp-radius-full: 999px;
   --lp-radius-lg: 26px;
   --lp-radius-md: 18px;
@@ -864,13 +864,13 @@
    (Login.jsx / Register.jsx still use these classes)
 ═══════════════════════════════════════════════ */
 :root {
-  --auth-primary: #2457e6;
-  --auth-primary-dark: #173db4;
-  --auth-ink: #14213d;
+  --auth-primary: #24478d;
+  --auth-primary-dark: #1b3976;
+  --auth-ink: #142d52;
   --auth-muted: #5e6b85;
   --auth-line: #e4eaf4;
   --auth-surface: #fff;
-  --auth-bg: #f6f8fc;
+  --auth-bg: #f8faff;
 }
 
 .auth-page {
@@ -984,19 +984,46 @@
   }
 }
 
-/* Keep the registration and login primary actions on the requested brand blue. */
+/* Match auth actions and headings to the primary colors used on the home page. */
 .ecr-root .ecr-next-btn,
 .ecr-root .ecr-submit,
 .ecl-root .ecl-submit {
-  background: #0B2D63 !important;
-  box-shadow: 0 12px 26px rgba(11, 45, 99, .28) !important;
+  background: #24478d !important;
+  box-shadow: 0 12px 26px rgba(27, 55, 111, .2) !important;
+  color: #fff !important;
 }
 
 .ecr-root .ecr-next-btn:hover,
 .ecr-root .ecr-submit:hover:not(:disabled),
 .ecl-root .ecl-submit:hover:not(:disabled) {
-  background: #08224B !important;
-  box-shadow: 0 18px 34px rgba(11, 45, 99, .32) !important;
+  background: #1b3976 !important;
+  box-shadow: 0 13px 28px rgba(27, 55, 111, .24) !important;
+}
+
+#root .ecr-root .ecr-aside,
+#root .ecl-root .ecl-aside {
+  background: #f8faff !important;
+}
+
+#root .ecr-root .ecr-title,
+#root .ecr-root .ecr-aside-title,
+#root .ecl-root .ecl-title,
+#root .ecl-root .ecl-aside-title {
+  color: #142d52 !important;
+  -webkit-text-fill-color: #142d52 !important;
+}
+
+#root .ecr-root .ecr-accent,
+#root .ecl-root .ecl-accent {
+  color: #e6a15f !important;
+  -webkit-text-fill-color: #e6a15f !important;
+}
+
+#root .ecr-root .ecr-label,
+#root .ecr-root .ecr-step-info,
+#root .ecl-root .ecl-label {
+  color: #24478d !important;
+  -webkit-text-fill-color: #24478d !important;
 }
 
 /* Preserve readable auth headings and labels when the app is in dark mode. */

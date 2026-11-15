@@ -441,12 +441,12 @@ export default function Register() {
         }
 
         /* Registration page styled to match the split-screen auth reference. */
-        .ecr-root { font-family:Nunito,Inter,system-ui,sans-serif;color:#2b57a7;background:#fff; }
+        .ecr-root { font-family:Nunito,Inter,system-ui,sans-serif;color:#142d52;background:#fff; }
         .ecr-grid,.ecr-grain { display:none; }
         .ecr-aside {
           flex:0 0 48%;
           padding:44px 32px;
-          background:#f7f8fc;
+          background:#f8faff;
         }
         .ecr-aside::before,
         .ecr-aside::after {
@@ -462,20 +462,20 @@ export default function Register() {
         .ecr-aside-content { max-width:520px; }
         .ecr-back {
           min-height:46px;padding:0 18px;border-color:#dfe5f0;background:#fff;
-          color:#2b57a7;font-size:16px;box-shadow:none;backdrop-filter:none;
+          color:#24478d;font-size:16px;box-shadow:none;backdrop-filter:none;
         }
         .ecr-mascot-badge {
-          width:120px;height:120px;margin-bottom:28px;border:1px solid #e0e5ef;
-          border-radius:30px;background:#fff;box-shadow:0 12px 25px rgba(31,58,105,.06);
+          width:120px;height:120px;margin-bottom:28px;border:0;
+          border-radius:0;background:transparent;box-shadow:none;
           backdrop-filter:none;
         }
         .ecr-mascot-art { width:82px;height:90px; }
         .ecr-aside-title {
-          max-width:500px;margin:0 0 24px;color:#2b57a7;
+          max-width:500px;margin:0 0 24px;color:#142d52;
           font-family:Nunito,Inter,system-ui,sans-serif;
           font-size:clamp(28px,3vw,38px);line-height:1.12;letter-spacing:-.035em;
         }
-        .ecr-accent { color:#f28a2e;-webkit-text-fill-color:#f28a2e; }
+        .ecr-accent { color:#e6a15f;-webkit-text-fill-color:#e6a15f; }
         .ecr-aside-desc,.ecr-features-card { display:none; }
         .ecr-school-pills {
           display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:0 0 34px;
@@ -483,27 +483,27 @@ export default function Register() {
         .ecr-school-pills span {
           display:inline-flex;min-height:39px;align-items:center;justify-content:center;
           padding:0 17px;border:1px solid #dfe5f0;border-radius:999px;background:#fff;
-          color:#2b57a7;font-size:14px;font-weight:900;letter-spacing:.08em;
+          color:#24478d;font-size:14px;font-weight:900;letter-spacing:.08em;
         }
         .ecr-aside-switch {
           min-height:62px;padding:12px 34px;border:1px solid #dfe5f0;background:#fff;
-          color:#2b57a7;font-size:16px;box-shadow:0 5px 16px rgba(31,58,105,.04);
+          color:#24478d;font-size:16px;box-shadow:0 5px 16px rgba(27,55,111,.08);
         }
-        .ecr-aside-switch:hover { border-color:#2b57a7;background:#2b57a7; }
+        .ecr-aside-switch:hover { border-color:#1b3976;background:#1b3976; }
         .ecr-main { padding:28px clamp(28px,5vw,64px) 0;background:#fff; }
         .ecr-panel { max-width:520px; }
         .ecr-eyebrow,.ecr-subtitle,.ecr-steps { display:none; }
         .ecr-title {
-          margin:0 0 30px;color:#2b57a7;font-family:Nunito,Inter,system-ui,sans-serif;
+          margin:0 0 30px;color:#142d52;font-family:Nunito,Inter,system-ui,sans-serif;
           font-size:clamp(36px,4vw,44px);line-height:1.12;letter-spacing:-.04em;text-align:center;
         }
         .ecr-progress-track { height:9px;margin:0 0 32px;background:#e4e7ef; }
-        .ecr-progress-fill { background:#2b57a7; }
-        .ecr-step-info { gap:12px;margin:0 0 28px;color:#2b57a7;font-size:16px;font-weight:900; }
-        .ecr-step-dot { width:13px;height:13px;background:#2b57a7; }
+        .ecr-progress-fill { background:#24478d; }
+        .ecr-step-info { gap:12px;margin:0 0 28px;color:#24478d;font-size:16px;font-weight:900; }
+        .ecr-step-dot { width:13px;height:13px;background:#24478d; }
         .ecr-form { gap:20px; }
         .ecr-field { gap:10px; }
-        .ecr-label { color:#2b57a7;font-size:16px;font-weight:800; }
+        .ecr-label { color:#24478d;font-size:16px;font-weight:800; }
         .ecr-input {
           min-height:68px;padding:14px 44px 14px 62px;border-color:#dfe5f0;
           border-radius:23px;background:#f8f9fc;color:#2b3e65;font-size:16px;
@@ -511,12 +511,12 @@ export default function Register() {
         .ecr-input-icon { left:24px;color:#657595; }
         .ecr-input-icon svg { width:20px;height:20px; }
         .ecr-input::placeholder { color:#8b98b2; }
-        .ecr-input:focus { border-color:#2b57a7;box-shadow:0 0 0 4px rgba(43,87,167,.1); }
-        .ecr-next-btn,.ecr-submit {
-          min-height:72px;margin-top:8px;background:#2b57a7;font-size:19px;
-          box-shadow:0 16px 28px rgba(43,87,167,.28);
+        .ecr-input:focus { border-color:#24478d;box-shadow:0 0 0 4px rgba(36,71,141,.11); }
+        .ecr-root .ecr-next-btn,.ecr-root .ecr-submit {
+          min-height:72px;margin-top:8px;background:#24478d;font-size:19px;
+          box-shadow:0 12px 26px rgba(27,55,111,.2);
         }
-        .ecr-next-btn:hover,.ecr-submit:hover:not(:disabled) { background:#244a91; }
+        .ecr-root .ecr-next-btn:hover,.ecr-root .ecr-submit:hover:not(:disabled) { background:#1b3976; }
         .ecr-switch-text,.ecr-security { display:none; }
         @media (max-width:820px) {
           .ecr-aside { flex:0 0 auto;min-height:0;padding:58px 20px 24px; }

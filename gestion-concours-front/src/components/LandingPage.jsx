@@ -577,7 +577,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         revealGroup('.lp-pricing-section', '.lp-section-header > *, .lp-pricing-toggle-wrap, .lp-discount-badge, .lp-plan-card, .lp-plan-btn');
         revealGroup('.lp-faq-section', '.lp-section-header > *, .lp-faq-item');
         revealGroup('.lp-bottom-cta-section', '.lp-bottom-cta-content > *');
-        revealGroup('.lp-footer', '.lp-footer-brand > *, .lp-footer-col, .lp-footer-bottom > *', { start: 'top 80%', stagger: 0.08 });
+        revealGroup('.lp-footer', '.lp-footer-brand > *, .lp-footer-col', { start: 'top 80%', stagger: 0.08 });
 
         // Scroll reveals for sections
         // Stats counter animation
@@ -778,6 +778,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             type="button"
             aria-label="Menu"
             aria-expanded={mobileMenuOpen}
+            aria-controls="lp-mobile-menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -793,7 +794,7 @@ export default function LandingPage({ onNavigateToAuth }) {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lp-mobile-menu">
+        <nav className="lp-mobile-menu" id="lp-mobile-menu" aria-label="Navigation mobile">
           <a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}>
             Comment ça marche
           </a>
@@ -814,14 +815,8 @@ export default function LandingPage({ onNavigateToAuth }) {
               <span style={{ fontSize: '13px', fontWeight: 700 }}>Thème</span>
               <ThemeToggle />
             </div>
-            <button className="lp-btn-ghost" type="button" onClick={() => handleNav('login')} style={{ width: '100%' }}>
-              Se connecter
-            </button>
-            <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')} style={{ width: '100%', justifyContent: 'center' }}>
-              Créer un compte
-            </button>
           </div>
-        </div>
+        </nav>
       )}
 
       {/* ====================================================================
@@ -1244,7 +1239,7 @@ export default function LandingPage({ onNavigateToAuth }) {
 
         <div className="lp-roadmap-list">
           <svg className="lp-roadmap-route" viewBox="0 0 100 2240" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M70 160 C70 320 30 320 30 480 C30 640 70 640 70 800 C70 960 30 960 30 1120 C30 1280 70 1280 70 1440 C70 1600 30 1600 30 1760 C30 1920 70 1920 70 2080" />
+            <path d="M82 160 C82 320 18 320 18 480 C18 640 82 640 82 800 C82 960 18 960 18 1120 C18 1280 82 1280 82 1440 C82 1600 18 1600 18 1760 C18 1920 82 1920 82 2080" />
           </svg>
           {[
             {
@@ -1869,14 +1864,8 @@ export default function LandingPage({ onNavigateToAuth }) {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <div className="lp-footer-wordmark" aria-label="E-CONCOURS">
-              <svg className="lp-footer-cap" viewBox="0 0 48 42" fill="none" aria-hidden="true">
-                <path d="M4 15 24 5l20 10-20 10L4 15Z" fill="#eaf2ff" />
-                <path d="M11 19v9c7 6 19 6 26 0v-9" fill="#eaf2ff" />
-                <path d="M42 16v16" stroke="#e2ae4f" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="42" cy="34" r="2.5" fill="#e2ae4f" />
-              </svg>
-              <span>E-</span>CONCOURS
+            <div className="lp-footer-wordmark">
+              <img className="lp-footer-logo-image" src={navLogoImg} alt="E-Concours" />
             </div>
             <p>
               La plateforme de référence pour les cours du Bac, la préparation aux examens nationaux et aux concours des grandes écoles au Maroc.

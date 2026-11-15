@@ -4,6 +4,73 @@ import { recordStudentMistake, resolveStudentMistakes } from '../studentProgress
 
 const API_BASE = '';
 
+const concoursBlancIntegratedQcmStyle = `<style>
+  html, body { width: 100% !important; min-width: 0 !important; }
+  body { background: transparent !important; }
+  .wrap { display: grid !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; grid-template-columns: 5cm minmax(0, 1fr) !important; gap: 12px !important; align-items: start !important; }
+  .layout { grid-template-columns: 5cm minmax(0, 1fr) !important; gap: 12px !important; align-items: start !important; }
+  .wrap > .side { grid-column: 1 !important; width: 5cm !important; max-width: 5cm !important; position: static !important; top: auto !important; max-height: none !important; overflow: visible !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: transparent !important; }
+  .wrap > .content { grid-column: 2 !important; width: 100% !important; max-width: none !important; min-width: 0 !important; }
+  .wrap > .side h1, .wrap > .side h2, .wrap > .side h3, .wrap > .side h4, .wrap > .side h5, .wrap > .side h6 { display: none !important; }
+  .wrap > .side .top, .wrap > .side .bar { display: none !important; }
+  .wrap .pal { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+  .wrap .pal button { box-sizing: border-box !important; width: 5cm !important; max-width: 5cm !important; height: auto !important; min-height: 44px !important; border-radius: 12px !important; }
+  .layout > .side {
+    display: block !important; grid-column: 1 !important; width: 5cm !important; max-width: 5cm !important;
+    position: static !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important;
+    box-shadow: none !important; background: transparent !important;
+  }
+  .layout > .side h1, .layout > .side h2, .layout > .side h3, .layout > .side h4, .layout > .side h5, .layout > .side h6 { display: none !important; }
+  .layout > .side > p, .legend { display: none !important; }
+  .grid { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+  .gb {
+    box-sizing: border-box !important; width: 5cm !important; max-width: 5cm !important; height: auto !important;
+    min-height: 44px !important; padding: 10px !important; border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important; background: #fff !important; color: #0f2a6b !important;
+    font: 800 14px system-ui, sans-serif !important; cursor: pointer !important;
+  }
+  .gb:hover { border-color: #93c5fd !important; background: #f8fbff !important; }
+  .gb.cur {
+    outline: none !important; border: 1.5px solid #3b82f6 !important; background: #eff6ff !important;
+    color: #1d4ed8 !important; box-shadow: 0 2px 8px rgba(37, 99, 235, .12) !important;
+  }
+  .gb.ans, .gb.ok { background: #16a34a !important; border-color: #16a34a !important; color: #fff !important; }
+  .gb.ko { background: #fee2e2 !important; border-color: #f87171 !important; color: #b91c1c !important; }
+  .layout > .card:not(.side):not(.explain-side) {
+    grid-column: 2 !important; width: 100% !important; max-width: none !important; padding: 16px 20px !important; border: 0 !important;
+    border-radius: 0 !important; box-shadow: none !important; background: transparent !important;
+  }
+  .explain-side { grid-column: 2 !important; position: static !important; }
+  .layout .top, .layout .bar { display: none !important; }
+  .q { margin: 6px 0 12px !important; }
+  .opt { box-sizing: border-box !important; min-height: 64px !important; padding: 8px 16px !important; margin: 6px 0 !important; border-color: #cbdaf4 !important; border-radius: 12px !important; }
+  .opt:hover { border-color: #93b4f0 !important; background: #f8fbff !important; }
+  .opt.sel { border-color: #3b82f6 !important; background: #eff6ff !important; }
+  .opt .k { background: #e6efff !important; color: #1d4ed8 !important; }
+  .opt.sel .k { background: #2563eb !important; color: #fff !important; }
+  .btn-p { background: #24478d !important; }
+  .btn-p:hover { background: #1e3d7c !important; }
+  html[data-platform-theme="dark"] { color-scheme: dark; --bg: #0F172A; --card: #1B2940; --text: #F1F5F9; --muted: #A6B3C5; --navy: #F1F5F9; --navy2: #3B82F6; --teal: #60A5FA; --teal-d: #3B82F6; --line: #2B3B52; }
+  html[data-platform-theme="dark"] body { background: #0F172A !important; color: #F1F5F9 !important; }
+  html[data-platform-theme="dark"] .gb { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+  html[data-platform-theme="dark"] .gb.cur { background: rgba(37, 99, 235, .18) !important; border-color: #60a5fa !important; color: #93c5fd !important; }
+  html[data-platform-theme="dark"] .opt { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+  html[data-platform-theme="dark"] .opt.sel { background: rgba(37, 99, 235, .18) !important; border-color: #60a5fa !important; }
+  html[data-platform-theme="dark"] .opt .k { background: #263854 !important; color: #bfdbfe !important; }
+  html[data-platform-theme="dark"] .opt.sel .k { background: #2563eb !important; color: #fff !important; }
+  @media (max-width: 760px) {
+    .wrap, .layout { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
+    .wrap > .side { grid-column: 1 !important; width: 100% !important; max-width: none !important; }
+    .wrap > .content { grid-column: 1 !important; }
+    .layout > .side { grid-column: 1 !important; width: 100% !important; max-width: none !important; }
+    .grid { flex-direction: row !important; overflow-x: auto !important; padding-bottom: 6px !important; }
+    .gb { flex: 0 0 5cm !important; }
+    .wrap .pal { flex-direction: row !important; overflow-x: auto !important; padding-bottom: 6px !important; }
+    .wrap .pal button { flex: 0 0 5cm !important; }
+    .layout > .card:not(.side):not(.explain-side), .explain-side { grid-column: 1 !important; width: 100% !important; }
+  }
+</style>`;
+
 export const getTrackedQcmUrl = (sourceUrl) => {
   if (!sourceUrl) return '';
   try {
@@ -76,25 +143,37 @@ export default function TrackedQcmFrame({
       const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'tracked-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()</script>`;
       let html = String(data || '');
       const isQuestionPaletteQcm = /id=["']pal["']/.test(html) && /class=["'][^"']*\bwrap\b/.test(html);
+      const isLegacyGridQcm = /id=["']grid["']/.test(html) && /class=["'][^"']*\blayout\b/.test(html);
+      const hasQuestionPaletteQcm = isQuestionPaletteQcm || isLegacyGridQcm;
       const isConcours = sourceType === 'Concours' || /concours/i.test(sourceType || '');
-      const integratedQcmStyle = isQuestionPaletteQcm
-        ? (isConcours
+      const isConcoursBlanc = /concours\s*blanc/i.test(sourceType || '');
+      const integratedQcmUnboxedStyle = hasQuestionPaletteQcm
+        ? '<style>.wrap > .side,#main > .card{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}.side > .top{background:transparent!important;border-radius:0!important;padding:0!important}</style>'
+        : '';
+      const integratedQcmStyle = hasQuestionPaletteQcm
+        ? (isConcoursBlanc
+            ? concoursBlancIntegratedQcmStyle
+            : isConcours
             ? '<style>html,body{width:100%!important;min-width:0!important}body{background:transparent!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;grid-template-columns:1fr!important}.wrap > .side, aside.side{display:none!important}#main > .card{padding:16px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}.tag{padding:6px 14px!important;margin-bottom:10px!important}.q{margin:6px 0 12px!important}.opt{padding:9px 16px!important;margin:6px 0!important;gap:14px!important}.opt .l{width:34px!important;height:34px!important}.btns{margin-top:10px!important}.btn:disabled{opacity:.65!important}.qcm-explanation-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 16px;padding:12px 16px;border:1px solid #c5d6f5;border-radius:12px;background:#e6efff;color:#1c4fd0;font:700 14px system-ui,sans-serif;cursor:pointer;transition:background .15s ease,border-color .15s ease}.qcm-explanation-toggle:hover{background:#dbe8ff;border-color:#9bbaf0}html[data-platform-theme="dark"]{color-scheme:dark;--bg:#0F172A;--card:#1B2940;--text:#F1F5F9;--muted:#A6B3C5;--pri:#60A5FA;--pri-d:#3B82F6;--bd:#2B3B52;--tint:#202F47;--tintbd:#3A4D6B;--pill:#1E3A5F;--pilltx:#BFDBFE;--ok:#34D399;--okbg:#123325;--ko:#F87171;--kobg:#3B2024;--flash:#3B321D;--flashbd:#B8892A}html[data-platform-theme="dark"] body{background:#0F172A!important;color:#F1F5F9!important}html[data-platform-theme="dark"] .qcm-explanation-toggle{background:#202F47;color:#BFDBFE;border-color:#3A4D6B}html[data-platform-theme="dark"] .qcm-explanation-toggle:hover{background:#263854;border-color:#60A5FA}</style>'
             : '<style>html,body{width:100%!important;min-width:0!important}body{background:#f1f5f9!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}</style>')
         : '';
+      const integratedConcoursLayoutStyle = hasQuestionPaletteQcm && isConcours && !isConcoursBlanc
+        ? '<style>.layout{grid-template-columns:minmax(0,1fr)!important;gap:0!important}.wrap{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}.content,#main{width:100%!important;max-width:none!important}.layout > .card:not(.side):not(.explain-side),#main > .card{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}.q{margin:6px 0 12px!important}.opt{box-sizing:border-box!important;min-height:64px!important;padding:8px 16px!important;margin:6px 0!important}@media(max-width:760px){.opt{min-height:60px!important;padding:8px 12px!important;margin:6px 0!important}}</style>'
+        : '';
       const navScript = `<script>(function(){window.addEventListener('message',function(ev){if(!ev||!ev.data)return;if(ev.data.type==='goto-question'){var idx=typeof ev.data.index==='number'?ev.data.index:(Number(ev.data.questionNumber)-1);if(!isNaN(idx)&&idx>=0){if(typeof cur!=='undefined'&&typeof render==='function'){cur=idx;render()}else if(typeof window.cur!=='undefined'&&typeof window.render==='function'){window.cur=idx;window.render()}else{var btns=document.querySelectorAll('#pal button, .pal button');if(btns&&btns[idx]){btns[idx].click()}}}}});var lastReportedCur=-1;function readCurrentIndex(){try{if(typeof cur!=='undefined')return Number(cur)}catch(e){}return typeof window.cur!=='undefined'?Number(window.cur):null}setInterval(function(){var currentIndex=readCurrentIndex();if(currentIndex!==null&&Number.isFinite(currentIndex)&&currentIndex!==lastReportedCur){lastReportedCur=currentIndex;parent.postMessage({type:'econcourse-qcm-cur-changed',questionNumber:currentIndex+1},'*')}},250);var reportedTotal=false;setInterval(function(){var questions;try{if(typeof Q!=='undefined'&&Array.isArray(Q))questions=Q}catch(e){}if(!questions&&Array.isArray(window.Q))questions=window.Q;if(!reportedTotal&&questions&&questions.length>0){reportedTotal=true;parent.postMessage({type:'econcourse-qcm-meta',totalQuestions:questions.length},'*')}},300)})();</script>`;
-      const explanationScript = isQuestionPaletteQcm && isConcours
+      const explanationScript = hasQuestionPaletteQcm && isConcours
         ? `<script>(function(){function setupExplanationToggle(){var explanation=document.querySelector('#exp, .exp');if(!explanation||explanation.dataset.toggleReady==='true')return;explanation.dataset.toggleReady='true';explanation.style.display='none';var button=document.createElement('button');button.type='button';button.className='qcm-explanation-toggle';button.setAttribute('aria-expanded','false');button.textContent='Afficher l’explication';button.addEventListener('click',function(){var show=explanation.style.display==='none';explanation.style.display=show?'':'none';button.setAttribute('aria-expanded',String(show));button.textContent=show?'Masquer l’explication':'Afficher l’explication';if(show)explanation.scrollIntoView({behavior:'smooth',block:'start'});});var qcmCard=document.querySelector('#main > .card');if(qcmCard)qcmCard.appendChild(button);else explanation.parentNode.insertBefore(button,explanation);}var observer=new MutationObserver(setupExplanationToggle);if(document.body){observer.observe(document.body,{childList:true,subtree:true});setupExplanationToggle();}})();</script>`
         : '';
-      const themeSyncScript = isQuestionPaletteQcm && isConcours
+      const themeSyncScript = hasQuestionPaletteQcm && isConcours
         ? `<script>(function(){function syncTheme(){try{var root=parent.document.documentElement;var dark=root.dataset.theme==='dark'||root.classList.contains('dark');document.documentElement.setAttribute('data-platform-theme',dark?'dark':'light');}catch(e){}}syncTheme();try{new MutationObserver(syncTheme).observe(parent.document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});}catch(e){}})();</script>`
         : '';
       if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
       else html = `${base}${html}`;
-      if (integratedQcmStyle) {
+      if (integratedQcmStyle || integratedConcoursLayoutStyle || integratedQcmUnboxedStyle) {
         const headClose = html.toLowerCase().lastIndexOf('</head>');
-        if (headClose >= 0) html = `${html.slice(0, headClose)}${integratedQcmStyle}${html.slice(headClose)}`;
-        else html = `${integratedQcmStyle}${html}`;
+        const injectedStyles = `${integratedQcmStyle}${integratedConcoursLayoutStyle}${integratedQcmUnboxedStyle}`;
+        if (headClose >= 0) html = `${html.slice(0, headClose)}${injectedStyles}${html.slice(headClose)}`;
+        else html = `${injectedStyles}${html}`;
       }
       const scriptsToInject = `${resizeScript}${navScript}${explanationScript}${themeSyncScript}`;
       const bodyClose = html.toLowerCase().lastIndexOf('</body>');
@@ -379,7 +458,13 @@ export default function TrackedQcmFrame({
         title={title || 'QCM interactif'}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         scrolling={htmlDocument === null ? undefined : 'no'}
-        style={htmlDocument === null ? style : { ...style, height: `${htmlFrameHeight}px`, overflow: 'hidden' }}
+        style={htmlDocument === null ? style : {
+          ...style,
+          width: '100%',
+          maxWidth: 'none',
+          height: sourceType === 'Concours' ? `calc(${htmlFrameHeight}px + 4cm)` : `${htmlFrameHeight}px`,
+          overflow: 'hidden'
+        }}
       />
     </div>
   );

@@ -1,25 +1,722 @@
-.admin-demo-page { min-height: 100vh; padding: clamp(22px, 4vw, 48px); box-sizing: border-box; background: var(--bg, #f3f6fb); color: var(--text, #0f172a); font-family: inherit; }
-.admin-demo-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; max-width: 1120px; margin: 0 auto 24px; }
-.admin-demo-header h1 { margin: 4px 0 8px; font-size: clamp(24px, 3vw, 34px); font-weight: 850; letter-spacing: -.6px; }
-.admin-demo-header p { max-width: 680px; margin: 0; color: var(--text-secondary, #64748b); font-size: 14px; line-height: 1.65; }
-.admin-demo-header .admin-demo-eyebrow { color: #2563eb; font-size: 11px; font-weight: 850; letter-spacing: 1px; text-transform: uppercase; }
-.admin-demo-back { flex: 0 0 auto; border: 1px solid var(--border, #dbeafe); border-radius: 12px; padding: 10px 14px; color: var(--text, #0f172a); background: var(--surface, #fff); font: inherit; font-size: 13px; font-weight: 750; cursor: pointer; }
-.admin-demo-panel { max-width: 1120px; margin: 0 auto; padding: 22px; border: 1px solid var(--border, #dbeafe); border-radius: 20px; background: var(--surface, #fff); box-shadow: 0 8px 28px rgba(15, 23, 42, .06); }
-.admin-demo-panel > label { display: block; margin-bottom: 8px; color: var(--text-secondary, #64748b); font-size: 12px; font-weight: 750; }
-.admin-demo-panel select { width: min(100%, 340px); min-height: 44px; border: 1px solid var(--border, #cbd5e1); border-radius: 11px; padding: 0 12px; color: var(--text, #0f172a); background: var(--surface, #fff); font: inherit; font-size: 14px; }
-.admin-demo-hint { margin: 10px 0 0; color: var(--text-secondary, #64748b); font-size: 12px; }
-.admin-demo-message { margin: 14px 0 0; font-size: 13px; font-weight: 700; }
-.admin-demo-message.is-error { color: #dc2626; }
-.admin-demo-message.is-success { color: #059669; }
-.admin-demo-empty { padding: 24px 0; color: var(--text-secondary, #64748b); }
-.admin-demo-list { display: grid; gap: 9px; margin-top: 18px; }
-.admin-demo-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 15px; border: 1px solid var(--border, #e2e8f0); border-radius: 13px; background: var(--surface, #fff); }
-.admin-demo-item-copy { display: grid; min-width: 0; gap: 5px; }
-.admin-demo-item-copy strong { overflow: hidden; color: var(--text, #0f172a); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.admin-demo-item-copy span { color: var(--text-secondary, #64748b); font-size: 11px; }
-.admin-demo-toggle { flex: 0 0 auto; border: 1px solid #bfdbfe; border-radius: 10px; padding: 9px 12px; color: #1d4ed8; background: #eff6ff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-.admin-demo-toggle.is-free { border-color: #a7f3d0; color: #047857; background: #ecfdf5; }
-.admin-demo-toggle:disabled { opacity: .6; cursor: wait; }
-[data-theme="dark"] .admin-demo-toggle:not(.is-free), .dark .admin-demo-toggle:not(.is-free) { border-color: #365d96; color: #bfdbfe; background: #1e3a5f; }
-[data-theme="dark"] .admin-demo-toggle.is-free, .dark .admin-demo-toggle.is-free { border-color: #166534; color: #bbf7d0; background: #123a2a; }
-@media (max-width: 650px) { .admin-demo-header { flex-direction: column; } .admin-demo-back { width: 100%; } .admin-demo-panel { padding: 16px; } .admin-demo-item { align-items: flex-start; flex-direction: column; } .admin-demo-toggle { width: 100%; } }
+/* =========================================================================
+   GESTION JARAB FABOR - ADMIN CSS
+   ========================================================================= */
+
+.jarab-fabor-admin-wrapper {
+  min-height: 100vh;
+  padding: clamp(20px, 3vw, 40px);
+  box-sizing: border-box;
+  background: var(--bg, #f3f6fb);
+  color: var(--text, #0f172a);
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.jarab-fabor-admin-wrapper.is-embedded {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+}
+
+/* Toast de notification */
+.jarab-fabor-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: #065f46;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 750;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: jarabToastSlide 0.25s ease-out;
+}
+
+@keyframes jarabToastSlide {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.jarab-fabor-toast-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* En-tête */
+.jarab-fabor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto 24px;
+}
+
+.jarab-fabor-badge-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.jarab-fabor-dot {
+  font-size: 8px;
+}
+
+.jarab-fabor-title {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 850;
+  color: var(--text, #0f2a6b);
+  letter-spacing: -0.5px;
+}
+
+.jarab-fabor-subtitle {
+  margin: 0;
+  color: var(--text-secondary, #64748b);
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 680px;
+}
+
+.jarab-fabor-back-btn {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 12px;
+  padding: 10px 18px;
+  background: var(--surface, #ffffff);
+  color: var(--text, #0f2a6b);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.jarab-fabor-back-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* KPI Grid */
+.jarab-fabor-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 1280px;
+  margin: 0 auto 24px;
+}
+
+.jarab-fabor-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 2px 10px rgba(15, 42, 107, 0.03);
+}
+
+.jarab-fabor-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.jarab-fabor-kpi-card.is-total .jarab-fabor-kpi-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.jarab-fabor-kpi-card.is-authorized .jarab-fabor-kpi-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.jarab-fabor-kpi-card.is-blocked .jarab-fabor-kpi-icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.jarab-fabor-kpi-card.is-rule .jarab-fabor-kpi-icon {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.jarab-fabor-kpi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.jarab-fabor-kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.jarab-fabor-kpi-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text, #0f2a6b);
+}
+
+.jarab-fabor-kpi-card.is-authorized .jarab-fabor-kpi-value {
+  color: #059669;
+}
+
+.jarab-fabor-kpi-card.is-blocked .jarab-fabor-kpi-value {
+  color: #dc2626;
+}
+
+.jarab-fabor-kpi-rule-text {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #1e40af;
+  line-height: 1.4;
+}
+
+/* Onglets de catégories */
+.jarab-fabor-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.jarab-fabor-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--border, #e2e8f0);
+  background: var(--surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.jarab-fabor-tab-btn:hover {
+  border-color: #93c5fd;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.jarab-fabor-tab-btn.is-active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+}
+
+.jarab-fabor-tab-badge {
+  font-size: 11.5px;
+  font-weight: 850;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.jarab-fabor-tab-btn.is-active .jarab-fabor-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Panneau principal */
+.jarab-fabor-panel {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 22px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 4px 24px rgba(15, 42, 107, 0.05);
+}
+
+/* Barre d'outils et filtres */
+.jarab-fabor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.jarab-fabor-search-box {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 480px;
+}
+
+.jarab-fabor-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.jarab-fabor-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 38px 10px 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border, #cbd5e1);
+  background: var(--surface, #ffffff);
+  color: var(--text, #0f172a);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.jarab-fabor-search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.jarab-fabor-clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.jarab-fabor-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.jarab-fabor-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jarab-fabor-filter-item label {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.jarab-fabor-select {
+  padding: 9px 32px 9px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border, #cbd5e1);
+  background: var(--surface, #ffffff);
+  color: var(--text, #0f172a);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.jarab-fabor-select:focus {
+  border-color: #2563eb;
+}
+
+/* Alertes et messages */
+.jarab-fabor-alert {
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.jarab-fabor-alert.is-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.jarab-fabor-retry-btn {
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  padding: 5px 12px;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* États de chargement et vides */
+.jarab-fabor-loading-state,
+.jarab-fabor-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.jarab-fabor-spinner {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid #dbeafe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: jarabSpin 0.8s linear infinite;
+  margin-bottom: 14px;
+}
+
+@keyframes jarabSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.jarab-fabor-empty-icon {
+  font-size: 44px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.jarab-fabor-empty-state h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 850;
+  color: var(--text, #0f2a6b);
+}
+
+.jarab-fabor-empty-state p {
+  margin: 0 0 16px;
+  color: var(--text-secondary, #64748b);
+  font-size: 14px;
+}
+
+.jarab-fabor-reset-filters-btn {
+  padding: 8px 18px;
+  border-radius: 9999px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Liste des éléments */
+.jarab-fabor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jarab-fabor-list-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px 8px;
+  font-size: 11.5px;
+  font-weight: 850;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary, #94a3b8);
+  border-bottom: 1px solid var(--border, #f1f5f9);
+}
+
+.jarab-fabor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border, #e8edf5);
+  background: var(--surface, #ffffff);
+  transition: all 0.15s ease;
+}
+
+.jarab-fabor-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 16px rgba(15, 42, 107, 0.04);
+}
+
+.jarab-fabor-item.is-free-card {
+  border-left: 4px solid #10b981;
+}
+
+.jarab-fabor-item.is-locked-card {
+  border-left: 4px solid #cbd5e1;
+}
+
+/* Métadonnées de l'élément */
+.jarab-fabor-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
+}
+
+.jarab-fabor-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.jarab-fabor-item-title {
+  font-size: 15px;
+  font-weight: 850;
+  color: var(--text, #0f2a6b);
+  letter-spacing: -0.2px;
+}
+
+.jarab-fabor-status-pill {
+  font-size: 11px;
+  font-weight: 850;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  letter-spacing: 0.4px;
+}
+
+.jarab-fabor-status-pill.is-free {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.jarab-fabor-status-pill.is-locked {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.jarab-fabor-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.jarab-fabor-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+  color: var(--text-secondary, #475569);
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.jarab-fabor-tag.is-group {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Cellule d'actions : AUTORISER & BLOQUER */
+.jarab-fabor-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.jarab-fabor-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 850;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.jarab-fabor-action-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Style du bouton AUTORISER */
+.jarab-fabor-action-btn.btn-authorize {
+  border: 1.5px solid #a7f3d0;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.jarab-fabor-action-btn.btn-authorize:not(.is-current-active):hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.jarab-fabor-action-btn.btn-authorize.is-current-active {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+  cursor: default;
+}
+
+/* Style du bouton BLOQUER */
+.jarab-fabor-action-btn.btn-block {
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.jarab-fabor-action-btn.btn-block:not(.is-current-active):hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.jarab-fabor-action-btn.btn-block.is-current-active {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+  box-shadow: none;
+  cursor: default;
+}
+
+.jarab-fabor-mini-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: jarabSpin 0.7s linear infinite;
+}
+
+/* Thème sombre */
+[data-theme="dark"] .jarab-fabor-admin-wrapper {
+  background: var(--bg, #0b1329);
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .jarab-fabor-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .jarab-fabor-kpi-card,
+[data-theme="dark"] .jarab-fabor-panel,
+[data-theme="dark"] .jarab-fabor-item {
+  background: var(--surface, #1e293b);
+  border-color: #334155;
+}
+
+[data-theme="dark"] .jarab-fabor-item-title {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .jarab-fabor-tab-btn {
+  background: var(--surface, #1e293b);
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .jarab-fabor-search-input,
+[data-theme="dark"] .jarab-fabor-select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .jarab-fabor-action-btn.btn-block.is-current-active {
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+  .jarab-fabor-header {
+    flex-direction: column;
+  }
+
+  .jarab-fabor-back-btn {
+    width: 100%;
+  }
+
+  .jarab-fabor-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .jarab-fabor-actions-cell {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .jarab-fabor-action-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

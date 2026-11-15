@@ -865,32 +865,87 @@ export default function ClientConcours() {
           <style>{`
             .concours-layout-grid {
               display: grid;
-              grid-template-columns: 168px minmax(0, 1fr);
-              gap: 24px;
+              grid-template-columns: 210px minmax(0, 1fr);
+              gap: 12px;
               align-items: start;
             }
             .concours-sidebar-wrap {
               width: 100%;
               min-width: 0;
               box-sizing: border-box;
-              scrollbar-width: none;
-              -ms-overflow-style: none;
-              background: transparent !important;
-              border: none !important;
-              border-radius: 0 !important;
-              box-shadow: none !important;
+              background: transparent;
+              border: none;
+              border-radius: 0;
+              padding: 0;
+              box-shadow: none;
+              position: static;
+              max-height: none;
+              overflow: visible;
             }
-            .concours-sidebar-wrap::-webkit-scrollbar {
-              display: none;
-              width: 0;
+            .concours-back-btn {
+              align-self: flex-start;
+              border: none;
+              background-color: #eaf2ff;
+              color: #1d4ed8;
+              font-family: inherit;
+              font-weight: 750;
+              font-size: 13px;
+              cursor: pointer;
+              padding: 7px 14px;
+              border-radius: 12px;
+              margin-bottom: 16px;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              transition: all 0.15s ease;
+            }
+            .concours-back-btn:hover {
+              background-color: #dbeafe;
+            }
+            html[data-theme="dark"] .concours-back-btn {
+              background-color: rgba(37, 99, 235, 0.2) !important;
+              color: #93c5fd !important;
+            }
+            html[data-theme="dark"] .concours-back-btn:hover {
+              background-color: rgba(37, 99, 235, 0.3) !important;
+            }
+            .concours-question-item {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 5cm;
+              max-width: 5cm;
+              margin-inline: 0;
+              padding: 10px 14px;
+              min-height: 44px;
+              box-sizing: border-box;
+              border-radius: 12px;
+              cursor: pointer;
+              border: 1px solid var(--border-subtle, #edf2f7);
+              background-color: var(--surface, #ffffff);
+              transition: all 0.15s ease;
+              user-select: none;
+            }
+            .concours-question-item:not(.is-current):hover {
+              background-color: var(--surface-hover, #f8fafc);
+              border-color: var(--border, #e2e8f0);
+            }
+            .concours-question-item.is-current {
+              border: 1.5px solid #3b82f6 !important;
+              background-color: #eff6ff !important;
+              box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
             }
             html[data-theme="dark"] .concours-question-item:not(.is-current) {
-              background: var(--surface, #1b2940) !important;
-              border-color: var(--border-subtle, #223247) !important;
+              background-color: var(--surface, #1e293b) !important;
+              border-color: #334155 !important;
+            }
+            html[data-theme="dark"] .concours-question-item:not(.is-current):hover {
+              background-color: var(--surface-hover, #263854) !important;
+              border-color: #475569 !important;
             }
             html[data-theme="dark"] .concours-question-item.is-current {
-              background: var(--surface-hover, #263854) !important;
-              border-color: var(--primary, #60a5fa) !important;
+              background-color: rgba(37, 99, 235, 0.18) !important;
+              border-color: #60a5fa !important;
             }
             html[data-theme="dark"] .concours-question-item > span:first-child {
               color: #e2e8f0 !important;
@@ -898,6 +953,53 @@ export default function ClientConcours() {
             html[data-theme="dark"] .concours-question-item.is-current > span:first-child,
             html[data-theme="dark"] .concours-question-status {
               color: #93c5fd !important;
+            }
+            .concours-subject-accordion {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 3cm;
+              max-width: 3cm;
+              box-sizing: border-box;
+              gap: 6px;
+              padding: 8px;
+              border-radius: 13px;
+              border: 1px solid var(--border-subtle, #edf2f7);
+              background-color: var(--surface, #ffffff);
+              cursor: pointer;
+              margin-top: 10px;
+              transition: all 0.15s ease;
+              user-select: none;
+            }
+            .concours-subject-accordion > div:first-child {
+              min-width: 0;
+              gap: 4px !important;
+            }
+            .concours-subject-title {
+              font-size: 12px !important;
+              overflow-wrap: normal;
+              white-space: nowrap;
+            }
+            .concours-subject-chevron {
+              flex-shrink: 0;
+            }
+            .concours-subject-accordion:hover {
+              background-color: var(--surface-hover, #f8fafc);
+              border-color: var(--border, #e2e8f0);
+            }
+            html[data-theme="dark"] .concours-subject-accordion {
+              background-color: var(--surface, #1e293b) !important;
+              border-color: #334155 !important;
+            }
+            html[data-theme="dark"] .concours-subject-accordion:hover {
+              background-color: var(--surface-hover, #263854) !important;
+              border-color: #475569 !important;
+            }
+            html[data-theme="dark"] .concours-subject-title {
+              color: #f1f5f9 !important;
+            }
+            html[data-theme="dark"] .concours-subject-chevron {
+              stroke: #cbd5e1 !important;
             }
             .concours-qcm-heading {
               display: none !important;
@@ -909,11 +1011,12 @@ export default function ClientConcours() {
               }
               .concours-sidebar-wrap {
                 position: static !important;
-                width: min(100%, 210px) !important;
-                max-width: 210px !important;
+                width: 100% !important;
+                max-width: none !important;
                 max-height: none !important;
-                margin-bottom: 4px !important;
-                padding: 10px 8px !important;
+                overflow: visible !important;
+                margin-bottom: 8px !important;
+                padding: 0 !important;
               }
               .concours-sidebar-section {
                 margin-bottom: 0 !important;
@@ -927,7 +1030,9 @@ export default function ClientConcours() {
                 -webkit-overflow-scrolling: touch;
               }
               .concours-question-item {
-                flex: 0 0 58px !important;
+                flex: 0 0 5cm !important;
+                width: 5cm !important;
+                max-width: 5cm !important;
                 min-height: 46px;
                 justify-content: center !important;
                 padding: 10px !important;
@@ -944,46 +1049,17 @@ export default function ClientConcours() {
           `}</style>
 
           {/* SIDEBAR VERTICAL COMPACT (INSPIRÉ DE LA CAPTURE FOURNIE) */}
-          <aside className="concours-sidebar-wrap" style={{
-            position: 'sticky',
-            top: '8px',
-            maxHeight: 'calc(100vh - 110px)',
-            overflowY: 'auto',
-            width: '100%',
-            minWidth: 0,
-            boxSizing: 'border-box',
-            padding: '12px 8px',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+          <aside className="concours-sidebar-wrap">
             {/* Bouton Changer de concours (Pill bleu doux avec chevron gauche) */}
             <button
               type="button"
+              className="concours-back-btn"
               onClick={() => setOpenYear(null)}
-              style={{
-                alignSelf: 'flex-start',
-                border: '1px solid #dbeafe',
-                backgroundColor: '#eff6ff',
-                color: '#2563eb',
-                fontFamily: 'inherit',
-                fontWeight: 750,
-                fontSize: '12px',
-                cursor: 'pointer',
-                padding: '6px 7px',
-                borderRadius: '9999px',
-                marginBottom: '14px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              <span style={{ fontSize: '11px' }}>Changer de concours</span>
+              <span>Changer de concours</span>
             </button>
 
             {/* Matières réelles sous forme de sections accordéon sans icônes */}
@@ -998,21 +1074,18 @@ export default function ClientConcours() {
                   <div key={subKey} className="concours-sidebar-section" style={{ marginBottom: '12px' }}>
                     {/* En-tête de la matière ouverte : Nom en gras + badge score/questions */}
                     <div
-                      onClick={() => setActiveSubject(null)}
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '10px',
+                        marginBottom: '14px',
                         gap: '8px',
-                        cursor: 'pointer',
                         userSelect: 'none'
                       }}
-                      title="Cliquer pour réduire cette matière"
                     >
                       <h2 style={{
                         margin: 0,
-                        fontSize: '22px',
+                        fontSize: '24px',
                         fontWeight: 850,
                         color: 'var(--text, #0f2a6b)',
                         letterSpacing: '-0.35px',
@@ -1023,84 +1096,48 @@ export default function ClientConcours() {
                       }}>
                         {displayName}
                       </h2>
-                      <span style={{
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        padding: '5px 9px',
-                        flexShrink: 0,
-                        borderRadius: '9999px',
-                        backgroundColor: 'var(--surface-2, #f1f5f9)',
-                        color: 'var(--text, #0f2a6b)',
-                        border: '1px solid var(--border, #e2e8f0)'
-                      }}>
-                        {prog.answeredCount}/{prog.totalQuestions}
-                      </span>
                     </div>
 
                     {/* Liste des questions Q1, Q2, Q3... sans doublons */}
-                    <div className="concours-question-list" style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                    <div className="concours-question-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {Array.from({ length: prog.totalQuestions }, (_, i) => {
                         const qNum = i + 1;
                         const isCurrent = (qNum === activeQuestion);
+                        const ans = prog.answers?.[qNum];
+                        const isAnswered = Boolean(ans);
 
                         return (
                           <div
                             key={qNum}
                             className={`concours-question-item${isCurrent ? ' is-current' : ''}`}
                             onClick={() => handleSelectQuestion(qNum)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '9px 12px',
-                              minHeight: '44px',
-                              boxSizing: 'border-box',
-                              borderRadius: '11px',
-                              cursor: 'pointer',
-                              border: isCurrent ? '1px solid var(--primary, #2563eb)' : '1px solid var(--border-subtle, #e8edf5)',
-                              backgroundColor: isCurrent ? 'var(--surface-hover, #eff6ff)' : 'var(--surface, #ffffff)',
-                              boxShadow: isCurrent ? '0 2px 8px rgba(37, 99, 235, 0.12)' : '0 1px 2px rgba(15, 42, 107, 0.03)',
-                              transition: 'background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
-                              userSelect: 'none'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isCurrent) {
-                                e.currentTarget.style.backgroundColor = '#f8fafc';
-                                e.currentTarget.style.borderColor = '#e2e8f0';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isCurrent) {
-                                e.currentTarget.style.backgroundColor = 'var(--surface, #ffffff)';
-                                e.currentTarget.style.borderColor = '#e8edf5';
-                              }
-                            }}
                           >
                             <span style={{
-                              fontSize: '14px',
+                              fontSize: '14.5px',
                               fontWeight: 800,
-                              color: isCurrent ? 'var(--primary, #1d4ed8)' : 'var(--text, #0f2a6b)'
+                              color: isCurrent ? '#1d4ed8' : 'var(--text, #0f2a6b)'
                             }}>
                               Q{qNum}
                             </span>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {isCurrent && (
-                                <span className="concours-question-status" style={{
-                                  fontSize: '12.5px',
+                              {!isCurrent && isAnswered ? (
+                                <span style={{
+                                  fontSize: '12px',
                                   fontWeight: 750,
-                                  color: '#2563eb'
+                                  color: '#10b981'
                                 }}>
-                                  En cours
+                                  Terminé
                                 </span>
-                              )}
+                              ) : null}
+
                               <svg
-                                width="14"
-                                height="14"
+                                width="15"
+                                height="15"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke={isCurrent ? '#2563eb' : '#94a3b8'}
-                                strokeWidth="2.5"
+                                strokeWidth="2.4"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                               >
@@ -1116,59 +1153,47 @@ export default function ClientConcours() {
               }
 
               // Section matière réduite : barre bleue à gauche, libellé sans icône, chevron bas
+              const isSubLocked = isDemoMode() && !isDemoFree(conc);
+
               return (
                 <div
                   key={subKey}
+                  className="concours-subject-accordion"
                   onClick={() => {
+                    if (isSubLocked) {
+                      window.dispatchEvent(new CustomEvent('econcours-demo-paywall'));
+                      return;
+                    }
                     setActiveSubject(subKey);
                     const nextQ = prog.answeredCount < prog.totalQuestions ? prog.answeredCount + 1 : 1;
                     setActiveQuestion(nextQ);
                   }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                padding: '10px 12px',
-                borderRadius: '11px',
-                border: '1px solid #e8edf5',
-                backgroundColor: 'var(--surface, #ffffff)',
-                    cursor: 'pointer',
-                    marginBottom: '8px',
-                    transition: 'all 0.15s ease',
-                    userSelect: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f8fafc';
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.borderColor = '#e8edf5';
-                  }}
+                  title={isSubLocked ? 'Contenu réservé aux abonnés' : `Ouvrir ${displayName}`}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
                       width: '3.5px',
-                      height: '18px',
+                      height: '20px',
                       borderRadius: '9999px',
-                      backgroundColor: '#1865f2'
+                      backgroundColor: isSubLocked ? '#94a3b8' : '#2563eb'
                     }} />
-                    <span style={{
-                      fontSize: '15.5px',
+                    <span className="concours-subject-title" style={{
+                      fontSize: '17px',
                       fontWeight: 800,
-                      color: '#0f2a6b'
+                      color: isSubLocked ? '#64748b' : 'var(--text, #0f2a6b)'
                     }}>
-                      {displayName}
+                      {displayName} {isSubLocked && <span style={{ fontSize: '13px', marginLeft: '4px' }}>🔒</span>}
                     </span>
                   </div>
 
                   <svg
-                    width="15"
-                    height="15"
+                    className="concours-subject-chevron"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#0f2a6b"
-                    strokeWidth="2.5"
+                    stroke="var(--text, #0f2a6b)"
+                    strokeWidth="2.4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >

@@ -6,7 +6,6 @@ import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
 import './ClientCompact.css';
 import ThemeToggle from './ThemeToggle';
-import { isDemoMode } from '../demoAccess';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -342,7 +341,6 @@ export default function ClientLayout() {
   let user = {};
   try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch (e) { user = {}; }
   const userName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || 'Salma Boussami');
-  const demoUser = isDemoMode();
 
   // Calculate user initials (default to "SB" if user is Salma or default)
   let userInitials = 'SB';
@@ -966,21 +964,42 @@ export default function ClientLayout() {
           backgroundColor: 'var(--bg, #f3f6fb)',
           position: 'relative'
         }} ref={pageRegionRef}>
-          {demoUser && <div className="demo-mode-banner">
-            <span>Mode démo – accès limité</span>
-            <a href="/register" onClick={(event) => { event.preventDefault(); navigate('/register'); }}>Créer mon compte</a>
-          </div>}
           <Outlet />
         </main>
-        {demoPaywallOpen && <div className="demo-paywall-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDemoPaywallOpen(false); }}>
-          <section className="demo-paywall-dialog" role="dialog" aria-modal="true" aria-labelledby="demo-paywall-title">
-            <button className="demo-paywall-close" type="button" aria-label="Fermer" onClick={() => setDemoPaywallOpen(false)}>×</button>
-            <span className="demo-paywall-lock" aria-hidden="true">🔒</span>
-            <h2 id="demo-paywall-title">Contenu réservé aux abonnés</h2>
-            <p>Créez votre compte et choisissez une formule pour accéder à tous les contenus.</p>
-            <button className="demo-paywall-subscribe" type="button" onClick={() => navigate('/register')}>S’abonner</button>
-          </section>
-        </div>}
+        {demoPaywallOpen && (
+          <div
+            className="demo-paywall-backdrop"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setDemoPaywallOpen(false);
+            }}
+          >
+            <section className="demo-paywall-dialog" role="dialog" aria-modal="true" aria-labelledby="demo-paywall-title">
+              <button
+                className="demo-paywall-close"
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setDemoPaywallOpen(false)}
+              >
+                ✕
+              </button>
+              <div className="demo-paywall-icon-wrap" aria-hidden="true">
+                🔒
+              </div>
+              <h2 id="demo-paywall-title">Ce contenu est réservé aux abonnés</h2>
+              <p>
+                Abonnez-vous pour accéder à l'ensemble des contenus et profiter de toutes les fonctionnalités de la plateforme.
+              </p>
+              <button
+                className="demo-paywall-subscribe"
+                type="button"
+                onClick={() => navigate('/register')}
+              >
+                Découvrir les abonnements
+              </button>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );

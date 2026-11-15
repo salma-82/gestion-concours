@@ -590,10 +590,9 @@ export default function ClientCoursPage() {
                 ← Retour aux cours
               </button>
               <div className="client-reader-top-info">
-                <span className="client-reader-subject-pill" style={{ color: selectedMatiere.color }}>
-                  {selectedMatiere.nom} {selectedFiliere ? `· ${selectedFiliere}` : ''}
-                </span>
-                <h2 className="client-reader-title">{activeCours.titre || selectedChapitre}</h2>
+                {String(activeCours.titre || selectedChapitre || '').trim().toUpperCase() !== selectedMatiere.tag && (
+                  <h2 className="client-reader-title">{activeCours.titre || selectedChapitre}</h2>
+                )}
               </div>
             </div>
 

@@ -186,13 +186,11 @@ html.dark .client-cours-pill.is-active {
 /* ── Cards Grid (4 columns desktop) ── */
 .client-cours-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 394px));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 12px;
 }
 
-@media (max-width: 1380px) { .client-cours-cards-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
-@media (max-width: 1080px) { .client-cours-cards-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
 @media (max-width: 768px)  { .client-cours-cards-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; } }
 @media (max-width: 490px)  { .client-cours-cards-grid { grid-template-columns: minmax(0,1fr); } }
 

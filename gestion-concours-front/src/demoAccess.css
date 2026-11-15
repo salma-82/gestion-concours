@@ -3,43 +3,90 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 34px;
-  padding: 5px 16px;
+  min-height: 36px;
+  padding: 6px 16px;
   box-sizing: border-box;
   color: var(--text-secondary, #475569);
   background: color-mix(in srgb, var(--surface, #fff) 88%, #dbeafe);
   border-bottom: 1px solid var(--border, #dbeafe);
-  font-size: 12px;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.demo-mode-banner a { color: #2563eb; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
-[data-theme="dark"] .demo-mode-banner, .dark .demo-mode-banner { background: #1d2b41; border-color: #334155; color: #cbd5e1; }
-[data-theme="dark"] .demo-mode-banner a, .dark .demo-mode-banner a { color: #93c5fd; }
+.demo-mode-banner a {
+  color: #2563eb;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
-.demo-content-locked { position: relative !important; }
-.client-chapter-card, .client-resume-card, .client-exam-card { position: relative; }
-.demo-content-locked > :not(.demo-access-badge) { filter: blur(.35px); opacity: .68; }
-.demo-access-badge {
+[data-theme="dark"] .demo-mode-banner, .dark .demo-mode-banner {
+  background: #1d2b41;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .demo-mode-banner a, .dark .demo-mode-banner a {
+  color: #93c5fd;
+}
+
+/* =========================================================================
+   EFFET DE VERROUILLAGE DES CONTENUS BLOQUÉS (PREMIUM)
+   ========================================================================= */
+.demo-content-locked {
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* Effet Blur et assombrissement subtil UNIQUEMENT sur la miniature / bannière / couverture */
+.demo-content-locked .client-card-banner,
+.demo-content-locked .client-resume-cover,
+.demo-content-locked .client-exam-card-thumb,
+.demo-content-locked > div:first-of-type:not(.demo-locked-badge-wrap) {
+  filter: blur(2.5px) brightness(0.82) saturate(0.85);
+  transition: filter 0.25s ease, brightness 0.25s ease;
+}
+
+.demo-content-locked:hover .client-card-banner,
+.demo-content-locked:hover .client-resume-cover,
+.demo-content-locked:hover .client-exam-card-thumb,
+.demo-content-locked:hover > div:first-of-type:not(.demo-locked-badge-wrap) {
+  filter: blur(1.8px) brightness(0.88);
+}
+
+/* Badge PREMIUM avec cadenas sur les contenus bloqués */
+.demo-locked-badge-wrap {
   position: absolute;
-  z-index: 12;
-  top: 10px;
-  right: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  min-height: 26px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  box-sizing: border-box;
-  font: 800 11px/1.2 system-ui, sans-serif;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, .16);
+  top: 12px;
+  right: 12px;
+  z-index: 20;
   pointer-events: none;
 }
-.demo-access-badge.is-free { color: #047857; background: #d1fae5; border: 1px solid #a7f3d0; }
-.demo-access-badge.is-locked { color: #334155; background: rgba(255,255,255,.94); border: 1px solid #cbd5e1; font-size: 15px; }
 
+.demo-premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fbbf24;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+.demo-lock-icon {
+  font-size: 12px;
+}
+
+/* =========================================================================
+   FENÊTRE MODALE D'ABONNEMENT (PAYWALL)
+   ========================================================================= */
 .demo-paywall-backdrop {
   position: fixed;
   z-index: 10000;
@@ -47,28 +94,123 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(15, 23, 42, .56);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  animation: demoPaywallFadeIn 0.2s ease-out;
 }
+
+@keyframes demoPaywallFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .demo-paywall-dialog {
   position: relative;
-  width: min(100%, 420px);
-  padding: 32px 28px 28px;
-  border: 1px solid var(--border, #dbeafe);
-  border-radius: 22px;
-  background: var(--surface, #fff);
+  width: min(100%, 450px);
+  padding: 36px 30px 30px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 24px;
+  background: var(--surface, #ffffff);
   color: var(--text, #0f172a);
-  box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
   text-align: center;
+  animation: demoPaywallScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.demo-paywall-lock { display: block; margin-bottom: 12px; font-size: 32px; }
-.demo-paywall-dialog h2 { margin: 0 30px 10px; font-size: 21px; font-weight: 850; }
-.demo-paywall-dialog p { margin: 0 auto 22px; max-width: 330px; color: var(--text-secondary, #64748b); font-size: 14px; line-height: 1.6; }
-.demo-paywall-close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--text-secondary, #64748b); font-size: 25px; cursor: pointer; }
-.demo-paywall-subscribe { width: 100%; border: 0; border-radius: 12px; padding: 13px 18px; background: #2563eb; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(37, 99, 235, .24); }
-.demo-paywall-subscribe:hover { background: #1d4ed8; }
 
-[data-theme="dark"] .demo-paywall-dialog, .dark .demo-paywall-dialog { background: var(--surface, #1b273b); border-color: #334155; color: var(--text, #f8fafc); }
-[data-theme="dark"] .demo-access-badge.is-locked, .dark .demo-access-badge.is-locked { color: #e2e8f0; background: rgba(30, 41, 59, .94); border-color: #475569; }
+@keyframes demoPaywallScaleUp {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-.lp-demo-error { margin: 8px 0 0; color: #b91c1c; font-size: 13px; font-weight: 700; }
+.demo-paywall-icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+}
+
+.demo-paywall-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 850;
+  color: var(--text, #0f2a6b);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+}
+
+.demo-paywall-dialog p {
+  margin: 0 auto 26px;
+  max-width: 360px;
+  color: var(--text-secondary, #64748b);
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.demo-paywall-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface-2, #f8fafc);
+  color: var(--text-secondary, #64748b);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.demo-paywall-close:hover {
+  background: var(--border, #e2e8f0);
+  color: var(--text, #0f172a);
+}
+
+.demo-paywall-subscribe {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 22px;
+  background: linear-gradient(90deg, #1859cf 0%, #2563eb 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.demo-paywall-subscribe:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+}
+
+[data-theme="dark"] .demo-paywall-dialog, .dark .demo-paywall-dialog {
+  background: var(--surface, #1e293b);
+  border-color: #334155;
+  color: var(--text, #f8fafc);
+}
+
+[data-theme="dark"] .demo-paywall-icon-wrap {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #475569;
+}
+
+[data-theme="dark"] .demo-paywall-close {
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
+}

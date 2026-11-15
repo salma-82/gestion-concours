@@ -11804,7 +11804,8 @@ html.dark #root .landing-root .lp-pricing-section .lp-plan-card.is-featured .lp-
 
 /* Home header and hero: match the supplied reference and fit tablet widths. */
 #root .landing-root {
-  background-size: 56px 56px !important;
+  background-size: 72px 72px !important;
+  background-position: 0 bottom !important;
 }
 
 #root .landing-root .lp-nav {
@@ -12843,27 +12844,28 @@ html.dark #root .landing-root .lp-three-steps-eyebrow {
   height: 60px !important;
   min-height: 60px !important;
   padding: 0 22px 0 64px !important;
-  border: 1px solid rgba(255, 255, 255, .2) !important;
+  border: 1px solid #dce5f3 !important;
   border-radius: 14px !important;
-  background: linear-gradient(135deg, #315fae, #244b94) !important;
-  color: #fff !important;
+  background: #fff !important;
+  color: #24478d !important;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: .01em;
-  box-shadow: 0 8px 18px rgba(27, 60, 120, .24) !important;
+  box-shadow: 0 8px 18px rgba(27, 55, 111, .12) !important;
   transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
 #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover {
-  border-color: rgba(255, 255, 255, .3) !important;
-  background: linear-gradient(135deg, #3a6bbd, #2c58a3) !important;
+  border-color: #b9cbea !important;
+  background: #f8faff !important;
+  color: #1b3976 !important;
   transform: translateY(-2px);
-  box-shadow: 0 11px 22px rgba(27, 60, 120, .3) !important;
+  box-shadow: 0 11px 22px rgba(27, 55, 111, .18) !important;
 }
 
 #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:active {
   transform: translateY(0);
-  box-shadow: 0 5px 12px rgba(27, 60, 120, .22) !important;
+  box-shadow: 0 5px 12px rgba(27, 55, 111, .12) !important;
 }
 
 #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:focus-visible {
@@ -12874,13 +12876,13 @@ html.dark #root .landing-root .lp-three-steps-eyebrow {
 #root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary::after {
   display: inline-block !important;
   margin-left: 10px;
-  color: #fff;
+  color: #24478d;
   content: "\279C" !important;
   font-size: 22px;
   font-weight: 900;
   line-height: 1;
   -webkit-text-stroke: .35px currentColor;
-  text-shadow: 0 0 1px rgba(255, 255, 255, .55);
+  text-shadow: none;
   transition: transform 160ms ease;
 }
 
@@ -12902,5 +12904,356 @@ html.dark #root .landing-root .lp-three-steps-eyebrow {
     padding-left: 58px !important;
     font-size: 15px;
   }
+}
+
+/* Keep the orange roadmap dotted line behind every preview card. */
+#root .landing-root #methodologie .lp-roadmap-list {
+  isolation: isolate;
+}
+
+#root .landing-root #methodologie .lp-roadmap-route {
+  z-index: -1 !important;
+}
+
+#root .landing-root #methodologie .lp-roadmap-step {
+  position: relative;
+  z-index: 1 !important;
+}
+
+#root .landing-root #methodologie .lp-roadmap-preview {
+  position: relative;
+  z-index: 10 !important;
+  isolation: isolate;
+}
+
+/* Keep the homepage proof points legible when the in-app dark theme is active. */
+html[data-theme="dark"] #root .landing-root .lp-stats-section,
+html.dark #root .landing-root .lp-stats-section {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-inner,
+html.dark #root .landing-root .lp-stats-inner {
+  border-color: #34445f !important;
+  background: linear-gradient(135deg, #17243a 0%, #111b2d 100%) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, .28) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-intro h3,
+html.dark #root .landing-root .lp-stats-intro h3 {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-intro p,
+html.dark #root .landing-root .lp-stats-intro p {
+  color: #c3cee0 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-section .lp-stat-card,
+html.dark #root .landing-root .lp-stats-section .lp-stat-card {
+  border: 1px solid #354965 !important;
+  background: linear-gradient(145deg, #1d2c45 0%, #19263c 100%) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .2) !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-section .lp-stat-card strong,
+html.dark #root .landing-root .lp-stats-section .lp-stat-card strong {
+  color: #f8fafc !important;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-section .lp-stat-card > span,
+html.dark #root .landing-root .lp-stats-section .lp-stat-card > span {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-stats-section .stat-accent,
+html.dark #root .landing-root .lp-stats-section .stat-accent {
+  color: #93c5fd !important;
+}
+
+/* Keep the copyright visible in its normal footer position without a scroll reveal. */
+#root .landing-root .lp-footer-bottom {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+}
+
+/* Reuse the exact logo artwork shown in the homepage navigation. */
+#root .landing-root .lp-footer-wordmark {
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px 0 20px;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+}
+
+#root .landing-root .lp-footer-logo-image {
+  display: block;
+  width: clamp(220px, 22vw, 280px);
+  max-width: 100%;
+  height: auto;
+  max-height: 96px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+@media (max-width: 760px) {
+  #root .landing-root .lp-footer-logo-image {
+    width: clamp(200px, 64vw, 250px);
+    max-height: 86px;
+  }
+}
+
+/* Give the complete footer a light surface so the blue navbar logo stands out. */
+#root .landing-root .lp-footer,
+html[data-theme="dark"] #root .landing-root .lp-footer,
+html.dark #root .landing-root .lp-footer {
+  border-top: 0 !important;
+  background: #f4f7fc !important;
+  background-image:
+    linear-gradient(rgba(119, 145, 186, .075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(119, 145, 186, .075) 1px, transparent 1px) !important;
+  background-size: 72px 72px !important;
+  background-position: 0 bottom !important;
+  color: #24344d !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-brand p,
+#root .landing-root .lp-footer .lp-footer-made-in,
+#root .landing-root .lp-footer .lp-footer-col a,
+#root .landing-root .lp-footer .lp-footer-bottom,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-brand p,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-made-in,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-col a,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-bottom,
+html.dark #root .landing-root .lp-footer .lp-footer-brand p,
+html.dark #root .landing-root .lp-footer .lp-footer-made-in,
+html.dark #root .landing-root .lp-footer .lp-footer-col a,
+html.dark #root .landing-root .lp-footer .lp-footer-bottom {
+  color: #42536c !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-wordmark,
+#root .landing-root .lp-footer .lp-footer-social-block > strong,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-block > strong,
+html.dark #root .landing-root .lp-footer .lp-footer-social-block > strong {
+  color: #182b49 !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-col h4,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-col h4,
+html.dark #root .landing-root .lp-footer .lp-footer-col h4 {
+  color: #a34b12 !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-arrow,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-arrow,
+html.dark #root .landing-root .lp-footer .lp-footer-arrow {
+  color: #a34b12 !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-social-link,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-link,
+html.dark #root .landing-root .lp-footer .lp-footer-social-link {
+  border-color: #bdcce0 !important;
+  background: transparent !important;
+  color: #243b5e !important;
+}
+
+#root .landing-root .lp-footer .lp-footer-social-link:hover,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-link:hover,
+html.dark #root .landing-root .lp-footer .lp-footer-social-link:hover {
+  border-color: #91a8c9 !important;
+  background: #e6edf7 !important;
+}
+
+/* Restore a cohesive dark footer when the site theme is dark. */
+html[data-theme="dark"] #root .landing-root .lp-footer,
+html.dark #root .landing-root .lp-footer {
+  border-top: 0 !important;
+  background: #080d18 !important;
+  background-image:
+    linear-gradient(rgba(143, 176, 238, .08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 176, 238, .08) 1px, transparent 1px) !important;
+  background-size: 72px 72px !important;
+  background-position: 0 bottom !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-brand p,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-made-in,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-col a,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-bottom,
+html.dark #root .landing-root .lp-footer .lp-footer-brand p,
+html.dark #root .landing-root .lp-footer .lp-footer-made-in,
+html.dark #root .landing-root .lp-footer .lp-footer-col a,
+html.dark #root .landing-root .lp-footer .lp-footer-bottom {
+  color: #c1ccdd !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-block > strong,
+html.dark #root .landing-root .lp-footer .lp-footer-social-block > strong {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-col h4,
+html.dark #root .landing-root .lp-footer .lp-footer-col h4,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-arrow,
+html.dark #root .landing-root .lp-footer .lp-footer-arrow {
+  color: #ff9b52 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-link,
+html.dark #root .landing-root .lp-footer .lp-footer-social-link {
+  border-color: #39475c !important;
+  background: rgba(255, 255, 255, .025) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-social-link:hover,
+html.dark #root .landing-root .lp-footer .lp-footer-social-link:hover {
+  border-color: #526b8e !important;
+  background: #14213a !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a,
+html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a.is-active,
+html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:hover,
+html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:focus-visible,
+html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a.is-active,
+html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:hover,
+html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a:focus-visible {
+  background: rgba(110, 160, 255, .14) !important;
+  color: #93c5fd !important;
+}
+
+html[data-theme="dark"] #root .landing-root,
+html.dark #root .landing-root {
+  background-image: none !important;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer,
+html.dark #root .landing-root .lp-footer {
+  background-image: none !important;
+}
+
+/* Keep the mobile drawer readable above the page's decorative background. */
+@media (max-width: 1023px) {
+  #root .landing-root > .lp-mobile-menu {
+    position: fixed !important;
+    top: 84px !important;
+    right: 12px;
+    left: 12px;
+    z-index: 1001;
+    width: auto;
+    max-width: 480px;
+    max-height: calc(100vh - 96px);
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    border: 1px solid #dbe4f2;
+    border-radius: 20px;
+    background: #fff !important;
+    background-color: #fff !important;
+    background-image: none !important;
+    box-shadow: 0 16px 40px rgba(24, 42, 75, .2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  #root .landing-root > .lp-mobile-menu > a {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    color: #344665 !important;
+    font-size: 15px;
+    line-height: 1.3;
+    text-decoration: none;
+  }
+
+  #root .landing-root > .lp-mobile-menu > a:hover,
+  #root .landing-root > .lp-mobile-menu > a:focus-visible {
+    background: #eef3ff !important;
+    color: #244f9d !important;
+  }
+
+  #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #e5ebf5;
+  }
+
+  #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions > div {
+    min-height: 44px;
+    padding: 0 !important;
+    color: #344665;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1023px) {
+  #root .landing-root > .lp-mobile-menu {
+    top: 112px !important;
+    right: 20px;
+    left: auto;
+    width: min(360px, calc(100vw - 40px));
+    max-height: calc(100dvh - 124px);
+  }
+}
+
+@media (max-width: 760px) {
+  #root .landing-root > .lp-mobile-menu {
+    top: 84px !important;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 96px);
+    max-height: calc(100dvh - 96px);
+  }
+}
+
+@media (max-width: 380px) {
+  #root .landing-root .lp-nav .lp-home-theme-toggle { display: none !important; }
+  #root .landing-root .lp-nav .lp-nav-actions { gap: 4px; }
+  #root .landing-root .lp-nav .lp-nav-actions > .lp-btn-primary { padding: 6px 8px; font-size: 10px; }
+  #root .landing-root .lp-nav .lp-menu-toggle { width: 34px; height: 34px; }
+}
+
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu,
+html.dark #root .landing-root > .lp-mobile-menu {
+  border-color: #2b3a59 !important;
+  background: #111832 !important;
+  background-color: #111832 !important;
+  color: #e5eaf3;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .42);
+}
+
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu > a,
+html.dark #root .landing-root > .lp-mobile-menu > a,
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions > div,
+html.dark #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions > div {
+  color: #e5eaf3 !important;
+}
+
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu > a:hover,
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu > a:focus-visible,
+html.dark #root .landing-root > .lp-mobile-menu > a:hover,
+html.dark #root .landing-root > .lp-mobile-menu > a:focus-visible {
+  background: #202d55 !important;
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions,
+html.dark #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions {
+  border-color: #2b3a59;
 }
 

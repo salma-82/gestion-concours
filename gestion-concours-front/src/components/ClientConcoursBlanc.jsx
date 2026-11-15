@@ -243,7 +243,7 @@ export default function ClientConcoursBlanc() {
         width: '100%',
         maxWidth: 'none',
         margin: '0',
-        padding: '20px 20px 60px',
+        padding: '8px 20px 60px',
         boxSizing: 'border-box',
         fontFamily: "'Nunito', system-ui, -apple-system, sans-serif"
       }}>
@@ -252,9 +252,8 @@ export default function ClientConcoursBlanc() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '20px',
-          paddingBottom: '14px',
-          borderBottom: '1px solid var(--border, #e2e8f0)'
+          marginBottom: '12px',
+          paddingBottom: 0
         }}>
           <button
             type="button"
@@ -263,48 +262,27 @@ export default function ClientConcoursBlanc() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'var(--surface, #ffffff)',
-              border: '1.5px solid var(--border, #cbd5e1)',
-              borderRadius: '9999px',
-              padding: '9px 18px',
-              fontSize: '13.5px',
-              fontWeight: 800,
-              color: 'var(--text, #0f172a)',
+              background: '#eaf2ff',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '7px 14px',
+              fontSize: '13px',
+              fontWeight: 750,
+              color: '#1d4ed8',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+              boxShadow: 'none'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-2, #f1f5f9)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface, #ffffff)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eaf2ff'; }}
           >
             ← Retour aux concours blancs
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              fontSize: '12px',
-              fontWeight: 800,
-              padding: '4px 12px',
-              borderRadius: '9999px'
-            }}>
-              {activeConcours.matiere || 'Concours blanc'}
-            </span>
-            <span style={{ fontSize: '15px', fontWeight: 850, color: 'var(--text, #0f172a)' }}>
-              {activeConcours.titre}
-            </span>
-          </div>
         </div>
 
-        {/* Cadre du QCM */}
-        <div style={{
-          background: 'var(--surface, #ffffff)',
-          borderRadius: '20px',
-          border: '1px solid var(--border, #e2e8f0)',
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
-        }}>
+        {/* QCM intégré directement dans la page */}
+        <div style={{ width: '100%', maxWidth: 'none', margin: 0 }}>
           {activeConcours.htmlUrl ? (
             <TrackedQcmFrame
               src={getFullUrl(activeConcours.htmlUrl)}
