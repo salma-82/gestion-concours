@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { filterByStudentPack, getSchoolCode } from '../packAccess';
+import { getSchoolCode, isSchoolIncluded } from '../packAccess';
 import { toBackendResourceUrl } from '../backendResourceUrl';
 import { recordStudentActivity, getStudentScope } from '../studentProgress';
 import TrackedQcmFrame from './TrackedQcmFrame';
@@ -100,7 +100,8 @@ export default function ClientConcours() {
     try {
       const res = await axios.get(`${API_BASE}/api/concours`);
       const data = Array.isArray(res.data) ? res.data : [];
-      setConcoursList(filterByStudentPack(data));
+      // Keep every published contest visible. Pack access is checked before loading its QCM below.
+      setConcoursList(data);
     } catch (err) {
       console.error("Erreur chargement concours:", err);
       setError("Impossible de charger les concours pour le moment. Veuillez vérifier la connexion au serveur.");
@@ -454,6 +455,53 @@ export default function ClientConcours() {
     } catch {}
   };
 
+  const renderSubjectButton = (subKey) => {
+    const conc = currentOpenYearData.subjectsMap[subKey];
+    const prog = getConcoursProgress(conc);
+    const isExpanded = subKey === activeSubject;
+    const isSubLocked = isDemoMode() && !isDemoFree(conc);
+    const displayName = getSubjectDisplayTitle(subKey);
+
+    return (
+      <button
+        type="button"
+        key={subKey}
+        className={`concours-subject-accordion${isExpanded ? ' is-active' : ''}`}
+        aria-pressed={isExpanded}
+        onClick={() => {
+          if (isSubLocked) {
+            window.dispatchEvent(new CustomEvent('econcours-demo-paywall'));
+            return;
+          }
+          setActiveSubject(subKey);
+          const nextQ = prog.answeredCount < prog.totalQuestions ? prog.answeredCount + 1 : 1;
+          setActiveQuestion(nextQ);
+        }}
+        title={isSubLocked ? 'Contenu réservé aux abonnés' : `Ouvrir ${displayName}`}
+      >
+        <span className="concours-subject-title-wrap">
+          <span className="concours-subject-accent" style={{ backgroundColor: isSubLocked ? '#94a3b8' : '#2563eb' }} />
+          <span className="concours-subject-title" style={{ color: isSubLocked ? '#64748b' : 'var(--text, #0f2a6b)' }}>
+            {displayName} {isSubLocked && <span aria-label="Verrouillé">🔒</span>}
+          </span>
+        </span>
+        <svg
+          className="concours-subject-chevron"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+    );
+  };
+
   return (
     <div style={{
       maxWidth: 'none',
@@ -621,6 +669,8 @@ export default function ClientConcours() {
                   style={{
                     position: 'relative',
                     backgroundColor: 'var(--surface, #ffffff)',
+                    boxSizing: 'border-box',
+                    height: '284px',
                     borderRadius: '26px',
                     border: '1px solid var(--border, #e2e8f0)',
                     boxShadow: '0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
@@ -639,10 +689,11 @@ export default function ClientConcours() {
                   }}
                 >
                   <DemoAccessBadge item={demoAccessItem} />
-                  {/* Bannière bleue dégradée avec grande année, mascotte et boutons matières réelles (hauteur identique à la page Cours : 182px) */}
+                  {/* Bannière bleue compacte avec grande année, mascotte et boutons matières réelles */}
                   <div style={{
                     position: 'relative',
-                    height: '182px',
+                    height: '110px',
+                    flex: '0 0 110px',
                     background: 'linear-gradient(135deg, #1859cf 0%, #2563eb 52%, #38a3ff 100%)',
                     overflow: 'hidden',
                     userSelect: 'none'
@@ -744,10 +795,12 @@ export default function ClientConcours() {
 
                   {/* Corps de la carte */}
                   <div style={{
-                    padding: '20px 22px',
+                    boxSizing: 'border-box',
+                    minHeight: 0,
+                    padding: '10px 14px 12px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
+                    gap: '8px',
                     flex: 1
                   }}>
                     <h3 style={{
@@ -827,7 +880,7 @@ export default function ClientConcours() {
                       style={{
                         border: 'none',
                         borderRadius: '9999px',
-                        padding: '12px 20px',
+                        padding: '8px 16px',
                         fontFamily: 'inherit',
                         fontWeight: 800,
                         fontSize: '14px',
@@ -837,7 +890,7 @@ export default function ClientConcours() {
                         boxShadow: '0 4px 14px rgba(24, 101, 242, 0.28)',
                         transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                         width: '100%',
-                        marginTop: '4px'
+                        marginTop: 'auto'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-1px)';
@@ -947,38 +1000,97 @@ export default function ClientConcours() {
               background-color: rgba(37, 99, 235, 0.18) !important;
               border-color: #60a5fa !important;
             }
+            .concours-question-item.is-correct {
+              border-color: #16a34a !important;
+              background-color: #e8f7ee !important;
+            }
+            .concours-question-item.is-wrong {
+              border-color: #ef2424 !important;
+              background-color: #feecec !important;
+            }
+            .concours-question-item.is-correct.is-current,
+            .concours-question-item.is-wrong.is-current {
+              box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16) !important;
+            }
+            .concours-question-status {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 26px;
+              height: 26px;
+              border-radius: 50%;
+              color: #fff;
+              font-size: 15px;
+              font-weight: 900;
+              line-height: 1;
+              flex: 0 0 auto;
+            }
+            .concours-question-status.is-correct { background-color: #16a34a; }
+            .concours-question-status.is-wrong { background-color: #ef2424; }
+            html[data-theme="dark"] .concours-question-item.is-correct {
+              border-color: #34d399 !important;
+              background-color: #123325 !important;
+            }
+            html[data-theme="dark"] .concours-question-item.is-wrong {
+              border-color: #f87171 !important;
+              background-color: #3b2024 !important;
+            }
             html[data-theme="dark"] .concours-question-item > span:first-child {
               color: #e2e8f0 !important;
             }
-            html[data-theme="dark"] .concours-question-item.is-current > span:first-child,
-            html[data-theme="dark"] .concours-question-status {
+            html[data-theme="dark"] .concours-question-item.is-current > span:first-child {
               color: #93c5fd !important;
+            }
+            html[data-theme="dark"] .concours-question-status { color: #fff !important; }
+            .concours-subject-tabs {
+              display: grid;
+              grid-template-columns: minmax(0, 5cm);
+              gap: 8px;
+              margin: 0 0 14px;
             }
             .concours-subject-accordion {
               display: flex;
               align-items: center;
               justify-content: space-between;
-              width: 3cm;
-              max-width: 3cm;
+              width: 5cm;
+              max-width: 5cm;
+              min-width: 0;
+              min-height: 44px;
               box-sizing: border-box;
               gap: 6px;
-              padding: 8px;
+              padding: 8px 9px;
               border-radius: 13px;
               border: 1px solid var(--border-subtle, #edf2f7);
               background-color: var(--surface, #ffffff);
               cursor: pointer;
-              margin-top: 10px;
+              margin: 0;
+              color: var(--text, #0f2a6b);
+              font: inherit;
+              text-align: left;
               transition: all 0.15s ease;
               user-select: none;
             }
-            .concours-subject-accordion > div:first-child {
+            .concours-subject-title-wrap {
+              display: flex;
+              align-items: center;
+              flex: 1;
               min-width: 0;
-              gap: 4px !important;
+              gap: 7px;
+            }
+            .concours-subject-accent {
+              display: block;
+              flex: 0 0 3.5px;
+              height: 20px;
+              border-radius: 9999px;
             }
             .concours-subject-title {
-              font-size: 12px !important;
-              overflow-wrap: normal;
+              flex: 1;
+              min-width: 0;
+              overflow: hidden;
+              text-overflow: ellipsis;
               white-space: nowrap;
+              font-size: 12px !important;
+              line-height: 1.2;
             }
             .concours-subject-chevron {
               flex-shrink: 0;
@@ -987,6 +1099,14 @@ export default function ClientConcours() {
               background-color: var(--surface-hover, #f8fafc);
               border-color: var(--border, #e2e8f0);
             }
+            .concours-subject-accordion.is-active {
+              border-color: #3b82f6 !important;
+              background-color: #eff6ff !important;
+              box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+            }
+            .concours-subject-accordion.is-active .concours-subject-chevron {
+              transform: rotate(180deg);
+            }
             html[data-theme="dark"] .concours-subject-accordion {
               background-color: var(--surface, #1e293b) !important;
               border-color: #334155 !important;
@@ -994,6 +1114,10 @@ export default function ClientConcours() {
             html[data-theme="dark"] .concours-subject-accordion:hover {
               background-color: var(--surface-hover, #263854) !important;
               border-color: #475569 !important;
+            }
+            html[data-theme="dark"] .concours-subject-accordion.is-active {
+              background-color: rgba(37, 99, 235, 0.18) !important;
+              border-color: #60a5fa !important;
             }
             html[data-theme="dark"] .concours-subject-title {
               color: #f1f5f9 !important;
@@ -1008,6 +1132,10 @@ export default function ClientConcours() {
               .concours-layout-grid {
                 grid-template-columns: 1fr !important;
                 gap: 12px;
+              }
+              .concours-subject-tabs {
+                grid-template-columns: minmax(0, 5cm);
+                justify-content: start;
               }
               .concours-sidebar-wrap {
                 position: static !important;
@@ -1037,18 +1165,23 @@ export default function ClientConcours() {
                 justify-content: center !important;
                 padding: 10px !important;
               }
-              .concours-question-status,
               .concours-question-item svg {
                 display: none !important;
               }
+              .concours-question-status { display: inline-flex !important; }
               .concours-qcm-panel {
                 min-height: calc(100vh - 190px) !important;
                 padding: 8px 0 !important;
               }
             }
+            @media (max-width: 280px) {
+              .concours-subject-tabs { grid-template-columns: minmax(0, 1fr); }
+              .concours-subject-accordion { width: 100%; max-width: none; }
+              .concours-question-item { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
+            }
           `}</style>
 
-          {/* SIDEBAR VERTICAL COMPACT (INSPIRÉ DE LA CAPTURE FOURNIE) */}
+          {/* Navigation verticale des matières et liste des questions */}
           <aside className="concours-sidebar-wrap">
             {/* Bouton Changer de concours (Pill bleu doux avec chevron gauche) */}
             <button
@@ -1062,75 +1195,53 @@ export default function ClientConcours() {
               <span>Changer de concours</span>
             </button>
 
-            {/* Matières réelles sous forme de sections accordéon sans icônes */}
+            {currentYearSubjects.length > 0 && (
+              <div className="concours-subject-tabs" role="group" aria-label="Matières du concours">
+                {[activeSubject, ...currentYearSubjects.filter(subKey => subKey !== activeSubject)]
+                  .filter(Boolean)
+                  .map(subKey => renderSubjectButton(subKey))}
+              </div>
+            )}
+
+            {/* Questions de la matière sélectionnée */}
             {currentYearSubjects.map(subKey => {
-              const conc = currentOpenYearData.subjectsMap[subKey];
-              const prog = getConcoursProgress(conc);
-              const isExpanded = (subKey === activeSubject);
-              const displayName = getSubjectDisplayTitle(subKey);
+              if (subKey !== activeSubject) return null;
+              const prog = getConcoursProgress(currentOpenYearData.subjectsMap[subKey]);
 
-              if (isExpanded) {
-                return (
-                  <div key={subKey} className="concours-sidebar-section" style={{ marginBottom: '12px' }}>
-                    {/* En-tête de la matière ouverte : Nom en gras + badge score/questions */}
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '14px',
-                        gap: '8px',
-                        userSelect: 'none'
-                      }}
-                    >
-                      <h2 style={{
-                        margin: 0,
-                        fontSize: '24px',
-                        fontWeight: 850,
-                        color: 'var(--text, #0f2a6b)',
-                        letterSpacing: '-0.35px',
-                        minWidth: 0,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {displayName}
-                      </h2>
-                    </div>
+              return (
+                <div key={subKey} className="concours-sidebar-section">
+                  <div className="concours-question-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {Array.from({ length: prog.totalQuestions }, (_, i) => {
+                      const qNum = i + 1;
+                      const isCurrent = qNum === activeQuestion;
+                      const ans = prog.answers?.[qNum];
+                      const isAnswered = Boolean(ans);
+                      const isCorrect = ans?.isCorrect === true;
+                      const isWrong = ans?.isCorrect === false;
 
-                    {/* Liste des questions Q1, Q2, Q3... sans doublons */}
-                    <div className="concours-question-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {Array.from({ length: prog.totalQuestions }, (_, i) => {
-                        const qNum = i + 1;
-                        const isCurrent = (qNum === activeQuestion);
-                        const ans = prog.answers?.[qNum];
-                        const isAnswered = Boolean(ans);
-
-                        return (
-                          <div
-                            key={qNum}
-                            className={`concours-question-item${isCurrent ? ' is-current' : ''}`}
-                            onClick={() => handleSelectQuestion(qNum)}
-                          >
-                            <span style={{
-                              fontSize: '14.5px',
-                              fontWeight: 800,
-                              color: isCurrent ? '#1d4ed8' : 'var(--text, #0f2a6b)'
-                            }}>
-                              Q{qNum}
-                            </span>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {!isCurrent && isAnswered ? (
-                                <span style={{
-                                  fontSize: '12px',
-                                  fontWeight: 750,
-                                  color: '#10b981'
-                                }}>
-                                  Terminé
-                                </span>
-                              ) : null}
-
+                      const questionCard = (
+                        <div
+                          key={`question-${qNum}`}
+                          className={`concours-question-item${isCurrent ? ' is-current' : ''}${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}`}
+                          onClick={() => handleSelectQuestion(qNum)}
+                        >
+                          <span style={{
+                            fontSize: '14.5px',
+                            fontWeight: 800,
+                            color: isCurrent && !isAnswered ? '#1d4ed8' : 'var(--text, #0f2a6b)'
+                          }}>
+                            Q{qNum}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {isCorrect || isWrong ? (
+                              <span
+                                className={`concours-question-status ${isCorrect ? 'is-correct' : 'is-wrong'}`}
+                                aria-label={isCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                                title={isCorrect ? 'Réponse correcte' : 'Réponse incorrecte'}
+                              >
+                                {isCorrect ? '✓' : '×'}
+                              </span>
+                            ) : (
                               <svg
                                 width="15"
                                 height="15"
@@ -1143,71 +1254,23 @@ export default function ClientConcours() {
                               >
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
-                            </div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+
+                      return questionCard;
+                    })}
                   </div>
-                );
-              }
-
-              // Section matière réduite : barre bleue à gauche, libellé sans icône, chevron bas
-              const isSubLocked = isDemoMode() && !isDemoFree(conc);
-
-              return (
-                <div
-                  key={subKey}
-                  className="concours-subject-accordion"
-                  onClick={() => {
-                    if (isSubLocked) {
-                      window.dispatchEvent(new CustomEvent('econcours-demo-paywall'));
-                      return;
-                    }
-                    setActiveSubject(subKey);
-                    const nextQ = prog.answeredCount < prog.totalQuestions ? prog.answeredCount + 1 : 1;
-                    setActiveQuestion(nextQ);
-                  }}
-                  title={isSubLocked ? 'Contenu réservé aux abonnés' : `Ouvrir ${displayName}`}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '3.5px',
-                      height: '20px',
-                      borderRadius: '9999px',
-                      backgroundColor: isSubLocked ? '#94a3b8' : '#2563eb'
-                    }} />
-                    <span className="concours-subject-title" style={{
-                      fontSize: '17px',
-                      fontWeight: 800,
-                      color: isSubLocked ? '#64748b' : 'var(--text, #0f2a6b)'
-                    }}>
-                      {displayName} {isSubLocked && <span style={{ fontSize: '13px', marginLeft: '4px' }}>🔒</span>}
-                    </span>
-                  </div>
-
-                  <svg
-                    className="concours-subject-chevron"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--text, #0f2a6b)"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
                 </div>
               );
             })}
+
           </aside>
 
           {/* CONTENU PRINCIPAL DE DROITE (CHARGEMENT DIRECT DU CONTENU QCM HTML DE L'ADMIN) */}
           <main className="concours-qcm-panel" style={{
             padding: '8px 0',
-            minHeight: '640px',
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -1279,8 +1342,29 @@ export default function ClientConcours() {
                 </div>
 
                 {/* Affichage du QCM HTML réel ajouté par l'administrateur */}
-                {currentActiveConcours.htmlUrl ? (
-                  <div style={{ flex: 1, minHeight: '680px', borderRadius: '16px', overflow: 'hidden' }}>
+                {!isSchoolIncluded(currentActiveConcours.ecole) ? (
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '60px 20px',
+                    backgroundColor: 'var(--bg, #f8fafc)',
+                    borderRadius: '16px',
+                    border: '1.5px dashed var(--border, #cbd5e1)',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '42px', marginBottom: '12px' }}>🔒</div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 800, color: 'var(--text, #0f2a6b)' }}>
+                      Concours visible — accès réservé
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--text-secondary, #64748b)', maxWidth: '420px' }}>
+                      Cette épreuve est disponible dans le pack {getSchoolCode(currentActiveConcours.ecole) || 'correspondant'}.
+                    </p>
+                  </div>
+                ) : currentActiveConcours.htmlUrl ? (
+                  <div style={{ flex: 1, minHeight: 0, borderRadius: '16px', overflow: 'visible' }}>
                     <TrackedQcmFrame
                       src={getPdfUrl(viewerTab === 'sujet' ? currentActiveConcours.htmlUrl : (currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl || currentActiveConcours.htmlUrl))}
                       title={`${currentActiveConcours.titre} - ${viewerTab}`}
@@ -1290,6 +1374,7 @@ export default function ClientConcours() {
                       subject={activeSubject}
                       school={currentActiveConcours.ecole || requestedEcole || ''}
                       year={openYear}
+                      enableTimer={viewerTab === 'sujet'}
                       style={{ width: '100%', height: '80vh', border: 'none', display: 'block', background: 'transparent' }}
                     />
                   </div>

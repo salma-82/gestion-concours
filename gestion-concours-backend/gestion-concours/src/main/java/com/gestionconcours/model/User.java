@@ -25,6 +25,9 @@ public class User {
 
     private String telephone;
 
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;
 

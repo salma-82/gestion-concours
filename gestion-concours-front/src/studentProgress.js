@@ -22,6 +22,11 @@ export const getStudentProgressKey = () => `student-progress:${getStudentScope()
 export const getStudentPlanningKey = () => `student-planning:${getStudentScope()}`;
 export const getStudentMistakesKey = () => `student-qcm-mistakes:${getStudentScope()}`;
 
+const getCurrentStudentId = () => {
+  const id = Number(readJson('user', {})?.id);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+};
+
 export const readStudentProgress = () => {
   const items = readJson(getStudentProgressKey(), []);
   return Array.isArray(items) ? items : [];
@@ -45,6 +50,58 @@ export const readStudentPlanning = () => {
 export const readStudentMistakes = () => {
   const items = readJson(getStudentMistakesKey(), []);
   return Array.isArray(items) ? items : [];
+};
+
+let localMistakeSyncPromise = null;
+
+export const syncLocalSavedStudentMistakes = () => {
+  if (localMistakeSyncPromise) return localMistakeSyncPromise;
+
+  localMistakeSyncPromise = (async () => {
+    const token = localStorage.getItem('authToken');
+    const studentId = getCurrentStudentId();
+    if (!token || !studentId) return false;
+
+    const pending = readStudentMistakes().filter((item) => item.savedForReview && !item.databaseId);
+    if (!pending.length) return false;
+
+    const mistakes = pending.map((item) => ({
+      ...item,
+      sourceType: item.sourceType || 'QCM',
+      resourceId: String(item.resourceId),
+      resourceTitle: String(item.resourceTitle || 'QCM').slice(0, 300),
+      questionId: String(item.questionId ?? item.questionNumber ?? item.questionText ?? '').slice(0, 100),
+      attemptId: item.attemptId || 'manual',
+      savedForReview: true,
+      savedManually: item.savedManually === true
+    }));
+
+    try {
+      const response = await fetch('/api/student-mistakes/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ studentId, mistakes })
+      });
+      if (!response.ok) return false;
+
+      const result = await response.json();
+      const persisted = Array.isArray(result?.mistakes) ? result.mistakes : [];
+      const databaseIds = new Map(pending.map((item, index) => [String(item.id), persisted[index]?.id]));
+      const updated = readStudentMistakes().map((item) => {
+        const databaseId = databaseIds.get(String(item.id));
+        return databaseId ? { ...item, databaseId } : item;
+      });
+      localStorage.setItem(getStudentMistakesKey(), JSON.stringify(updated));
+      return true;
+    } catch (error) {
+      console.warn('Impossible de synchroniser les erreurs sauvegardÃ©es.', error);
+      return false;
+    }
+  })();
+
+  return localMistakeSyncPromise.finally(() => {
+    localMistakeSyncPromise = null;
+  });
 };
 
 const saveProgress = (items) => {
@@ -242,6 +299,8 @@ export const saveStudentMistakesManually = async ({
     throw new Error('Aucune erreur complète à sauvegarder.');
   }
 
+  const studentId = getCurrentStudentId();
+  if (!studentId) throw new Error('Impossible de retrouver votre compte. Reconnectez-vous puis rÃ©essayez.');
   const formatted = mistakes.map((mistake) => ({
     ...mistake,
     sourceType: mistake.sourceType || sourceType,
@@ -259,7 +318,7 @@ export const saveStudentMistakesManually = async ({
   const response = await fetch('/api/student-mistakes/batch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ mistakes: formatted })
+    body: JSON.stringify({ studentId, mistakes: formatted })
   });
   if (!response.ok) {
     const message = await response.text().catch(() => '');
@@ -310,7 +369,10 @@ export const deleteStudentMistake = async (id) => {
   if (/^\d+$/.test(cleanId)) {
     const token = localStorage.getItem('authToken');
     if (!token) throw new Error('Votre session a expiré. Reconnectez-vous pour supprimer cette erreur.');
-    const response = await fetch(`/api/student-mistakes/${cleanId}`, {
+    const studentId = getCurrentStudentId();
+    if (!studentId) throw new Error('Impossible de retrouver votre compte. Reconnectez-vous puis rÃ©essayez.');
+    const query = `?studentId=${encodeURIComponent(studentId)}`;
+    const response = await fetch(`/api/student-mistakes/${cleanId}${query}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -344,6 +406,8 @@ export const saveStudentQuestionManually = async ({
     throw new Error('Détails de la question incomplets pour la sauvegarde.');
   }
 
+  const studentId = getCurrentStudentId();
+  if (!studentId) throw new Error('Impossible de retrouver votre compte. Reconnectez-vous puis rÃ©essayez.');
   const payload = {
     sourceType,
     resourceId: String(resourceId),
@@ -363,10 +427,10 @@ export const saveStudentQuestionManually = async ({
     explanation: String(explanation || '').slice(0, 2500)
   };
 
-  const response = await fetch('/api/student-mistakes/manual-save', {
+  const response = await fetch('/api/student-mistakes/batch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ studentId, mistakes: [{ ...payload, savedManually: true, savedForReview: true }] })
   });
 
   if (!response.ok) {
@@ -375,10 +439,10 @@ export const saveStudentQuestionManually = async ({
   }
 
   const result = await response.json();
+  const savedMistake = Array.isArray(result?.mistakes) ? result.mistakes[0] : null;
   recordStudentMistake({
     ...payload,
-    id: result?.mistake?.id ? String(result.mistake.id) : undefined,
-    databaseId: result?.mistake?.id,
+    databaseId: savedMistake?.id,
     savedForReview: true,
     savedManually: true
   });

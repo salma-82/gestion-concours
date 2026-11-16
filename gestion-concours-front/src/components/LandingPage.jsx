@@ -770,8 +770,14 @@ export default function LandingPage({ onNavigateToAuth }) {
           <button className="lp-btn-primary" type="button" onClick={() => handleNav('register')}>
             <span>Créer un compte</span>
           </button>
-          <button className="lp-btn-try" type="button" onClick={() => handleNav('login')}>
-            Se connecter
+          <button
+            className="lp-btn-try"
+            type="button"
+            onClick={handleStartDemo}
+            disabled={demoStarting}
+            aria-busy={demoStarting}
+          >
+            {demoStarting ? 'PRÉPARATION…' : 'JARAB FABOR'}
           </button>
           <button
             className="lp-menu-toggle"
@@ -807,8 +813,8 @@ export default function LandingPage({ onNavigateToAuth }) {
           <a href="#faq" onClick={(e) => { e.preventDefault(); handleScrollTo('faq'); }}>
             FAQ
           </a>
-          <a href="/login" onClick={(e) => { e.preventDefault(); handleNav('login'); }}>
-            Se connecter
+          <a href="#hero" onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); handleStartDemo(); }}>
+            {demoStarting ? 'Préparation…' : 'Jarab fabor'}
           </a>
           <div className="lp-mobile-menu-actions">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '4px 0 8px' }}>
@@ -1090,8 +1096,8 @@ export default function LandingPage({ onNavigateToAuth }) {
               >
                 <img className="lp-hero-mascot-art" src={mascotJarabImg} alt="" />
               </div>
-              <button className="lp-btn-hero-primary" type="button" onClick={handleStartDemo} disabled={demoStarting} aria-busy={demoStarting}>
-                <span>{demoStarting ? 'Préparation…' : 'Jarab fabor'}</span>
+              <button className="lp-btn-hero-primary" type="button" onClick={() => handleNav('login')}>
+                <span>Se connecter</span>
               </button>
             </div>
             {demoError && <p className="lp-demo-error" role="alert">{demoError}</p>}
@@ -1405,8 +1411,8 @@ export default function LandingPage({ onNavigateToAuth }) {
                     <svg className="fk-ring" viewBox="0 0 120 120" role="img" aria-label="Progression : 78 %">
                       <defs>
                         <linearGradient id={featureProgressGradientId} x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0" stopColor="#4a80de" />
-                          <stop offset="1" stopColor="#2fb67c" />
+                          <stop offset="0" stopColor="#2e5aac" />
+                          <stop offset="1" stopColor="#f58220" />
                         </linearGradient>
                       </defs>
                       <circle cx="60" cy="60" r="48" fill="none" stroke="var(--line)" strokeWidth="12" />
@@ -1589,7 +1595,7 @@ export default function LandingPage({ onNavigateToAuth }) {
               <ul className="lp-bac-list">
                 <li><span aria-hidden="true">📄</span><div><b>Examens nationaux</b><small>Sujets des années précédentes</small></div></li>
                 <li><span aria-hidden="true">🧬</span><div><b>Cours de SVT</b></div></li>
-                <li><span aria-hidden="true">∑</span><div><b>Cours de Mathématiques</b></div></li>
+                <li><span className="lp-bac-sum-icon" aria-hidden="true">∑</span><div><b>Cours de Mathématiques</b></div></li>
                 <li><span aria-hidden="true">⚙️</span><div><b>Cours de Physique-Chimie</b></div></li>
               </ul>
               <p className="lp-bac-price"><b>0 DH</b> pour le Bac dès que tu t’inscris à une offre concours.</p>
@@ -1609,15 +1615,15 @@ export default function LandingPage({ onNavigateToAuth }) {
         {/* Decorative formula: DNA helix 2 */}
         <div className="lp-bg-formula lp-bg-formula--dna-2" aria-hidden="true">
           <svg viewBox="0 0 70 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 8 Q45 25 18 42 Q-9 59 18 76 Q45 93 18 110" stroke="#818cf8" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M52 8 Q25 25 52 42 Q79 59 52 76 Q25 93 52 110" stroke="#a78bfa" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <line x1="24" y1="17" x2="46" y2="17" stroke="#c4b5fd" strokeWidth="1.2" />
-            <line x1="16" y1="30" x2="54" y2="30" stroke="#ddd6fe" strokeWidth="1" />
-            <line x1="18" y1="42" x2="52" y2="42" stroke="#c4b5fd" strokeWidth="1.2" />
-            <line x1="16" y1="59" x2="54" y2="59" stroke="#ddd6fe" strokeWidth="1" />
-            <line x1="24" y1="68" x2="46" y2="68" stroke="#c4b5fd" strokeWidth="1.2" />
-            <line x1="18" y1="76" x2="52" y2="76" stroke="#ddd6fe" strokeWidth="1" />
-            <line x1="16" y1="93" x2="54" y2="93" stroke="#c4b5fd" strokeWidth="1.2" />
+            <path d="M18 8 Q45 25 18 42 Q-9 59 18 76 Q45 93 18 110" stroke="#2e5aac" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M52 8 Q25 25 52 42 Q79 59 52 76 Q25 93 52 110" stroke="#f58220" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <line x1="24" y1="17" x2="46" y2="17" stroke="#afc1dc" strokeWidth="1.2" />
+            <line x1="16" y1="30" x2="54" y2="30" stroke="#dce5f2" strokeWidth="1" />
+            <line x1="18" y1="42" x2="52" y2="42" stroke="#afc1dc" strokeWidth="1.2" />
+            <line x1="16" y1="59" x2="54" y2="59" stroke="#dce5f2" strokeWidth="1" />
+            <line x1="24" y1="68" x2="46" y2="68" stroke="#afc1dc" strokeWidth="1.2" />
+            <line x1="18" y1="76" x2="52" y2="76" stroke="#dce5f2" strokeWidth="1" />
+            <line x1="16" y1="93" x2="54" y2="93" stroke="#afc1dc" strokeWidth="1.2" />
           </svg>
         </div>
         <div className="lp-section-header">
@@ -1781,8 +1787,8 @@ export default function LandingPage({ onNavigateToAuth }) {
           <svg viewBox="0 0 180 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <line x1="10" y1="70" x2="170" y2="70" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
             <line x1="20" y1="75" x2="20" y2="10" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
-            <path d="M20 50 Q45 10 70 50 Q95 90 120 50 Q145 10 165 50" stroke="#60a5fa" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-            <circle cx="70" cy="50" r="4" fill="#f97316" stroke="#fff" strokeWidth="1.5" />
+            <path d="M20 50 Q45 10 70 50 Q95 90 120 50 Q145 10 165 50" stroke="#2e5aac" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+            <circle cx="70" cy="50" r="4" fill="#f58220" stroke="#fff" strokeWidth="1.5" />
             <text x="130" y="30" fill="#94a3b8" fontSize="13" fontFamily="serif" fontStyle="italic">f = √A</text>
           </svg>
         </div>
@@ -1861,7 +1867,18 @@ export default function LandingPage({ onNavigateToAuth }) {
       {/* ====================================================================
           12. FOOTER
       ==================================================================== */}
-      <footer className="lp-footer">
+      <footer id="landing-footer" className="lp-footer">
+        <div
+          className="lp-footer-surface"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            backgroundImage: 'none',
+            pointerEvents: 'none',
+          }}
+        />
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
             <div className="lp-footer-wordmark">
@@ -1886,7 +1903,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
 
           <div className="lp-footer-col">
-            <h4 style={{ color: '#ff7628' }}>Plateforme</h4>
+            <h4 style={{ color: 'var(--accent)' }}>Plateforme</h4>
             <ul>
               <li><a href="#fonctionnalites" onClick={(e) => { e.preventDefault(); handleScrollTo('fonctionnalites'); }}><span className="lp-footer-arrow">›</span> Fonctionnalités</a></li>
               <li><a href="#methodologie" onClick={(e) => { e.preventDefault(); handleScrollTo('methodologie'); }}><span className="lp-footer-arrow">›</span> Comment ça marche</a></li>
@@ -1895,7 +1912,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
 
           <div className="lp-footer-col">
-            <h4 style={{ color: '#ff7628' }}>Concours</h4>
+            <h4 style={{ color: 'var(--accent)' }}>Concours</h4>
             <ul>
               <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours ENSA</a></li>
               <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Concours ENSAM</a></li>
@@ -1905,7 +1922,7 @@ export default function LandingPage({ onNavigateToAuth }) {
           </div>
 
           <div className="lp-footer-col">
-            <h4 style={{ color: '#ff7628' }}>Espace Membre</h4>
+            <h4 style={{ color: 'var(--accent)' }}>Espace Membre</h4>
             <ul>
               <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('login'); }}><span className="lp-footer-arrow">›</span> Se connecter</a></li>
               <li><a href="#" onClick={(e) => { e.preventDefault(); handleNav('register'); }}><span className="lp-footer-arrow">›</span> Créer un compte</a></li>

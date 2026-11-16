@@ -133,7 +133,6 @@ export default function ClientCoursPage() {
   // Navigation : 'matieres' = grille de cartes, 'reader' = lecture d'un cours HTML
   const [step, setStep] = useState('matieres');
   const [filterPill, setFilterPill] = useState('Toutes');
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Reader state
   const [selectedMatiere, setSelectedMatiere] = useState(null);
@@ -426,26 +425,6 @@ export default function ClientCoursPage() {
           ══════════════════════════════════════ */}
       {step === 'matieres' && (
         <>
-          {/* Barre de recherche */}
-          <div className="client-cours-search-wrap">
-            <span className="client-cours-search-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              className="client-cours-search-input"
-              placeholder="Rechercher un cours..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Rechercher un cours"
-            />
-            {searchQuery && (
-              <button type="button" className="client-cours-search-clear" onClick={() => setSearchQuery('')} aria-label="Effacer la recherche">✕</button>
-            )}
-          </div>
-
           {/* Pilules de filtrage */}
           <div className="client-cours-pills-row" role="tablist" aria-label="Filtre des matières">
             {['Toutes', 'Mathématiques', 'Physique - Chimie', 'Sciences de la Vie et de la Terre', 'Philosophie', 'Anglais'].map((pillLabel) => (
@@ -471,13 +450,8 @@ export default function ClientCoursPage() {
             <>
               {displayedMatieres.map((matiere) => {
                 const chapitres = chapitresForMatiere(matiere);
-                const query = searchQuery.trim().toLowerCase();
-                const filteredChapitres = query
-                  ? chapitres.filter(ch => ch.nom.toLowerCase().includes(query) || ch.cours.some(c => (c.titre || '').toLowerCase().includes(query)))
-                  : chapitres;
-
                 // Si aucun cours n'a été ajouté par l'admin pour cette matière, ne pas l'afficher
-                if (filteredChapitres.length === 0) return null;
+                if (chapitres.length === 0) return null;
 
                 return (
                   <div key={matiere.id}>
@@ -490,7 +464,7 @@ export default function ClientCoursPage() {
 
                     {/* Grille de cartes directement dans la page */}
                     <div className="client-cours-cards-grid">
-                      {filteredChapitres.map((chapitre) => {
+                      {chapitres.map((chapitre) => {
                         const cardData = getChapterCardData(chapitre);
                         const chapterCourses = coursForChapitre(matiere, chapitre.nom);
                         const accessItem = chapterCourses.find(isDemoFree) || chapterCourses[0];
@@ -548,7 +522,7 @@ export default function ClientCoursPage() {
               })}
 
               {/* Si aucune matière n'a de cours */}
-              {displayedMatieres.every(m => chapitresForMatiere(m).length === 0) && !searchQuery && (
+              {displayedMatieres.every(m => chapitresForMatiere(m).length === 0) && (
                 <div className="client-cours-empty-state">
                   <div style={{ fontSize: '42px', marginBottom: '12px' }}>📚</div>
                   <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
@@ -560,16 +534,6 @@ export default function ClientCoursPage() {
                 </div>
               )}
 
-              {/* Si la recherche ne donne rien */}
-              {searchQuery && displayedMatieres.every(m => {
-                const chs = chapitresForMatiere(m);
-                const q = searchQuery.trim().toLowerCase();
-                return chs.filter(ch => ch.nom.toLowerCase().includes(q) || ch.cours.some(c => (c.titre || '').toLowerCase().includes(q))).length === 0;
-              }) && (
-                  <div className="client-cours-empty-state">
-                    Aucun cours correspondant à « {searchQuery} ».
-                  </div>
-                )}
             </>
           )}
         </>

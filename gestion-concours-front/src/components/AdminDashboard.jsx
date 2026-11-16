@@ -493,10 +493,7 @@ export default function AdminDashboard() {
     formData.append('ecole', realEcole);
     formData.append('matiere', realMatiere);
     formData.append('annee', realAnnee);
-    if (realFileSujet) {
-      formData.append('fileHtml', realFileSujet);
-      formData.append('fileSujet', realFileSujet);
-    }
+    if (realFileSujet) formData.append('fileSujet', realFileSujet);
     if (realFileCorrection) {
       formData.append('fileHtmlCorrection', realFileCorrection);
       formData.append('fileCorrection', realFileCorrection);
@@ -535,10 +532,7 @@ export default function AdminDashboard() {
     formData.append('ecole', realEcole);
     formData.append('matiere', realMatiere);
     formData.append('annee', realAnnee);
-    if (realFileSujet) {
-      formData.append('fileHtml', realFileSujet);
-      formData.append('fileSujet', realFileSujet);
-    }
+    if (realFileSujet) formData.append('fileSujet', realFileSujet);
     if (realFileCorrection) {
       formData.append('fileHtmlCorrection', realFileCorrection);
       formData.append('fileCorrection', realFileCorrection);
@@ -2578,15 +2572,15 @@ export default function AdminDashboard() {
 
       {/* ======================== MODALS ======================== */}
 
-      {/* Modal: Ajouter Concours (HTML) */}
+      {/* Modal: Ajouter Concours */}
       {isRealConcoursModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={{ ...styles.modalBox, maxWidth: '520px' }}>
             <div style={styles.modalHeader}>
               <div>
-                <h3 style={styles.modalTitle}>🌐 Ajouter un Concours (Fichiers HTML)</h3>
+                <h3 style={styles.modalTitle}>Ajouter un Concours</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  Importez les fichiers HTML du concours (sujet et corrigé interactifs).
+                  Saisissez les informations du concours et ajoutez son corrigé HTML si nécessaire.
                 </p>
               </div>
               <button onClick={() => setIsRealConcoursModalOpen(false)} style={styles.modalClose}>&times;</button>
@@ -2609,17 +2603,17 @@ export default function AdminDashboard() {
                 <input type="number" placeholder="Ex: 2025" value={realAnnee} onChange={(e) => setRealAnnee(e.target.value)} required style={styles.formInput} />
               </div>
 
-              {/* Fichier HTML Sujet */}
+              {/* Fichier HTML Sujet QCM */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🌐 Fichier HTML Sujet (.html, .htm)</label>
+                <label style={styles.formLabel}>Fichier HTML du sujet QCM (.html, .htm)</label>
                 <input
                   type="file"
                   accept=".html,.htm,text/html"
-                  onChange={(e) => setRealFileSujet(e.target.files[0])}
+                  onChange={(e) => setRealFileSujet(e.target.files[0] || null)}
                   style={styles.formFile}
                 />
                 <small style={{ color: '#2563eb', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
-                  📄 Document HTML interactif du sujet (MathJax, styles CSS supportés).
+                  Ce fichier sera affichÃ© aux Ã©tudiants comme sujet du concours.
                 </small>
               </div>
 
@@ -2640,7 +2634,7 @@ export default function AdminDashboard() {
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsRealConcoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingRealCon} style={{ ...styles.btnSubmit, opacity: loadingRealCon ? 0.7 : 1 }}>
-                  {loadingRealCon ? 'Enregistrement...' : 'Enregistrer le Concours HTML'}
+                  {loadingRealCon ? 'Enregistrement...' : 'Enregistrer le Concours'}
                 </button>
               </div>
             </form>
@@ -2679,17 +2673,16 @@ export default function AdminDashboard() {
                 <input type="number" value={realAnnee} onChange={(e) => setRealAnnee(e.target.value)} required style={styles.formInput} />
               </div>
 
-              {/* Remplacer Sujet HTML */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🌐 Remplacer le Fichier HTML Sujet (Optionnel)</label>
+                <label style={styles.formLabel}>Ajouter ou remplacer le QCM HTML (optionnel)</label>
                 <input
                   type="file"
                   accept=".html,.htm,text/html"
-                  onChange={(e) => setRealFileSujet(e.target.files[0])}
+                  onChange={(e) => setRealFileSujet(e.target.files[0] || null)}
                   style={styles.formFile}
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
-                  Laissez vide pour conserver le sujet actuel.
+                  Sélectionnez le fichier pour rétablir l'affichage du QCM côté étudiant.
                 </small>
               </div>
 

@@ -104,3 +104,17 @@
   .calendar-toolbar { flex-wrap: wrap; }
   .calendar-toolbar > button.calendar-toolbar-add-objective { width: 100%; min-width: 0; flex-basis: 100%; }
 }
+
+/* Compact month view so all calendar weeks fit in the available screen height. */
+.calendar-panel { padding: 14px; }
+.calendar-toolbar { margin-bottom: 10px; }
+.calendar-weekdays > div { padding: 6px 0; }
+.calendar-day {
+  box-sizing: border-box;
+  min-height: 64px;
+  gap: 3px;
+  padding: 4px;
+}
+.calendar-day > span { width: 22px; height: 22px; }
+.calendar-event-chip { padding: 2px 4px; }
+.calendar-legend { margin-top: 8px; padding-top: 8px; }

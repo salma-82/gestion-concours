@@ -113,7 +113,6 @@ export default function ClientResumesPage() {
   // Filtres
   const [selectedSubjectChip, setSelectedSubjectChip] = useState(() => normalizeSubjectChip(requestedMatiere));
   const [selectedStatus, setSelectedStatus] = useState('Tous'); // 'Tous' | 'Commencé' | 'Terminé'
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Données
   const [resumes, setResumes] = useState([]);
@@ -277,16 +276,6 @@ export default function ClientResumesPage() {
   const filteredResumes = useMemo(() => {
     return resumes.filter((r) => {
       // Filtre texte
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const title = String(r.titre || '').toLowerCase();
-        const ch = String(r.chapitre || '').toLowerCase();
-        const mat = String(r.matiere || '').toLowerCase();
-        if (!title.includes(q) && !ch.includes(q) && !mat.includes(q)) {
-          return false;
-        }
-      }
-
       // Filtre statut ('Tous' | 'Commencé' | 'Terminé')
       if (selectedStatus !== 'Tous') {
         const progress = getResumeProgress(r);
@@ -297,7 +286,7 @@ export default function ClientResumesPage() {
 
       return true;
     });
-  }, [resumes, searchQuery, selectedStatus, getResumeProgress]);
+  }, [resumes, selectedStatus, getResumeProgress]);
 
   // Sections visibles selon le chip matière
   const visibleSubjects = useMemo(() => {
@@ -432,33 +421,6 @@ export default function ClientResumesPage() {
   return (
     <div className="client-resumes-container">
       {/* 1. Titre et sous-titre de la page */}
-      {/* 2. Barre de recherche globale */}
-      <div className="client-resumes-search-wrap">
-        <span className="client-resumes-search-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          className="client-resumes-search-input"
-          placeholder="Rechercher un résumé..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Rechercher un résumé"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            className="client-resumes-search-clear"
-            onClick={() => setSearchQuery('')}
-            aria-label="Effacer la recherche"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
       {/* 3. Pilules de matières (Toutes | Mathématiques | Physique - Chimie | SVT) */}
       <div className="client-resumes-pills-row" role="tablist" aria-label="Matières des résumés">
         {SUBJECT_PILLS.map((pillLabel) => (
@@ -653,14 +615,13 @@ export default function ClientResumesPage() {
                     Aucun résumé disponible pour le moment
                   </h3>
                   <p className="client-resumes-empty-desc">
-                    Aucun résumé ne correspond à vos critères de recherche.
+                    Aucun résumé ne correspond aux filtres sélectionnés.
                   </p>
-                  {(searchQuery || selectedStatus !== 'Tous' || selectedSubjectChip !== 'Toutes') && (
+                  {(selectedStatus !== 'Tous' || selectedSubjectChip !== 'Toutes') && (
                     <button
                       type="button"
                       className="client-resumes-reset-btn"
                       onClick={() => {
-                        setSearchQuery('');
                         setSelectedStatus('Tous');
                         setSelectedSubjectChip('Toutes');
                       }}

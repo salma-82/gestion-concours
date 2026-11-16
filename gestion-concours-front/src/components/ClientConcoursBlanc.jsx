@@ -101,7 +101,6 @@ export default function ClientConcoursBlanc() {
   }, [requestedMatiere]);
 
   // États locaux
-  const [searchQuery, setSearchQuery] = useState('');
   const [concoursList, setConcoursList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -189,17 +188,13 @@ export default function ClientConcoursBlanc() {
 
   // Filtrage des concours blancs par matière et recherche
   const getConcoursForSection = useCallback((sectionId) => {
-    const q = searchQuery.trim().toLowerCase();
     return concoursList.filter(c => {
       // Vérification matière
       if (!matchSection(c.matiere, sectionId)) return false;
       // Vérification recherche par titre
-      if (q && !(c.titre || '').toLowerCase().includes(q) && !(c.description || '').toLowerCase().includes(q)) {
-        return false;
-      }
       return true;
     });
-  }, [concoursList, searchQuery]);
+  }, [concoursList]);
 
   // Vérifier si au moins une carte est affichée
   const hasAnyResults = useMemo(() => {
@@ -323,73 +318,6 @@ export default function ClientConcoursBlanc() {
     }}>
 
       {/* ── 1. Barre de recherche arrondie en haut ── */}
-      <div style={{ position: 'relative', width: '100%', maxWidth: '1100px', marginBottom: '18px' }}>
-        <span style={{
-          position: 'absolute',
-          left: '18px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          color: 'var(--text-secondary, #94a3b8)',
-          pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          placeholder="Rechercher un concours blanc…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Rechercher un concours blanc"
-          style={{
-            width: '100%',
-            boxSizing: 'border-box',
-            padding: '13px 44px 13px 48px',
-            fontFamily: 'inherit',
-            fontSize: '14.5px',
-            fontWeight: 600,
-            color: 'var(--text, #0f172a)',
-            backgroundColor: 'var(--surface, #ffffff)',
-            border: '1.5px solid var(--border, #cbd5e1)',
-            borderRadius: '9999px',
-            outline: 'none',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-            transition: 'border-color 0.2s, box-shadow 0.2s'
-          }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)'; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border, #cbd5e1)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)'; }}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            aria-label="Effacer la recherche"
-            style={{
-              position: 'absolute',
-              right: '16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'var(--surface-2, #f1f5f9)',
-              border: 'none',
-              borderRadius: '9999px',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-secondary, #64748b)',
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
       {/* ── 2. Filtres en pilules arrondies ── */}
       <div style={{
         display: 'flex',
@@ -511,13 +439,11 @@ export default function ClientConcoursBlanc() {
             Aucun résultat
           </h3>
           <p style={{ margin: '0 0 16px', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
-            {searchQuery
-              ? `Aucun concours blanc ne correspond à « ${searchQuery} ».`
-              : "Aucun concours blanc n'a été publié pour cette matière."}
+            Aucun concours blanc n'a été publié pour cette matière.
           </p>
-          {(searchQuery || activePill !== 'Toutes') && (
+          {activePill !== 'Toutes' && (
             <button
-              onClick={() => { setSearchQuery(''); navigate('/client-concours-blanc'); }}
+              onClick={() => navigate('/client-concours-blanc')}
               style={{
                 background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
                 color: '#ffffff',
@@ -589,6 +515,8 @@ export default function ClientConcoursBlanc() {
                         className={demoContentClass(c)}
                         style={{
                           position: 'relative',
+                          boxSizing: 'border-box',
+                          height: '284px',
                           backgroundColor: 'var(--surface, #ffffff)',
                           border: '1.5px solid var(--border, #e2e8f0)',
                           borderRadius: '24px',
@@ -612,7 +540,8 @@ export default function ClientConcoursBlanc() {
                         <DemoAccessBadge item={c} />
                         {/* Couverture avec dégradé de la matière */}
                         <div style={{
-                          height: '182px',
+                          height: '110px',
+                          flex: '0 0 110px',
                           background: sec.gradient,
                           position: 'relative',
                           overflow: 'hidden',
@@ -686,7 +615,9 @@ export default function ClientConcoursBlanc() {
 
                         {/* Corps de la carte */}
                         <div style={{
-                          padding: '16px 18px 18px',
+                          boxSizing: 'border-box',
+                          minHeight: 0,
+                          padding: '10px 14px 12px',
                           display: 'flex',
                           flexDirection: 'column',
                           flex: 1
@@ -695,7 +626,7 @@ export default function ClientConcoursBlanc() {
                           <h4
                             title={c.titre}
                             style={{
-                              margin: '0 0 10px 0',
+                              margin: '0 0 8px 0',
                               fontSize: '16px',
                               fontWeight: 850,
                               color: 'var(--text, #0f172a)',
@@ -716,7 +647,7 @@ export default function ClientConcoursBlanc() {
                             fontSize: '12.5px',
                             fontWeight: 650,
                             color: 'var(--text-secondary, #64748b)',
-                            marginBottom: '14px'
+                            marginBottom: '10px'
                           }}>
                             <span>{qCount} questions</span>
                             <span>{durationText}</span>
@@ -759,7 +690,7 @@ export default function ClientConcoursBlanc() {
                             style={{
                               marginTop: 'auto',
                               width: '100%',
-                              padding: '11px 20px',
+                              padding: '8px 18px',
                               borderRadius: '9999px',
                               border: 'none',
                               fontFamily: 'inherit',

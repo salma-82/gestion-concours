@@ -271,10 +271,8 @@ export default function ClientLayout() {
       path: '/client-concours',
       renderIcon: (isActive) => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 4h10v7a5 5 0 0 1-10 0V4z" />
-          <path d="M7 8H4v1a4 4 0 0 0 4 4" />
-          <path d="M17 8h3v1a4 4 0 0 1-4 4" />
-          <path d="M12 16v3m-4 2h8m-7-2h6" />
+          <path d="M12 6.5c-2.4-2-5.3-2-8-1v13c2.7-1 5.6-1 8 1m0-13c2.4-2 5.3-2 8-1v13c-2.7-1-5.6-1-8 1m0-13v13" />
+          <path d="M7.5 9h2m-2 3h2m5-3h2m-2 3h2" />
         </svg>
       )
     },
@@ -849,7 +847,7 @@ export default function ClientLayout() {
                   </button>
                   {hasDropdown && openMenu === menuId && <div className="client-nav-dropdown">
                     {path === '/client-concours' && links.length === 0 && <div className="client-nav-dropdown-link">Aucune école disponible</div>}
-                    <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-cours' ? 'les cours' : path === '/client-examens' ? 'les examens' : path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>
+                    {!['/client-examens', '/client-erreurs', '/client-cours'].includes(path) && <button className="client-nav-dropdown-link is-section-link" type="button" onClick={() => { setOpenMenu(null); setIsMobileMenuOpen(false); navigate(path); }}>Tous {path === '/client-resumes' ? 'les résumés' : navbarLabels[path].toLowerCase()}</button>}
                     {links.map((link) => <button key={link.path} className="client-nav-dropdown-link" type="button" onClick={() => selectNavbarOption(path, link)}><span className="client-nav-dropdown-dot" />{link.label}</button>)}
                   </div>}
                 </div>

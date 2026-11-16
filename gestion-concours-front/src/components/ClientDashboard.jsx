@@ -88,9 +88,9 @@ const DASHBOARD_MODES = {
 
 const DashboardShortcutIcon = ({ name }) => {
   if (name === 'home') return <><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H18a2 2 0 0 1 2 2v15H7.5A2.5 2.5 0 0 1 5 17.5z" /><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H20M12.5 8a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4ZM9.5 14c.7-1.5 5.3-1.5 6 0" /></>;
-  if (name === 'contest') return <><path d="M8 4h8v4a4 4 0 0 1-8 0zM8 6H5v2a4 4 0 0 0 4 4M16 6h3v2a4 4 0 0 1-4 4M12 12v4M9 20h6M10 16h4" /><path d="M9 20v-2a3 3 0 0 1 6 0v2" /></>;
-  if (name === 'white-contest') return <><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V9h5M12 12v3l2 1" /><circle cx="12" cy="15" r="4" /></>;
-  if (name === 'courses') return <><path d="M6 4.5h12v17l-6-3.5-6 3.5z" /><path d="M9 9h6" /></>;
+  if (name === 'contest') return <><path d="M7 3.5h7l4.5 4.5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V8h4.5M9 12h6M9 16h3m3 0 1.2 1.2L19 14.5" /></>;
+  if (name === 'white-contest') return <><rect x="5.5" y="3.5" width="13" height="17" rx="2" /><path d="M9 8h.01M12 8h3m-6 4h.01m3 0h3m-6 4h.01m3 0h3" /></>;
+  if (name === 'courses') return <><path d="M12 6.5c-2-1.7-4.6-2.1-8-1.2v13c3.4-.9 6-.5 8 1.2 2-1.7 4.6-2.1 8-1.2v-13c-3.4-.9-6-.5-8 1.2Z" /><path d="M12 6.5v13M7 9h2m-2 3h2m6-3h2m-2 3h2" /></>;
   if (name === 'exams') return <><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V9h5M9 13h6M9 17h6" /></>;
   return <><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 20V5a1.5 1.5 0 0 1 1-1.5Z" /><path d="M14 3.5V9h5M9 13h6M9 17h4" /><circle cx="16.5" cy="17.5" r="2.5" /></>;
 };

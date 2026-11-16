@@ -8,6 +8,7 @@ import com.gestionconcours.model.ConcoursBlanc;
 import com.gestionconcours.repository.ConcoursRepository;
 import com.gestionconcours.repository.ConcoursBlancRepository;
 import com.gestionconcours.service.AuthSessionService;
+import com.gestionconcours.service.QcmTimerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +22,14 @@ public class StudentQcmHistoryController {
     private final AuthSessionService authSessionService;
     private final ConcoursRepository concoursRepository;
     private final ConcoursBlancRepository concoursBlancRepository;
+    private final QcmTimerService timerService;
 
-    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, AuthSessionService authSessionService, ConcoursRepository concoursRepository, ConcoursBlancRepository concoursBlancRepository) {
+    public StudentQcmHistoryController(StudentQcmAnswerRepository repository, AuthSessionService authSessionService, ConcoursRepository concoursRepository, ConcoursBlancRepository concoursBlancRepository, QcmTimerService timerService) {
         this.repository = repository;
         this.authSessionService = authSessionService;
         this.concoursRepository = concoursRepository;
         this.concoursBlancRepository = concoursBlancRepository;
+        this.timerService = timerService;
     }
 
     @PostMapping("/attempt-answer")
@@ -69,6 +72,19 @@ public class StudentQcmHistoryController {
             }
         } catch (NumberFormatException exception) {
             return ResponseEntity.badRequest().body("Identifiant du concours invalide.");
+        }
+        String timerSessionId = value(body.get("timerSessionId"));
+        try {
+            if (timerService.isTimedResource(resourceType, resourceId) && timerSessionId.isBlank()) {
+                return ResponseEntity.status(409).body(Map.of("message", "Ouvrez une session chronométrée avant de répondre à ce concours."));
+            }
+            if (!timerSessionId.isBlank()) {
+                var timedSession = timerService.saveSelectedAnswer(studentId, timerSessionId, resourceType, resourceId,
+                        questionKey, selected, asInteger(body.get("totalQuestions")));
+                attemptId = timedSession.getPublicId();
+            }
+        } catch (QcmTimerService.TimerFailure failure) {
+            return ResponseEntity.status(failure.getStatus()).body(Map.of("message", failure.getMessage()));
         }
         StudentQcmAnswer answer = repository
                 .findByStudentIdAndResourceTypeAndResourceIdAndAttemptIdAndQuestionKey(

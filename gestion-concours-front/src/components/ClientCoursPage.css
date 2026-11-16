@@ -589,3 +589,25 @@ html.dark .client-reader-frame-container {
   box-shadow: none;
   overflow: visible;
 }
+
+/* Keep course cards the same compact height as the summary cards. */
+.client-chapter-card {
+  box-sizing: border-box;
+  height: 284px;
+}
+
+.client-card-banner {
+  height: 110px;
+  flex: 0 0 110px;
+  padding: 10px 14px;
+}
+
+.client-card-body {
+  min-height: 0;
+  padding: 10px 14px 12px;
+}
+
+.client-card-action-btn {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}

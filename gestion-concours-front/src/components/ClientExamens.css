@@ -883,3 +883,37 @@ html.dark .client-exam-viewer-pill-btn.is-active-correction {
   box-shadow: none !important;
 }
 
+/* Match the compact summary card dimensions across the exam catalogue. */
+.client-exam-card {
+  box-sizing: border-box;
+  height: 284px;
+}
+
+.client-exam-cover {
+  height: 110px;
+  flex: 0 0 110px;
+  padding: 10px 14px;
+}
+
+.client-exam-body {
+  min-height: 0;
+  padding: 10px 14px 12px;
+}
+
+.client-exam-title {
+  margin-bottom: 7px;
+}
+
+.client-exam-badges-row {
+  margin-bottom: 8px;
+}
+
+.client-exam-progress-row {
+  margin-bottom: 8px;
+}
+
+.client-exam-action-btn {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+

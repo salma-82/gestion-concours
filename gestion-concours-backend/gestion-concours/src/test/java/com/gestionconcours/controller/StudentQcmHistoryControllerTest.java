@@ -7,6 +7,7 @@ import com.gestionconcours.repository.ConcoursBlancRepository;
 import com.gestionconcours.repository.ConcoursRepository;
 import com.gestionconcours.repository.StudentQcmAnswerRepository;
 import com.gestionconcours.service.AuthSessionService;
+import com.gestionconcours.service.QcmTimerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,7 @@ class StudentQcmHistoryControllerTest {
     @Mock private AuthSessionService auth;
     @Mock private ConcoursRepository concours;
     @Mock private ConcoursBlancRepository concoursBlancs;
+    @Mock private QcmTimerService timerService;
 
     private StudentQcmHistoryController controller;
     private User student;
@@ -36,7 +38,7 @@ class StudentQcmHistoryControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new StudentQcmHistoryController(answers, auth, concours, concoursBlancs);
+        controller = new StudentQcmHistoryController(answers, auth, concours, concoursBlancs, timerService);
         student = new User();
         student.setId(41L);
         student.setPrenom("Samira");

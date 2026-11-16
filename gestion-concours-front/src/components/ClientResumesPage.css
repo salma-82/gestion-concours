@@ -882,3 +882,57 @@ html.dark .client-resume-viewer-content {
   box-shadow: none !important;
 }
 
+/* Compact summary cards while keeping their details readable. */
+.client-resume-cover {
+  height: 110px;
+  padding: 10px 14px;
+}
+
+.client-resume-cover-left {
+  margin-top: 12px;
+}
+
+.client-resume-mascot-wrap {
+  width: min(52%, 176px);
+  bottom: -2px;
+}
+
+.client-resume-body {
+  padding: 10px 14px 12px;
+}
+
+.client-resume-title {
+  margin-bottom: 8px;
+}
+
+.client-resume-badges-row {
+  margin-bottom: 8px;
+}
+
+.client-resume-progress-track {
+  margin-bottom: 5px;
+}
+
+.client-resume-progress-row {
+  margin-bottom: 8px;
+}
+
+.client-resume-action-btn {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Give every summary card the same height as the compact reference card. */
+.client-resume-card {
+  box-sizing: border-box;
+  height: 284px;
+}
+
+.client-resume-cover {
+  flex: 0 0 110px;
+}
+
+.client-resume-body {
+  min-height: 0;
+}
+

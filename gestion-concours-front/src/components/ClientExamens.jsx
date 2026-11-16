@@ -166,7 +166,6 @@ export default function ClientExamens() {
   const [error, setError] = useState(null);
 
   // Filtres
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubjectPill, setSelectedSubjectPill] = useState('Toutes');
   const [selectedSession, setSelectedSession] = useState('Toutes'); // 'Toutes' | 'Normale' | 'Rattrapage'
   const [selectedAnnee, setSelectedAnnee] = useState(''); // '' = toutes les années
@@ -361,22 +360,9 @@ export default function ClientExamens() {
         }
       }
 
-      // Filtre recherche par texte
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const title = (e.titre || '').toLowerCase();
-        const mat = getExamMatiere(e).toLowerCase();
-        const year = String(e.annee || '');
-        const session = (e.session || '').toLowerCase();
-        const opt = (e.optionBac || '').toLowerCase();
-        if (!title.includes(q) && !mat.includes(q) && !year.includes(q) && !session.includes(q) && !opt.includes(q)) {
-          return false;
-        }
-      }
-
       return true;
     });
-  }, [examens, selectedFiliere, selectedAnnee, selectedSession, searchQuery]);
+  }, [examens, selectedFiliere, selectedAnnee, selectedSession]);
 
   // Calcul du statut et pourcentage de progression d'une épreuve
   const getExamProgressData = useCallback((exam) => {
@@ -585,33 +571,6 @@ export default function ClientExamens() {
   // =========================================================================
   return (
     <div className="client-examens-container">
-      {/* Barre de recherche globale */}
-      <div className="client-examens-search-wrap">
-        <span className="client-examens-search-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          className="client-examens-search-input"
-          placeholder="Rechercher un examen..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Rechercher un examen"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            className="client-examens-search-clear"
-            onClick={() => setSearchQuery('')}
-            aria-label="Effacer la recherche"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
       {/* 3. Pilules de matières (Toutes | Mathématiques | Physique - Chimie...) */}
       <div className="client-examens-pills-row" role="tablist" aria-label="Matières d'examens">
         {SUBJECT_PILLS.map((pillLabel) => (
@@ -830,12 +789,11 @@ export default function ClientExamens() {
                   <p className="client-examens-empty-desc">
                     Aucune épreuve ne correspond à vos filtres actuels.
                   </p>
-                  {(searchQuery || selectedSession !== 'Toutes' || selectedAnnee || selectedSubjectPill !== 'Toutes') && (
+                  {(selectedSession !== 'Toutes' || selectedAnnee || selectedSubjectPill !== 'Toutes') && (
                     <button
                       type="button"
                       className="client-examens-reset-btn"
                       onClick={() => {
-                        setSearchQuery('');
                         setSelectedSession('Toutes');
                         setSelectedAnnee('');
                         setSelectedSubjectPill('Toutes');

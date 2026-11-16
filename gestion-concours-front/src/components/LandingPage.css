@@ -11194,6 +11194,14 @@ body > .lp-traveling-mascot {
   font-weight: 900;
 }
 
+#root .landing-root .lp-bac-list li > .lp-bac-sum-icon {
+  color: #3159aa;
+  background: #fff;
+  font-family: "Cambria Math", "STIX Two Math", Georgia, serif;
+  font-size: 24px;
+  line-height: 1;
+}
+
 #root .landing-root .lp-bac-list li b {
   display: block;
   color: #fff;
@@ -13118,6 +13126,39 @@ html.dark #root .landing-root .lp-footer .lp-footer-social-link:hover {
   background: #14213a !important;
 }
 
+/* Improve footer typography and contrast for easier reading. */
+#root .landing-root .lp-footer .lp-footer-brand p,
+#root .landing-root .lp-footer .lp-footer-made-in,
+#root .landing-root .lp-footer .lp-footer-col a,
+#root .landing-root .lp-footer .lp-footer-bottom {
+  color: #243b5e !important;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+#root .landing-root .lp-footer .lp-footer-col a,
+#root .landing-root .lp-footer .lp-footer-social-link {
+  font-weight: 650;
+}
+
+#root .landing-root .lp-footer .lp-footer-col h4,
+#root .landing-root .lp-footer .lp-footer-social-block > strong {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 750;
+}
+
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-brand p,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-made-in,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-col a,
+html[data-theme="dark"] #root .landing-root .lp-footer .lp-footer-bottom,
+html.dark #root .landing-root .lp-footer .lp-footer-brand p,
+html.dark #root .landing-root .lp-footer .lp-footer-made-in,
+html.dark #root .landing-root .lp-footer .lp-footer-col a,
+html.dark #root .landing-root .lp-footer .lp-footer-bottom {
+  color: #dbe5f3 !important;
+}
+
 html[data-theme="dark"] #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a,
 html.dark #root .landing-root .lp-nav.lp-nav--reference .lp-nav-links a {
   color: #e2e8f0 !important;
@@ -13255,5 +13296,693 @@ html.dark #root .landing-root > .lp-mobile-menu > a:focus-visible {
 html[data-theme="dark"] #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions,
 html.dark #root .landing-root > .lp-mobile-menu .lp-mobile-menu-actions {
   border-color: #2b3a59;
+}
+
+/* Unified light-theme palette for the complete landing page. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root {
+  --lp-primary: #2e5aac !important;
+  --lp-primary-dark: #244b94 !important;
+  --lp-primary-light: #edf3ff !important;
+  --lp-ink: #24344d !important;
+  --lp-ink-soft: #5b6b82 !important;
+  --lp-line: #dce5f2 !important;
+  --lp-surface: #fff !important;
+  --lp-bg: #f7f9fc !important;
+  --primary: #2e5aac !important;
+  --primary-dark: #244b94 !important;
+  --primary-light: #edf3ff !important;
+  --accent: #f58220 !important;
+  --accent-soft: #fff2e5 !important;
+  --text: #24344d !important;
+  --text-secondary: #5b6b82 !important;
+  --surface: #fff !important;
+  --surface-2: #f7f9fc !important;
+  --border: #dce5f2 !important;
+  --border-strong: #b9cbea !important;
+  --illustration-stroke: #2e5aac !important;
+  --illustration-accent: #f58220 !important;
+  --illustration-muted: #afc1dc !important;
+  --illustration-soft: rgba(46, 90, 172, .07) !important;
+  --illustration-accent-soft: rgba(245, 130, 32, .14) !important;
+  --line: #dce5f2 !important;
+  --lp-shadow-sm: 0 8px 24px rgba(35, 65, 111, .07) !important;
+  --lp-shadow-md: 0 18px 42px rgba(35, 65, 111, .12) !important;
+  background-color: #fff !important;
+  background-image:
+    linear-gradient(rgba(46, 90, 172, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 90, 172, .035) 1px, transparent 1px) !important;
+  color: #24344d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-partner-strip,
+  .lp-roadmap-section,
+  .lp-methodology-section,
+  .lp-three-steps-section,
+  .lp-faq-section,
+  .lp-archive-section,
+  .lp-bottom-cta-section
+) {
+  background-color: #fff !important;
+  background-image: none !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-features-section,
+  .lp-pricing-section,
+  .lp-stats-section,
+  .lp-footer
+) {
+  background-color: #f7f9fc !important;
+  background-image: none !important;
+  color: #24344d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-hero-section {
+  background-color: #fff !important;
+  background-image: linear-gradient(180deg, #f7f9fe 0%, #fff 100%) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-hero-badge,
+  .lp-school-pill,
+  .lp-plan-card,
+  .lp-three-step-card,
+  .lp-method-preview,
+  .lp-method-card,
+  .lp-faq-item,
+  .lp-archive-years-card,
+  .lp-bac-card,
+  .lp-bottom-cta-card,
+  .lp-motivation-banner,
+  .lp-roadmap-preview,
+  .fk-window,
+  .fk-item,
+  .lp-feat-card,
+  .lp-stat-card
+) {
+  border-color: #dce5f2 !important;
+  background-color: #fff !important;
+  box-shadow: 0 8px 24px rgba(35, 65, 111, .07) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(h1, h2, h3, h4) {
+  color: #203a63 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root p,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-hero-desc,
+  .lp-section-desc,
+  .lp-roadmap-subtitle,
+  .lp-roadmap-copy,
+  .lp-plan-sub,
+  .lp-plan-features li,
+  .lp-faq-answer,
+  .lp-archive-intro p,
+  .lp-bac-subtitle,
+  .lp-bac-price,
+  .lp-footer-made-in,
+  .lp-footer-brand p,
+  .lp-footer-col a,
+  .lp-footer-bottom
+) {
+  color: #53647d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-section-eyebrow,
+  .lp-three-steps-eyebrow,
+  .lp-archive-eyebrow,
+  .lp-roadmap-step-kicker,
+  .lp-method-info-kicker,
+  .lp-bottom-cta-kicker,
+  .lp-footer-col h4,
+  .lp-stats-intro > span
+) {
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-hero-gradient-text,
+  .lp-title-framed-word,
+  .lp-section-title span,
+  .lp-methodology-title span,
+  .lp-archive-highlight,
+  .lp-bottom-cta-card h2 span,
+  .lp-proof-stars
+) {
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(.lp-stat-card strong, .lp-stat-card > span) {
+  color: #24344d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-stat-card .stat-accent {
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-title-framed-word {
+  border-color: #f58220 !important;
+  outline-color: #f58220 !important;
+  background-color: #f58220 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-btn-primary,
+  .lp-btn-hero-primary,
+  .lp-plan-btn,
+  .lp-bottom-cta-btn,
+  .lp-features-start-btn,
+  .lp-motivation-banner-cta,
+  .lp-archive-cta,
+  .fk .fk-cta
+) {
+  border-color: #2e5aac !important;
+  background-color: #2e5aac !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(46, 90, 172, .18) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-btn-primary,
+  .lp-btn-hero-primary,
+  .lp-plan-btn,
+  .lp-bottom-cta-btn,
+  .lp-features-start-btn,
+  .lp-motivation-banner-cta,
+  .lp-archive-cta,
+  .fk .fk-cta
+):is(:hover, :focus-visible) {
+  border-color: #244b94 !important;
+  background-color: #244b94 !important;
+  color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-btn-ghost,
+  .lp-btn-try,
+  .lp-home-theme-toggle,
+  .lp-menu-toggle,
+  .lp-archive-tab,
+  .lp-archive-year
+) {
+  border-color: #c8d6eb !important;
+  background-color: #fff !important;
+  color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-nav-links a:hover,
+  .lp-nav-links a:focus-visible,
+  .lp-footer-col a:hover,
+  .lp-mobile-menu a:hover,
+  .lp-mobile-menu a:focus-visible
+) {
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-plan-card.is-featured,
+  .lp-plan-card:hover,
+  .lp-archive-tab.is-active,
+  .lp-archive-year.is-active
+) {
+  border-color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-featured-ribbon,
+  .lp-method-node-circle,
+  .lp-methodology-goal-badge,
+  .lp-three-step-number,
+  .lp-plan-features li::before,
+  .check-icon
+) {
+  border-color: #2e5aac !important;
+  background-color: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-featured-ribbon {
+  border-color: #2e5aac !important;
+  background-color: #2e5aac !important;
+  color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-bac-ribbon,
+  .lp-discount-badge,
+  .lp-process-marker.is-final,
+  .lp-method-node-circle.is-orange,
+  .lp-footer-arrow
+) {
+  border-color: #f5c18e !important;
+  background-color: #fff2e5 !important;
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-feat-cat-label--a,
+  .lp-feat-cat-label--d
+) {
+  border-color: #dce5f2 !important;
+  background-color: #edf3ff !important;
+  color: #244b94 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-feat-cat-label--b,
+  .lp-feat-cat-label--c
+) {
+  border-color: #f5c18e !important;
+  background-color: #fff2e5 !important;
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-feat-cat-label--a,
+  .lp-feat-cat-label--b,
+  .lp-feat-cat-label--c,
+  .lp-feat-cat-label--d
+) .lp-feat-cat-letter {
+  background-color: #2e5aac !important;
+  color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-feat-category:nth-child(2) .lp-feat-card,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-feat-category:nth-child(4) .lp-feat-card {
+  --feature-accent: #f58220;
+  --feature-accent-soft: #fff2e5;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-feat-category:nth-child(3) .lp-feat-card {
+  --feature-accent: #2e5aac;
+  --feature-accent-soft: #edf3ff;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-feat-card--accent {
+  border-color: #dce5f2 !important;
+  background: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(.lp-feat-card--accent strong, .lp-feat-card--accent p, .lp-feat-card--accent .lp-feat-card-icon) {
+  color: #24344d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk {
+  --blue: #2e5aac;
+  --green: #2e5aac;
+  --orange: #f58220;
+  --violet: #2e5aac;
+  --navy: #203a63;
+  --ink: #24344d;
+  --mute: #53647d;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk .fk-dark {
+  border-color: #244b94 !important;
+  background: linear-gradient(160deg, #2e5aac, #244b94) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk .fk-dark p {
+  color: #e7eefb !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk .fk-qcm s {
+  color: #f58220 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk .fk-qcm .ok {
+  border-color: #2e5aac !important;
+  background: rgba(46, 90, 172, .12) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-features-status-dot {
+  background-color: #f58220 !important;
+  box-shadow: 0 0 0 4px rgba(245, 130, 32, .12) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bottom-cta-benefits i {
+  background-color: #edf3ff !important;
+  color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(.fk-date.is-violet, .fk-agenda .is-violet) {
+  border-color: #c8d6eb !important;
+  background-color: #edf3ff !important;
+  color: #244b94 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk-ring stop:first-child {
+  stop-color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .fk-ring stop:last-child {
+  stop-color: #f58220 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bottom-cta-section::before,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bottom-cta-section::after,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-features-section::before,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-stats-section::before {
+  background-color: rgba(46, 90, 172, .06) !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-quiz-option-btn.is-correct {
+  border-color: #9db7e0 !important;
+  background-color: #edf3ff !important;
+  color: #244b94 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-quiz-option-btn.is-wrong {
+  border-color: #f5c18e !important;
+  background-color: #fff2e5 !important;
+  color: #a34b12 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-quiz-explanation {
+  border-color: #dce5f2 !important;
+  background-color: #f4f7fc !important;
+  color: #344b6f !important;
+}
+
+/* Keep one continuous carreaux canvas visible beneath every homepage section. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root {
+  background-color: #f7f9fc !important;
+  background-image:
+    linear-gradient(rgba(46, 90, 172, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 90, 172, .035) 1px, transparent 1px) !important;
+  background-size: 72px 72px !important;
+  background-position: 0 0 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-partner-strip,
+  #hero.lp-hero-section,
+  .lp-motivation-banner,
+  #methodologie.lp-roadmap-section,
+  #fonctionnalites.lp-features-section,
+  .lp-bottom-cta-section,
+  .lp-archive-section,
+  #tarifs.lp-pricing-section,
+  .lp-three-steps-section,
+  #apropos.lp-stats-section,
+  #faq.lp-faq-section,
+  .lp-footer
+) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  #hero.lp-hero-section,
+  .lp-motivation-banner,
+  #methodologie.lp-roadmap-section,
+  #fonctionnalites.lp-features-section,
+  .lp-bottom-cta-section,
+  .lp-archive-section,
+  #tarifs.lp-pricing-section,
+  .lp-three-steps-section,
+  #apropos.lp-stats-section,
+  #faq.lp-faq-section,
+  .lp-footer
+)::before,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  #hero.lp-hero-section,
+  .lp-motivation-banner,
+  #methodologie.lp-roadmap-section,
+  #fonctionnalites.lp-features-section,
+  .lp-bottom-cta-section,
+  .lp-archive-section,
+  #tarifs.lp-pricing-section,
+  .lp-three-steps-section,
+  #apropos.lp-stats-section,
+  #faq.lp-faq-section,
+  .lp-footer
+)::after {
+  background: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Keep the footer on the same grid canvas and make its links readable. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer {
+  border-top: 0 !important;
+  background: transparent !important;
+  color: #24344d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer :is(
+  .lp-footer-wordmark,
+  .lp-footer-social-block > strong
+) {
+  color: #203a63 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer :is(
+  .lp-footer-brand p,
+  .lp-footer-made-in,
+  .lp-footer-col a,
+  .lp-footer-bottom
+) {
+  color: #53647d !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer .lp-footer-social-link {
+  border-color: #dce5f2 !important;
+  background: rgba(255, 255, 255, .78) !important;
+  color: #2e5aac !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer .lp-footer-social-link:hover {
+  border-color: #2e5aac !important;
+  background: #edf3ff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer-bottom::before {
+  display: none !important;
+}
+
+/* Give the footer a distinct navy surface while keeping the page canvas unified. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer {
+  border-top: 0 !important;
+  background: #203a63 !important;
+  color: #f1f5f9 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer :is(
+  .lp-footer-wordmark,
+  .lp-footer-social-block > strong
+) {
+  color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer :is(
+  .lp-footer-brand p,
+  .lp-footer-made-in,
+  .lp-footer-col a,
+  .lp-footer-bottom
+) {
+  color: #dbe5f3 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer :is(
+  .lp-footer-col h4,
+  .lp-footer-arrow
+) {
+  color: #ffbd7a !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer .lp-footer-social-link {
+  border-color: rgba(255, 255, 255, .28) !important;
+  background: rgba(255, 255, 255, .06) !important;
+  color: #fff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-footer .lp-footer-social-link:hover {
+  border-color: #ffbd7a !important;
+  background: rgba(255, 189, 122, .12) !important;
+}
+
+/* Keep the footer visibly separate in either theme. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer {
+  position: relative !important;
+  isolation: isolate !important;
+  opacity: 1 !important;
+  border-top: 3px solid #ffbd7a !important;
+  background: #203a63 !important;
+  background-color: #203a63 !important;
+  background-image: none !important;
+  color: #f8fafc !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer::before,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-wordmark,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-social-block > strong {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-brand p,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-made-in,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-col a,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-bottom {
+  color: #e2eaf5 !important;
+  -webkit-text-fill-color: #e2eaf5 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-col h4,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-arrow {
+  color: #ffbd7a !important;
+  -webkit-text-fill-color: #ffbd7a !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-social-link {
+  border-color: rgba(255, 255, 255, .3) !important;
+  background: rgba(255, 255, 255, .08) !important;
+  color: #ffffff !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root footer.lp-footer .lp-footer-social-link:hover {
+  border-color: #ffbd7a !important;
+  background: rgba(255, 189, 122, .14) !important;
+}
+
+/* Footer contrast override: a light blue panel with dark readable copy. */
+#root #landing-footer {
+  border-top: 0 !important;
+  background: #cfe0fa !important;
+  background-color: #cfe0fa !important;
+  background-image: none !important;
+  color: #1e3554 !important;
+  opacity: 1 !important;
+}
+
+#root #landing-footer .lp-footer-wordmark,
+#root #landing-footer .lp-footer-social-block > strong,
+#root #landing-footer .lp-footer-brand p,
+#root #landing-footer .lp-footer-made-in,
+#root #landing-footer .lp-footer-col a,
+#root #landing-footer .lp-footer-bottom {
+  color: #1e3554 !important;
+  -webkit-text-fill-color: #1e3554 !important;
+}
+
+#root #landing-footer .lp-footer-col h4,
+#root #landing-footer .lp-footer-arrow {
+  color: #b45309 !important;
+  -webkit-text-fill-color: #b45309 !important;
+}
+
+#root #landing-footer .lp-footer-social-link {
+  border-color: #b9cbe3 !important;
+  background: #f8fbff !important;
+  color: #1e3554 !important;
+}
+
+#root #landing-footer .lp-footer-social-link:hover {
+  border-color: #b45309 !important;
+  background: #fff5e9 !important;
+}
+
+/* Paint the blue surface above the page grid while keeping footer content on top. */
+#root #landing-footer {
+  position: relative !important;
+  isolation: isolate !important;
+  z-index: 20 !important;
+  background: #cfe0fa !important;
+  background-color: #cfe0fa !important;
+  background-image: none !important;
+}
+
+#root #landing-footer::before,
+#root #landing-footer::after {
+  content: none !important;
+  display: none !important;
+}
+
+#root #landing-footer .lp-footer-surface {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  display: block !important;
+  background: #cfe0fa !important;
+  background-color: #cfe0fa !important;
+  background-image: none !important;
+  pointer-events: none !important;
+}
+
+#root #landing-footer > .lp-footer-inner,
+#root #landing-footer > .lp-footer-bottom {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Dark mode: keep the footer in the site's dark navy palette. */
+html[data-theme="dark"] #root #landing-footer,
+html.dark #root #landing-footer {
+  background: #15243c !important;
+  background-color: #15243c !important;
+  color: #e7eef8 !important;
+}
+
+html[data-theme="dark"] #root #landing-footer .lp-footer-surface,
+html.dark #root #landing-footer .lp-footer-surface {
+  background: #15243c !important;
+  background-color: #15243c !important;
+  background-image: none !important;
+}
+
+html[data-theme="dark"] #root #landing-footer .lp-footer-brand p,
+html[data-theme="dark"] #root #landing-footer .lp-footer-made-in,
+html[data-theme="dark"] #root #landing-footer .lp-footer-col a,
+html[data-theme="dark"] #root #landing-footer .lp-footer-bottom,
+html[data-theme="dark"] #root #landing-footer .lp-footer-social-block > strong,
+html.dark #root #landing-footer .lp-footer-brand p,
+html.dark #root #landing-footer .lp-footer-made-in,
+html.dark #root #landing-footer .lp-footer-col a,
+html.dark #root #landing-footer .lp-footer-bottom,
+html.dark #root #landing-footer .lp-footer-social-block > strong {
+  color: #e7eef8 !important;
+  -webkit-text-fill-color: #e7eef8 !important;
+}
+
+html[data-theme="dark"] #root #landing-footer .lp-footer-col h4,
+html[data-theme="dark"] #root #landing-footer .lp-footer-arrow,
+html.dark #root #landing-footer .lp-footer-col h4,
+html.dark #root #landing-footer .lp-footer-arrow {
+  color: #ffbd7a !important;
+  -webkit-text-fill-color: #ffbd7a !important;
+}
+
+html[data-theme="dark"] #root #landing-footer .lp-footer-social-link,
+html.dark #root #landing-footer .lp-footer-social-link {
+  border-color: #425574 !important;
+  background: #1d304d !important;
+  color: #e7eef8 !important;
+}
+
+html[data-theme="dark"] #root #landing-footer .lp-footer-social-link:hover,
+html.dark #root #landing-footer .lp-footer-social-link:hover {
+  border-color: #ffbd7a !important;
+  background: #263b5b !important;
+}
+
+/* Keep the included Bac topics readable on the white card in light mode. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bac-list li b {
+  color: #203a63 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bac-list li small {
+  color: #53647d !important;
 }
 

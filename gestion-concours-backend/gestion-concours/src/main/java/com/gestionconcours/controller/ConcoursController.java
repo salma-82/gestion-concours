@@ -74,7 +74,7 @@ public class ConcoursController {
         return ResponseEntity.ok(item.get());
     }
 
-    // 3. POST: Ajout Concours avec fichiers HTML (Sujet et Correction)
+    // 3. POST: Ajout Concours avec sujet et corrigé HTML optionnels
     @PostMapping
     public ResponseEntity<?> createConcours(
             @RequestParam("titre") String titre,
@@ -101,17 +101,13 @@ public class ConcoursController {
             MultipartFile actualSujet = fileHtml != null && !fileHtml.isEmpty() ? fileHtml : fileSujet;
             MultipartFile actualCorrection = fileHtmlCorrection != null && !fileHtmlCorrection.isEmpty() ? fileHtmlCorrection : fileCorrection;
 
-            // Traitement Sujet HTML
             if (actualSujet != null && !actualSujet.isEmpty()) {
-                String originalName = actualSujet.getOriginalFilename() != null 
-                        ? actualSujet.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") 
+                String originalName = actualSujet.getOriginalFilename() != null
+                        ? actualSujet.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_")
                         : "sujet.html";
-                String fileNameSujet = UUID.randomUUID().toString() + "_" + originalName;
-                Path filePathSujet = Paths.get(UPLOAD_DIR, fileNameSujet);
-                Files.write(filePathSujet, actualSujet.getBytes());
-
-                String fullUrl = "http://localhost:8081/uploads/" + fileNameSujet;
-                concours.setHtmlUrl(fullUrl);
+                String fileNameSujet = UUID.randomUUID() + "_" + originalName;
+                Files.write(Paths.get(UPLOAD_DIR, fileNameSujet), actualSujet.getBytes());
+                concours.setHtmlUrl("http://localhost:8081/uploads/" + fileNameSujet);
             }
 
             // Traitement Correction HTML
@@ -135,7 +131,7 @@ public class ConcoursController {
         }
     }
 
-    // 4. PUT: Modifier un Concours existant et ses fichiers HTML
+    // 4. PUT: Modifier un Concours existant et ses fichiers HTML optionnels
     @PutMapping("/{id}")
     public ResponseEntity<?> updateConcours(
             @PathVariable Long id,
@@ -168,17 +164,13 @@ public class ConcoursController {
             MultipartFile actualSujet = fileHtml != null && !fileHtml.isEmpty() ? fileHtml : fileSujet;
             MultipartFile actualCorrection = fileHtmlCorrection != null && !fileHtmlCorrection.isEmpty() ? fileHtmlCorrection : fileCorrection;
 
-            // Remplacement éventuel du Sujet HTML
             if (actualSujet != null && !actualSujet.isEmpty()) {
-                String originalName = actualSujet.getOriginalFilename() != null 
-                        ? actualSujet.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") 
+                String originalName = actualSujet.getOriginalFilename() != null
+                        ? actualSujet.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_")
                         : "sujet.html";
-                String fileNameSujet = UUID.randomUUID().toString() + "_" + originalName;
-                Path filePathSujet = Paths.get(UPLOAD_DIR, fileNameSujet);
-                Files.write(filePathSujet, actualSujet.getBytes());
-
-                String fullUrl = "http://localhost:8081/uploads/" + fileNameSujet;
-                concours.setHtmlUrl(fullUrl);
+                String fileNameSujet = UUID.randomUUID() + "_" + originalName;
+                Files.write(Paths.get(UPLOAD_DIR, fileNameSujet), actualSujet.getBytes());
+                concours.setHtmlUrl("http://localhost:8081/uploads/" + fileNameSujet);
             }
 
             // Remplacement éventuel de la Correction HTML
@@ -217,7 +209,6 @@ public class ConcoursController {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("Veuillez sélectionner un fichier HTML.");
         }
-
         try {
             File uploadDir = new File(UPLOAD_DIR);
             if (!uploadDir.exists()) {

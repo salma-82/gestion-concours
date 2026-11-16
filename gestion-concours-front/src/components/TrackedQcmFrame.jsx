@@ -4,6 +4,14 @@ import { recordStudentMistake, resolveStudentMistakes } from '../studentProgress
 
 const API_BASE = '';
 
+const newClientAttemptKey = () => {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const random = Math.random() * 16 | 0;
+    return (char === 'x' ? random : (random & 0x3 | 0x8)).toString(16);
+  });
+};
+
 const concoursBlancIntegratedQcmStyle = `<style>
   html, body { width: 100% !important; min-width: 0 !important; }
   body { background: transparent !important; }
@@ -93,6 +101,7 @@ export default function TrackedQcmFrame({
   chapter = '',
   school = '',
   year = '',
+  enableTimer = true,
   style
 }) {
   const iframeRef = useRef(null);
@@ -105,6 +114,361 @@ export default function TrackedQcmFrame({
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(null);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'none'
   const [saveMessage, setSaveMessage] = useState('');
+  const [timerSession, setTimerSession] = useState(null);
+  const [timerLoading, setTimerLoading] = useState(false);
+  const [timerRemaining, setTimerRemaining] = useState(null);
+  const [freeTimerElapsed, setFreeTimerElapsed] = useState(0);
+  const [freeTimerPaused, setFreeTimerPaused] = useState(false);
+  const [timerAnswers, setTimerAnswers] = useState({});
+  const [timerCurrentQuestion, setTimerCurrentQuestion] = useState(null);
+  const [timerTotalQuestions, setTimerTotalQuestions] = useState(null);
+  const [timerActionLoading, setTimerActionLoading] = useState(false);
+  const [timerMessage, setTimerMessage] = useState('');
+  const timerSessionRef = useRef(null);
+  const timerAnswersRef = useRef({});
+  const timerCurrentQuestionRef = useRef(null);
+  const timerTotalQuestionsRef = useRef(null);
+  const timerAnchorRef = useRef({ remaining: null, at: 0 });
+  const timerSnapshotWriteAtRef = useRef(0);
+  const timerAutoSubmitRef = useRef(false);
+  const timerRequestRef = useRef(null);
+  const timerClientKeyStorageRef = useRef(null);
+  const iframeLocalStorageKeyRef = useRef(null);
+  const freeTimerClockRef = useRef(null);
+  const pendingAnswersRef = useRef(new Set());
+
+  const syncQcmTheme = useCallback(() => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme === 'dark' || root.classList.contains('dark');
+    iframeRef.current?.contentWindow?.postMessage({ type: 'platform-theme', theme: isDark ? 'dark' : 'light' }, '*');
+  }, []);
+
+  const storeTimerData = useCallback((data) => {
+    if (!data || typeof data !== 'object') return;
+    timerSessionRef.current = data;
+    setTimerSession(data);
+    if (!data.supported) return;
+
+    let localAnswers = {};
+    if (data.sessionId) {
+      try { localAnswers = JSON.parse(localStorage.getItem(`qcm-timer-answers:${data.sessionId}`) || '{}'); } catch {}
+    }
+    const mergedAnswers = { ...(data.answers || {}), ...(localAnswers || {}) };
+    timerAnswersRef.current = mergedAnswers;
+    setTimerAnswers(mergedAnswers);
+    const remaining = Math.max(0, Number(data.remainingSeconds) || 0);
+    timerAnchorRef.current = { remaining, at: Date.now() };
+    setTimerRemaining(remaining);
+    let savedProgress = {};
+    if (timerClientKeyStorageRef.current && data.sessionId) {
+      const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
+      try {
+        const candidate = JSON.parse(localStorage.getItem(stateKey) || '{}');
+        if (candidate.sessionId === data.sessionId) savedProgress = candidate;
+      } catch {}
+    }
+    const current = Number(savedProgress.currentQuestion) || Number(data.currentQuestion) || null;
+    const total = Number(savedProgress.totalQuestions) || Number(data.totalQuestions) || null;
+    timerCurrentQuestionRef.current = current;
+    timerTotalQuestionsRef.current = total;
+    setTimerCurrentQuestion(current);
+    setTimerTotalQuestions(total);
+    if (timerClientKeyStorageRef.current && data.sessionId) {
+      const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
+      try {
+        localStorage.setItem(stateKey, JSON.stringify({
+          sessionId: data.sessionId, status: data.status, remainingSeconds: remaining,
+          snapshotAt: Date.now(), currentQuestion: current, totalQuestions: total,
+          durationSeconds: data.durationSeconds, durationSource: data.durationSource,
+          sourceUrl: data.sourceUrl, clientAttemptKey: data.clientAttemptKey,
+          finishedReason: data.finishedReason
+        }));
+      } catch {}
+    }
+  }, []);
+
+  const syncTimerAnswersToFrame = useCallback((answers = timerAnswersRef.current) => {
+    const frame = iframeRef.current?.contentWindow;
+    if (!frame) return;
+    const send = () => {
+      frame.postMessage({ type: 'timer-restore-answers', answers: answers || {} }, '*');
+      if (timerCurrentQuestionRef.current) {
+        frame.postMessage({ type: 'goto-question', questionNumber: timerCurrentQuestionRef.current }, '*');
+      }
+    };
+    send();
+    window.setTimeout(send, 250);
+    window.setTimeout(send, 900);
+  }, []);
+
+  const timerAuthHeaders = useCallback(() => {
+    const token = localStorage.getItem('authToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
+
+  const requestTimerOpen = useCallback(async (clientAttemptKey) => {
+    const request = timerRequestRef.current;
+    if (!request) return;
+    const { data } = await axios.post(`${API_BASE}/api/qcm/timer/session/open`, {
+      sourceType: request.sourceType,
+      resourceId: String(request.resourceId),
+      clientAttemptKey
+    }, { headers: timerAuthHeaders() });
+    if (data?.clientAttemptKey && timerClientKeyStorageRef.current) {
+      localStorage.setItem(timerClientKeyStorageRef.current, data.clientAttemptKey);
+    }
+    timerAutoSubmitRef.current = false;
+    storeTimerData(data);
+    if (data?.supported) syncTimerAnswersToFrame();
+    return data;
+  }, [storeTimerData, syncTimerAnswersToFrame, timerAuthHeaders]);
+
+  const timerIsLocked = timerSession?.supported
+    && ['PAUSED', 'COMPLETED', 'EXPIRED'].includes(timerSession.status)
+    || ['AUTH_REQUIRED', 'UNAVAILABLE'].includes(timerSession?.status);
+
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'timer-set-locked', locked: Boolean(timerIsLocked) }, '*');
+  }, [timerIsLocked, htmlDocument]);
+
+  useEffect(() => {
+    syncQcmTheme();
+    const root = document.documentElement;
+    const observer = new MutationObserver(syncQcmTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+    return () => observer.disconnect();
+  }, [syncQcmTheme]);
+
+  const applyTimerAction = useCallback(async (action, body = {}) => {
+    const session = timerSessionRef.current;
+    if (!session?.supported || !session.sessionId) return null;
+    if (action === 'submit' && pendingAnswersRef.current.size) {
+      await Promise.race([
+        Promise.allSettled(Array.from(pendingAnswersRef.current)),
+        new Promise((resolve) => window.setTimeout(resolve, body.reason === 'TIMEOUT' ? 900 : 2500))
+      ]);
+    }
+    setTimerActionLoading(true);
+    setTimerMessage('');
+    try {
+      const { data } = await axios.post(`${API_BASE}/api/qcm/timer/session/${session.sessionId}/${action}`, body, {
+        headers: timerAuthHeaders()
+      });
+      storeTimerData(data);
+      return data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Le serveur n’a pas pu actualiser le chronomètre.';
+      setTimerMessage(message);
+      if (!error.response && session?.supported) {
+        const anchor = timerAnchorRef.current;
+        const remaining = session.status === 'IN_PROGRESS' && Number.isFinite(anchor.remaining)
+          ? Math.max(0, anchor.remaining - Math.floor((Date.now() - anchor.at) / 1000))
+          : Number(session.remainingSeconds) || 0;
+        storeTimerData({ ...session, offline: true, remainingSeconds: remaining });
+      }
+      if (action === 'submit' && body.reason === 'TIMEOUT') {
+        const expired = { ...session, status: 'EXPIRED', remainingSeconds: 0, finishedReason: 'TIMEOUT' };
+        storeTimerData(expired);
+      }
+      return null;
+    } finally {
+      setTimerActionLoading(false);
+    }
+  }, [storeTimerData, timerAuthHeaders]);
+
+  const restartTimerAttempt = useCallback(async () => {
+    if (!timerClientKeyStorageRef.current) return;
+    const newKey = newClientAttemptKey();
+    localStorage.setItem(timerClientKeyStorageRef.current, newKey);
+    setTimerMessage('');
+    try {
+      const data = await requestTimerOpen(newKey);
+      if (data?.supported) {
+        timerAnswersRef.current = {};
+        setTimerAnswers({});
+        try { localStorage.removeItem(`qcm-timer-answers:${data.sessionId}`); } catch {}
+        iframeRef.current?.contentWindow?.postMessage({ type: 'timer-reset-answers' }, '*');
+        window.setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ type: 'timer-reset-answers' }, '*'), 250);
+        syncTimerAnswersToFrame({});
+      }
+    } catch (error) {
+      setTimerMessage(error.response?.data?.message || 'Impossible de démarrer une nouvelle tentative.');
+    }
+  }, [requestTimerOpen, syncTimerAnswersToFrame]);
+
+  useEffect(() => {
+    if (!enableTimer || !resourceId || !['Concours', 'Concours blanc'].includes(sourceType)) return undefined;
+    let active = true;
+    setTimerLoading(true);
+    setTimerSession(null);
+    timerSessionRef.current = null;
+    setTimerAnswers({});
+    timerAnswersRef.current = {};
+    setTimerRemaining(null);
+    setTimerMessage('');
+
+    let user = {};
+    try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setTimerSession({ supported: false, status: 'AUTH_REQUIRED', message: 'Connectez-vous pour activer et sauvegarder le chronomètre.' });
+      setTimerLoading(false);
+      return undefined;
+    }
+
+    const storageKey = `qcm-timer-attempt:${user?.id || 'student'}:${sourceType}:${resourceId}`;
+    timerClientKeyStorageRef.current = storageKey;
+    timerRequestRef.current = { sourceType, resourceId };
+    let clientAttemptKey = localStorage.getItem(storageKey);
+    if (!clientAttemptKey) {
+      clientAttemptKey = newClientAttemptKey();
+      localStorage.setItem(storageKey, clientAttemptKey);
+    }
+
+    requestTimerOpen(clientAttemptKey)
+      .catch((error) => {
+        if (!active) return;
+        const stateKey = storageKey.replace('qcm-timer-attempt:', 'qcm-timer-state:');
+        try {
+          const saved = JSON.parse(localStorage.getItem(stateKey) || 'null');
+          if (saved?.sessionId) {
+            const elapsed = saved.status === 'IN_PROGRESS' ? Math.floor((Date.now() - Number(saved.snapshotAt || Date.now())) / 1000) : 0;
+            const remaining = Math.max(0, Number(saved.remainingSeconds || 0) - elapsed);
+            const localSession = {
+              ...saved, supported: true, offline: true, remainingSeconds: remaining,
+              status: remaining === 0 && saved.status === 'IN_PROGRESS' ? 'EXPIRED' : saved.status,
+              finishedReason: remaining === 0 && saved.status === 'IN_PROGRESS' ? 'TIMEOUT' : saved.finishedReason
+            };
+            storeTimerData(localSession);
+            setTimerMessage('Mode hors ligne : le serveur rétablira le temps officiel dès la reconnexion.');
+            return;
+          }
+        } catch {}
+        setTimerSession({ supported: false, status: 'UNAVAILABLE', message: error.response?.data?.message || 'Le chronomètre serveur est indisponible. Le QCM reste bloqué jusqu’au rétablissement de la connexion.' });
+      })
+      .finally(() => { if (active) setTimerLoading(false); });
+
+    return () => { active = false; };
+  }, [enableTimer, resourceId, sourceType, requestTimerOpen, storeTimerData]);
+
+  useEffect(() => {
+    if (timerSession?.status !== 'UNCONFIRMED') {
+      setFreeTimerElapsed(0);
+      setFreeTimerPaused(false);
+      freeTimerClockRef.current = null;
+      return undefined;
+    }
+    const attemptKey = timerClientKeyStorageRef.current || `${sourceType}:${resourceId}`;
+    const storageKey = `qcm-stopwatch-start:${attemptKey}`;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch {}
+    if (typeof saved === 'number' && saved > 0) {
+      const elapsedSeconds = Math.max(0, Math.floor((Date.now() - saved) / 1000));
+      saved = { elapsedSeconds, startedAt: Date.now(), paused: false };
+    }
+    if (!saved || typeof saved !== 'object') saved = { elapsedSeconds: 0, startedAt: Date.now(), paused: false };
+    const elapsedSeconds = Math.max(0, Number(saved.elapsedSeconds) || 0);
+    const paused = Boolean(saved.paused);
+    const startedAt = paused ? null : Number(saved.startedAt) || Date.now();
+    const clock = { storageKey, elapsedSeconds, startedAt, paused };
+    freeTimerClockRef.current = clock;
+    setFreeTimerElapsed(paused ? elapsedSeconds : elapsedSeconds + Math.floor((Date.now() - startedAt) / 1000));
+    setFreeTimerPaused(paused);
+    try { localStorage.setItem(storageKey, JSON.stringify(clock)); } catch {}
+  }, [timerSession?.status, sourceType, resourceId]);
+
+  useEffect(() => {
+    if (timerSession?.status !== 'UNCONFIRMED' || freeTimerPaused) return undefined;
+    const updateElapsed = () => {
+      const clock = freeTimerClockRef.current;
+      if (!clock || clock.paused || !clock.startedAt) return;
+      setFreeTimerElapsed(clock.elapsedSeconds + Math.floor((Date.now() - clock.startedAt) / 1000));
+    };
+    updateElapsed();
+    const interval = window.setInterval(updateElapsed, 1000);
+    return () => window.clearInterval(interval);
+  }, [timerSession?.status, freeTimerPaused]);
+
+  useEffect(() => {
+    if (!timerSession?.supported || timerSession.status !== 'IN_PROGRESS') return undefined;
+    const tick = () => {
+      const anchor = timerAnchorRef.current;
+      if (!Number.isFinite(anchor.remaining)) return;
+      const remaining = Math.max(0, anchor.remaining - Math.floor((Date.now() - anchor.at) / 1000));
+      setTimerRemaining(remaining);
+      const session = timerSessionRef.current;
+      if (session?.sessionId && timerClientKeyStorageRef.current && Date.now() - timerSnapshotWriteAtRef.current >= 1000) {
+        timerSnapshotWriteAtRef.current = Date.now();
+        const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
+        try {
+          const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+          localStorage.setItem(stateKey, JSON.stringify({ ...saved, sessionId: session.sessionId,
+            status: session.status, remainingSeconds: remaining, snapshotAt: Date.now(),
+            currentQuestion: timerCurrentQuestionRef.current, totalQuestions: timerTotalQuestionsRef.current }));
+        } catch {}
+      }
+    };
+    tick();
+    const interval = window.setInterval(tick, 250);
+    return () => window.clearInterval(interval);
+  }, [timerSession?.supported, timerSession?.status]);
+
+  useEffect(() => {
+    if (!timerSession?.offline) return undefined;
+    const reconnect = () => {
+      const storageKey = timerClientKeyStorageRef.current;
+      const clientKey = storageKey ? localStorage.getItem(storageKey) : null;
+      if (!clientKey) return;
+      requestTimerOpen(clientKey).then((data) => {
+        if (data?.supported) setTimerMessage('Chronomètre et réponses resynchronisés avec le serveur.');
+      }).catch(() => setTimerMessage('Resynchronisation en cours…'));
+    };
+    window.addEventListener('online', reconnect);
+    return () => window.removeEventListener('online', reconnect);
+  }, [timerSession?.offline, requestTimerOpen]);
+
+  useEffect(() => {
+    if (!timerSession?.supported || timerSession.status !== 'EXPIRED' || timerSession.finishedReason !== 'TIMEOUT') return undefined;
+    const synchronizeTimeout = () => {
+      if (navigator.onLine) applyTimerAction('submit', { reason: 'TIMEOUT' });
+    };
+    window.addEventListener('online', synchronizeTimeout);
+    synchronizeTimeout();
+    return () => window.removeEventListener('online', synchronizeTimeout);
+  }, [timerSession?.supported, timerSession?.status, timerSession?.finishedReason, applyTimerAction]);
+
+  useEffect(() => {
+    if (!timerSession?.supported || timerSession.status !== 'IN_PROGRESS') return undefined;
+    const heartbeat = async () => {
+      const session = timerSessionRef.current;
+      if (!session?.sessionId || !navigator.onLine) return;
+      try {
+        const { data } = await axios.post(`${API_BASE}/api/qcm/timer/session/${session.sessionId}/heartbeat`, {
+          currentQuestion: timerCurrentQuestionRef.current,
+          totalQuestions: timerTotalQuestionsRef.current
+        }, { headers: timerAuthHeaders() });
+        storeTimerData(data);
+      } catch (error) {
+        setTimerMessage(error.response?.data?.message || 'Connexion au serveur interrompue. Les réponses restent enregistrées sur cet appareil.');
+        if (!error.response) {
+          const session = timerSessionRef.current;
+          const anchor = timerAnchorRef.current;
+          const remaining = session?.status === 'IN_PROGRESS' && Number.isFinite(anchor.remaining)
+            ? Math.max(0, anchor.remaining - Math.floor((Date.now() - anchor.at) / 1000))
+            : Number(session?.remainingSeconds) || 0;
+          if (session?.supported) storeTimerData({ ...session, offline: true, remainingSeconds: remaining });
+        }
+      }
+    };
+    const interval = window.setInterval(heartbeat, 15000);
+    return () => window.clearInterval(interval);
+  }, [timerSession?.supported, timerSession?.status, storeTimerData, timerAuthHeaders]);
+
+  useEffect(() => {
+    if (timerSession?.status !== 'IN_PROGRESS' || timerRemaining !== 0 || timerAutoSubmitRef.current) return;
+    timerAutoSubmitRef.current = true;
+    applyTimerAction('submit', { reason: 'TIMEOUT' });
+  }, [timerSession?.status, timerRemaining, applyTimerAction]);
 
   useEffect(() => {
     let active = true;
@@ -139,7 +503,15 @@ export default function TrackedQcmFrame({
     axios.get(activeSrc, { responseType: 'text' }).then(({ data }) => {
       if (cancelled) return;
       const baseUrl = new URL(activeSrc, window.location.origin).href;
-      const base = `<base href="${baseUrl}"><style>html,body{height:auto!important;min-height:0!important;overflow:visible!important}</style>`;
+      let userId = 'guest';
+      try { userId = JSON.parse(localStorage.getItem('user') || '{}')?.id || 'guest'; } catch {}
+      const iframeStorageKey = `qcm-frame-storage:${userId}:${sourceType}:${resourceId || activeSrc}`;
+      iframeLocalStorageKeyRef.current = iframeStorageKey;
+      let iframeStorage = {};
+      try { iframeStorage = JSON.parse(localStorage.getItem(iframeStorageKey) || '{}') || {}; } catch {}
+      const serializedIframeStorage = JSON.stringify(iframeStorage).replace(/</g, '\\u003c');
+      const localStorageBridgeScript = `<script>(function(){var values=${serializedIframeStorage};function persist(operation,key,value){parent.postMessage({type:'qcm-frame-storage',operation:operation,key:key,value:value},'*')}var storage={getItem:function(key){key=String(key);return Object.prototype.hasOwnProperty.call(values,key)?values[key]:null},setItem:function(key,value){key=String(key);value=String(value);values[key]=value;persist('set',key,value)},removeItem:function(key){key=String(key);delete values[key];persist('remove',key)},clear:function(){values={};persist('clear')},key:function(index){return Object.keys(values)[Number(index)]||null}};Object.defineProperty(storage,'length',{get:function(){return Object.keys(values).length}});try{Object.defineProperty(window,'localStorage',{configurable:true,value:storage})}catch(e){try{window.localStorage=storage}catch(ignore){}}})();</script>`;
+      const base = `<base href="${baseUrl}">${localStorageBridgeScript}<style>html,body{height:auto!important;min-height:0!important;overflow:visible!important}</style>`;
       const resizeScript = `<script>(function(){var send=function(){var d=document.documentElement,b=document.body;parent.postMessage({type:'tracked-html-height',height:Math.max(d?d.scrollHeight:0,b?b.scrollHeight:0,d?d.offsetHeight:0,b?b.offsetHeight:0)},'*')};window.addEventListener('load',send);window.addEventListener('resize',send);new ResizeObserver(send).observe(document.documentElement);if(document.body)new ResizeObserver(send).observe(document.body);setInterval(send,700);send()})()</script>`;
       let html = String(data || '');
       const isQuestionPaletteQcm = /id=["']pal["']/.test(html) && /class=["'][^"']*\bwrap\b/.test(html);
@@ -150,32 +522,65 @@ export default function TrackedQcmFrame({
       const integratedQcmUnboxedStyle = hasQuestionPaletteQcm
         ? '<style>.wrap > .side,#main > .card{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}.side > .top{background:transparent!important;border-radius:0!important;padding:0!important}</style>'
         : '';
+      const explanationToggleStyle = hasQuestionPaletteQcm
+        ? '<style>.qcm-explanation-toggle{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:100%!important;margin:0!important;padding:10px 16px!important;border:1.5px solid var(--tintbd,#c5d6f5)!important;border-radius:12px!important;background:var(--tint,#e6efff)!important;color:var(--pri,#2457c8)!important;font:700 13px system-ui,sans-serif!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:none!important;transition:background .15s ease,border-color .15s ease!important}.qcm-explanation-toggle:hover{background:var(--pill,#e4edff)!important;border-color:var(--pri,#2457c8)!important}</style>'
+        : '';
+      const explanationNavigationStyle = hasQuestionPaletteQcm && isConcours
+        ? '<style>.qcm-explanation-prev-group{align-items:stretch!important}.qcm-explanation-prev-group>button{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:52px!important;min-height:52px!important;padding-top:0!important;padding-bottom:0!important}</style>'
+        : '';
       const integratedQcmStyle = hasQuestionPaletteQcm
         ? (isConcoursBlanc
             ? concoursBlancIntegratedQcmStyle
             : isConcours
-            ? '<style>html,body{width:100%!important;min-width:0!important}body{background:transparent!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;grid-template-columns:1fr!important}.wrap > .side, aside.side{display:none!important}#main > .card{padding:16px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}.tag{padding:6px 14px!important;margin-bottom:10px!important}.q{margin:6px 0 12px!important}.opt{padding:9px 16px!important;margin:6px 0!important;gap:14px!important}.opt .l{width:34px!important;height:34px!important}.btns{margin-top:10px!important}.btn:disabled{opacity:.65!important}.qcm-explanation-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 16px;padding:12px 16px;border:1px solid #c5d6f5;border-radius:12px;background:#e6efff;color:#1c4fd0;font:700 14px system-ui,sans-serif;cursor:pointer;transition:background .15s ease,border-color .15s ease}.qcm-explanation-toggle:hover{background:#dbe8ff;border-color:#9bbaf0}html[data-platform-theme="dark"]{color-scheme:dark;--bg:#0F172A;--card:#1B2940;--text:#F1F5F9;--muted:#A6B3C5;--pri:#60A5FA;--pri-d:#3B82F6;--bd:#2B3B52;--tint:#202F47;--tintbd:#3A4D6B;--pill:#1E3A5F;--pilltx:#BFDBFE;--ok:#34D399;--okbg:#123325;--ko:#F87171;--kobg:#3B2024;--flash:#3B321D;--flashbd:#B8892A}html[data-platform-theme="dark"] body{background:#0F172A!important;color:#F1F5F9!important}html[data-platform-theme="dark"] .qcm-explanation-toggle{background:#202F47;color:#BFDBFE;border-color:#3A4D6B}html[data-platform-theme="dark"] .qcm-explanation-toggle:hover{background:#263854;border-color:#60A5FA}</style>'
+            ? '<style>html,body{width:100%!important;min-width:0!important}body{background:transparent!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;grid-template-columns:1fr!important}.wrap > .side, aside.side{display:none!important}#main > .card{padding:16px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}.tag{padding:6px 14px!important;margin-bottom:10px!important}.q{margin:6px 0 12px!important}.opt{padding:9px 16px!important;margin:6px 0!important;gap:14px!important}.opt .l{width:34px!important;height:34px!important}.btns{margin-top:10px!important}.btn:disabled{opacity:.65!important}html[data-platform-theme="dark"]{color-scheme:dark;--bg:#0F172A;--card:#1B2940;--text:#F1F5F9;--muted:#A6B3C5;--pri:#60A5FA;--pri-d:#3B82F6;--bd:#2B3B52;--tint:#202F47;--tintbd:#3A4D6B;--pill:#1E3A5F;--pilltx:#BFDBFE;--ok:#34D399;--okbg:#123325;--ko:#F87171;--kobg:#3B2024;--flash:#3B321D;--flashbd:#B8892A}html[data-platform-theme="dark"] body{background:#0F172A!important;color:#F1F5F9!important}</style>'
             : '<style>html,body{width:100%!important;min-width:0!important}body{background:#f1f5f9!important}.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}</style>')
         : '';
       const integratedConcoursLayoutStyle = hasQuestionPaletteQcm && isConcours && !isConcoursBlanc
-        ? '<style>.layout{grid-template-columns:minmax(0,1fr)!important;gap:0!important}.wrap{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}.content,#main{width:100%!important;max-width:none!important}.layout > .card:not(.side):not(.explain-side),#main > .card{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}.q{margin:6px 0 12px!important}.opt{box-sizing:border-box!important;min-height:64px!important;padding:8px 16px!important;margin:6px 0!important}@media(max-width:760px){.opt{min-height:60px!important;padding:8px 12px!important;margin:6px 0!important}}</style>'
+        ? '<style>.layout{grid-template-columns:minmax(0,1fr)!important;gap:0!important}.layout > .side, .layout > aside.side, aside.side{display:none!important}.wrap{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}.wrap > .side{display:none!important}.content,#main{width:100%!important;max-width:none!important}.layout > .card:not(.side):not(.explain-side),#main > .card{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}.q{margin:6px 0 12px!important}.opt{box-sizing:border-box!important;min-height:64px!important;padding:8px 16px!important;margin:6px 0!important}@media(max-width:760px){.opt{min-height:60px!important;padding:8px 12px!important;margin:6px 0!important}}.qcm-explanation-toggle{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 16px;padding:12px 16px;border:1px solid #c5d6f5;border-radius:12px;background:#e6efff;color:#1c4fd0;font:700 14px system-ui,sans-serif;cursor:pointer;transition:background .15s ease,border-color .15s ease}.qcm-explanation-toggle:hover{background:#dbe8ff;border-color:#9bbaf0}html[data-platform-theme="dark"] .qcm-explanation-toggle{background:#202F47;color:#BFDBFE;border-color:#3A4D6B}html[data-platform-theme="dark"] .qcm-explanation-toggle:hover{background:#263854;border-color:#60A5FA}</style>'
         : '';
-      const navScript = `<script>(function(){window.addEventListener('message',function(ev){if(!ev||!ev.data)return;if(ev.data.type==='goto-question'){var idx=typeof ev.data.index==='number'?ev.data.index:(Number(ev.data.questionNumber)-1);if(!isNaN(idx)&&idx>=0){if(typeof cur!=='undefined'&&typeof render==='function'){cur=idx;render()}else if(typeof window.cur!=='undefined'&&typeof window.render==='function'){window.cur=idx;window.render()}else{var btns=document.querySelectorAll('#pal button, .pal button');if(btns&&btns[idx]){btns[idx].click()}}}}});var lastReportedCur=-1;function readCurrentIndex(){try{if(typeof cur!=='undefined')return Number(cur)}catch(e){}return typeof window.cur!=='undefined'?Number(window.cur):null}setInterval(function(){var currentIndex=readCurrentIndex();if(currentIndex!==null&&Number.isFinite(currentIndex)&&currentIndex!==lastReportedCur){lastReportedCur=currentIndex;parent.postMessage({type:'econcourse-qcm-cur-changed',questionNumber:currentIndex+1},'*')}},250);var reportedTotal=false;setInterval(function(){var questions;try{if(typeof Q!=='undefined'&&Array.isArray(Q))questions=Q}catch(e){}if(!questions&&Array.isArray(window.Q))questions=window.Q;if(!reportedTotal&&questions&&questions.length>0){reportedTotal=true;parent.postMessage({type:'econcourse-qcm-meta',totalQuestions:questions.length},'*')}},300)})();</script>`;
+      const concoursAnswerHeightStyle = hasQuestionPaletteQcm && isConcours && !isConcoursBlanc
+        ? '<style>.opt{min-height:79px!important}@media(max-width:760px){.opt{min-height:75px!important}}</style>'
+        : '';
+      const navScript = `<script>(function(){
+        var timerLocked=false;
+        function readData(){try{return typeof QCM_DATA!=='undefined'?QCM_DATA:window.QCM_DATA}catch(e){return window.QCM_DATA}}
+        function readState(){try{return typeof S!=='undefined'?S:window.S}catch(e){return window.S}}
+        function readQuestions(){var data=readData();if(Array.isArray(data&&data.questions))return data.questions;try{return typeof Q!=='undefined'&&Array.isArray(Q)?Q:[]}catch(e){return []}}
+        function restoreAnswers(answers){
+          if(!answers||typeof answers!=='object')return;
+          var data=readData(),state=readState(),questions=readQuestions();
+          if(Array.isArray(data&&data.questions)&&state&&state.answers){
+            Object.keys(answers).forEach(function(key){var question=data.questions.find(function(item,index){return String(item.id??item.questionNumber??index+1)===String(key)});if(question)state.answers[question.id]=answers[key]});
+            if(typeof render==='function')render();else if(typeof window.render==='function')window.render();
+            return;
+          }
+          try{var legacyAnswers=typeof ans!=='undefined'&&Array.isArray(ans)?ans:window.ans;if(Array.isArray(legacyAnswers)){Object.keys(answers).forEach(function(key){var index=questions.findIndex(function(item,qIndex){return String(item.id??item.questionNumber??qIndex+1)===String(key)});if(index<0)index=Number(key)-1;if(index>=0)legacyAnswers[index]=answers[key]});if(typeof render==='function')render();else if(typeof window.render==='function')window.render()}}catch(e){}
+        }
+        window.addEventListener('message',function(ev){if(!ev||!ev.data)return;if(ev.data.type==='timer-set-locked'){timerLocked=!!ev.data.locked;return}if(ev.data.type==='timer-restore-answers'){restoreAnswers(ev.data.answers);return}if(ev.data.type==='timer-reset-answers'){var data=readData(),state=readState(),questions=readQuestions();if(state&&state.answers){state.answers={};if(typeof render==='function')render();else if(typeof window.render==='function')window.render()}else{try{var legacyAnswers=typeof ans!=='undefined'&&Array.isArray(ans)?ans:window.ans;if(Array.isArray(legacyAnswers)){legacyAnswers.fill(null);if(typeof render==='function')render();else if(typeof window.render==='function')window.render()}}catch(e){}}return}if(ev.data.type==='goto-question'){var idx=typeof ev.data.index==='number'?ev.data.index:(Number(ev.data.questionNumber)-1);if(!isNaN(idx)&&idx>=0){if(typeof cur!=='undefined'&&typeof render==='function'){cur=idx;render()}else if(typeof window.cur!=='undefined'&&typeof window.render==='function'){window.cur=idx;window.render()}else{var btns=document.querySelectorAll('#pal button, .pal button');if(btns&&btns[idx]){btns[idx].click()}}}}});
+        document.addEventListener('click',function(ev){if(timerLocked){ev.preventDefault();ev.stopImmediatePropagation()}},true);
+        document.addEventListener('keydown',function(ev){if(timerLocked){ev.preventDefault();ev.stopImmediatePropagation()}},true);
+        var lastReportedCur=-1;function readCurrentIndex(){try{if(typeof cur!=='undefined')return Number(cur)}catch(e){}return typeof window.cur!=='undefined'?Number(window.cur):null}
+        setInterval(function(){var currentIndex=readCurrentIndex();if(currentIndex!==null&&Number.isFinite(currentIndex)&&currentIndex!==lastReportedCur){lastReportedCur=currentIndex;parent.postMessage({type:'econcourse-qcm-cur-changed',questionNumber:currentIndex+1},'*')}},250);
+        var reportedTotal=false;setInterval(function(){var questions=readQuestions();if(!reportedTotal&&questions&&questions.length>0){reportedTotal=true;parent.postMessage({type:'econcourse-qcm-meta',totalQuestions:questions.length},'*')}},300);
+      })();</script>`;
       const explanationScript = hasQuestionPaletteQcm && isConcours
         ? `<script>(function(){function setupExplanationToggle(){var explanation=document.querySelector('#exp, .exp');if(!explanation||explanation.dataset.toggleReady==='true')return;explanation.dataset.toggleReady='true';explanation.style.display='none';var button=document.createElement('button');button.type='button';button.className='qcm-explanation-toggle';button.setAttribute('aria-expanded','false');button.textContent='Afficher l’explication';button.addEventListener('click',function(){var show=explanation.style.display==='none';explanation.style.display=show?'':'none';button.setAttribute('aria-expanded',String(show));button.textContent=show?'Masquer l’explication':'Afficher l’explication';if(show)explanation.scrollIntoView({behavior:'smooth',block:'start'});});var qcmCard=document.querySelector('#main > .card');if(qcmCard)qcmCard.appendChild(button);else explanation.parentNode.insertBefore(button,explanation);}var observer=new MutationObserver(setupExplanationToggle);if(document.body){observer.observe(document.body,{childList:true,subtree:true});setupExplanationToggle();}})();</script>`
         : '';
+      const explanationPlacementScript = hasQuestionPaletteQcm && isConcours
+        ? `<script>(function(){function placeExplanationToggle(){var button=document.querySelector('.qcm-explanation-toggle');var card=document.querySelector('#main > .card');var nav=card&&card.querySelector('.btns,.nav');if(!button||!nav)return;var actions=nav.querySelectorAll('button:not(.qcm-explanation-toggle)');var previousButton=actions[0];if(!previousButton)return;var group=nav.querySelector('.qcm-explanation-prev-group');if(!group){group=document.createElement('div');group.className='qcm-explanation-prev-group';group.style.cssText='display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap';nav.insertBefore(group,previousButton)}if(previousButton.parentNode!==group)group.appendChild(previousButton);if(button.parentNode!==group)group.appendChild(button)}var observer=new MutationObserver(placeExplanationToggle);if(document.body){observer.observe(document.body,{childList:true,subtree:true});placeExplanationToggle();}})();</script>`
+        : '';
       const themeSyncScript = hasQuestionPaletteQcm && isConcours
-        ? `<script>(function(){function syncTheme(){try{var root=parent.document.documentElement;var dark=root.dataset.theme==='dark'||root.classList.contains('dark');document.documentElement.setAttribute('data-platform-theme',dark?'dark':'light');}catch(e){}}syncTheme();try{new MutationObserver(syncTheme).observe(parent.document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});}catch(e){}})();</script>`
+        ? `<script>(function(){window.addEventListener('message',function(event){if(event.source!==parent||event.data?.type!=='platform-theme')return;document.documentElement.setAttribute('data-platform-theme',event.data.theme==='dark'?'dark':'light')})})();</script>`
         : '';
       if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
       else html = `${base}${html}`;
-      if (integratedQcmStyle || integratedConcoursLayoutStyle || integratedQcmUnboxedStyle) {
+      if (integratedQcmStyle || integratedConcoursLayoutStyle || integratedQcmUnboxedStyle || concoursAnswerHeightStyle) {
         const headClose = html.toLowerCase().lastIndexOf('</head>');
-        const injectedStyles = `${integratedQcmStyle}${integratedConcoursLayoutStyle}${integratedQcmUnboxedStyle}`;
+        const injectedStyles = `${integratedQcmStyle}${integratedConcoursLayoutStyle}${concoursAnswerHeightStyle}${integratedQcmUnboxedStyle}${explanationToggleStyle}${explanationNavigationStyle}`;
         if (headClose >= 0) html = `${html.slice(0, headClose)}${injectedStyles}${html.slice(headClose)}`;
         else html = `${injectedStyles}${html}`;
       }
-      const scriptsToInject = `${resizeScript}${navScript}${explanationScript}${themeSyncScript}`;
+      const scriptsToInject = `${resizeScript}${navScript}${explanationScript}${explanationPlacementScript}${themeSyncScript}`;
       const bodyClose = html.toLowerCase().lastIndexOf('</body>');
       if (bodyClose >= 0) html = `${html.slice(0, bodyClose)}${scriptsToInject}${html.slice(bodyClose)}`;
       else html += scriptsToInject;
@@ -183,7 +588,7 @@ export default function TrackedQcmFrame({
     }).catch(() => {});
 
     return () => { cancelled = true; };
-  }, [activeSrc]);
+  }, [activeSrc, resourceId, sourceType]);
 
   // Sauvegarde des erreurs sur le backend (base de données) et en local
   const handleSaveMistakes = useCallback(async (mistakesToSave = null, actionAttemptId = null) => {
@@ -297,8 +702,62 @@ export default function TrackedQcmFrame({
   }, [currentQuestionMistake, handleSaveMistakes]);
 
   useEffect(() => {
+    if (!timerSession?.supported || !timerSession.sessionId || timerSession.status !== 'IN_PROGRESS') return undefined;
+    const queueKey = `qcm-timer-answer-queue:${timerSession.sessionId}`;
+    let flushing = false;
+    const flushQueue = async () => {
+      if (flushing || !navigator.onLine) return;
+      flushing = true;
+      try {
+        const queued = JSON.parse(localStorage.getItem(queueKey) || '[]');
+        for (const answer of queued) {
+          try {
+            await axios.post(`${API_BASE}/api/qcm/attempt-answer`, answer, { headers: timerAuthHeaders() });
+            const current = JSON.parse(localStorage.getItem(queueKey) || '[]');
+            localStorage.setItem(queueKey, JSON.stringify(current.filter((item) =>
+              !(String(item.questionId) === String(answer.questionId)
+                && String(item.selectedChoiceLabel) === String(answer.selectedChoiceLabel))
+            )));
+            window.dispatchEvent(new CustomEvent('student-qcm-history-updated'));
+          } catch {
+            break;
+          }
+        }
+      } catch {} finally {
+        flushing = false;
+      }
+    };
+    window.addEventListener('online', flushQueue);
+    const interval = window.setInterval(flushQueue, 12000);
+    flushQueue();
+    return () => {
+      window.removeEventListener('online', flushQueue);
+      window.clearInterval(interval);
+    };
+  }, [timerSession?.sessionId, timerSession?.supported, timerSession?.status, timerAuthHeaders]);
+
+  useEffect(() => {
     const handleQcmMessage = (event) => {
       if (event.source !== iframeRef.current?.contentWindow) return;
+
+      if (event.data?.type === 'qcm-frame-storage') {
+        const storageKey = iframeLocalStorageKeyRef.current;
+        const itemKey = String(event.data.key || '').slice(0, 500);
+        if (!storageKey) return;
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+          if (event.data.operation === 'clear') {
+            localStorage.setItem(storageKey, '{}');
+          } else if (itemKey && event.data.operation === 'set') {
+            saved[itemKey] = String(event.data.value ?? '');
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+          } else if (itemKey && event.data.operation === 'remove') {
+            delete saved[itemKey];
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+          }
+        } catch {}
+        return;
+      }
 
       if (event.data?.type === 'tracked-html-height') {
         const height = Number(event.data.height);
@@ -308,6 +767,24 @@ export default function TrackedQcmFrame({
 
       if (event.data?.type === 'econcourse-qcm-cur-changed') {
         updateCurrentQuestion(event.data.questionNumber);
+        timerCurrentQuestionRef.current = Number(event.data.questionNumber) || null;
+        setTimerCurrentQuestion(timerCurrentQuestionRef.current);
+        const timerProgressSession = timerSessionRef.current;
+        if (timerProgressSession?.sessionId && timerClientKeyStorageRef.current) {
+          const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
+          try {
+            const saved = JSON.parse(localStorage.getItem(stateKey) || '{}');
+            localStorage.setItem(stateKey, JSON.stringify({ ...saved, sessionId: timerProgressSession.sessionId,
+              status: timerProgressSession.status, currentQuestion: timerCurrentQuestionRef.current,
+              totalQuestions: timerTotalQuestionsRef.current, snapshotAt: Date.now() }));
+          } catch {}
+        }
+        return;
+      }
+
+      if (event.data?.type === 'econcourse-qcm-meta') {
+        timerTotalQuestionsRef.current = Number(event.data.totalQuestions) || null;
+        setTimerTotalQuestions(timerTotalQuestionsRef.current);
         return;
       }
 
@@ -315,9 +792,24 @@ export default function TrackedQcmFrame({
       if (event.data?.type === 'econcourse-qcm-mistake' && event.data?.mistake) {
         const mistake = event.data.mistake;
         updateCurrentQuestion(mistake.questionNumber);
+        timerCurrentQuestionRef.current = Number(mistake.questionNumber) || timerCurrentQuestionRef.current;
+        setTimerCurrentQuestion(timerCurrentQuestionRef.current);
+        if (event.data.totalQuestions) {
+          timerTotalQuestionsRef.current = Number(event.data.totalQuestions) || null;
+          setTimerTotalQuestions(timerTotalQuestionsRef.current);
+        }
         setSaveStatus('idle');
         setSaveMessage('');
         const isWrong = mistake.selectedChoiceLabel !== mistake.correctChoiceLabel;
+        const timedSession = timerSessionRef.current;
+        const questionKey = String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? '');
+        const selectedLabel = String(mistake.selectedChoiceLabel ?? '').trim();
+        if (enableTimer && timedSession?.supported && timedSession.status === 'IN_PROGRESS' && questionKey && selectedLabel) {
+          const nextAnswers = { ...timerAnswersRef.current, [questionKey]: selectedLabel };
+          timerAnswersRef.current = nextAnswers;
+          setTimerAnswers(nextAnswers);
+          try { localStorage.setItem(`qcm-timer-answers:${timedSession.sessionId}`, JSON.stringify(nextAnswers)); } catch {}
+        }
 
         const studentMistake = {
           ...mistake,
@@ -338,7 +830,7 @@ export default function TrackedQcmFrame({
           && studentMistake.questionText
           && studentMistake.selectedChoiceLabel
           && studentMistake.correctChoiceLabel) {
-          axios.post(`${API_BASE}/api/qcm/attempt-answer`, {
+          const answerPayload = {
             sourceType: studentMistake.sourceType,
             resourceId: studentMistake.resourceId,
             resourceTitle: studentMistake.resourceTitle,
@@ -357,8 +849,45 @@ export default function TrackedQcmFrame({
             correctChoiceLabel: mistake.correctChoiceLabel,
             correctChoiceText: mistake.correctChoiceText,
             explanation: mistake.explanation
-          }, { headers: { Authorization: `Bearer ${historySessionToken}` } }).then(() => window.dispatchEvent(new CustomEvent('student-qcm-history-updated')))
-            .catch((error) => console.warn('Impossible d’enregistrer cette réponse dans l’historique du QCM:', error));
+          };
+          if (enableTimer && timedSession?.supported && timedSession.status === 'IN_PROGRESS') {
+            answerPayload.timerSessionId = timedSession.sessionId;
+          }
+          const pendingAnswer = axios.post(`${API_BASE}/api/qcm/attempt-answer`, answerPayload, {
+            headers: { Authorization: `Bearer ${historySessionToken}` }
+          }).then(() => {
+            if (timedSession?.supported && timedSession.sessionId) {
+              const queueKey = `qcm-timer-answer-queue:${timedSession.sessionId}`;
+              try {
+                const queue = JSON.parse(localStorage.getItem(queueKey) || '[]');
+                localStorage.setItem(queueKey, JSON.stringify(queue.filter((item) =>
+                  !(String(item.questionId) === String(answerPayload.questionId)
+                    && String(item.selectedChoiceLabel) === String(answerPayload.selectedChoiceLabel))
+                )));
+              } catch {}
+            }
+            window.dispatchEvent(new CustomEvent('student-qcm-history-updated'));
+          }).catch((error) => {
+            if (timedSession?.supported && timedSession.sessionId && answerPayload.timerSessionId) {
+              const queueKey = `qcm-timer-answer-queue:${timedSession.sessionId}`;
+              try {
+                const queue = JSON.parse(localStorage.getItem(queueKey) || '[]');
+                const withoutQuestion = queue.filter((item) => String(item.questionId) !== String(answerPayload.questionId));
+                withoutQuestion.push(answerPayload);
+                localStorage.setItem(queueKey, JSON.stringify(withoutQuestion.slice(-200)));
+              } catch {}
+            }
+            if (!error.response && timedSession?.supported) {
+              const anchor = timerAnchorRef.current;
+              const remaining = timedSession.status === 'IN_PROGRESS' && Number.isFinite(anchor.remaining)
+                ? Math.max(0, anchor.remaining - Math.floor((Date.now() - anchor.at) / 1000))
+                : Number(timedSession.remainingSeconds) || 0;
+              storeTimerData({ ...timedSession, offline: true, remainingSeconds: remaining });
+              setTimerMessage('Connexion interrompue : vos réponses sont gardées sur cet appareil et seront resynchronisées.');
+            }
+            console.warn('Impossible d’enregistrer cette réponse dans l’historique du QCM:', error);
+          }).finally(() => pendingAnswersRef.current.delete(pendingAnswer));
+          pendingAnswersRef.current.add(pendingAnswer);
         }
 
         if (isWrong) {
@@ -394,19 +923,121 @@ export default function TrackedQcmFrame({
 
     window.addEventListener('message', handleQcmMessage);
     return () => window.removeEventListener('message', handleQcmMessage);
-  }, [chapter, resourceId, resourceTitle, school, sourceType, src, subject, title, updateCurrentQuestion, year]);
+  }, [chapter, enableTimer, resourceId, resourceTitle, school, sourceType, src, storeTimerData, subject, title, updateCurrentQuestion, year]);
+
+  const formattedTimer = Number.isFinite(timerRemaining)
+    ? [Math.floor(timerRemaining / 3600), Math.floor((timerRemaining % 3600) / 60), timerRemaining % 60]
+      .map((part) => String(part).padStart(2, '0')).join(':')
+    : '--:--:--';
+  const formattedFreeTimer = [Math.floor(freeTimerElapsed / 3600), Math.floor((freeTimerElapsed % 3600) / 60), freeTimerElapsed % 60]
+    .map((part) => String(part).padStart(2, '0')).join(':');
+  const timerStatusLabel = timerSession?.status === 'IN_PROGRESS' ? 'En cours'
+    : timerSession?.status === 'PAUSED' ? 'En pause'
+      : ['COMPLETED', 'EXPIRED'].includes(timerSession?.status) ? 'Terminé'
+        : timerLoading ? 'Préparation du chronomètre…' : '';
+  const answeredCount = Object.keys(timerAnswers || {}).length;
+  const progressPercent = timerTotalQuestions > 0
+    ? Math.min(100, Math.round((answeredCount / timerTotalQuestions) * 100))
+    : 0;
+  const timerUrgent = timerSession?.supported && timerSession.status === 'IN_PROGRESS' && timerRemaining !== null && timerRemaining <= 300;
+  const showTimerControls = timerSession?.supported && timerSession.sessionId;
+  const timerFinished = ['COMPLETED', 'EXPIRED'].includes(timerSession?.status);
+  const pauseFreeTimer = () => {
+    const clock = freeTimerClockRef.current;
+    if (!clock || clock.paused || !clock.startedAt) return;
+    const elapsedSeconds = clock.elapsedSeconds + Math.floor((Date.now() - clock.startedAt) / 1000);
+    const pausedClock = { ...clock, elapsedSeconds, startedAt: null, paused: true };
+    freeTimerClockRef.current = pausedClock;
+    try { localStorage.setItem(clock.storageKey, JSON.stringify(pausedClock)); } catch {}
+    setFreeTimerElapsed(elapsedSeconds);
+    setFreeTimerPaused(true);
+  };
+  const resumeFreeTimer = () => {
+    const clock = freeTimerClockRef.current;
+    if (!clock || !clock.paused) return;
+    const resumedClock = { ...clock, startedAt: Date.now(), paused: false };
+    freeTimerClockRef.current = resumedClock;
+    try { localStorage.setItem(clock.storageKey, JSON.stringify(resumedClock)); } catch {}
+    setFreeTimerPaused(false);
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'auto', position: 'relative' }}>
+      {timerSession?.status !== 'UNCONFIRMED' && (showTimerControls || timerLoading || timerSession?.message || timerMessage) && <div style={{
+        position: 'sticky', top: '88px', zIndex: 51, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 10, padding: '7px 0', marginBottom: 8
+      }}>
+        {showTimerControls ? <>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 11px', borderRadius: 10,
+              background: timerUrgent ? '#fff1f0' : timerSession.status === 'PAUSED' ? '#fff7e6' : '#eff6ff',
+              color: timerUrgent ? '#b42318' : '#183b70', fontWeight: 800, whiteSpace: 'nowrap' }}>
+              <span aria-hidden="true">◷</span><span>{timerStatusLabel}</span>
+              <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 16 }}>{formattedTimer}</span>
+            </span>
+            <div style={{ minWidth: 140, color: '#52647f', fontSize: 11, fontWeight: 700 }}>
+              {timerTotalQuestions
+                ? `Question ${timerCurrentQuestion || 1}/${timerTotalQuestions} · ${answeredCount} répondue${answeredCount > 1 ? 's' : ''}`
+                : `${answeredCount} réponse${answeredCount > 1 ? 's' : ''} sauvegardée${answeredCount > 1 ? 's' : ''}`}
+              <span style={{ display: 'block', height: 4, marginTop: 4, borderRadius: 5, background: '#dbe5f1', overflow: 'hidden' }}>
+                <span style={{ display: 'block', width: `${progressPercent}%`, height: '100%', background: '#2563eb', transition: 'width .2s ease' }} />
+              </span>
+            </div>
+            {timerSession.sourceUrl ? (
+              <a href={timerSession.sourceUrl} target="_blank" rel="noreferrer" title={timerSession.durationSource}
+                style={{ color: '#64748b', fontSize: 10, textDecoration: 'underline' }}>Durée vérifiée</a>
+            ) : (
+              <span title={timerSession.durationSource} style={{ color: '#64748b', fontSize: 10 }}>
+                {timerSession.durationSource?.includes('indicative') ? 'Durée indicative' : 'Durée configurée'}
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            {timerSession.status === 'IN_PROGRESS' && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine}
+              onClick={() => applyTimerAction('pause')} style={timerButtonStyle('#fff', '#24478d')}>
+              {timerActionLoading ? 'Patientez…' : 'Pause'}
+            </button>}
+            {timerSession.status === 'PAUSED' && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine}
+              onClick={() => applyTimerAction('resume')} style={timerButtonStyle('#2563eb', '#fff')}>
+              {timerActionLoading ? 'Patientez…' : 'Reprendre'}
+            </button>}
+            {!timerFinished && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine} onClick={() => {
+              if (window.confirm('Soumettre maintenant ce concours ? Vos réponses seront conservées et la session sera terminée.')) {
+                applyTimerAction('submit', { reason: 'MANUAL' });
+              }
+            }} style={timerButtonStyle('#fff', '#334155')}>Soumettre</button>}
+            {timerFinished && <button type="button" disabled={timerLoading || timerActionLoading || timerSession.offline || !navigator.onLine}
+              onClick={restartTimerAttempt} style={timerButtonStyle('#2563eb', '#fff')}>Nouvelle tentative</button>}
+          </div>
+        </> : <span style={{ color: timerSession?.status === 'UNAVAILABLE' ? '#b42318' : '#8a5a00', fontSize: 12, fontWeight: 700 }}>
+          {timerSession?.message || 'Vérification de la durée officielle…'}
+        </span>}
+        {timerMessage && <span role="alert" style={{ width: '100%', color: '#b42318', fontSize: 11, fontWeight: 700 }}>{timerMessage}</span>}
+      </div>}
+      {timerUrgent && <div role="alert" style={{ margin: '0 0 8px', padding: '9px 12px', borderRadius: 10, background: '#fff1f0', color: '#b42318', fontWeight: 800, fontSize: 13 }}>
+        Temps limité : il reste cinq minutes ou moins. Le concours sera soumis automatiquement à zéro.
+      </div>}
+      {timerSession?.status === 'EXPIRED' && <div role="status" style={{ margin: '0 0 8px', padding: '10px 12px', borderRadius: 10, background: '#fff1f0', color: '#b42318', fontWeight: 800, fontSize: 13 }}>
+        Temps écoulé : votre concours a été soumis automatiquement.
+      </div>}
+      {timerSession?.status === 'COMPLETED' && <div role="status" style={{ margin: '0 0 8px', padding: '10px 12px', borderRadius: 10, background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: 13 }}>
+        Concours terminé. Vos réponses ont été sauvegardées.
+      </div>}
+      {timerSession?.status === 'PAUSED' && <div role="status" style={{ margin: '0 0 8px', padding: '10px 12px', borderRadius: 10, background: '#fff7e6', color: '#8a5a00', fontWeight: 700, fontSize: 13 }}>
+        Chronomètre en pause. Reprenez le concours pour continuer à répondre.
+      </div>}
       <div style={{
-        padding: '0 0 8px',
+        padding: timerSession?.status === 'UNCONFIRMED' ? '0' : '0 0 8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
         gap: '10px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
+        flexWrap: 'wrap',
+        position: timerSession?.status === 'UNCONFIRMED' ? 'absolute' : 'relative',
+        top: timerSession?.status === 'UNCONFIRMED' ? 12 : undefined,
+        right: timerSession?.status === 'UNCONFIRMED' ? 12 : undefined,
+        maxWidth: timerSession?.status === 'UNCONFIRMED' ? '100%' : undefined,
+        zIndex: 60,
         background: 'transparent'
       }}>
         {saveMessage && (
@@ -418,14 +1049,54 @@ export default function TrackedQcmFrame({
             {saveMessage}
           </span>
         )}
+        {timerSession?.status === 'UNCONFIRMED' && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, height: 34, boxSizing: 'border-box',
+            padding: '3px 4px 3px 9px', border: '1px solid #dbe4ef', borderRadius: 9,
+            background: '#fff', boxShadow: '0 2px 6px rgba(11,54,117,0.12)'
+          }}>
+            <span role="status" aria-label={freeTimerPaused ? 'Chronomètre en pause' : 'Chronomètre en cours'}
+              style={{ flex: '0 0 auto', width: 6, height: 6, borderRadius: '50%', background: '#b8c6d5' }} />
+            <span style={{ color: '#2457c8', fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap' }}>
+              {formattedFreeTimer}
+            </span>
+            <button type="button" onClick={pauseFreeTimer} disabled={freeTimerPaused}
+              aria-label="Mettre le chronomètre en pause" title="Pause"
+              style={{
+                ...timerButtonStyle(freeTimerPaused ? '#e8edf3' : '#7894b3', freeTimerPaused ? '#aab8c8' : '#fff'),
+                width: 24, height: 24, minWidth: 24, padding: 0, display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 7,
+                cursor: freeTimerPaused ? 'default' : 'pointer'
+              }}>
+              <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
+                <rect x="1.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
+                <rect x="7.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
+              </svg>
+            </button>
+            <button type="button" onClick={resumeFreeTimer} disabled={!freeTimerPaused}
+              aria-label="Continuer le chronomètre" title="Continuer"
+              style={{
+                ...timerButtonStyle(freeTimerPaused ? '#2457c8' : '#e8edf3', freeTimerPaused ? '#fff' : '#aab8c8'),
+                width: 24, height: 24, minWidth: 24, padding: 0, display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 7,
+                cursor: freeTimerPaused ? 'pointer' : 'default'
+              }}>
+              <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
+                <path d="M2 1.5L10.5 7L2 12.5V1.5Z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={saveCurrentQuestionMistake}
           disabled={!currentQuestionMistake || saveStatus === 'saving'}
           title="Sauvegarder uniquement la question affichée si elle est incorrecte"
           style={{
-            padding: '7px 14px',
-            backgroundColor: saveStatus === 'saved' ? '#059669' : '#0B3675',
+            height: 34,
+            boxSizing: 'border-box',
+            padding: '0 14px',
+            backgroundColor: saveStatus === 'saved' ? '#059669' : '#2457c8',
             color: '#ffffff',
             border: 'none',
             borderRadius: '9px',
@@ -436,7 +1107,7 @@ export default function TrackedQcmFrame({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            boxShadow: '0 2px 6px rgba(11,54,117,0.2)',
+            boxShadow: '0 2px 6px rgba(36,87,200,0.25)',
             transition: 'all 0.15s ease'
           }}
         >
@@ -453,19 +1124,33 @@ export default function TrackedQcmFrame({
 
       <iframe
         ref={iframeRef}
+        onLoad={() => {
+          syncTimerAnswersToFrame();
+          syncQcmTheme();
+          iframeRef.current?.contentWindow?.postMessage({ type: 'timer-set-locked', locked: Boolean(timerIsLocked) }, '*');
+        }}
         src={htmlDocument === null ? activeSrc : undefined}
         srcDoc={htmlDocument === null ? undefined : htmlDocument}
         title={title || 'QCM interactif'}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        sandbox="allow-scripts allow-forms allow-popups"
         scrolling={htmlDocument === null ? undefined : 'no'}
-        style={htmlDocument === null ? style : {
+        style={htmlDocument === null ? { ...style, pointerEvents: timerIsLocked ? 'none' : 'auto' } : {
           ...style,
           width: '100%',
           maxWidth: 'none',
-          height: sourceType === 'Concours' ? `calc(${htmlFrameHeight}px + 4cm)` : `${htmlFrameHeight}px`,
-          overflow: 'hidden'
+          height: `${htmlFrameHeight}px`,
+          overflow: 'hidden',
+          pointerEvents: timerIsLocked ? 'none' : 'auto',
+          opacity: timerIsLocked ? 0.72 : 1
         }}
       />
     </div>
   );
+}
+
+function timerButtonStyle(background, color) {
+  return {
+    padding: '8px 13px', borderRadius: 10, border: '1px solid #cbd8e8', background, color,
+    fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap'
+  };
 }
