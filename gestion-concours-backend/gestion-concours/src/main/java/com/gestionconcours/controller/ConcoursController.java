@@ -73,8 +73,7 @@ public class ConcoursController {
         if (demoAccess.isLocked(item.get().isFree(), authorization)) return demoAccess.forbidden();
         return ResponseEntity.ok(item.get());
     }
-
-    // 3. POST: Ajout Concours avec sujet et corrigé HTML optionnels
+    // 3. POST: Ajouter un concours avec son sujet HTML
     @PostMapping
     public ResponseEntity<?> createConcours(
             @RequestParam("titre") String titre,
@@ -82,9 +81,7 @@ public class ConcoursController {
             @RequestParam("matiere") String matiere,
             @RequestParam("annee") Integer annee,
             @RequestParam(value = "fileSujet", required = false) MultipartFile fileSujet,
-            @RequestParam(value = "fileCorrection", required = false) MultipartFile fileCorrection,
-            @RequestParam(value = "fileHtml", required = false) MultipartFile fileHtml,
-            @RequestParam(value = "fileHtmlCorrection", required = false) MultipartFile fileHtmlCorrection) {
+            @RequestParam(value = "fileHtml", required = false) MultipartFile fileHtml) {
 
         try {
             File uploadDir = new File(UPLOAD_DIR);
@@ -99,7 +96,6 @@ public class ConcoursController {
             concours.setAnnee(annee);
 
             MultipartFile actualSujet = fileHtml != null && !fileHtml.isEmpty() ? fileHtml : fileSujet;
-            MultipartFile actualCorrection = fileHtmlCorrection != null && !fileHtmlCorrection.isEmpty() ? fileHtmlCorrection : fileCorrection;
 
             if (actualSujet != null && !actualSujet.isEmpty()) {
                 String originalName = actualSujet.getOriginalFilename() != null
@@ -108,19 +104,6 @@ public class ConcoursController {
                 String fileNameSujet = UUID.randomUUID() + "_" + originalName;
                 Files.write(Paths.get(UPLOAD_DIR, fileNameSujet), actualSujet.getBytes());
                 concours.setHtmlUrl("http://localhost:8081/uploads/" + fileNameSujet);
-            }
-
-            // Traitement Correction HTML
-            if (actualCorrection != null && !actualCorrection.isEmpty()) {
-                String originalName = actualCorrection.getOriginalFilename() != null 
-                        ? actualCorrection.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") 
-                        : "correction.html";
-                String fileNameCorrection = UUID.randomUUID().toString() + "_" + originalName;
-                Path filePathCorrection = Paths.get(UPLOAD_DIR, fileNameCorrection);
-                Files.write(filePathCorrection, actualCorrection.getBytes());
-
-                String fullUrl = "http://localhost:8081/uploads/" + fileNameCorrection;
-                concours.setHtmlCorrectionUrl(fullUrl);
             }
 
             Concours savedConcours = concoursRepository.save(concours);
@@ -140,9 +123,7 @@ public class ConcoursController {
             @RequestParam("matiere") String matiere,
             @RequestParam("annee") Integer annee,
             @RequestParam(value = "fileSujet", required = false) MultipartFile fileSujet,
-            @RequestParam(value = "fileCorrection", required = false) MultipartFile fileCorrection,
-            @RequestParam(value = "fileHtml", required = false) MultipartFile fileHtml,
-            @RequestParam(value = "fileHtmlCorrection", required = false) MultipartFile fileHtmlCorrection) {
+            @RequestParam(value = "fileHtml", required = false) MultipartFile fileHtml) {
 
         Optional<Concours> optionalConcours = concoursRepository.findById(id);
         if (!optionalConcours.isPresent()) {
@@ -162,7 +143,6 @@ public class ConcoursController {
             concours.setAnnee(annee);
 
             MultipartFile actualSujet = fileHtml != null && !fileHtml.isEmpty() ? fileHtml : fileSujet;
-            MultipartFile actualCorrection = fileHtmlCorrection != null && !fileHtmlCorrection.isEmpty() ? fileHtmlCorrection : fileCorrection;
 
             if (actualSujet != null && !actualSujet.isEmpty()) {
                 String originalName = actualSujet.getOriginalFilename() != null
@@ -173,19 +153,6 @@ public class ConcoursController {
                 concours.setHtmlUrl("http://localhost:8081/uploads/" + fileNameSujet);
             }
 
-            // Remplacement éventuel de la Correction HTML
-            if (actualCorrection != null && !actualCorrection.isEmpty()) {
-                String originalName = actualCorrection.getOriginalFilename() != null 
-                        ? actualCorrection.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") 
-                        : "correction.html";
-                String fileNameCorrection = UUID.randomUUID().toString() + "_" + originalName;
-                Path filePathCorrection = Paths.get(UPLOAD_DIR, fileNameCorrection);
-                Files.write(filePathCorrection, actualCorrection.getBytes());
-
-                String fullUrl = "http://localhost:8081/uploads/" + fileNameCorrection;
-                concours.setHtmlCorrectionUrl(fullUrl);
-            }
-
             Concours saved = concoursRepository.save(concours);
             return ResponseEntity.ok(saved);
 
@@ -193,13 +160,11 @@ public class ConcoursController {
             return ResponseEntity.status(500).body("Erreur lors de la mise à jour: " + e.getMessage());
         }
     }
-
-    // 5. POST: Remplacer directement le fichier HTML Sujet ou Correction
+    // 5. POST: Remplacer le fichier HTML du sujet
     @PostMapping("/{id}/upload-html")
     public ResponseEntity<?> uploadHtml(
             @PathVariable Long id,
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "type", defaultValue = "sujet") String type) {
+            @RequestParam(value = "file", required = false) MultipartFile file) {
 
         Optional<Concours> optionalConcours = concoursRepository.findById(id);
         if (!optionalConcours.isPresent()) {
@@ -224,11 +189,7 @@ public class ConcoursController {
             Files.write(filePath, file.getBytes());
 
             String fullUrl = "http://localhost:8081/uploads/" + fileName;
-            if ("correction".equalsIgnoreCase(type)) {
-                concours.setHtmlCorrectionUrl(fullUrl);
-            } else {
-                concours.setHtmlUrl(fullUrl);
-            }
+            concours.setHtmlUrl(fullUrl);
 
             Concours saved = concoursRepository.save(concours);
             return ResponseEntity.ok(saved);

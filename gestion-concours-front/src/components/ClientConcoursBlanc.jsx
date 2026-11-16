@@ -115,9 +115,7 @@ export default function ClientConcoursBlanc() {
     try {
       setLoading(true);
       setError(null);
-      let user = {};
-      try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch {}
-      const response = await axios.get(`${API}/api/concours-blancs/publies`, user.filiere ? { params: { filiere: user.filiere } } : {});
+      const response = await axios.get(`${API}/api/concours-blancs/publies`);
 
       let dataToSet = [];
       if (Array.isArray(response.data)) {
@@ -287,8 +285,6 @@ export default function ClientConcoursBlanc() {
               resourceTitle={activeConcours.titre || activeConcours.title}
               subject={activeConcours.matiere || ''}
               chapter={activeConcours.chapitre || ''}
-              year={activeConcours.annee || ''}
-              school={activeConcours.ecole || ''}
               style={{ width: '100%', height: '84vh', border: 'none', display: 'block' }}
             />
           ) : (

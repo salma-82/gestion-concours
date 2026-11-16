@@ -19,19 +19,11 @@ public class ConcoursBlanc {
 
     private String matiere;
     private String chapitre;
-    private String filiere;
-
-    // Champs conservés pour compatibilité
-    private String ecole;
-    private Integer annee;
-
-    @Column(length = 500)
-    private String pdfUrl;
 
     @Column(length = 500)
     private String htmlUrl;
 
-    private String fileType; // "PDF", "HTML", "BOTH"
+    private String fileType; // "HTML"
 
     // Nouveaux champs
     private Integer dureeMnutes;       // Durée du test en minutes
@@ -45,22 +37,6 @@ public class ConcoursBlanc {
     public ConcoursBlanc() {
     }
 
-    public ConcoursBlanc(String titre, String matiere, String chapitre, String pdfUrl) {
-        this.titre = titre;
-        this.matiere = matiere;
-        this.chapitre = chapitre;
-        this.pdfUrl = pdfUrl;
-    }
-
-    public ConcoursBlanc(String titre, String ecole, String matiere, String chapitre, Integer annee, String pdfUrl) {
-        this.titre = titre;
-        this.ecole = ecole;
-        this.matiere = matiere;
-        this.chapitre = chapitre;
-        this.annee = annee;
-        this.pdfUrl = pdfUrl;
-    }
-
     // ========== Getters & Setters ==========
 
     public Long getId() { return id; }
@@ -72,23 +48,11 @@ public class ConcoursBlanc {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getEcole() { return ecole; }
-    public void setEcole(String ecole) { this.ecole = ecole; }
-
     public String getMatiere() { return matiere; }
     public void setMatiere(String matiere) { this.matiere = matiere; }
 
     public String getChapitre() { return chapitre; }
     public void setChapitre(String chapitre) { this.chapitre = chapitre; }
-
-    public String getFiliere() { return filiere; }
-    public void setFiliere(String filiere) { this.filiere = filiere; }
-
-    public Integer getAnnee() { return annee; }
-    public void setAnnee(Integer annee) { this.annee = annee; }
-
-    public String getPdfUrl() { return pdfUrl; }
-    public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
 
     public String getHtmlUrl() { return htmlUrl; }
     public void setHtmlUrl(String htmlUrl) { this.htmlUrl = htmlUrl; }

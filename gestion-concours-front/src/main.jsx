@@ -21,7 +21,19 @@ axios.interceptors.request.use((config) => {
   return config
 })
 
+let sessionExpiryRedirectStarted = false
+
 axios.interceptors.response.use((response) => response, (error) => {
+  if (error.response?.status === 401 && error.response?.data?.code === 'SESSION_EXPIRED') {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('user')
+
+    if (!sessionExpiryRedirectStarted && window.location.pathname !== '/login') {
+      sessionExpiryRedirectStarted = true
+      window.location.replace('/login')
+    }
+  }
+
   if (error.response?.status === 403 && error.response?.data?.code === 'DEMO_CONTENT_LOCKED') {
     window.dispatchEvent(new CustomEvent('econcours-demo-paywall'))
   }

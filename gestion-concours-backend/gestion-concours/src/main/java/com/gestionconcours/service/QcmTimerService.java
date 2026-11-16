@@ -267,9 +267,9 @@ public class QcmTimerService {
         if ("Concours blanc".equals(type)) {
             ConcoursBlanc item = concoursBlancs.findById(id).filter(ConcoursBlanc::getPublie)
                     .orElseThrow(() -> new TimerFailure(404, "Concours blanc introuvable ou non publié."));
-            school = item.getEcole();
+            school = null;
             title = item.getTitre();
-            year = item.getAnnee();
+            year = null;
             Integer configuredMinutes = item.getDureeMnutes();
             if (configuredMinutes != null && configuredMinutes > 0
                     && configuredMinutes <= MAX_CONFIGURED_DURATION_MINUTES) {

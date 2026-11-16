@@ -8,26 +8,20 @@ export default function AdminConcours() {
   
   // --- STATES DYAL LES FILTRES ---
   const [searchTitre, setSearchTitre] = useState('');
-  const [selectedEcole, setSelectedEcole] = useState('');
   const [selectedMatiere, setSelectedMatiere] = useState('');
   const [selectedChapitre, setSelectedChapitre] = useState('');
-  const [selectedAnnee, setSelectedAnnee] = useState('');
 
   // --- LISTES DYAL LES OPTIONS ---
-  const [ecolesList, setEcolesList] = useState([]);
   const [matieresList, setMatieresList] = useState([]);
   const [chapitresList, setChapitresList] = useState([]);
-  const [anneesList, setAnneesList] = useState([]);
 
   // --- STATES DYAL L-MODAL W L-FORMULAIRE D'AJOUT ---
   const [isOpen, setIsOpen] = useState(false);
   const [titre, setTitre] = useState('');
   const [description, setDescription] = useState('');
-  const [ecole, setEcole] = useState('');
   const [matiere, setMatiere] = useState('');
   const [chapitre, setChapitre] = useState('');
   const [chapitresDisponibles, setChapitresDisponibles] = useState([]);
-  const [annee, setAnnee] = useState('');
   const [dureeMnutes, setDureeMnutes] = useState('');
   const [nombreQuestions, setNombreQuestions] = useState('');
   const [publie, setPublie] = useState(false);
@@ -81,10 +75,8 @@ export default function AdminConcours() {
       setFilteredList(data);
 
       // Extract unique values
-      setEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
       setMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
       setChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
-      setAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
 
 
 
@@ -101,12 +93,10 @@ export default function AdminConcours() {
   useEffect(() => {
     let result = concoursList;
     if (searchTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchTitre.toLowerCase()));
-    if (selectedEcole) result = result.filter(item => item.ecole === selectedEcole);
     if (selectedMatiere) result = result.filter(item => item.matiere === selectedMatiere);
     if (selectedChapitre) result = result.filter(item => item.chapitre === selectedChapitre);
-    if (selectedAnnee) result = result.filter(item => String(item.annee) === String(selectedAnnee));
     setFilteredList(result);
-  }, [searchTitre, selectedEcole, selectedMatiere, selectedChapitre, selectedAnnee, concoursList]);
+  }, [searchTitre, selectedMatiere, selectedChapitre, concoursList]);
 
   // 3. Fonction d'Ajout (POST)
   const handleSubmit = async (e) => {
@@ -120,10 +110,8 @@ export default function AdminConcours() {
     const formData = new FormData();
     formData.append('titre', titre);
     if (description) formData.append('description', description);
-    if (ecole) formData.append('ecole', ecole);
     formData.append('matiere', matiere);
     if (chapitre) formData.append('chapitre', chapitre);
-    if (annee) formData.append('annee', annee);
     if (dureeMnutes) formData.append('dureeMnutes', dureeMnutes);
     if (nombreQuestions) formData.append('nombreQuestions', nombreQuestions);
     formData.append('publie', 'true');
@@ -143,11 +131,9 @@ export default function AdminConcours() {
       // Vider les inputs
       setTitre('');
       setDescription('');
-      setEcole('');
       setMatiere('');
       setChapitre('');
       setChapitresDisponibles([]);
-      setAnnee('');
       setDureeMnutes('');
       setNombreQuestions('');
       setPublie(false);
@@ -237,7 +223,7 @@ export default function AdminConcours() {
       </div>
 
       {/* --- SECTION DYAL LES FILTRES --- */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6 grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
         {/* Recherche par Titre */}
         <div>
           <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Recherche par Titre</label>
@@ -248,21 +234,6 @@ export default function AdminConcours() {
             onChange={(e) => setSearchTitre(e.target.value)}
             className="w-full border border-gray-300 rounded-md p-2 text-sm outline-none focus:ring-green-500 focus:border-green-500"
           />
-        </div>
-
-        {/* Select École */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">École</label>
-          <select
-            value={selectedEcole}
-            onChange={(e) => setSelectedEcole(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2 text-sm bg-white outline-none focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="">Toutes les écoles</option>
-            {ecolesList.map((ec, index) => (
-              <option key={index} value={ec}>{ec}</option>
-            ))}
-          </select>
         </div>
 
         {/* Select Matière */}
@@ -280,25 +251,10 @@ export default function AdminConcours() {
           </select>
         </div>
 
-        {/* Select Année */}
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Année</label>
-          <select
-            value={selectedAnnee}
-            onChange={(e) => setSelectedAnnee(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2 text-sm bg-white outline-none focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="">Toutes les années</option>
-            {anneesList.map((ann, index) => (
-              <option key={index} value={ann}>{ann}</option>
-            ))}
-          </select>
-        </div>
-
         {/* Reset */}
         <div className="flex items-end">
           <button
-            onClick={() => { setSearchTitre(''); setSelectedEcole(''); setSelectedMatiere(''); setSelectedChapitre(''); setSelectedAnnee(''); }}
+            onClick={() => { setSearchTitre(''); setSelectedMatiere(''); setSelectedChapitre(''); }}
             className="w-full bg-gray-200 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-300 transition text-sm font-medium"
             title="Réinitialiser les filtres"
           >
@@ -348,11 +304,6 @@ export default function AdminConcours() {
                     </td>
                     <td className="px-5 py-4 text-sm">
                       <div className="flex flex-col gap-1.5">
-                        {item.pdfUrl && (
-                          <a href={getPdfUrl(item.pdfUrl)} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:underline font-semibold flex items-center gap-1 text-xs">
-                            📄 PDF
-                          </a>
-                        )}
                         {item.htmlUrl && (
                           <button
                             onClick={() => { setPreviewHtmlItem(item); setPreviewHtmlModalOpen(true); }}
@@ -361,7 +312,7 @@ export default function AdminConcours() {
                             🌐 HTML (Voir)
                           </button>
                         )}
-                        {!item.pdfUrl && !item.htmlUrl && (
+                        {!item.htmlUrl && (
                           <span className="text-gray-400 text-xs">Aucun fichier</span>
                         )}
                       </div>
@@ -571,7 +522,7 @@ export default function AdminConcours() {
                   <span>🌐</span> {previewHtmlItem.titre}
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {previewHtmlItem.matiere} {previewHtmlItem.ecole ? `• ${previewHtmlItem.ecole}` : ''} {previewHtmlItem.annee ? `(${previewHtmlItem.annee})` : ''}
+                  {previewHtmlItem.matiere}
                 </p>
               </div>
               <div className="flex items-center gap-3">

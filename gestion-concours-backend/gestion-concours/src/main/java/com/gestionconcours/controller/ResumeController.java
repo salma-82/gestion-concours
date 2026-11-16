@@ -59,15 +59,6 @@ public class ResumeController {
             list = resumeRepository.findAll();
         }
 
-        // Auto-génération des images si un ancien résumé a le PDF mais pas encore les pages PNG
-        boolean demoUser = demoAccess.isDemo(authorization);
-        for (Resume resume : list) {
-            if (demoUser && !resume.isFree()) continue;
-            if ((resume.getPageImages() == null || resume.getPageImages().isEmpty()) && resume.getPdfUrl() != null) {
-                ensureResumePageImages(resume);
-            }
-        }
-
         demoAccess.protectResumes(list, authorization);
         return list;
     }
@@ -82,10 +73,6 @@ public class ResumeController {
 
         Resume resume = optionalResume.get();
         if (demoAccess.isLocked(resume.isFree(), authorization)) return demoAccess.forbidden();
-        if ((resume.getPageImages() == null || resume.getPageImages().isEmpty()) && resume.getPdfUrl() != null) {
-            ensureResumePageImages(resume);
-        }
-
         return ResponseEntity.ok(resume);
     }
 
@@ -94,7 +81,6 @@ public class ResumeController {
             @RequestParam("matiere") String matiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam("titre") String titre,
-            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam("file") MultipartFile file) {
 
         try {
@@ -119,9 +105,6 @@ public class ResumeController {
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
-            resume.setEcole(ecole == null || ecole.isBlank() ? null : ecole.trim());
-            resume.setContenu("");
-
             // Cas fichier HTML (MathJax, styles W3Schools...)
             if (fileExtension.equals(".html") || fileExtension.equals(".htm")) {
                 String htmlFileName = baseUuid + "_" + originalFileName;
@@ -145,7 +128,6 @@ public class ResumeController {
                     pageUrls.add("http://localhost:8081/uploads/" + pName);
                 }
 
-                resume.setPdfUrl("http://localhost:8081/uploads/" + pdfFileName);
                 resume.setFileType("PDF");
                 resume.setPageImages(pageUrls);
                 resume.setTotalPages(pageUrls.size());
@@ -160,28 +142,12 @@ public class ResumeController {
         }
     }
 
-    @PostMapping("/api/resumes/{id}/generate-images")
-    public ResponseEntity<?> regenerateImages(@PathVariable Long id) {
-        Optional<Resume> optionalResume = resumeRepository.findById(id);
-        if (optionalResume.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Resume resume = optionalResume.get();
-        boolean success = ensureResumePageImages(resume);
-        if (success) {
-            return ResponseEntity.ok(resume);
-        } else {
-            return ResponseEntity.badRequest().body("Impossible de générer les images pour ce résumé.");
-        }
-    }
-
     @PutMapping("/api/resumes/{id}")
     public ResponseEntity<?> updateResume(
             @PathVariable Long id,
             @RequestParam("matiere") String matiere,
             @RequestParam("chapitre") String chapitre,
             @RequestParam("titre") String titre,
-            @RequestParam(value = "ecole", required = false) String ecole,
             @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
             Optional<Resume> optionalResume = resumeRepository.findById(id);
@@ -193,8 +159,6 @@ public class ResumeController {
             resume.setMatiere(matiere);
             resume.setChapitre(chapitre);
             resume.setTitre(titre);
-            resume.setEcole(ecole == null || ecole.isBlank() ? null : ecole.trim());
-
             if (file != null && !file.isEmpty()) {
                 File dir = new File(UPLOAD_DIR);
                 if (!dir.exists()) {
@@ -229,7 +193,6 @@ public class ResumeController {
                         pageUrls.add("http://localhost:8081/uploads/" + pName);
                     }
 
-                    resume.setPdfUrl("http://localhost:8081/uploads/" + pdfFileName);
                     resume.setFileType("PDF");
                     resume.setPageImages(pageUrls);
                     resume.setTotalPages(pageUrls.size());
@@ -294,37 +257,4 @@ public class ResumeController {
         return ResponseEntity.ok("Résumé supprimé avec succès !");
     }
 
-    /**
-     * Méthode utilitaire pour générer à la volée les pages PNG d'un PDF si elles n'existent pas encore
-     */
-    private boolean ensureResumePageImages(Resume resume) {
-        try {
-            if ("HTML".equalsIgnoreCase(resume.getFileType()) || resume.getPdfUrl() == null || resume.getPdfUrl().trim().isEmpty()) {
-                return false;
-            }
-
-            String pdfFileName = resume.getPdfUrl().substring(resume.getPdfUrl().lastIndexOf("/") + 1);
-            File pdfFile = new File(UPLOAD_DIR, pdfFileName);
-            if (!pdfFile.exists()) {
-                return false;
-            }
-
-            File dir = new File(UPLOAD_DIR);
-            String prefix = "page_" + (resume.getId() != null ? resume.getId() : UUID.randomUUID());
-            List<String> pageFileNames = pdfPageConverterService.convertPdfToPngPages(pdfFile, dir, prefix);
-
-            List<String> pageUrls = new ArrayList<>();
-            for (String pName : pageFileNames) {
-                pageUrls.add("http://localhost:8081/uploads/" + pName);
-            }
-
-            resume.setPageImages(pageUrls);
-            resume.setTotalPages(pageUrls.size());
-            resumeRepository.save(resume);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la génération automatique des pages PNG pour le résumé #" + resume.getId() + ": " + e.getMessage());
-            return false;
-        }
-    }
 }

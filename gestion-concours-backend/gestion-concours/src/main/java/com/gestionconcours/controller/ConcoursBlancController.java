@@ -49,11 +49,9 @@ public class ConcoursBlancController {
     // GET - Liste publiée uniquement (clients)
     // =====================================================================
     @GetMapping("/publies")
-    public List<ConcoursBlanc> getConcoursPublies(@RequestParam(value = "filiere", required = false) String filiere,
+    public List<ConcoursBlanc> getConcoursPublies(
             @RequestHeader(value = "Authorization", required = false) String authorization) {
-        List<ConcoursBlanc> items = filiere == null || filiere.isBlank()
-                ? concoursBlancRepository.findByPublieTrue()
-                : concoursBlancRepository.findPublishedForFiliereOrAll(filiere.trim());
+        List<ConcoursBlanc> items = concoursBlancRepository.findByPublieTrue();
         demoAccess.protectConcoursBlancs(items, authorization);
         return items;
     }
@@ -149,17 +147,14 @@ public class ConcoursBlancController {
     }
 
     // =====================================================================
-    // POST - Créer un nouveau QCM avec upload HTML/PDF
+    // POST - Créer un nouveau QCM avec upload HTML
     // =====================================================================
     @PostMapping
     public ResponseEntity<?> createConcours(
             @RequestParam("titre") String titre,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "ecole", required = false) String ecole,
-            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam("matiere") String matiere,
             @RequestParam(value = "chapitre", required = false) String chapitre,
-            @RequestParam(value = "annee", required = false) Integer annee,
             @RequestParam(value = "dureeMnutes", required = false) Integer dureeMnutes,
             @RequestParam(value = "nombreQuestions", required = false) Integer nombreQuestions,
             @RequestParam(value = "publie", required = false, defaultValue = "false") Boolean publie,
@@ -183,17 +178,14 @@ public class ConcoursBlancController {
             ConcoursBlanc concours = new ConcoursBlanc();
             concours.setTitre(titre);
             concours.setDescription(description != null && !description.trim().isEmpty() ? description.trim() : null);
-            concours.setEcole(ecole != null && !ecole.trim().isEmpty() ? ecole.trim() : null);
-            concours.setFiliere(filiere != null && !filiere.trim().isEmpty() ? filiere.trim() : null);
             concours.setMatiere(matiere);
             concours.setChapitre(chapitre != null && !chapitre.trim().isEmpty() ? chapitre.trim() : null);
-            concours.setAnnee(annee);
             concours.setDureeMnutes(dureeMnutes);
             concours.setNombreQuestions(nombreQuestions);
             // publie flag already forced above if HTML provided
             concours.setPublie(publie != null ? publie : false);
 
-            // Traitement du fichier principal (PDF ou HTML)
+            // Traitement du fichier HTML principal
             if (file != null && !file.isEmpty()) {
                 String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document";
                 String sanitized = origName.replaceAll("[^a-zA-Z0-9.-]", "_");
@@ -201,17 +193,16 @@ public class ConcoursBlancController {
                 int dotIdx = sanitized.lastIndexOf(".");
                 if (dotIdx > 0) ext = sanitized.substring(dotIdx).toLowerCase();
 
+                if (!ext.equals(".html") && !ext.equals(".htm")) {
+                    return ResponseEntity.badRequest().body("Seuls les fichiers HTML sont acceptés pour les concours blancs.");
+                }
+
                 String fileName = UUID.randomUUID().toString() + "_" + sanitized;
                 Path destPath = Paths.get(UPLOAD_DIR, fileName);
                 Files.write(destPath, file.getBytes());
 
-                if (ext.equals(".html") || ext.equals(".htm")) {
-                    concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
-                    concours.setFileType("HTML");
-                } else {
-                    concours.setPdfUrl("http://localhost:8081/uploads/" + fileName);
-                    concours.setFileType("PDF");
-                }
+                concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
+                concours.setFileType("HTML");
             }
 
             // Traitement du fichier HTML spécifique
@@ -223,11 +214,7 @@ public class ConcoursBlancController {
                 Files.write(destHtmlPath, htmlFile.getBytes());
 
                 concours.setHtmlUrl("http://localhost:8081/uploads/" + htmlName);
-                if (concours.getPdfUrl() != null && !concours.getPdfUrl().isEmpty()) {
-                    concours.setFileType("BOTH");
-                } else {
-                    concours.setFileType("HTML");
-                }
+                concours.setFileType("HTML");
             }
 
             ConcoursBlanc saved = concoursBlancRepository.save(concours);
@@ -246,7 +233,6 @@ public class ConcoursBlancController {
             @PathVariable Long id,
             @RequestParam(value = "titre", required = false) String titre,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "filiere", required = false) String filiere,
             @RequestParam(value = "matiere", required = false) String matiere,
             @RequestParam(value = "chapitre", required = false) String chapitre,
             @RequestParam(value = "dureeMnutes", required = false) Integer dureeMnutes,
@@ -264,7 +250,6 @@ public class ConcoursBlancController {
 
         if (titre != null && !titre.trim().isEmpty()) concours.setTitre(titre.trim());
         if (description != null) concours.setDescription(description.trim());
-        if (filiere != null) concours.setFiliere(filiere.trim());
         if (matiere != null && !matiere.trim().isEmpty()) concours.setMatiere(matiere.trim());
         if (chapitre != null) concours.setChapitre(chapitre.trim());
         if (dureeMnutes != null) concours.setDureeMnutes(dureeMnutes);
@@ -282,15 +267,15 @@ public class ConcoursBlancController {
                 String ext = "";
                 int dotIdx = sanitized.lastIndexOf(".");
                 if (dotIdx > 0) ext = sanitized.substring(dotIdx).toLowerCase();
+                if (!ext.equals(".html") && !ext.equals(".htm")) {
+                    return ResponseEntity.badRequest().body("Seuls les fichiers HTML sont acceptés pour les concours blancs.");
+                }
                 String fileName = UUID.randomUUID().toString() + "_" + sanitized;
                 Path destPath = Paths.get(UPLOAD_DIR, fileName);
                 Files.write(destPath, file.getBytes());
 
-                if (ext.equals(".html") || ext.equals(".htm")) {
-                    concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
-                } else {
-                    concours.setPdfUrl("http://localhost:8081/uploads/" + fileName);
-                }
+                concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
+                concours.setFileType("HTML");
             }
 
             if (htmlFile != null && !htmlFile.isEmpty()) {
@@ -300,6 +285,7 @@ public class ConcoursBlancController {
                 Path destHtmlPath = Paths.get(UPLOAD_DIR, htmlName);
                 Files.write(destHtmlPath, htmlFile.getBytes());
                 concours.setHtmlUrl("http://localhost:8081/uploads/" + htmlName);
+                concours.setFileType("HTML");
             }
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Erreur remplacement fichier: " + e.getMessage());
@@ -340,6 +326,11 @@ public class ConcoursBlancController {
                 return ResponseEntity.badRequest().body("Le fichier HTML sélectionné est vide.");
             }
 
+            String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase(Locale.ROOT) : "";
+            if (!originalName.endsWith(".html") && !originalName.endsWith(".htm")) {
+                return ResponseEntity.badRequest().body("Seuls les fichiers HTML sont acceptés pour les concours blancs.");
+            }
+
             Optional<ConcoursBlanc> optional = concoursBlancRepository.findById(id);
             if (optional.isEmpty()) return ResponseEntity.notFound().build();
 
@@ -353,11 +344,7 @@ public class ConcoursBlancController {
 
             ConcoursBlanc concours = optional.get();
             concours.setHtmlUrl("http://localhost:8081/uploads/" + fileName);
-            if (concours.getPdfUrl() != null && !concours.getPdfUrl().isEmpty()) {
-                concours.setFileType("BOTH");
-            } else {
-                concours.setFileType("HTML");
-            }
+            concours.setFileType("HTML");
 
             ConcoursBlanc saved = concoursBlancRepository.save(concours);
 

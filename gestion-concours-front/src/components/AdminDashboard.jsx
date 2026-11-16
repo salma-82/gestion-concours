@@ -168,7 +168,6 @@ export default function AdminDashboard() {
   const [realMatiere, setRealMatiere] = useState('');
   const [realAnnee, setRealAnnee] = useState('');
   const [realFileSujet, setRealFileSujet] = useState(null);
-  const [realFileCorrection, setRealFileCorrection] = useState(null);
   const [loadingRealCon, setLoadingRealCon] = useState(false);
   const [loadingEditRealCon, setLoadingEditRealCon] = useState(false);
 
@@ -185,7 +184,6 @@ export default function AdminDashboard() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [resTitre, setResTitre] = useState('');
   const [resMatiere, setResMatiere] = useState('Mathématiques');
-  const [resEcole, setResEcole] = useState('');
   const [resChapitre, setResChapitre] = useState('');
   const [resFile, setResFile] = useState(null);
   const [loadingRes, setLoadingRes] = useState(false);
@@ -197,7 +195,6 @@ export default function AdminDashboard() {
   const [editingResumeId, setEditingResumeId] = useState(null);
   const [editResTitre, setEditResTitre] = useState('');
   const [editResMatiere, setEditResMatiere] = useState('Mathématiques');
-  const [editResEcole, setEditResEcole] = useState('');
   const [editResChapitre, setEditResChapitre] = useState('');
   const [editResFile, setEditResFile] = useState(null);
   const [loadingEditRes, setLoadingEditRes] = useState(false);
@@ -239,21 +236,13 @@ export default function AdminDashboard() {
   const [searchConTitre, setSearchConTitre] = useState('');
   const [selectedConMatiere, setSelectedConMatiere] = useState('');
   const [selectedConChapitre, setSelectedConChapitre] = useState('');
-  const [selectedConEcole, setSelectedConEcole] = useState('');
-  const [selectedConAnnee, setSelectedConAnnee] = useState('');
   const [conMatieresList, setConMatieresList] = useState([]);
   const [conChapitresList, setConChapitresList] = useState([]);
-  const [conEcolesList, setConEcolesList] = useState([]);
-  const [conAnneesList, setConAnneesList] = useState([]);
 
   const [isConcoursModalOpen, setIsConcoursModalOpen] = useState(false);
   const [conTitre, setConTitre] = useState('');
-  const [conEcole, setConEcole] = useState('');
-  const [conFiliere, setConFiliere] = useState('');
   const [conMatiere, setConMatiere] = useState('');
   const [conChapitre, setConChapitre] = useState('');
-  const [conAnnee, setConAnnee] = useState('');
-  const [conFile, setConFile] = useState(null);
   const [conHtmlFile, setConHtmlFile] = useState(null);
   const [loadingCon, setLoadingCon] = useState(false);
 
@@ -342,8 +331,6 @@ export default function AdminDashboard() {
       setFilteredConcours(data);
       setConMatieresList([...new Set(data.map(item => item.matiere).filter(Boolean))]);
       setConChapitresList([...new Set(data.map(item => item.chapitre).filter(Boolean))]);
-      setConEcolesList([...new Set(data.map(item => item.ecole).filter(Boolean))]);
-      setConAnneesList([...new Set(data.map(item => item.annee).filter(Boolean))].sort((a, b) => b - a));
 
 
     } catch (err) { console.error("Erreur concours:", err); }
@@ -494,10 +481,6 @@ export default function AdminDashboard() {
     formData.append('matiere', realMatiere);
     formData.append('annee', realAnnee);
     if (realFileSujet) formData.append('fileSujet', realFileSujet);
-    if (realFileCorrection) {
-      formData.append('fileHtmlCorrection', realFileCorrection);
-      formData.append('fileCorrection', realFileCorrection);
-    }
 
     try {
       await axios.post('/api/concours', formData, {
@@ -507,7 +490,7 @@ export default function AdminDashboard() {
       alert('Concours HTML ajouté avec succès ! 🎉');
       setIsRealConcoursModalOpen(false);
       fetchRealConcours();
-      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
+      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du concours!");
     } finally { setLoadingRealCon(false); }
@@ -520,7 +503,6 @@ export default function AdminDashboard() {
     setRealMatiere(item.matiere || '');
     setRealAnnee(item.annee || '');
     setRealFileSujet(null);
-    setRealFileCorrection(null);
     setIsEditRealConcoursModalOpen(true);
   };
 
@@ -533,10 +515,6 @@ export default function AdminDashboard() {
     formData.append('matiere', realMatiere);
     formData.append('annee', realAnnee);
     if (realFileSujet) formData.append('fileSujet', realFileSujet);
-    if (realFileCorrection) {
-      formData.append('fileHtmlCorrection', realFileCorrection);
-      formData.append('fileCorrection', realFileCorrection);
-    }
 
     try {
       await axios.put(`/api/concours/${editingRealConcoursId}`, formData, {
@@ -546,7 +524,7 @@ export default function AdminDashboard() {
       alert('Concours HTML mis à jour avec succès ! ✅');
       setIsEditRealConcoursModalOpen(false);
       fetchRealConcours();
-      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null); setRealFileCorrection(null);
+      setRealTitre(''); setRealEcole(''); setRealMatiere(''); setRealAnnee(''); setRealFileSujet(null);
     } catch (err) {
       alert("Erreur lors de la mise à jour du concours !");
     } finally { setLoadingEditRealCon(false); }
@@ -637,10 +615,8 @@ export default function AdminDashboard() {
     if (searchConTitre) result = result.filter(item => item.titre?.toLowerCase().includes(searchConTitre.toLowerCase()));
     if (selectedConMatiere) result = result.filter(item => item.matiere === selectedConMatiere);
     if (selectedConChapitre) result = result.filter(item => item.chapitre === selectedConChapitre);
-    if (selectedConEcole) result = result.filter(item => item.ecole === selectedConEcole);
-    if (selectedConAnnee) result = result.filter(item => String(item.annee) === String(selectedConAnnee));
     setFilteredConcours(result);
-  }, [searchConTitre, selectedConMatiere, selectedConChapitre, selectedConEcole, selectedConAnnee, concoursList]);
+  }, [searchConTitre, selectedConMatiere, selectedConChapitre, concoursList]);
 
   // --- FILTRES EXAMENS NATIONAUX (PAR MATIERE ET ANNEE) ---
   useEffect(() => {
@@ -781,7 +757,6 @@ export default function AdminDashboard() {
     formData.append('titre', resTitre);
     formData.append('matiere', resMatiere);
     formData.append('chapitre', resChapitre);
-    formData.append('ecole', resEcole);
     formData.append('file', resFile);
 
     try {
@@ -792,7 +767,7 @@ export default function AdminDashboard() {
       alert('Résumé / Astuce ajouté avec succès ! 🎉');
       setIsResumeModalOpen(false);
       fetchResumes();
-      setResTitre(''); setResMatiere('Mathématiques'); setResEcole(''); setResChapitre(''); setResFile(null);
+      setResTitre(''); setResMatiere('Mathématiques'); setResChapitre(''); setResFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du résumé !");
     } finally { setLoadingRes(false); }
@@ -802,7 +777,6 @@ export default function AdminDashboard() {
     setEditingResumeId(item.id);
     setEditResTitre(item.titre || '');
     setEditResMatiere(item.matiere || 'Mathématiques');
-    setEditResEcole(item.ecole || '');
     setEditResChapitre(item.chapitre || '');
     setEditResFile(null);
     setIsEditResumeModalOpen(true);
@@ -815,7 +789,6 @@ export default function AdminDashboard() {
     formData.append('titre', editResTitre);
     formData.append('matiere', editResMatiere);
     formData.append('chapitre', editResChapitre);
-    formData.append('ecole', editResEcole);
     if (editResFile) {
       formData.append('file', editResFile);
     }
@@ -856,11 +829,8 @@ export default function AdminDashboard() {
     setLoadingCon(true);
     const formData = new FormData();
     formData.append('titre', conTitre);
-    if (conEcole) formData.append('ecole', conEcole);
-    if (conFiliere) formData.append('filiere', conFiliere);
     formData.append('matiere', conMatiere);
     if (conChapitre) formData.append('chapitre', conChapitre);
-    if (conAnnee) formData.append('annee', conAnnee);
     formData.append('publie', 'true');
     formData.append('htmlFile', conHtmlFile);
     formData.append('file', conHtmlFile);
@@ -873,7 +843,7 @@ export default function AdminDashboard() {
       alert('Concours Blanc HTML ajouté avec succès ! 🎉');
       setIsConcoursModalOpen(false);
       fetchConcours();
-      setConTitre(''); setConEcole(''); setConMatiere(''); setConChapitre(''); setConAnnee(''); setConFile(null); setConHtmlFile(null);
+      setConTitre(''); setConMatiere(''); setConChapitre(''); setConHtmlFile(null);
     } catch (err) {
       alert("Erreur lors de l'ajout du concours blanc !");
     } finally { setLoadingCon(false); }
@@ -1656,7 +1626,6 @@ export default function AdminDashboard() {
                   setRealMatiere('');
                   setRealAnnee('');
                   setRealFileSujet(null);
-                  setRealFileCorrection(null);
                   setIsRealConcoursModalOpen(true);
                 }}
                 style={styles.btnPrimary}
@@ -1755,42 +1724,7 @@ export default function AdminDashboard() {
                             <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Sujet manquant</span>
                           )}
 
-                          {/* Correction HTML ou fallback PDF */}
-                          {item.htmlCorrectionUrl ? (
-                            <button
-                              onClick={() => setPreviewRealConcoursHtml({
-                                titre: `${item.titre} (Correction)`,
-                                url: item.htmlCorrectionUrl,
-                                type: 'Correction HTML',
-                                ecole: item.ecole,
-                                matiere: item.matiere,
-                                annee: item.annee
-                              })}
-                              style={{
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                border: '1px solid #bbf7d0',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                width: 'fit-content'
-                              }}
-                              title="Ouvrir l'aperçu de la Correction HTML"
-                            >
-                              <span>✅</span> Corrigé HTML
-                            </button>
-                          ) : item.pdfCorrectionUrl ? (
-                            <a href={getPdfUrl(item.pdfCorrectionUrl)} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#64748b', textDecoration: 'none' }}>
-                              ✅ Corrigé (PDF)
-                            </a>
-                          ) : (
-                            <span style={{ color: COLORS.textLight, fontSize: '12px' }}>Corrigé manquant</span>
-                          )}
+
                         </div>
                       </td>
                       <td style={styles.tdCenter}>
@@ -2162,9 +2096,7 @@ export default function AdminDashboard() {
                               🌐 Fichier HTML
                             </a>
                           ) : (
-                            <a href={getPdfUrl(item.pdfUrl || item.pdf_url)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
-                              📄 Fichier PDF
-                            </a>
+                            <span style={styles.linkBlue}>📄 PDF · {pageCount} page{pageCount > 1 ? 's' : ''}</span>
                           )}
                         </td>
                         <td style={styles.tdCenter}>
@@ -2447,28 +2379,14 @@ export default function AdminDashboard() {
                 <input type="text" placeholder="Titre du concours..." value={searchConTitre} onChange={(e) => setSearchConTitre(e.target.value)} style={styles.input} />
               </div>
               <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>École</label>
-                <select value={selectedConEcole} onChange={(e) => setSelectedConEcole(e.target.value)} style={styles.select}>
-                  <option value="">Toutes les écoles</option>
-                  {conEcolesList.map((ecole, idx) => <option key={idx} value={ecole}>{ecole}</option>)}
-                </select>
-              </div>
-              <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Matière</label>
                 <select value={selectedConMatiere} onChange={(e) => setSelectedConMatiere(e.target.value)} style={styles.select}>
                   <option value="">Toutes les matières</option>
                   {conMatieresList.map((mat, idx) => <option key={idx} value={mat}>{mat}</option>)}
                 </select>
               </div>
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Année</label>
-                <select value={selectedConAnnee} onChange={(e) => setSelectedConAnnee(e.target.value)} style={styles.select}>
-                  <option value="">Toutes les années</option>
-                  {conAnneesList.map((ann, idx) => <option key={idx} value={ann}>{ann}</option>)}
-                </select>
-              </div>
-              {(searchConTitre || selectedConMatiere || selectedConChapitre || selectedConEcole || selectedConAnnee) && (
-                <button onClick={() => { setSearchConTitre(''); setSelectedConMatiere(''); setSelectedConChapitre(''); setSelectedConEcole(''); setSelectedConAnnee(''); }} style={styles.btnReset}>
+              {(searchConTitre || selectedConMatiere || selectedConChapitre) && (
+                <button onClick={() => { setSearchConTitre(''); setSelectedConMatiere(''); setSelectedConChapitre(''); }} style={styles.btnReset}>
                   Réinitialiser
                 </button>
               )}
@@ -2617,20 +2535,6 @@ export default function AdminDashboard() {
                 </small>
               </div>
 
-              {/* Fichier HTML Correction */}
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>✅ Fichier HTML Correction (.html, .htm)</label>
-                <input
-                  type="file"
-                  accept=".html,.htm,text/html"
-                  onChange={(e) => setRealFileCorrection(e.target.files[0])}
-                  style={styles.formFile}
-                />
-                <small style={{ color: '#16a34a', display: 'block', marginTop: '4px', fontSize: '11.5px', fontWeight: 600 }}>
-                  ✓ Corrigé détaillé et barème au format HTML.
-                </small>
-              </div>
-
               <div style={styles.modalFooter}>
                 <button type="button" onClick={() => setIsRealConcoursModalOpen(false)} style={styles.btnCancel}>Annuler</button>
                 <button type="submit" disabled={loadingRealCon} style={{ ...styles.btnSubmit, opacity: loadingRealCon ? 0.7 : 1 }}>
@@ -2683,20 +2587,6 @@ export default function AdminDashboard() {
                 />
                 <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
                   Sélectionnez le fichier pour rétablir l'affichage du QCM côté étudiant.
-                </small>
-              </div>
-
-              {/* Remplacer Correction HTML */}
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>✅ Remplacer le Fichier HTML Correction (Optionnel)</label>
-                <input
-                  type="file"
-                  accept=".html,.htm,text/html"
-                  onChange={(e) => setRealFileCorrection(e.target.files[0])}
-                  style={styles.formFile}
-                />
-                <small style={{ color: '#64748b', display: 'block', marginTop: '3px', fontSize: '11px' }}>
-                  Laissez vide pour conserver la correction actuelle.
                 </small>
               </div>
 
@@ -2801,18 +2691,6 @@ export default function AdminDashboard() {
               </div>
 
               <div style={styles.formGroup}>
-                <label style={styles.formLabel}>École associée au résumé</label>
-                <select value={resEcole} onChange={(e) => setResEcole(e.target.value)} style={styles.formInput}>
-                  <option value="">Général — tous les packs</option>
-                  <option value="Médecine">Médecine</option>
-                  <option value="ENSAM">ENSAM</option>
-                  <option value="ENSA">ENSA</option>
-                  <option value="ENSCK">ENSCK</option>
-                  <option value="ENCG">ENCG</option>
-                </select>
-              </div>
-
-              <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Chapitre *</label>
                 <input
                   type="text"
@@ -2900,18 +2778,6 @@ export default function AdminDashboard() {
                   <option value="Mathématiques">📐 Mathématiques</option>
                   <option value="Physique-Chimie">⚡ Physique-Chimie</option>
                   <option value="SVT">🧬 SVT (Sciences de la Vie et de la Terre)</option>
-                </select>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>École associée au résumé</label>
-                <select value={editResEcole} onChange={(e) => setEditResEcole(e.target.value)} style={styles.formInput}>
-                  <option value="">Général — tous les packs</option>
-                  <option value="Médecine">Médecine</option>
-                  <option value="ENSAM">ENSAM</option>
-                  <option value="ENSA">ENSA</option>
-                  <option value="ENSCK">ENSCK</option>
-                  <option value="ENCG">ENCG</option>
                 </select>
               </div>
 
@@ -3040,11 +2906,6 @@ export default function AdminDashboard() {
             ) : (
               <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
                 <p>Aucune image de page n'est encore générée pour ce document.</p>
-                {previewResume.pdfUrl && (
-                  <a href={getPdfUrl(previewResume.pdfUrl)} target="_blank" rel="noreferrer" style={styles.linkBlue}>
-                    Consulter le fichier PDF
-                  </a>
-                )}
               </div>
             )}
 
@@ -3330,19 +3191,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleConcoursSubmit}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Titre du concours</label>
-                <input type="text" placeholder="Ex: Concours Blanc ENSA 2024" value={conTitre} onChange={(e) => setConTitre(e.target.value)} required style={styles.formInput} />
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Filière du baccalauréat</label>
-                <select value={conFiliere} onChange={(e) => setConFiliere(e.target.value)} style={styles.formInput}>
-                  <option value="">Toutes / non précisée</option>
-                  <option value="Sciences Mathématiques A">Sciences Mathématiques A</option>
-                  <option value="Sciences Mathématiques B">Sciences Mathématiques B</option>
-                  <option value="Sciences Physiques">Sciences Physiques</option>
-                  <option value="Sciences de la Vie et de la Terre (SVT)">Sciences de la Vie et de la Terre (SVT)</option>
-                  <option value="Sciences Économiques">Sciences Économiques</option>
-                </select>
+                <input type="text" placeholder="Ex: Concours Blanc QCM 01" value={conTitre} onChange={(e) => setConTitre(e.target.value)} required style={styles.formInput} />
               </div>
 
               <div style={styles.formGroup}>
@@ -3431,7 +3280,7 @@ export default function AdminDashboard() {
               <div>
                 <h3 style={styles.modalTitle}>🌐 {previewConcoursHtml.titre}</h3>
                 <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>
-                  {previewConcoursHtml.matiere} {previewConcoursHtml.ecole ? `• ${previewConcoursHtml.ecole}` : ''} {previewConcoursHtml.annee ? `(${previewConcoursHtml.annee})` : ''} • Version Web HTML
+                  {previewConcoursHtml.matiere} • Version Web HTML
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

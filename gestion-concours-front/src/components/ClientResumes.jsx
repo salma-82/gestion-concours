@@ -617,10 +617,6 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                 ))}
               </div>
             </div>
-          ) : activeResume.pdfUrl ? (
-            <div style={{ background: 'var(--surface, #ffffff)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border, #e2e8f0)' }}>
-              <iframe src={getFullUrl(activeResume.pdfUrl)} title={activeResume.titre} style={{ width: '100%', height: '84vh', border: 'none' }} />
-            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px', background: 'var(--surface, #ffffff)', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
               <p>Aucun document n'est rattaché à ce résumé.</p>

@@ -15,7 +15,6 @@ export default function ConcoursManager() {
     const [matiere, setMatiere] = useState('');
     const [annee, setAnnee] = useState('');
     const [fileSujet, setFileSujet] = useState(null);
-    const [fileCorrection, setFileCorrection] = useState(null);
 
     // Charger les concours (b l-filtre wla bla filtre)
     const fetchConcours = async () => {
@@ -47,10 +46,6 @@ export default function ConcoursManager() {
             formData.append('fileHtml', fileSujet);
             formData.append('fileSujet', fileSujet);
         }
-        if (fileCorrection) {
-            formData.append('fileHtmlCorrection', fileCorrection);
-            formData.append('fileCorrection', fileCorrection);
-        }
 
         try {
             await axios.post('/api/concours', formData, {
@@ -59,7 +54,7 @@ export default function ConcoursManager() {
             alert('Concours HTML ajouté avec succès !');
             // Vider le formulaire
             setTitre(''); setEcole(''); setMatiere(''); setAnnee('');
-            setFileSujet(null); setFileCorrection(null);
+            setFileSujet(null);
             fetchConcours(); // Actualiser la liste
         } catch (error) {
             console.error("Erreurajout", error);
@@ -94,9 +89,6 @@ export default function ConcoursManager() {
                 <label>Fichier HTML Sujet: </label>
                 <input type="file" onChange={e => setFileSujet(e.target.files[0])} accept=".html,.htm,text/html" /><br/><br/>
                 
-                <label>Fichier HTML Correction: </label>
-                <input type="file" onChange={e => setFileCorrection(e.target.files[0])} accept=".html,.htm,text/html" /><br/><br/>
-                
                 <button type="submit">Ajouter Concours HTML</button>
             </form>
 
@@ -120,7 +112,6 @@ export default function ConcoursManager() {
                         <th>Matière</th>
                         <th>Année</th>
                         <th>Sujet HTML</th>
-                        <th>Correction HTML</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -138,13 +129,6 @@ export default function ConcoursManager() {
                                         🌐 Sujet HTML
                                     </a>
                                 ) : 'Aucun'}
-                            </td>
-                            <td>
-                                {c.htmlCorrectionUrl ? (
-                                    <a href={c.htmlCorrectionUrl} target="_blank" rel="noreferrer">
-                                        ✅ Corrigé HTML
-                                    </a>
-                                ) : 'Aucune'}
                             </td>
                             <td>
                                 <button onClick={() => handleDelete(c.id)} style={{ color: 'red' }}>Supprimer</button>

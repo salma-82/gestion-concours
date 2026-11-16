@@ -68,14 +68,14 @@ public class DemoUploadAccessFilter extends OncePerRequestFilter {
                     StandardCharsets.UTF_8);
             boolean free = containsFreeFile(coursRepository.findAll(), CoursBac::isFree, item -> item.getHtmlUrl(), filename)
                     || containsFreeFile(resumeRepository.findAll(), Resume::isFree, item -> java.util.Arrays.asList(
-                            item.getPdfUrl(), item.getHtmlUrl(), item.getPageImages()), filename)
+                            item.getHtmlUrl(), item.getPageImages()), filename)
                     || containsFreeFile(examenRepository.findAll(), ExamenNational::isFree, item -> java.util.Arrays.asList(
                             item.getPdfSujetUrl(), item.getPdfCorrectionUrl(),
                             item.getSujetPageImages(), item.getCorrectionPageImages()), filename)
                     || containsFreeFile(concoursRepository.findAll(), Concours::isFree, item -> java.util.Arrays.asList(
-                            item.getPdfCorrectionUrl(), item.getHtmlUrl(), item.getHtmlCorrectionUrl()), filename)
+                            item.getHtmlUrl()), filename)
                     || containsFreeFile(concoursBlancRepository.findAll(), ConcoursBlanc::isFree, item -> java.util.Arrays.asList(
-                            item.getPdfUrl(), item.getHtmlUrl()), filename);
+                            item.getHtmlUrl()), filename);
             if (!free) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");

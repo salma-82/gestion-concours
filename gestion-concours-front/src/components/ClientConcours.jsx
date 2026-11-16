@@ -62,14 +62,12 @@ export default function ClientConcours() {
   const [openYear, setOpenYear] = useState(null); // null = Liste des cartes, string = Année ouverte (ex: '2025')
   const [activeSubject, setActiveSubject] = useState(null); // Matière actuellement sélectionnée
   const [activeQuestion, setActiveQuestion] = useState(1);
-  const [viewerTab, setViewerTab] = useState('sujet'); // 'sujet' | 'correction'
 
   useEffect(() => {
     setSelectedYearFilter('all');
     setOpenYear(null);
     setActiveSubject(null);
     setActiveQuestion(1);
-    setViewerTab('sujet');
   }, [requestedEcole]);
 
   // Clé de stockage de la progression spécifique à cet étudiant
@@ -400,7 +398,6 @@ export default function ClientConcours() {
     setOpenYear(year);
     setActiveSubject(subjectName);
     setActiveQuestion(nextQ);
-    setViewerTab('sujet');
 
     recordStudentActivity({
       type: 'Concours',
@@ -1178,6 +1175,8 @@ export default function ClientConcours() {
               .concours-subject-tabs { grid-template-columns: minmax(0, 1fr); }
               .concours-subject-accordion { width: 100%; max-width: none; }
               .concours-question-item { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
+              .concours-question-timer-group { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
+              [data-concours-question-timer-slot] { width: 100% !important; max-width: 100% !important; }
             }
           `}</style>
 
@@ -1259,7 +1258,19 @@ export default function ClientConcours() {
                         </div>
                       );
 
-                      return questionCard;
+                      return qNum === 1 ? (
+                        <div
+                          key="question-group-1"
+                          className="concours-question-timer-group"
+                          style={{ width: '5cm', maxWidth: '5cm', flex: '0 0 5cm', display: 'flex', flexDirection: 'column', gap: '8px' }}
+                        >
+                          {questionCard}
+                          <div
+                            data-concours-question-timer-slot="true"
+                            style={{ width: '100%', maxWidth: '100%', flex: '0 0 auto', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      ) : questionCard;
                     })}
                   </div>
                 </div>
@@ -1276,71 +1287,6 @@ export default function ClientConcours() {
           }}>
             {currentActiveConcours ? (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Barre de titre et onglets Sujet / Corrigé */}
-                <div style={{
-                  display: (currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl) ? 'flex' : 'none',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                  marginBottom: '16px',
-                  paddingBottom: '14px',
-                  borderBottom: '1px solid var(--border, #e2e8f0)'
-                }}>
-                  <div className="concours-qcm-heading">
-                    <span style={{
-                      fontSize: '12px',
-                      fontWeight: 850,
-                      color: '#1865f2',
-                      letterSpacing: '0.6px',
-                      textTransform: 'uppercase'
-                    }}>
-                      {activeSubject?.toUpperCase()} · CONCOURS {openYear}
-                    </span>
-                    <h3 style={{ margin: '3px 0 0', fontSize: '20px', fontWeight: 850, color: 'var(--text, #0f2a6b)' }}>
-                      {currentActiveConcours.titre || `Concours ${openYear} — ${activeSubject}`}
-                    </h3>
-                  </div>
-
-                  {/* Boutons Sujet / Corrigé si le corrigé existe */}
-                  {(currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl) && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setViewerTab('sujet')}
-                        style={{
-                          padding: '7px 16px',
-                          borderRadius: '8px',
-                          fontSize: '13px',
-                          fontWeight: 750,
-                          cursor: 'pointer',
-                          border: viewerTab === 'sujet' ? '1.5px solid #1865f2' : '1px solid var(--border, #cbd5e1)',
-                          backgroundColor: viewerTab === 'sujet' ? '#eff6ff' : '#ffffff',
-                          color: viewerTab === 'sujet' ? '#1865f2' : 'var(--text-secondary, #64748b)'
-                        }}
-                      >
-                        📄 Sujet
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setViewerTab('correction')}
-                        style={{
-                          padding: '7px 16px',
-                          borderRadius: '8px',
-                          fontSize: '13px',
-                          fontWeight: 750,
-                          cursor: 'pointer',
-                          border: viewerTab === 'correction' ? '1.5px solid #10b981' : '1px solid var(--border, #cbd5e1)',
-                          backgroundColor: viewerTab === 'correction' ? '#ecfdf5' : '#ffffff',
-                          color: viewerTab === 'correction' ? '#047857' : 'var(--text-secondary, #64748b)'
-                        }}
-                      >
-                        ✅ Corrigé
-                      </button>
-                    </div>
-                  )}
-                </div>
-
                 {/* Affichage du QCM HTML réel ajouté par l'administrateur */}
                 {!isSchoolIncluded(currentActiveConcours.ecole) ? (
                   <div style={{
@@ -1366,15 +1312,15 @@ export default function ClientConcours() {
                 ) : currentActiveConcours.htmlUrl ? (
                   <div style={{ flex: 1, minHeight: 0, borderRadius: '16px', overflow: 'visible' }}>
                     <TrackedQcmFrame
-                      src={getPdfUrl(viewerTab === 'sujet' ? currentActiveConcours.htmlUrl : (currentActiveConcours.htmlCorrectionUrl || currentActiveConcours.pdfCorrectionUrl || currentActiveConcours.htmlUrl))}
-                      title={`${currentActiveConcours.titre} - ${viewerTab}`}
+                      src={getPdfUrl(currentActiveConcours.htmlUrl)}
+                      title={`${currentActiveConcours.titre} - Sujet`}
                       sourceType="Concours"
                       resourceId={currentActiveConcours.id}
                       resourceTitle={currentActiveConcours.titre}
                       subject={activeSubject}
                       school={currentActiveConcours.ecole || requestedEcole || ''}
                       year={openYear}
-                      enableTimer={viewerTab === 'sujet'}
+                      enableTimer
                       style={{ width: '100%', height: '80vh', border: 'none', display: 'block', background: 'transparent' }}
                     />
                   </div>

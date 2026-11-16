@@ -58,10 +58,10 @@ public class StudentQcmHistoryController {
                 ConcoursBlanc resource = concoursBlancRepository.findById(databaseResourceId).orElse(null);
                 if (resource == null || !resource.getPublie()) return ResponseEntity.badRequest().body("Concours blanc introuvable ou non publié.");
                 resourceTitle = resource.getTitre();
-                school = resource.getEcole();
+                school = null;
                 subject = resource.getMatiere();
                 chapter = resource.getChapitre();
-                year = resource.getAnnee();
+                year = null;
             } else {
                 Concours resource = concoursRepository.findById(databaseResourceId).orElse(null);
                 if (resource == null) return ResponseEntity.badRequest().body("Concours introuvable.");

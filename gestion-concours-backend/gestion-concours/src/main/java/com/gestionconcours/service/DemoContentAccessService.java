@@ -46,9 +46,7 @@ public class DemoContentAccessService {
     public void protectResumes(List<Resume> items, String authorization) {
         if (!isDemo(authorization)) return;
         items.stream().filter(item -> !item.isFree()).forEach(item -> {
-            item.setPdfUrl(null);
             item.setHtmlUrl(null);
-            item.setContenu(null);
             item.setPageImages(List.of());
         });
     }
@@ -66,16 +64,13 @@ public class DemoContentAccessService {
     public void protectConcours(List<Concours> items, String authorization) {
         if (!isDemo(authorization)) return;
         items.stream().filter(item -> !item.isFree()).forEach(item -> {
-            item.setPdfCorrectionUrl(null);
             item.setHtmlUrl(null);
-            item.setHtmlCorrectionUrl(null);
         });
     }
 
     public void protectConcoursBlancs(List<ConcoursBlanc> items, String authorization) {
         if (!isDemo(authorization)) return;
         items.stream().filter(item -> !item.isFree()).forEach(item -> {
-            item.setPdfUrl(null);
             item.setHtmlUrl(null);
             item.setDescription(null);
         });

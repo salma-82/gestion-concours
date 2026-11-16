@@ -300,8 +300,6 @@ export default function ClientResumesPage() {
   // VUE 1 : LECTEUR DU RÉSUMÉ (PLEIN ÉCRAN)
   // =========================================================================
   if (activeResume) {
-    const hasPdf = Boolean(activeResume.pdfUrl);
-
     return (
       <div className="client-resumes-container">
         <div className="client-resume-viewer">
@@ -318,18 +316,6 @@ export default function ClientResumesPage() {
             </button>
 
             <div className="client-resume-viewer-controls">
-              {hasPdf && (
-                <button
-                  type="button"
-                  className="client-resume-viewer-download-btn"
-                  onClick={() => window.open(getFullUrl(activeResume.pdfUrl), '_blank')}
-                  title="Télécharger le résumé officiel en PDF"
-                >
-                  <span>📥</span>
-                  <span>Télécharger PDF</span>
-                </button>
-              )}
-
               <button
                 type="button"
                 className={`client-resume-viewer-finish ${activeResumeCompleted ? 'is-completed' : ''}`}
@@ -363,19 +349,6 @@ export default function ClientResumesPage() {
                   background: 'transparent'
                 }}
               />
-            ) : activeResume.pdfUrl ? (
-              <iframe
-                src={getFullUrl(activeResume.pdfUrl)}
-                title={activeResume.titre || activeResume.chapitre || 'Résumé'}
-                style={{
-                  width: '100%',
-                  height: 'calc(100vh - 200px)',
-                  minHeight: '620px',
-                  border: 'none',
-                  display: 'block',
-                  background: 'transparent'
-                }}
-              />
             ) : activeResume.pageImages?.length ? (
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 0, background: 'transparent' }}>
                 {activeResume.pageImages.map((url, index) => (
@@ -386,10 +359,6 @@ export default function ClientResumesPage() {
                     style={{ width: '100%', maxWidth: 'none', height: 'auto', borderRadius: 0 }}
                   />
                 ))}
-              </div>
-            ) : activeResume.contenu?.trim() ? (
-              <div style={{ padding: '32px', color: 'var(--text, #334155)', lineHeight: 1.75, whiteSpace: 'pre-wrap', background: 'transparent' }}>
-                {activeResume.contenu}
               </div>
             ) : (
               <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary, #64748b)' }}>
@@ -509,8 +478,6 @@ export default function ClientResumesPage() {
                       const resumeKey = resume.id || `${subject.id}-${idx}`;
                       const { chapterNum, title } = parseChapterInfo(resume, idx);
                       const progress = getResumeProgress(resume);
-                      const hasPdf = Boolean(resume.pdfUrl);
-
                       return (
                         <article key={resumeKey} className={`client-resume-card ${demoContentClass(resume)}`}>
                           <DemoAccessBadge item={resume} />
@@ -579,24 +546,6 @@ export default function ClientResumesPage() {
                                 {progress.btnText}
                               </button>
 
-                              {hasPdf && (
-                                <button
-                                  type="button"
-                                  className="client-resume-pdf-btn"
-                                  title="Télécharger le résumé en PDF"
-                                  aria-label="Télécharger le résumé en PDF"
-                                  onClick={guardDemoContent(resume, (e) => {
-                                    e.stopPropagation();
-                                    window.open(getFullUrl(resume.pdfUrl), '_blank');
-                                  })}
-                                >
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                  </svg>
-                                </button>
-                              )}
                             </div>
                           </div>
                         </article>

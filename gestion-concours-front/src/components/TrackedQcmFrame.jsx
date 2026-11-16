@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { recordStudentMistake, resolveStudentMistakes } from '../studentProgress';
 
@@ -50,6 +51,7 @@ const concoursBlancIntegratedQcmStyle = `<style>
   }
   .explain-side { grid-column: 2 !important; position: static !important; }
   .layout .top, .layout .bar { display: none !important; }
+  .tag { display: none !important; }
   .q { margin: 6px 0 12px !important; }
   .opt { box-sizing: border-box !important; min-height: 64px !important; padding: 8px 16px !important; margin: 6px 0 !important; border-color: #cbdaf4 !important; border-radius: 12px !important; }
   .opt:hover { border-color: #93b4f0 !important; background: #f8fbff !important; }
@@ -72,9 +74,9 @@ const concoursBlancIntegratedQcmStyle = `<style>
     .wrap > .content { grid-column: 1 !important; }
     .layout > .side { grid-column: 1 !important; width: 100% !important; max-width: none !important; }
     .grid { flex-direction: row !important; overflow-x: auto !important; padding-bottom: 6px !important; }
-    .gb { flex: 0 0 5cm !important; }
+    .grid > .gb { flex: 0 0 5cm !important; }
     .wrap .pal { flex-direction: row !important; overflow-x: auto !important; padding-bottom: 6px !important; }
-    .wrap .pal button { flex: 0 0 5cm !important; }
+    .wrap .pal > button { flex: 0 0 5cm !important; }
     .layout > .card:not(.side):not(.explain-side), .explain-side { grid-column: 1 !important; width: 100% !important; }
   }
 </style>`;
@@ -105,6 +107,10 @@ export default function TrackedQcmFrame({
   style
 }) {
   const iframeRef = useRef(null);
+  const [timerPortalTarget, setTimerPortalTarget] = useState(null);
+  const [timerSlotAttached, setTimerSlotAttached] = useState(false);
+  const timerControlStateRef = useRef(null);
+  const timerActionHandlerRef = useRef(null);
   const currentQuestionRef = useRef(null);
   const trackedSrc = useMemo(() => getTrackedQcmUrl(src), [src]);
   const [verifiedTrackedSrc, setVerifiedTrackedSrc] = useState('');
@@ -119,9 +125,6 @@ export default function TrackedQcmFrame({
   const [timerRemaining, setTimerRemaining] = useState(null);
   const [freeTimerElapsed, setFreeTimerElapsed] = useState(0);
   const [freeTimerPaused, setFreeTimerPaused] = useState(false);
-  const [timerAnswers, setTimerAnswers] = useState({});
-  const [timerCurrentQuestion, setTimerCurrentQuestion] = useState(null);
-  const [timerTotalQuestions, setTimerTotalQuestions] = useState(null);
   const [timerActionLoading, setTimerActionLoading] = useState(false);
   const [timerMessage, setTimerMessage] = useState('');
   const timerSessionRef = useRef(null);
@@ -136,6 +139,21 @@ export default function TrackedQcmFrame({
   const iframeLocalStorageKeyRef = useRef(null);
   const freeTimerClockRef = useRef(null);
   const pendingAnswersRef = useRef(new Set());
+
+  useEffect(() => {
+    if (String(sourceType || '').trim().toLowerCase() !== 'concours') {
+      setTimerPortalTarget(null);
+      return undefined;
+    }
+    const findQuestionTimerSlot = () => {
+      const target = document.querySelector('[data-concours-question-timer-slot]');
+      setTimerPortalTarget((current) => current === target ? current : target);
+    };
+    findQuestionTimerSlot();
+    const observer = new MutationObserver(findQuestionTimerSlot);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [sourceType, resourceId]);
 
   const syncQcmTheme = useCallback(() => {
     const root = document.documentElement;
@@ -155,7 +173,6 @@ export default function TrackedQcmFrame({
     }
     const mergedAnswers = { ...(data.answers || {}), ...(localAnswers || {}) };
     timerAnswersRef.current = mergedAnswers;
-    setTimerAnswers(mergedAnswers);
     const remaining = Math.max(0, Number(data.remainingSeconds) || 0);
     timerAnchorRef.current = { remaining, at: Date.now() };
     setTimerRemaining(remaining);
@@ -171,8 +188,6 @@ export default function TrackedQcmFrame({
     const total = Number(savedProgress.totalQuestions) || Number(data.totalQuestions) || null;
     timerCurrentQuestionRef.current = current;
     timerTotalQuestionsRef.current = total;
-    setTimerCurrentQuestion(current);
-    setTimerTotalQuestions(total);
     if (timerClientKeyStorageRef.current && data.sessionId) {
       const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
       try {
@@ -285,7 +300,6 @@ export default function TrackedQcmFrame({
       const data = await requestTimerOpen(newKey);
       if (data?.supported) {
         timerAnswersRef.current = {};
-        setTimerAnswers({});
         try { localStorage.removeItem(`qcm-timer-answers:${data.sessionId}`); } catch {}
         iframeRef.current?.contentWindow?.postMessage({ type: 'timer-reset-answers' }, '*');
         window.setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ type: 'timer-reset-answers' }, '*'), 250);
@@ -302,7 +316,6 @@ export default function TrackedQcmFrame({
     setTimerLoading(true);
     setTimerSession(null);
     timerSessionRef.current = null;
-    setTimerAnswers({});
     timerAnswersRef.current = {};
     setTimerRemaining(null);
     setTimerMessage('');
@@ -492,6 +505,7 @@ export default function TrackedQcmFrame({
   useEffect(() => {
     let cancelled = false;
     setHtmlDocument(null);
+    setTimerSlotAttached(false);
     setHtmlFrameHeight(800);
     setSessionMistakes([]);
     currentQuestionRef.current = null;
@@ -520,7 +534,7 @@ export default function TrackedQcmFrame({
       const isConcours = sourceType === 'Concours' || /concours/i.test(sourceType || '');
       const isConcoursBlanc = /concours\s*blanc/i.test(sourceType || '');
       const integratedQcmUnboxedStyle = hasQuestionPaletteQcm
-        ? '<style>.wrap > .side,#main > .card{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}.side > .top{background:transparent!important;border-radius:0!important;padding:0!important}</style>'
+        ? '<style>.wrap > .side,#main > .card{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}.side > .top{background:transparent!important;border-radius:0!important;padding:0!important}.tag{display:none!important}</style>'
         : '';
       const explanationToggleStyle = hasQuestionPaletteQcm
         ? '<style>.qcm-explanation-toggle{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:100%!important;margin:0!important;padding:10px 16px!important;border:1.5px solid var(--tintbd,#c5d6f5)!important;border-radius:12px!important;background:var(--tint,#e6efff)!important;color:var(--pri,#2457c8)!important;font:700 13px system-ui,sans-serif!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:none!important;transition:background .15s ease,border-color .15s ease!important}.qcm-explanation-toggle:hover{background:var(--pill,#e4edff)!important;border-color:var(--pri,#2457c8)!important}</style>'
@@ -572,6 +586,52 @@ export default function TrackedQcmFrame({
       const themeSyncScript = hasQuestionPaletteQcm && isConcours
         ? `<script>(function(){window.addEventListener('message',function(event){if(event.source!==parent||event.data?.type!=='platform-theme')return;document.documentElement.setAttribute('data-platform-theme',event.data.theme==='dark'?'dark':'light')})})();</script>`
         : '';
+      const timerSlotScript = hasQuestionPaletteQcm && isConcoursBlanc
+        ? `<script>(function(){
+          var timerState=null,group=null,slot=null,timerSlotReported=false;
+          function reportSlot(attached){if(timerSlotReported===attached)return;timerSlotReported=attached;parent.postMessage({type:'tracked-qcm-timer-slot',attached:attached},'*')}
+          function restoreQuestion(){
+            if(!group||!group.parentNode){reportSlot(false);return}
+            var palette=group.parentNode,question=group.querySelector('button');
+            if(question)palette.insertBefore(question,group);
+            group.remove();group=null;slot=null;
+            reportSlot(false);
+          }
+          function makeSlot(){
+            slot=document.createElement('div');
+            slot.setAttribute('data-tracked-timer-slot','true');
+            slot.style.cssText='box-sizing:border-box;display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:6px;width:100%;max-width:100%;height:44px;padding:4px 6px 4px 10px;border:1px solid #e1e9f2;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(20,53,92,.14);font-family:system-ui,sans-serif';
+            var dot=document.createElement('span');dot.setAttribute('data-timer-dot','');dot.style.cssText='width:6px;height:6px;border-radius:50%;flex:0 0 auto';
+            var value=document.createElement('span');value.setAttribute('data-timer-value','');value.setAttribute('role','timer');value.setAttribute('aria-live','off');value.style.cssText='flex:1 1 auto;min-width:78px;text-align:center;color:#183b70;font-size:17px;font-weight:850;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap';
+            var pause=document.createElement('button');pause.type='button';pause.setAttribute('aria-label','Mettre le chronomètre en pause');pause.title='Pause';pause.innerHTML='<svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none"><rect x="1.5" y="1" width="3" height="12" rx="1" fill="currentColor"/><rect x="7.5" y="1" width="3" height="12" rx="1" fill="currentColor"/></svg>';pause.style.cssText='width:26px;height:26px;min-width:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#7894b3;color:#fff;cursor:pointer';pause.addEventListener('click',function(){parent.postMessage({type:'tracked-qcm-timer-action',action:'pause'},'*')});
+            var resume=document.createElement('button');resume.type='button';resume.setAttribute('aria-label','Continuer le chronomètre');resume.title='Continuer';resume.innerHTML='<svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none"><path d="M2 1.5L10.5 7L2 12.5V1.5Z" fill="currentColor"/></svg>';resume.style.cssText='width:26px;height:26px;min-width:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:#153b70;color:#fff;cursor:pointer';resume.addEventListener('click',function(){parent.postMessage({type:'tracked-qcm-timer-action',action:'resume'},'*')});
+            slot.append(dot,value,pause,resume);
+          }
+          function placeTimer(){
+            if(!timerState||!timerState.visible){restoreQuestion();return}
+            var palette=document.querySelector('.wrap .pal, .layout .grid');
+            var question=palette&&palette.querySelector('button');
+            if(!palette||!question){restoreQuestion();return}
+            if(!group){group=document.createElement('div');group.setAttribute('data-tracked-question-timer-group','true');group.style.cssText='box-sizing:border-box;display:flex;flex:0 0 5cm;flex-direction:column;gap:8px;width:5cm;max-width:100%'}
+            if(group.parentNode!==palette)palette.insertBefore(group,question);
+            Array.prototype.forEach.call(group.querySelectorAll('button'),function(button){if(button!==question)button.remove()});
+            if(question.parentNode!==group)group.insertBefore(question,group.firstChild);
+            if(!slot)makeSlot();
+            if(slot.parentNode!==group)group.appendChild(slot);
+            var dot=slot.querySelector('[data-timer-dot]'),value=slot.querySelector('[data-timer-value]'),buttons=slot.querySelectorAll('button');
+            value.textContent=timerState.value||'--:--:--';value.title=timerState.title||'Chronomètre';
+            value.style.color=timerState.urgent?'#b42318':'#183b70';
+            dot.style.background=timerState.urgent?'#dc4c4c':timerState.paused?'#94a3b8':'#b8c6d5';
+            buttons[0].disabled=!!timerState.pauseDisabled;buttons[1].disabled=!!timerState.resumeDisabled;
+            buttons[0].style.opacity=buttons[0].disabled?'.55':'1';buttons[1].style.opacity=buttons[1].disabled?'.55':'1';
+            buttons[0].style.cursor=buttons[0].disabled?'default':'pointer';buttons[1].style.cursor=buttons[1].disabled?'default':'pointer';
+            reportSlot(true);
+          }
+          window.addEventListener('message',function(event){if(event.source!==parent||event.data?.type!=='tracked-qcm-timer-render')return;timerState=event.data.state||null;placeTimer()});
+          var observer=new MutationObserver(placeTimer);if(document.documentElement)observer.observe(document.documentElement,{childList:true,subtree:true});
+          parent.postMessage({type:'tracked-qcm-timer-ready'},'*');
+        })();</script>`
+        : '';
       if (/<head[^>]*>/i.test(html)) html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
       else html = `${base}${html}`;
       if (integratedQcmStyle || integratedConcoursLayoutStyle || integratedQcmUnboxedStyle || concoursAnswerHeightStyle) {
@@ -580,7 +640,7 @@ export default function TrackedQcmFrame({
         if (headClose >= 0) html = `${html.slice(0, headClose)}${injectedStyles}${html.slice(headClose)}`;
         else html = `${injectedStyles}${html}`;
       }
-      const scriptsToInject = `${resizeScript}${navScript}${explanationScript}${explanationPlacementScript}${themeSyncScript}`;
+      const scriptsToInject = `${resizeScript}${navScript}${explanationScript}${explanationPlacementScript}${themeSyncScript}${timerSlotScript}`;
       const bodyClose = html.toLowerCase().lastIndexOf('</body>');
       if (bodyClose >= 0) html = `${html.slice(0, bodyClose)}${scriptsToInject}${html.slice(bodyClose)}`;
       else html += scriptsToInject;
@@ -740,6 +800,22 @@ export default function TrackedQcmFrame({
     const handleQcmMessage = (event) => {
       if (event.source !== iframeRef.current?.contentWindow) return;
 
+      if (event.data?.type === 'tracked-qcm-timer-ready') {
+        setTimerSlotAttached(false);
+        iframeRef.current?.contentWindow?.postMessage({ type: 'tracked-qcm-timer-render', state: timerControlStateRef.current }, '*');
+        return;
+      }
+
+      if (event.data?.type === 'tracked-qcm-timer-slot') {
+        setTimerSlotAttached(Boolean(event.data.attached));
+        return;
+      }
+
+      if (event.data?.type === 'tracked-qcm-timer-action') {
+        timerActionHandlerRef.current?.(event.data.action);
+        return;
+      }
+
       if (event.data?.type === 'qcm-frame-storage') {
         const storageKey = iframeLocalStorageKeyRef.current;
         const itemKey = String(event.data.key || '').slice(0, 500);
@@ -768,7 +844,6 @@ export default function TrackedQcmFrame({
       if (event.data?.type === 'econcourse-qcm-cur-changed') {
         updateCurrentQuestion(event.data.questionNumber);
         timerCurrentQuestionRef.current = Number(event.data.questionNumber) || null;
-        setTimerCurrentQuestion(timerCurrentQuestionRef.current);
         const timerProgressSession = timerSessionRef.current;
         if (timerProgressSession?.sessionId && timerClientKeyStorageRef.current) {
           const stateKey = timerClientKeyStorageRef.current.replace('qcm-timer-attempt:', 'qcm-timer-state:');
@@ -784,7 +859,6 @@ export default function TrackedQcmFrame({
 
       if (event.data?.type === 'econcourse-qcm-meta') {
         timerTotalQuestionsRef.current = Number(event.data.totalQuestions) || null;
-        setTimerTotalQuestions(timerTotalQuestionsRef.current);
         return;
       }
 
@@ -793,10 +867,8 @@ export default function TrackedQcmFrame({
         const mistake = event.data.mistake;
         updateCurrentQuestion(mistake.questionNumber);
         timerCurrentQuestionRef.current = Number(mistake.questionNumber) || timerCurrentQuestionRef.current;
-        setTimerCurrentQuestion(timerCurrentQuestionRef.current);
         if (event.data.totalQuestions) {
           timerTotalQuestionsRef.current = Number(event.data.totalQuestions) || null;
-          setTimerTotalQuestions(timerTotalQuestionsRef.current);
         }
         setSaveStatus('idle');
         setSaveMessage('');
@@ -807,7 +879,6 @@ export default function TrackedQcmFrame({
         if (enableTimer && timedSession?.supported && timedSession.status === 'IN_PROGRESS' && questionKey && selectedLabel) {
           const nextAnswers = { ...timerAnswersRef.current, [questionKey]: selectedLabel };
           timerAnswersRef.current = nextAnswers;
-          setTimerAnswers(nextAnswers);
           try { localStorage.setItem(`qcm-timer-answers:${timedSession.sessionId}`, JSON.stringify(nextAnswers)); } catch {}
         }
 
@@ -935,13 +1006,10 @@ export default function TrackedQcmFrame({
     : timerSession?.status === 'PAUSED' ? 'En pause'
       : ['COMPLETED', 'EXPIRED'].includes(timerSession?.status) ? 'Terminé'
         : timerLoading ? 'Préparation du chronomètre…' : '';
-  const answeredCount = Object.keys(timerAnswers || {}).length;
-  const progressPercent = timerTotalQuestions > 0
-    ? Math.min(100, Math.round((answeredCount / timerTotalQuestions) * 100))
-    : 0;
   const timerUrgent = timerSession?.supported && timerSession.status === 'IN_PROGRESS' && timerRemaining !== null && timerRemaining <= 300;
   const showTimerControls = timerSession?.supported && timerSession.sessionId;
   const timerFinished = ['COMPLETED', 'EXPIRED'].includes(timerSession?.status);
+  const timerControlVisible = Boolean(showTimerControls || timerSession?.status === 'UNCONFIRMED');
   const pauseFreeTimer = () => {
     const clock = freeTimerClockRef.current;
     if (!clock || clock.paused || !clock.startedAt) return;
@@ -960,60 +1028,90 @@ export default function TrackedQcmFrame({
     try { localStorage.setItem(clock.storageKey, JSON.stringify(resumedClock)); } catch {}
     setFreeTimerPaused(false);
   };
+  timerActionHandlerRef.current = (action) => {
+    if (action === 'pause') return showTimerControls ? applyTimerAction('pause') : pauseFreeTimer();
+    if (action === 'resume') return showTimerControls ? applyTimerAction('resume') : resumeFreeTimer();
+  };
+  timerControlStateRef.current = {
+    visible: timerControlVisible,
+    value: showTimerControls ? formattedTimer : formattedFreeTimer,
+    title: timerSession?.durationSource || timerStatusLabel || 'Chronomètre libre',
+    urgent: Boolean(timerUrgent),
+    paused: timerSession?.status === 'PAUSED' || freeTimerPaused,
+    pauseDisabled: showTimerControls
+      ? timerActionLoading || timerSession.offline || !navigator.onLine || timerSession.status !== 'IN_PROGRESS'
+      : freeTimerPaused,
+    resumeDisabled: showTimerControls
+      ? timerActionLoading || timerSession.offline || !navigator.onLine || timerSession.status !== 'PAUSED'
+      : !freeTimerPaused
+  };
+  const syncTimerControlToFrame = useCallback(() => {
+    iframeRef.current?.contentWindow?.postMessage({
+      type: 'tracked-qcm-timer-render',
+      state: timerControlStateRef.current
+    }, '*');
+  }, []);
+  useEffect(() => {
+    syncTimerControlToFrame();
+  }, [syncTimerControlToFrame, timerControlVisible, formattedTimer, formattedFreeTimer, timerUrgent,
+    timerSession?.status, timerSession?.durationSource, timerSession?.offline, timerActionLoading, freeTimerPaused]);
+  const timerControl = timerControlVisible ? (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: timerPortalTarget ? 'space-between' : 'flex-start', gap: 6,
+      width: timerPortalTarget ? '100%' : 'auto', height: timerPortalTarget ? 44 : 36, boxSizing: 'border-box',
+      padding: timerPortalTarget ? '4px 6px 4px 10px' : '3px 6px 3px 10px',
+      border: '1px solid #e1e9f2', borderRadius: timerPortalTarget ? 12 : 999,
+      background: '#fff', boxShadow: '0 3px 10px rgba(20, 53, 92, 0.14)', flex: '0 0 auto'
+    }}>
+      <span aria-hidden="true" style={{
+        width: 6, height: 6, borderRadius: '50%', flex: '0 0 auto',
+        background: timerUrgent ? '#dc4c4c' : (timerSession?.status === 'PAUSED' || freeTimerPaused) ? '#94a3b8' : '#b8c6d5'
+      }} />
+      <span role="timer" aria-live="off" title={timerSession?.durationSource || timerStatusLabel || 'Chronomètre libre'}
+        style={{ color: timerUrgent ? '#b42318' : '#183b70', fontVariantNumeric: 'tabular-nums', fontSize: 17, fontWeight: 850, lineHeight: 1, whiteSpace: 'nowrap', minWidth: 78, textAlign: 'center' }}>
+        {showTimerControls ? formattedTimer : formattedFreeTimer}
+      </span>
+      <button type="button"
+        onClick={() => showTimerControls ? applyTimerAction('pause') : pauseFreeTimer()}
+        disabled={showTimerControls
+          ? timerActionLoading || timerSession.offline || !navigator.onLine || timerSession.status !== 'IN_PROGRESS'
+          : freeTimerPaused}
+        aria-label="Mettre le chronomètre en pause" title="Pause"
+        style={{
+          width: 26, height: 26, minWidth: 26, padding: 0, display: 'inline-flex',
+          alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: '50%',
+          background: '#7894b3', color: '#fff',
+          cursor: (showTimerControls ? timerSession.status === 'IN_PROGRESS' : !freeTimerPaused) ? 'pointer' : 'default'
+        }}>
+        <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
+          <rect x="1.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
+          <rect x="7.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
+        </svg>
+      </button>
+      <button type="button"
+        onClick={() => showTimerControls ? applyTimerAction('resume') : resumeFreeTimer()}
+        disabled={showTimerControls
+          ? timerActionLoading || timerSession.offline || !navigator.onLine || timerSession.status !== 'PAUSED'
+          : !freeTimerPaused}
+        aria-label="Continuer le chronomètre" title="Continuer"
+        style={{
+          width: 26, height: 26, minWidth: 26, padding: 0, display: 'inline-flex',
+          alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: '50%',
+          background: '#153b70', color: '#fff',
+          cursor: (showTimerControls ? timerSession.status === 'PAUSED' : freeTimerPaused) ? 'pointer' : 'default'
+        }}>
+        <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
+          <path d="M2 1.5L10.5 7L2 12.5V1.5Z" fill="currentColor" />
+        </svg>
+      </button>
+    </div>
+  ) : null;
+  const timerToolbarFallback = timerControl && !timerPortalTarget && !timerSlotAttached
+    ? <div style={{ marginRight: 'auto' }}>{timerControl}</div>
+    : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'auto', position: 'relative' }}>
-      {timerSession?.status !== 'UNCONFIRMED' && (showTimerControls || timerLoading || timerSession?.message || timerMessage) && <div style={{
-        position: 'sticky', top: '88px', zIndex: 51, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 10, padding: '7px 0', marginBottom: 8
-      }}>
-        {showTimerControls ? <>
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 11px', borderRadius: 10,
-              background: timerUrgent ? '#fff1f0' : timerSession.status === 'PAUSED' ? '#fff7e6' : '#eff6ff',
-              color: timerUrgent ? '#b42318' : '#183b70', fontWeight: 800, whiteSpace: 'nowrap' }}>
-              <span aria-hidden="true">◷</span><span>{timerStatusLabel}</span>
-              <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 16 }}>{formattedTimer}</span>
-            </span>
-            <div style={{ minWidth: 140, color: '#52647f', fontSize: 11, fontWeight: 700 }}>
-              {timerTotalQuestions
-                ? `Question ${timerCurrentQuestion || 1}/${timerTotalQuestions} · ${answeredCount} répondue${answeredCount > 1 ? 's' : ''}`
-                : `${answeredCount} réponse${answeredCount > 1 ? 's' : ''} sauvegardée${answeredCount > 1 ? 's' : ''}`}
-              <span style={{ display: 'block', height: 4, marginTop: 4, borderRadius: 5, background: '#dbe5f1', overflow: 'hidden' }}>
-                <span style={{ display: 'block', width: `${progressPercent}%`, height: '100%', background: '#2563eb', transition: 'width .2s ease' }} />
-              </span>
-            </div>
-            {timerSession.sourceUrl ? (
-              <a href={timerSession.sourceUrl} target="_blank" rel="noreferrer" title={timerSession.durationSource}
-                style={{ color: '#64748b', fontSize: 10, textDecoration: 'underline' }}>Durée vérifiée</a>
-            ) : (
-              <span title={timerSession.durationSource} style={{ color: '#64748b', fontSize: 10 }}>
-                {timerSession.durationSource?.includes('indicative') ? 'Durée indicative' : 'Durée configurée'}
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            {timerSession.status === 'IN_PROGRESS' && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine}
-              onClick={() => applyTimerAction('pause')} style={timerButtonStyle('#fff', '#24478d')}>
-              {timerActionLoading ? 'Patientez…' : 'Pause'}
-            </button>}
-            {timerSession.status === 'PAUSED' && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine}
-              onClick={() => applyTimerAction('resume')} style={timerButtonStyle('#2563eb', '#fff')}>
-              {timerActionLoading ? 'Patientez…' : 'Reprendre'}
-            </button>}
-            {!timerFinished && <button type="button" disabled={timerActionLoading || timerSession.offline || !navigator.onLine} onClick={() => {
-              if (window.confirm('Soumettre maintenant ce concours ? Vos réponses seront conservées et la session sera terminée.')) {
-                applyTimerAction('submit', { reason: 'MANUAL' });
-              }
-            }} style={timerButtonStyle('#fff', '#334155')}>Soumettre</button>}
-            {timerFinished && <button type="button" disabled={timerLoading || timerActionLoading || timerSession.offline || !navigator.onLine}
-              onClick={restartTimerAttempt} style={timerButtonStyle('#2563eb', '#fff')}>Nouvelle tentative</button>}
-          </div>
-        </> : <span style={{ color: timerSession?.status === 'UNAVAILABLE' ? '#b42318' : '#8a5a00', fontSize: 12, fontWeight: 700 }}>
-          {timerSession?.message || 'Vérification de la durée officielle…'}
-        </span>}
-        {timerMessage && <span role="alert" style={{ width: '100%', color: '#b42318', fontSize: 11, fontWeight: 700 }}>{timerMessage}</span>}
-      </div>}
       {timerUrgent && <div role="alert" style={{ margin: '0 0 8px', padding: '9px 12px', borderRadius: 10, background: '#fff1f0', color: '#b42318', fontWeight: 800, fontSize: 13 }}>
         Temps limité : il reste cinq minutes ou moins. Le concours sera soumis automatiquement à zéro.
       </div>}
@@ -1023,20 +1121,16 @@ export default function TrackedQcmFrame({
       {timerSession?.status === 'COMPLETED' && <div role="status" style={{ margin: '0 0 8px', padding: '10px 12px', borderRadius: 10, background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: 13 }}>
         Concours terminé. Vos réponses ont été sauvegardées.
       </div>}
-      {timerSession?.status === 'PAUSED' && <div role="status" style={{ margin: '0 0 8px', padding: '10px 12px', borderRadius: 10, background: '#fff7e6', color: '#8a5a00', fontWeight: 700, fontSize: 13 }}>
-        Chronomètre en pause. Reprenez le concours pour continuer à répondre.
-      </div>}
       <div style={{
-        padding: timerSession?.status === 'UNCONFIRMED' ? '0' : '0 0 8px',
+        width: '100%',
+        padding: '6px 0 8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        gap: '10px',
+        gap: '8px',
         flexWrap: 'wrap',
-        position: timerSession?.status === 'UNCONFIRMED' ? 'absolute' : 'relative',
-        top: timerSession?.status === 'UNCONFIRMED' ? 12 : undefined,
-        right: timerSession?.status === 'UNCONFIRMED' ? 12 : undefined,
-        maxWidth: timerSession?.status === 'UNCONFIRMED' ? '100%' : undefined,
+        position: 'sticky',
+        top: '8px',
         zIndex: 60,
         background: 'transparent'
       }}>
@@ -1049,43 +1143,20 @@ export default function TrackedQcmFrame({
             {saveMessage}
           </span>
         )}
-        {timerSession?.status === 'UNCONFIRMED' && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6, height: 34, boxSizing: 'border-box',
-            padding: '3px 4px 3px 9px', border: '1px solid #dbe4ef', borderRadius: 9,
-            background: '#fff', boxShadow: '0 2px 6px rgba(11,54,117,0.12)'
-          }}>
-            <span role="status" aria-label={freeTimerPaused ? 'Chronomètre en pause' : 'Chronomètre en cours'}
-              style={{ flex: '0 0 auto', width: 6, height: 6, borderRadius: '50%', background: '#b8c6d5' }} />
-            <span style={{ color: '#2457c8', fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap' }}>
-              {formattedFreeTimer}
-            </span>
-            <button type="button" onClick={pauseFreeTimer} disabled={freeTimerPaused}
-              aria-label="Mettre le chronomètre en pause" title="Pause"
-              style={{
-                ...timerButtonStyle(freeTimerPaused ? '#e8edf3' : '#7894b3', freeTimerPaused ? '#aab8c8' : '#fff'),
-                width: 24, height: 24, minWidth: 24, padding: 0, display: 'inline-flex',
-                alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 7,
-                cursor: freeTimerPaused ? 'default' : 'pointer'
-              }}>
-              <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
-                <rect x="1.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
-                <rect x="7.5" y="1" width="3" height="12" rx="1" fill="currentColor" />
-              </svg>
-            </button>
-            <button type="button" onClick={resumeFreeTimer} disabled={!freeTimerPaused}
-              aria-label="Continuer le chronomètre" title="Continuer"
-              style={{
-                ...timerButtonStyle(freeTimerPaused ? '#2457c8' : '#e8edf3', freeTimerPaused ? '#fff' : '#aab8c8'),
-                width: 24, height: 24, minWidth: 24, padding: 0, display: 'inline-flex',
-                alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 7,
-                cursor: freeTimerPaused ? 'pointer' : 'default'
-              }}>
-              <svg aria-hidden="true" width="11" height="13" viewBox="0 0 12 14" fill="none">
-                <path d="M2 1.5L10.5 7L2 12.5V1.5Z" fill="currentColor" />
-              </svg>
-            </button>
-          </div>
+        {timerSession?.status !== 'UNCONFIRMED' && !showTimerControls && (timerLoading || timerSession?.message) && (
+          <span style={{ marginRight: 'auto', color: '#64748b', fontSize: 12, fontWeight: 700 }}>
+            {timerSession?.message || 'Préparation du chronomètre…'}
+          </span>
+        )}
+        {timerMessage && <span role="alert" style={{ marginRight: 'auto', color: '#b42318', fontSize: 11, fontWeight: 700 }}>{timerMessage}</span>}
+        {timerToolbarFallback}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '0 0 auto' }}>
+        {showTimerControls && timerFinished && (
+          <button type="button" disabled={timerLoading || timerActionLoading || timerSession.offline || !navigator.onLine}
+            onClick={restartTimerAttempt}
+            style={{ ...timerButtonStyle('#2563eb', '#fff'), height: 40, padding: '0 13px' }}>
+            Nouvelle tentative
+          </button>
         )}
         <button
           type="button"
@@ -1093,7 +1164,7 @@ export default function TrackedQcmFrame({
           disabled={!currentQuestionMistake || saveStatus === 'saving'}
           title="Sauvegarder uniquement la question affichée si elle est incorrecte"
           style={{
-            height: 34,
+            height: 40,
             boxSizing: 'border-box',
             padding: '0 14px',
             backgroundColor: saveStatus === 'saved' ? '#059669' : '#2457c8',
@@ -1120,13 +1191,17 @@ export default function TrackedQcmFrame({
               : `Sauvegarder Q${currentQuestionNumber || '?'}`}
           </span>
         </button>
+        </div>
       </div>
+
+      {timerPortalTarget && timerControl && createPortal(timerControl, timerPortalTarget)}
 
       <iframe
         ref={iframeRef}
         onLoad={() => {
           syncTimerAnswersToFrame();
           syncQcmTheme();
+          syncTimerControlToFrame();
           iframeRef.current?.contentWindow?.postMessage({ type: 'timer-set-locked', locked: Boolean(timerIsLocked) }, '*');
         }}
         src={htmlDocument === null ? activeSrc : undefined}

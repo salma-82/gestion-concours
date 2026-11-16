@@ -15,14 +15,8 @@ public class Concours {
     private String ecole;   // Matalan: ENSA, ENCG, FST...
     private String matiere;  // Matalan: Math, Physique, Informatique...
     private Integer annee;   // Matalan: 2025, 2026...
-
-    private String pdfCorrectionUrl; // PDF dyal Correction (rétrocompatibilité)
-
     @Column(length = 500)
     private String htmlUrl;           // Fichier HTML Sujet
-
-    @Column(length = 500)
-    private String htmlCorrectionUrl; // Fichier HTML Correction
 
     @Column(name = "is_free", nullable = false)
     private boolean isFree = false;
@@ -30,15 +24,13 @@ public class Concours {
     public Concours() {
     }
 
-    public Concours(Long id, String titre, String ecole, String matiere, Integer annee, String pdfCorrectionUrl, String htmlUrl, String htmlCorrectionUrl) {
+    public Concours(Long id, String titre, String ecole, String matiere, Integer annee, String htmlUrl) {
         this.id = id;
         this.titre = titre;
         this.ecole = ecole;
         this.matiere = matiere;
         this.annee = annee;
-        this.pdfCorrectionUrl = pdfCorrectionUrl;
         this.htmlUrl = htmlUrl;
-        this.htmlCorrectionUrl = htmlCorrectionUrl;
     }
 
     public Long getId() {
@@ -85,14 +77,6 @@ public class Concours {
     public boolean isFree() { return isFree; }
     public void setFree(boolean free) { isFree = free; }
 
-    public String getPdfCorrectionUrl() {
-        return pdfCorrectionUrl;
-    }
-
-    public void setPdfCorrectionUrl(String pdfCorrectionUrl) {
-        this.pdfCorrectionUrl = pdfCorrectionUrl;
-    }
-
     public String getHtmlUrl() {
         return htmlUrl;
     }
@@ -101,11 +85,4 @@ public class Concours {
         this.htmlUrl = htmlUrl;
     }
 
-    public String getHtmlCorrectionUrl() {
-        return htmlCorrectionUrl;
-    }
-
-    public void setHtmlCorrectionUrl(String htmlCorrectionUrl) {
-        this.htmlCorrectionUrl = htmlCorrectionUrl;
-    }
 }
