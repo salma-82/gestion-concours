@@ -75,9 +75,6 @@ public class StudentQcmHistoryController {
         }
         String timerSessionId = value(body.get("timerSessionId"));
         try {
-            if (timerService.isTimedResource(resourceType, resourceId) && timerSessionId.isBlank()) {
-                return ResponseEntity.status(409).body(Map.of("message", "Ouvrez une session chronométrée avant de répondre à ce concours."));
-            }
             if (!timerSessionId.isBlank()) {
                 var timedSession = timerService.saveSelectedAnswer(studentId, timerSessionId, resourceType, resourceId,
                         questionKey, selected, asInteger(body.get("totalQuestions")));

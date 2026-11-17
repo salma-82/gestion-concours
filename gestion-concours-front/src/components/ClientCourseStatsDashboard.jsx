@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import './ClientCourseStatsDashboard.css';
 import './ClientStatsDashboardTheme.css';
+import './ClientCourseStatsDashboardCompact.css';
 
 const COLORS = {
   primary: '#2563eb',
@@ -545,6 +546,10 @@ export default function ClientCourseStatsDashboard({
         <section className="course-stats-header">
           <div className="course-stats-header-top">
             <div>
+              <div className="course-title-lockup">
+                <span className="course-title-icon" aria-hidden="true">□</span>
+                <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1><p className="course-stats-subtitle">Ta progression dans les cours</p></div>
+              </div>
               <span className="course-stats-eyebrow">DASHBOARD COURS</span>
             </div>
           </div>
@@ -578,6 +583,11 @@ export default function ClientCourseStatsDashboard({
           <div>
             <span className="course-stats-eyebrow">SUIVI PÉDAGOGIQUE DU BAC</span>
           </div>
+        </div>
+
+        <div className="course-title-lockup">
+          <span className="course-title-icon" aria-hidden="true">□</span>
+          <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1><p className="course-stats-subtitle">Ta progression dans les cours</p></div>
         </div>
 
         {/* Filters Bar */}

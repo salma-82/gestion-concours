@@ -22,6 +22,7 @@ import {
 import { filterByStudentPack } from '../packAccess';
 import './ClientSummaryStatsDashboard.css';
 import './ClientStatsDashboardTheme.css';
+import './ClientSummaryStatsDashboardCompact.css';
 
 const API_BASE = '';
 
@@ -392,7 +393,7 @@ export default function ClientSummaryStatsDashboard({
       map.set(sub, prev + r.visits);
     });
 
-    const palette = [COLORS.purple, COLORS.primary, COLORS.success, COLORS.amber, COLORS.rose];
+    const palette = ['#f59e42', COLORS.primary, COLORS.success, COLORS.amber, COLORS.rose];
     const result = Array.from(map.entries()).map(([name, value], index) => ({
       name,
       value,
@@ -579,8 +580,12 @@ export default function ClientSummaryStatsDashboard({
          -------------------------------------------------------------------- */}
       <section className="summary-stats-header">
         <div className="summary-stats-header-top">
-          <div>
-            <span className="summary-stats-eyebrow">FICHES DE SYNTHÈSE</span>
+          <div className="summary-dashboard-heading">
+            <span className="summary-dashboard-icon" aria-hidden="true">▤</span>
+            <div>
+              <h1 className="summary-stats-title">Fiches de synthèse</h1>
+              <p className="summary-stats-subtitle">Ta révision par résumés</p>
+            </div>
           </div>
         </div>
 
@@ -590,6 +595,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-filter-field">
             <label>Matière</label>
             <select
+              aria-label="Matière"
               value={selectedSubject}
               onChange={(e) => {
                 setSelectedSubject(e.target.value);
@@ -607,6 +613,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-filter-field">
             <label>Chapitre</label>
             <select
+              aria-label="Chapitre"
               value={selectedChapter}
               onChange={(e) => setSelectedChapter(e.target.value)}
             >
@@ -621,6 +628,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-filter-field">
             <label>Période</label>
             <select
+              aria-label="Période"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -635,6 +643,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-filter-field">
             <label>Statut</label>
             <select
+              aria-label="Statut"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
@@ -752,12 +761,12 @@ export default function ClientSummaryStatsDashboard({
           </div>
 
           <div className="summary-panel-body summary-trend-chart-body">
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={90}>
               <AreaChart data={consultationTrendData} margin={{ top: 10, right: 14, left: -10, bottom: 2 }}>
                 <defs>
                   <linearGradient id="summaryTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#f59e42" stopOpacity={0.22} />
+                    <stop offset="95%" stopColor="#f59e42" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -777,7 +786,7 @@ export default function ClientSummaryStatsDashboard({
                           fontSize: '12.5px'
                         }}>
                           <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)' }}>{d.dateKey}</div>
-                          <div style={{ color: '#7c3aed', fontWeight: 850, marginTop: 4, fontSize: '14px' }}>
+                          <div style={{ color: '#f59e42', fontWeight: 850, marginTop: 4, fontSize: '14px' }}>
                             {d.hours} h ({d.minutes} min)
                           </div>
                           <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', marginTop: 2 }}>
@@ -792,7 +801,7 @@ export default function ClientSummaryStatsDashboard({
                 <Area
                   type="monotone"
                   dataKey="hours"
-                  stroke="#7c3aed"
+                  stroke="#f59e42"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#summaryTrendGrad)"
@@ -815,7 +824,7 @@ export default function ClientSummaryStatsDashboard({
           <div className="summary-panel-body">
             <div className="summary-donut-wrapper">
               <div className="summary-donut-chart-container">
-                <ResponsiveContainer width={190} height={190}>
+                <ResponsiveContainer width={84} height={84}>
                   <PieChart>
                     <Pie
                       data={subjectDistributionData}
@@ -823,8 +832,8 @@ export default function ClientSummaryStatsDashboard({
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      innerRadius={65}
-                      outerRadius={95}
+                      innerRadius={26}
+                      outerRadius={38}
                       paddingAngle={3}
                       stroke="none"
                     >
@@ -885,7 +894,7 @@ export default function ClientSummaryStatsDashboard({
 
           <div className="summary-panel-body summary-ranking-chart-body">
             {subjectRankingData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={Math.max(80, Math.min(180, subjectRankingData.length * 28 + 20))}>
                 <BarChart
                   data={subjectRankingData}
                   layout="vertical"
@@ -900,9 +909,9 @@ export default function ClientSummaryStatsDashboard({
                       'Consultations'
                     ]}
                   />
-                  <Bar dataKey="visits" name="Consultations" fill="#7c3aed" radius={[0, 6, 6, 0]} barSize={18}>
+                  <Bar dataKey="visits" name="Consultations" fill="#f59e42" radius={[0, 6, 6, 0]} barSize={18}>
                     {subjectRankingData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={['#7c3aed', '#2563eb', '#10b981', '#f59e0b'][index % 4]} />
+                      <Cell key={`cell-${index}`} fill={['#f59e42', '#2563eb', '#10b981', '#f59e0b'][index % 4]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -928,7 +937,7 @@ export default function ClientSummaryStatsDashboard({
 
           <div className="summary-panel-body summary-coverage-chart-body">
             {coverageComparisonData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={Math.max(80, Math.min(180, coverageComparisonData.length * 28 + 20))}>
                 <BarChart data={coverageComparisonData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="subject" stroke="#334155" fontSize={11.5} fontWeight={700} tickLine={false} />

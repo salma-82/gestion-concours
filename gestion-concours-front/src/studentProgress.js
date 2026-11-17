@@ -21,6 +21,7 @@ export const getStudentScope = () => {
 export const getStudentProgressKey = () => `student-progress:${getStudentScope()}`;
 export const getStudentPlanningKey = () => `student-planning:${getStudentScope()}`;
 export const getStudentMistakesKey = () => `student-qcm-mistakes:${getStudentScope()}`;
+export const getStudentQcmAttemptsKey = () => `student-qcm-attempts:${getStudentScope()}`;
 
 const getCurrentStudentId = () => {
   const id = Number(readJson('user', {})?.id);
@@ -50,6 +51,59 @@ export const readStudentPlanning = () => {
 export const readStudentMistakes = () => {
   const items = readJson(getStudentMistakesKey(), []);
   return Array.isArray(items) ? items : [];
+};
+
+export const readStudentQcmAttempts = () => {
+  const items = readJson(getStudentQcmAttemptsKey(), []);
+  return Array.isArray(items) ? items : [];
+};
+
+export const recordStudentQcmAnswer = (answer) => {
+  const resourceId = String(answer?.resourceId || '');
+  const resourceType = String(answer?.sourceType || answer?.resourceType || '');
+  const attemptId = String(answer?.attemptId || '');
+  const questionId = String(answer?.questionId || answer?.questionNumber || '');
+  if (!resourceId || !resourceType || !attemptId || !questionId) return null;
+
+  const attempts = readStudentQcmAttempts();
+  const attemptIndex = attempts.findIndex((item) => String(item.resourceId) === resourceId
+    && String(item.resourceType || item.sourceType) === resourceType
+    && String(item.attemptId) === attemptId);
+  const previous = attemptIndex >= 0 ? attempts[attemptIndex] : {};
+  const answers = (previous.answers || []).filter((item) => String(item.questionId) !== questionId);
+  answers.push({
+    questionId,
+    questionNumber: Number(answer.questionNumber) || null,
+    correct: Boolean(answer.correct)
+  });
+  const expectedQuestions = Number(answer.totalQuestions) || Number(previous.expectedQuestions) || null;
+  const correctAnswers = answers.filter((item) => item.correct).length;
+  const denominator = expectedQuestions || answers.length;
+  const savedAttempt = {
+    ...previous,
+    resourceType,
+    resourceId,
+    resourceTitle: answer.resourceTitle || previous.resourceTitle || 'QCM',
+    school: answer.school || previous.school || null,
+    subject: answer.subject || previous.subject || null,
+    chapter: answer.chapter || previous.chapter || null,
+    year: answer.year || previous.year || null,
+    attemptId,
+    answeredAt: new Date().toISOString(),
+    correctAnswers,
+    totalQuestions: answers.length,
+    expectedQuestions: denominator,
+    score: denominator ? Math.round(correctAnswers * 1000 / denominator) / 10 : 0,
+    answers,
+    localOnly: true
+  };
+  const updated = [...attempts];
+  if (attemptIndex >= 0) updated[attemptIndex] = savedAttempt;
+  else updated.unshift(savedAttempt);
+  updated.sort((a, b) => new Date(b.answeredAt || 0) - new Date(a.answeredAt || 0));
+  localStorage.setItem(getStudentQcmAttemptsKey(), JSON.stringify(updated.slice(0, 300)));
+  window.dispatchEvent(new CustomEvent('student-qcm-local-history-updated'));
+  return savedAttempt;
 };
 
 let localMistakeSyncPromise = null;
@@ -268,7 +322,9 @@ export const recordStudentMistake = (mistake) => {
     explanation: String(mistake.explanation || '').slice(0, 2500),
     occurredAt,
     reviewed: false,
-    savedForReview: Boolean(mistake.savedForReview)
+    savedForReview: Boolean(mistake.savedForReview),
+    savedManually: manuallySaved,
+    resolved: false
   };
   const updated = [saved, ...items.filter((item) => item.id !== id)].slice(0, 300);
   const deduplicated = manuallySaved
@@ -348,8 +404,8 @@ export const resolveStudentMistakes = (resourceId, questionId, sourceType = '') 
     String(item.resourceId) === String(resourceId)
       && String(item.questionId) === String(questionId)
       && (!sourceType || String(item.sourceType || '') === String(sourceType))
-      && item.savedManually === false
-      ? { ...item, savedForReview: false }
+      && item.savedManually !== true
+      ? { ...item, savedForReview: false, resolved: true }
       : item
   );
   localStorage.setItem(getStudentMistakesKey(), JSON.stringify(items));

@@ -19,6 +19,7 @@ import {
 import { isNationalExamActivityEvent, isNationalExamCorrectionEvent } from '../studentDashboardStats';
 import './ClientNationalExamStatsDashboard.css';
 import './ClientStatsDashboardTheme.css';
+import './ClientNationalExamStatsDashboardCompact.css';
 
 const API_BASE = '';
 const PAGE_SIZE = 8;
@@ -383,8 +384,10 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   return (
     <section className="national-exam-stats" aria-label="Suivi des examens nationaux">
       <header className="national-exam-hero">
+        <span className="national-exam-heading-icon" aria-hidden="true">▤</span>
         <div>
-          <span className="national-exam-eyebrow">SUIVI DES EXAMENS NATIONAUX</span>
+          <h1>Suivi des examens nationaux</h1>
+          <p>Ta progression sur les épreuves du Bac</p>
         </div>
       </header>
 
@@ -558,6 +561,9 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
       </section>
 
       <section className="national-exam-recommendations">
+        <button className="national-exam-recommendations-open" type="button" onClick={() => navigate('/client-examens')}>
+          Ouvrir un examen <span aria-hidden="true">→</span>
+        </button>
         <div className="national-exam-section-title"><div><span className="national-exam-kicker">À PARTIR DE VOTRE ACTIVITÉ</span><h2>Prochaines révisions</h2><p>Des pistes fondées sur vos examens et consultations enregistrés.</p></div></div>
         {loading || catalogLoading ? <div className="national-exam-empty">Préparation de vos recommandations…</div> : error || catalogError ? <div className="national-exam-empty">Les recommandations seront disponibles lorsque vos données auront été chargées.</div> : recommendations.length ? (
           <div className="national-exam-recommendation-grid">{recommendations.map((item) => <article key={item.title}>

@@ -20,9 +20,9 @@ import {
   ReferenceLine
 } from 'recharts';
 import MathContent from './MathContent';
-import { readStudentMistakes } from '../studentProgress';
-import './ClientMockExamStatsDashboard.css';
+import { readStudentMistakes, readStudentQcmAttempts } from '../studentProgress';
 import './ClientStatsDashboardTheme.css';
+import './ClientMockExamStatsDashboard.css';
 
 const API_BASE = '';
 
@@ -112,6 +112,20 @@ export default function ClientMockExamStatsDashboard({
 
   // Saved mistakes from API / local
   const [savedMistakesList, setSavedMistakesList] = useState([]);
+  const [localQcmAttempts, setLocalQcmAttempts] = useState(() => readStudentQcmAttempts());
+
+  useEffect(() => {
+    const refreshLocalAttempts = () => setLocalQcmAttempts(readStudentQcmAttempts());
+    refreshLocalAttempts();
+    window.addEventListener('student-qcm-history-updated', refreshLocalAttempts);
+    window.addEventListener('student-qcm-local-history-updated', refreshLocalAttempts);
+    window.addEventListener('storage', refreshLocalAttempts);
+    return () => {
+      window.removeEventListener('student-qcm-history-updated', refreshLocalAttempts);
+      window.removeEventListener('student-qcm-local-history-updated', refreshLocalAttempts);
+      window.removeEventListener('storage', refreshLocalAttempts);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     let active = true;
@@ -161,10 +175,29 @@ export default function ClientMockExamStatsDashboard({
   // 2. RAW MOCK EXAM ATTEMPTS FILTERING
   // --------------------------------------------------------------------------
   const allMockAttempts = useMemo(() => {
-    return (schoolAttempts || [])
+    // The API history may be unavailable (for example, when an answer was saved
+    // locally while the request failed). Merge it with the locally tracked QCM
+    // answers so a completed simulation still drives the dashboard.
+    const attemptsById = new Map();
+    [...(schoolAttempts || []), ...(localQcmAttempts || [])].forEach((attempt) => {
+      const type = String(attempt.resourceType || attempt.sourceType || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+      const attemptId = String(attempt.attemptId || attempt.answeredAt || '');
+      const key = `${type}|${String(attempt.resourceId || '')}|${attemptId}`;
+      const previous = attemptsById.get(key);
+      attemptsById.set(key, previous ? { ...previous, ...attempt } : attempt);
+    });
+
+    return [...attemptsById.values()]
       .filter((attempt) => {
-        const type = String(attempt.resourceType || '').toLowerCase();
-        const isMock = type.includes('blanc') || type === 'concours-blanc';
+        const type = String(attempt.resourceType || attempt.sourceType || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+        const isMock = type.includes('blanc');
         const answered = Number(attempt.totalQuestions) || 0;
         return isMock && answered > 0;
       })
@@ -173,14 +206,14 @@ export default function ClientMockExamStatsDashboard({
         normalizedSubject: normalizeSubject(attempt.subject),
         scoreNum: Number(attempt.score) || 0,
         correctNum: Number(attempt.correctAnswers) || 0,
-        totalNum: Number(attempt.totalQuestions) || 0,
+        totalNum: Number(attempt.expectedQuestions) || Number(attempt.totalQuestions) || 0,
         wrongNum: Math.max(0, (Number(attempt.totalQuestions) || 0) - (Number(attempt.correctAnswers) || 0)),
         dateObj: new Date(attempt.answeredAt),
         timestamp: new Date(attempt.answeredAt).getTime(),
       }))
       .filter((attempt) => !isNaN(attempt.timestamp))
       .sort((a, b) => b.timestamp - a.timestamp);
-  }, [schoolAttempts]);
+  }, [schoolAttempts, localQcmAttempts]);
 
   // Options for filter dropdowns
   const availableSubjects = useMemo(() => {
@@ -690,8 +723,17 @@ export default function ClientMockExamStatsDashboard({
       <div className="mock-exam-stats-root">
         <section className="mock-exam-header">
           <div className="mock-exam-header-top">
-            <div>
-              <span className="mock-exam-eyebrow">DASHBOARD ANALYTICS</span>
+            <div className="mock-exam-heading">
+              <span className="mock-exam-title-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="6" y="4.5" width="12" height="15" rx="2" />
+                  <path d="M9 9h6M9 12h6M9 15h3" />
+                </svg>
+              </span>
+              <div>
+                <h1 className="mock-exam-title">Analyse des simulations</h1>
+                <p className="mock-exam-subtitle">Tes concours blancs</p>
+              </div>
             </div>
           </div>
         </section>
@@ -721,8 +763,17 @@ export default function ClientMockExamStatsDashboard({
          -------------------------------------------------------------------- */}
       <section className="mock-exam-header">
         <div className="mock-exam-header-top">
-          <div>
-            <span className="mock-exam-eyebrow">ANALYSE DES SIMULATIONS</span>
+          <div className="mock-exam-heading">
+            <span className="mock-exam-title-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="6" y="4.5" width="12" height="15" rx="2" />
+                <path d="M9 9h6M9 12h6M9 15h3" />
+              </svg>
+            </span>
+            <div>
+              <h1 className="mock-exam-title">Analyse des simulations</h1>
+              <p className="mock-exam-subtitle">Tes concours blancs</p>
+            </div>
           </div>
         </div>
 

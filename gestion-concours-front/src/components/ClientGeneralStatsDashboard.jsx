@@ -263,12 +263,12 @@ export default function ClientGeneralStatsDashboard({
 
   const kpis = [
     { label: 'Sessions d’apprentissage', value: activityLoading ? '…' : activityError ? '—' : sessions, icon: '↗', color: '#2563eb', detail: 'Consultations enregistrées', previous: previousEvents.filter((event) => event.eventType === 'VIEW').length, unavailable: activityLoading || activityError },
-    { label: 'Concours blancs réalisés', value: schoolLoading ? '…' : schoolError ? '—' : scopedMockAttempts.length, icon: '◉', color: '#7357e8', detail: 'Tentatives terminées', previous: previousMockAttempts.length, unavailable: schoolLoading || schoolError },
-    { label: 'Concours des écoles réalisés', value: schoolLoading ? '…' : schoolError ? '—' : scopedConcoursAttempts.length, icon: '⚑', color: '#3478de', detail: 'Tentatives terminées', previous: previousConcoursAttempts.length, unavailable: schoolLoading || schoolError },
-    { label: 'Épreuves nationales consultées', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.exam), icon: '▤', color: '#0e9a98', detail: 'Aucune tentative notée enregistrée', previous: previousResourceCount(CATEGORY.exam), unavailable: activityLoading || activityError },
-    { label: 'Cours consultés', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.course), icon: '▣', color: '#15956d', detail: 'Cours distincts', previous: previousResourceCount(CATEGORY.course), unavailable: activityLoading || activityError },
+    { label: 'Concours des écoles', value: schoolLoading ? '…' : schoolError ? '—' : scopedConcoursAttempts.length, icon: '⚑', color: '#3478de', detail: 'Tentatives terminées', previous: previousConcoursAttempts.length, unavailable: schoolLoading || schoolError },
     { label: 'Résumés consultés', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.summary), icon: '▧', color: '#d48a1d', detail: 'Fiches distinctes', previous: previousResourceCount(CATEGORY.summary), unavailable: activityLoading || activityError },
     { label: 'Questions sauvegardées', value: mistakeLoading ? '…' : filteredMistakes.length, icon: '!', color: '#e17737', detail: 'Dans vos erreurs enregistrées', previous: previousMistakes.length, unavailable: mistakeLoading },
+    { label: 'Concours blancs', value: schoolLoading ? '…' : schoolError ? '—' : scopedMockAttempts.length, icon: '◉', color: '#7357e8', detail: 'Tentatives terminées', previous: previousMockAttempts.length, unavailable: schoolLoading || schoolError },
+    { label: 'Épreuves nationales', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.exam), icon: '▤', color: '#0e9a98', detail: 'Aucune tentative notée enregistrée', previous: previousResourceCount(CATEGORY.exam), unavailable: activityLoading || activityError },
+    { label: 'Cours consultés', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.course), icon: '▣', color: '#15956d', detail: 'Cours distincts', previous: previousResourceCount(CATEGORY.course), unavailable: activityLoading || activityError },
     { label: 'Temps sur la plateforme', value: activityLoading ? '…' : activityError ? '—' : formatDuration(currentDurations), icon: '◷', color: '#5265c9', detail: 'Durées de session enregistrées', previous: formatDuration(previousDuration), duration: true, unavailable: activityLoading || activityError }
   ];
 
@@ -365,7 +365,7 @@ export default function ClientGeneralStatsDashboard({
       <header className="general-stats-header">
         <div>
           <h1>Bonjour {firstName}</h1>
-          <span className="general-stats-eyebrow">VUE GLOBALE</span>
+          <span className="general-stats-eyebrow">Vue globale de ta progression</span>
         </div>
         <button type="button" className="general-stats-calendar" onClick={() => onNavigate('/client-calendrier')}>
           <span aria-hidden="true">▦</span> Mon calendrier

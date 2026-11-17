@@ -1175,8 +1175,6 @@ export default function ClientConcours() {
               .concours-subject-tabs { grid-template-columns: minmax(0, 1fr); }
               .concours-subject-accordion { width: 100%; max-width: none; }
               .concours-question-item { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
-              .concours-question-timer-group { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
-              [data-concours-question-timer-slot] { width: 100% !important; max-width: 100% !important; }
             }
           `}</style>
 
@@ -1258,19 +1256,7 @@ export default function ClientConcours() {
                         </div>
                       );
 
-                      return qNum === 1 ? (
-                        <div
-                          key="question-group-1"
-                          className="concours-question-timer-group"
-                          style={{ width: '5cm', maxWidth: '5cm', flex: '0 0 5cm', display: 'flex', flexDirection: 'column', gap: '8px' }}
-                        >
-                          {questionCard}
-                          <div
-                            data-concours-question-timer-slot="true"
-                            style={{ width: '100%', maxWidth: '100%', flex: '0 0 auto', boxSizing: 'border-box' }}
-                          />
-                        </div>
-                      ) : questionCard;
+                      return questionCard;
                     })}
                   </div>
                 </div>
@@ -1320,7 +1306,7 @@ export default function ClientConcours() {
                       subject={activeSubject}
                       school={currentActiveConcours.ecole || requestedEcole || ''}
                       year={openYear}
-                      enableTimer
+                      enableTimer={false}
                       style={{ width: '100%', height: '80vh', border: 'none', display: 'block', background: 'transparent' }}
                     />
                   </div>

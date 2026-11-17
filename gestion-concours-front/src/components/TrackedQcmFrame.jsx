@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
-import { recordStudentMistake, resolveStudentMistakes } from '../studentProgress';
+import { recordStudentMistake, recordStudentQcmAnswer, resolveStudentMistakes } from '../studentProgress';
 
 const API_BASE = '';
 
@@ -136,12 +136,13 @@ export default function TrackedQcmFrame({
   const timerAutoSubmitRef = useRef(false);
   const timerRequestRef = useRef(null);
   const timerClientKeyStorageRef = useRef(null);
+  const fallbackAttemptRef = useRef({ key: '', id: '' });
   const iframeLocalStorageKeyRef = useRef(null);
   const freeTimerClockRef = useRef(null);
   const pendingAnswersRef = useRef(new Set());
 
   useEffect(() => {
-    if (String(sourceType || '').trim().toLowerCase() !== 'concours') {
+    if (!enableTimer || String(sourceType || '').trim().toLowerCase() !== 'concours') {
       setTimerPortalTarget(null);
       return undefined;
     }
@@ -153,7 +154,7 @@ export default function TrackedQcmFrame({
     const observer = new MutationObserver(findQuestionTimerSlot);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [sourceType, resourceId]);
+  }, [enableTimer, sourceType, resourceId]);
 
   const syncQcmTheme = useCallback(() => {
     const root = document.documentElement;
@@ -238,9 +239,10 @@ export default function TrackedQcmFrame({
     return data;
   }, [storeTimerData, syncTimerAnswersToFrame, timerAuthHeaders]);
 
-  const timerIsLocked = timerSession?.supported
-    && ['PAUSED', 'COMPLETED', 'EXPIRED'].includes(timerSession.status)
-    || ['AUTH_REQUIRED', 'UNAVAILABLE'].includes(timerSession?.status);
+  const timerIsLocked = enableTimer && (
+    (timerSession?.supported && ['PAUSED', 'COMPLETED', 'EXPIRED'].includes(timerSession.status))
+    || ['AUTH_REQUIRED', 'UNAVAILABLE'].includes(timerSession?.status)
+  );
 
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'timer-set-locked', locked: Boolean(timerIsLocked) }, '*');
@@ -586,7 +588,7 @@ export default function TrackedQcmFrame({
       const themeSyncScript = hasQuestionPaletteQcm && isConcours
         ? `<script>(function(){window.addEventListener('message',function(event){if(event.source!==parent||event.data?.type!=='platform-theme')return;document.documentElement.setAttribute('data-platform-theme',event.data.theme==='dark'?'dark':'light')})})();</script>`
         : '';
-      const timerSlotScript = hasQuestionPaletteQcm && isConcoursBlanc
+      const timerSlotScript = enableTimer && hasQuestionPaletteQcm && isConcoursBlanc
         ? `<script>(function(){
           var timerState=null,group=null,slot=null,timerSlotReported=false;
           function reportSlot(attached){if(timerSlotReported===attached)return;timerSlotReported=attached;parent.postMessage({type:'tracked-qcm-timer-slot',attached:attached},'*')}
@@ -863,8 +865,9 @@ export default function TrackedQcmFrame({
       }
 
       // 1. Détection d'une réponse incorrecte
-      if (event.data?.type === 'econcourse-qcm-mistake' && event.data?.mistake) {
-        const mistake = event.data.mistake;
+      if ((event.data?.type === 'econcourse-qcm-mistake' || event.data?.type === 'econcourse-qcm-answer')
+        && (event.data?.mistake || event.data?.answer)) {
+        const mistake = event.data.mistake || event.data.answer;
         updateCurrentQuestion(mistake.questionNumber);
         timerCurrentQuestionRef.current = Number(mistake.questionNumber) || timerCurrentQuestionRef.current;
         if (event.data.totalQuestions) {
@@ -872,9 +875,22 @@ export default function TrackedQcmFrame({
         }
         setSaveStatus('idle');
         setSaveMessage('');
-        const isWrong = mistake.selectedChoiceLabel !== mistake.correctChoiceLabel;
+        const selectedChoiceLabel = String(mistake.selectedChoiceLabel || '').trim();
+        const correctChoiceLabel = String(mistake.correctChoiceLabel || '').trim();
+        const hasAnswerLabels = Boolean(selectedChoiceLabel && correctChoiceLabel);
+        const explicitCorrect = typeof mistake.isCorrect === 'boolean'
+          ? mistake.isCorrect
+          : typeof event.data.isCorrect === 'boolean' ? event.data.isCorrect : null;
+        const isCorrect = hasAnswerLabels
+          ? selectedChoiceLabel.toUpperCase() === correctChoiceLabel.toUpperCase()
+          : explicitCorrect;
+        const isWrong = isCorrect === false;
         const timedSession = timerSessionRef.current;
         const questionKey = String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? '');
+        const attemptKey = `${sourceType}|${resourceId || src}`;
+        if (fallbackAttemptRef.current.key !== attemptKey) {
+          fallbackAttemptRef.current = { key: attemptKey, id: newClientAttemptKey() };
+        }
         const selectedLabel = String(mistake.selectedChoiceLabel ?? '').trim();
         if (enableTimer && timedSession?.supported && timedSession.status === 'IN_PROGRESS' && questionKey && selectedLabel) {
           const nextAnswers = { ...timerAnswersRef.current, [questionKey]: selectedLabel };
@@ -891,14 +907,30 @@ export default function TrackedQcmFrame({
           chapter: mistake.chapter || chapter || '',
           school: school || '',
           year: year || null,
-          attemptId: event.data.attemptId
+          attemptId: event.data.attemptId || mistake.attemptId || fallbackAttemptRef.current.id
         };
+
+        if (hasAnswerLabels || typeof isCorrect === 'boolean') {
+          recordStudentQcmAnswer({
+            sourceType: studentMistake.sourceType,
+            resourceId: studentMistake.resourceId,
+            resourceTitle: studentMistake.resourceTitle,
+            school: studentMistake.school,
+            subject: studentMistake.subject,
+            chapter: studentMistake.chapter,
+            year: studentMistake.year,
+            attemptId: studentMistake.attemptId,
+            questionId: String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? ''),
+            questionNumber: mistake.questionNumber,
+            totalQuestions: event.data.totalQuestions || timerTotalQuestionsRef.current,
+            correct: isCorrect
+          });
+        }
 
         const historySessionToken = localStorage.getItem('authToken');
         if (historySessionToken
           && /^\d+$/.test(String(studentMistake.resourceId || ''))
           && studentMistake.attemptId
-          && studentMistake.questionText
           && studentMistake.selectedChoiceLabel
           && studentMistake.correctChoiceLabel) {
           const answerPayload = {
@@ -909,7 +941,7 @@ export default function TrackedQcmFrame({
             subject: studentMistake.subject,
             chapter: studentMistake.chapter,
             year: studentMistake.year,
-            totalQuestions: event.data.totalQuestions,
+            totalQuestions: event.data.totalQuestions || timerTotalQuestionsRef.current,
             attemptId: studentMistake.attemptId,
             questionId: String(mistake.questionId ?? mistake.questionNumber ?? mistake.questionText ?? ''),
             questionNumber: mistake.questionNumber,
@@ -977,7 +1009,7 @@ export default function TrackedQcmFrame({
           setSessionMistakes((prev) => prev.filter((item) =>
             String(item.questionId ?? item.questionNumber ?? item.questionText ?? '') !== resolvedQuestionId
           ));
-          resolveStudentMistakes(studentMistake.resourceId, resolvedQuestionId);
+          resolveStudentMistakes(studentMistake.resourceId, resolvedQuestionId, studentMistake.sourceType);
           if (studentId) {
             axios.post(`${API_BASE}/api/student-mistakes/resolve`, {
               studentId,
@@ -1006,10 +1038,10 @@ export default function TrackedQcmFrame({
     : timerSession?.status === 'PAUSED' ? 'En pause'
       : ['COMPLETED', 'EXPIRED'].includes(timerSession?.status) ? 'Terminé'
         : timerLoading ? 'Préparation du chronomètre…' : '';
-  const timerUrgent = timerSession?.supported && timerSession.status === 'IN_PROGRESS' && timerRemaining !== null && timerRemaining <= 300;
-  const showTimerControls = timerSession?.supported && timerSession.sessionId;
+  const timerUrgent = enableTimer && timerSession?.supported && timerSession.status === 'IN_PROGRESS' && timerRemaining !== null && timerRemaining <= 300;
+  const showTimerControls = enableTimer && timerSession?.supported && timerSession.sessionId;
   const timerFinished = ['COMPLETED', 'EXPIRED'].includes(timerSession?.status);
-  const timerControlVisible = Boolean(showTimerControls || timerSession?.status === 'UNCONFIRMED');
+  const timerControlVisible = enableTimer && Boolean(showTimerControls || timerSession?.status === 'UNCONFIRMED');
   const pauseFreeTimer = () => {
     const clock = freeTimerClockRef.current;
     if (!clock || clock.paused || !clock.startedAt) return;

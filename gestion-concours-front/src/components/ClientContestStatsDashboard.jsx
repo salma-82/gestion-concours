@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import './ClientContestStatsDashboard.css';
 import './ClientStatsDashboardTheme.css';
+import './ClientContestStatsDashboardCompact.css';
 
 // Palette de couleurs premium
 const COLORS = {
@@ -638,6 +639,13 @@ export default function ClientContestStatsDashboard({
           -------------------------------------------------------------------- */}
       <header className="contest-stats-header">
         <div className="contest-stats-header-top">
+          <div className="contest-title-lockup">
+            <span className="contest-title-icon" aria-hidden="true">□</span>
+            <div>
+              <h1 className="contest-stats-title">Analyse des performances</h1>
+              <p className="contest-stats-subtitle">Concours des écoles</p>
+            </div>
+          </div>
           <div>
             <span className="contest-stats-eyebrow">
               <span>📊</span> ANALYSE DES PERFORMANCES

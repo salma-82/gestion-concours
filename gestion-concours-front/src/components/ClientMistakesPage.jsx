@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import MathContent from './MathContent';
-import { readStudentMistakes, deleteStudentMistake, syncLocalSavedStudentMistakes } from '../studentProgress';
+import { readStudentMistakes, readStudentQcmAttempts, deleteStudentMistake, syncLocalSavedStudentMistakes } from '../studentProgress';
 import './ClientMistakesPage.css';
 
 const API_BASE = '';
 const isBlanc = (type) => String(type || '').toLowerCase().includes('blanc');
+const normalizeResourceType = (type) => String(type || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const resourceKey = (item) => `${normalizeResourceType(item.resourceType || item.sourceType)}|${item.resourceId}`;
 const groupKey = (item) => `${item.resourceType || item.sourceType || ''}|${item.resourceId}|${item.attemptId || ''}`;
 const dateLabel = (date) => date ? new Date(date).toLocaleDateString('fr-FR') : '—';
 
@@ -26,6 +28,7 @@ export default function ClientMistakesPage() {
   const view = params.get('view') === 'saved' ? 'saved' : 'all';
   const [category, setCategory] = useState('blanc');
   const [attempts, setAttempts] = useState([]);
+  const [allMistakes, setAllMistakes] = useState(() => readStudentMistakes());
   const [savedMistakes, setSavedMistakes] = useState(() => readStudentMistakes().filter((item) => item.savedForReview));
   const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(true);
@@ -36,8 +39,10 @@ export default function ClientMistakesPage() {
     try { id = JSON.parse(localStorage.getItem('user') || '{}')?.id ?? null; } catch {}
     setStudentId(id);
     if (!id) {
-      setAttempts([]);
-      setSavedMistakes(readStudentMistakes().filter((item) => item.savedForReview));
+      setAttempts(readStudentQcmAttempts());
+      const localMistakes = readStudentMistakes();
+      setAllMistakes(localMistakes);
+      setSavedMistakes(localMistakes.filter((item) => item.savedForReview));
       setLoading(false);
       return;
     }
@@ -49,11 +54,14 @@ export default function ClientMistakesPage() {
       axios.get(`${API_BASE}/api/qcm/mes-concours`, { headers }),
       axios.get(`${API_BASE}/api/student-mistakes`, { params: { studentId: id }, headers })
     ]);
-    setAttempts(historyResult.status === 'fulfilled' && Array.isArray(historyResult.value.data?.attempts)
-      ? historyResult.value.data.attempts : []);
+    const serverAttempts = historyResult.status === 'fulfilled' && Array.isArray(historyResult.value.data?.attempts)
+      ? historyResult.value.data.attempts : [];
+    setAttempts([...serverAttempts, ...readStudentQcmAttempts()]);
     const savedFromDb = savedResult.status === 'fulfilled' && Array.isArray(savedResult.value.data)
       ? savedResult.value.data.map((item) => ({ ...item, sourceType: item.sourceType, savedForReview: true })) : [];
-    const savedLocal = readStudentMistakes().filter((item) => item.savedForReview);
+    const localMistakes = readStudentMistakes();
+    const savedLocal = localMistakes.filter((item) => item.savedForReview);
+    setAllMistakes([...localMistakes, ...savedFromDb]);
     const merged = [...savedFromDb];
     savedLocal.forEach((local) => {
       const foundIndex = merged.findIndex((item) => String(item.resourceId) === String(local.resourceId)
@@ -102,9 +110,51 @@ export default function ClientMistakesPage() {
     return [...latest.values()].sort((a, b) => new Date(b.answeredAt) - new Date(a.answeredAt));
   }, [attempts]);
 
-  const errorAttempts = latestAttempts
+  const latestAttemptsWithLocalFallbacks = useMemo(() => {
+    const latest = new Map(latestAttempts.map((attempt) => [resourceKey(attempt), attempt]));
+    const localGroups = new Map();
+    allMistakes.filter((item) => item.resolved !== true && item.resourceId && item.questionText)
+      .forEach((item) => {
+        const key = groupKey(item);
+        if (!localGroups.has(key)) {
+          localGroups.set(key, {
+            resourceType: item.sourceType || item.resourceType,
+            resourceId: item.resourceId,
+            resourceTitle: item.resourceTitle,
+            school: item.school,
+            subject: item.subject,
+            chapter: item.chapter,
+            year: item.year,
+            attemptId: item.attemptId,
+            answeredAt: item.occurredAt || item.createdAt,
+            localOnly: true,
+            localMistakeFallback: true,
+            errors: []
+          });
+        }
+        const group = localGroups.get(key);
+        const questionKey = String(item.questionId ?? item.questionNumber ?? item.questionText);
+        const errorIndex = group.errors.findIndex((error) => String(error.questionId ?? error.questionNumber ?? error.questionText) === questionKey);
+        if (errorIndex >= 0) group.errors[errorIndex] = { ...item, correct: false };
+        else group.errors.push({ ...item, correct: false });
+        if (new Date(item.occurredAt || item.createdAt || 0) > new Date(group.answeredAt || 0)) {
+          group.answeredAt = item.occurredAt || item.createdAt;
+        }
+      });
+
+    localGroups.forEach((localAttempt) => {
+      const key = resourceKey(localAttempt);
+      const historyAttempt = latest.get(key);
+      if (!historyAttempt || new Date(localAttempt.answeredAt || 0) > new Date(historyAttempt.answeredAt || 0)) {
+        latest.set(key, localAttempt);
+      }
+    });
+    return [...latest.values()];
+  }, [allMistakes, latestAttempts]);
+
+  const errorAttempts = latestAttemptsWithLocalFallbacks
     .filter((attempt) => isBlanc(attempt.resourceType) === (category === 'blanc'))
-    .map((attempt) => ({ ...attempt, errors: (attempt.answers || []).filter((answer) => !answer.correct) }))
+    .map((attempt) => ({ ...attempt, errors: attempt.localMistakeFallback ? attempt.errors : (attempt.answers || []).filter((answer) => !answer.correct) }))
     .filter((attempt) => attempt.errors.length > 0);
   const showAttemptYear = category !== 'blanc';
 
@@ -118,9 +168,30 @@ export default function ClientMistakesPage() {
     return [...groups.values()].sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
   }, [savedMistakes]);
 
-  const attemptForGroup = (group) => attempts.find((attempt) => String(attempt.resourceId) === String(group.resourceId)
-    && String(attempt.attemptId || '') === String(group.attemptId || '')
-    && (group.resourceType ? String(attempt.resourceType) === String(group.resourceType) : true));
+  const attemptForGroup = (group) => {
+    const sameResource = attempts.filter((attempt) => String(attempt.resourceId) === String(group.resourceId)
+      && (group.resourceType
+        ? normalizeResourceType(attempt.resourceType) === normalizeResourceType(group.resourceType)
+        : true));
+    const exactAttempt = sameResource.find((attempt) => String(attempt.attemptId || '') === String(group.attemptId || ''));
+    if (exactAttempt) return exactAttempt;
+
+    // Older timed attempts used the timer session ID in history but kept the
+    // QCM's attempt ID on saved mistakes. Match those records by the questions
+    // marked wrong, then use the closest date if the same question was missed
+    // in more than one attempt.
+    const errorQuestionIds = new Set(group.errors.map((error) => String(error.questionId ?? error.questionNumber ?? '')));
+    const savedAt = new Date(group.savedAt || 0).getTime();
+    const matchingAttempts = sameResource.map((attempt) => {
+      const wrongAnswers = (attempt.answers || []).filter((answer) => !answer.correct);
+      const overlap = wrongAnswers.filter((answer) => errorQuestionIds.has(String(answer.questionId ?? answer.questionNumber ?? ''))).length;
+      const answeredAt = new Date(attempt.answeredAt || 0).getTime();
+      return { attempt, overlap, dateDistance: Number.isFinite(savedAt) && Number.isFinite(answeredAt) ? Math.abs(savedAt - answeredAt) : Number.POSITIVE_INFINITY };
+    }).filter((item) => item.overlap > 0)
+      .sort((a, b) => b.overlap - a.overlap || a.dateDistance - b.dateDistance);
+    if (matchingAttempts.length) return matchingAttempts[0].attempt;
+    return sameResource.length === 1 ? sameResource[0] : null;
+  };
 
   const removeSavedError = async (error) => {
     await deleteStudentMistake(error.id || error.databaseId, studentId);
@@ -205,7 +276,7 @@ export default function ClientMistakesPage() {
                   <td style={td}>{isBlanc(attempt.resourceType) ? 'Concours Blanc' : attempt.school || 'Concours'}</td>
                   <td style={td}>{attempt.subject || '—'}</td><td style={td}>{attempt.chapter || '—'}</td>{showAttemptYear && <td style={td}>{attempt.year || '—'}</td>}<td style={td}>{dateLabel(attempt.answeredAt)}</td>
                   <td style={{ ...td, color: '#dc2626', fontWeight: 800 }}>{attempt.errors.length}</td>
-                  <td style={{ ...td, fontWeight: 800, color: Number(attempt.score) >= 50 ? '#059669' : '#dc2626' }}>{attempt.correctAnswers}/{attempt.expectedQuestions || attempt.totalQuestions}</td>
+                  <td style={{ ...td, fontWeight: 800, color: Number(attempt.score) >= 50 ? '#059669' : '#dc2626' }}>{attempt.localMistakeFallback ? '—' : `${attempt.correctAnswers}/${attempt.expectedQuestions || attempt.totalQuestions}`}</td>
                   <td style={td}><button type="button" onClick={() => setExpanded((state) => ({ ...state, [key]: !state[key] }))} style={blueAction}>{expanded[key] ? 'Fermer' : 'Réviser'}</button></td>
                 </tr>
                 {expanded[key] && attempt.errors.map((error, index) => <tr key={`${key}-${error.questionId}`}><td colSpan={showAttemptYear ? 9 : 8} style={{ ...td, background: 'var(--surface-2, #f8fbff)', padding: 16 }}>

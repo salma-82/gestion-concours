@@ -285,6 +285,7 @@ export default function ClientConcoursBlanc() {
               resourceTitle={activeConcours.titre || activeConcours.title}
               subject={activeConcours.matiere || ''}
               chapter={activeConcours.chapitre || ''}
+              enableTimer={false}
               style={{ width: '100%', height: '84vh', border: 'none', display: 'block' }}
             />
           ) : (
