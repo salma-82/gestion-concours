@@ -121,7 +121,7 @@
 
 .course-filter-field select:focus,
 .course-filter-field input:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
@@ -192,11 +192,11 @@
 
 .course-kpi-card:nth-child(4) {
   background: linear-gradient(155deg, #fefce8 0%, #ffffff 75%);
-  border-color: rgba(254, 240, 138, 0.85);
+  border-color: rgba(185, 204, 245, 0.85);
 }
 .course-kpi-card:nth-child(4) .course-kpi-icon {
-  background: linear-gradient(145deg, #fef9c3, #fef08a);
-  color: #ca8a04;
+  background: linear-gradient(145deg, #d2def7, #d2def7);
+  color: #2563eb;
   border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
 }
@@ -206,8 +206,8 @@
   border-color: rgba(153, 246, 228, 0.85);
 }
 .course-kpi-card:nth-child(5) .course-kpi-icon {
-  background: linear-gradient(145deg, #ccfbf1, #99f6e4);
-  color: #0d9488;
+  background: linear-gradient(145deg, #eaf0ff, #d2def7);
+  color: #2563eb;
   border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
 }
@@ -242,7 +242,7 @@
 
 .course-kpi-icon.blue { background: #eff6ff; color: #2563eb; }
 .course-kpi-icon.green { background: #ecfdf5; color: #059669; }
-.course-kpi-icon.amber { background: #fffbeb; color: #d97706; }
+.course-kpi-icon.amber { background: #fffbeb; color: #2563eb; }
 .course-kpi-icon.purple { background: #faf5ff; color: #7c3aed; }
 .course-kpi-icon.indigo { background: #e0e7ff; color: #4338ca; }
 .course-kpi-icon.cyan { background: #ecfeff; color: #0891b2; }
@@ -596,9 +596,9 @@
 }
 
 .course-tab-pill.is-active {
-  background: #2563eb;
+  background: #d2def7;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
@@ -709,7 +709,7 @@
 
 .course-insight-card.is-improvement {
   background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
-  border-color: #fed7aa;
+  border-color: #b9ccf5;
 }
 
 .course-insight-head {
@@ -765,7 +765,7 @@
 }
 
 .is-strength .course-insight-dot { background: #10b981; }
-.is-improvement .course-insight-dot { background: #f97316; }
+.is-improvement .course-insight-dot { background: #d2def7; }
 
 .course-insight-item-score {
   font-weight: 800;
@@ -775,7 +775,7 @@
 }
 
 .is-strength .course-insight-item-score { background: #dcfce7; color: #166534; }
-.is-improvement .course-insight-item-score { background: #ffedd5; color: #9a3412; }
+.is-improvement .course-insight-item-score { background: #d2def7; color: #2563eb; }
 
 /* --------------------------------------------------------------------------
    8. SESSIONS HISTORY TABLE
@@ -811,7 +811,7 @@
 }
 
 .course-search-input:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   background: #ffffff;
 }
 
@@ -829,7 +829,7 @@
 }
 
 .course-table-select:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   background: #ffffff;
 }
 
@@ -961,9 +961,9 @@
 }
 
 .course-page-btn.is-active {
-  background: #2563eb;
+  background: #d2def7;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #b9ccf5;
 }
 
 .course-page-btn:disabled {
@@ -1019,7 +1019,7 @@
 .course-empty-btn {
   padding: 10px 24px;
   border-radius: 12px;
-  background: #2563eb;
+  background: #d2def7;
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 750;
@@ -1032,7 +1032,7 @@
 }
 
 .course-empty-btn:hover {
-  background: #1d4ed8;
+  background: #d2def7;
   transform: translateY(-1px);
 }
 

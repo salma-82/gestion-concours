@@ -8,6 +8,7 @@ export const PACK_OPTIONS = [
 ];
 
 const PACK_SCHOOLS = {
+  GRATUIT: [],
   MEDECINE: ['MEDECINE'],
   ENSAM: ['ENSAM'],
   ENSA: ['ENSA', 'ENSCK'],

@@ -24,7 +24,7 @@ import './ClientNationalExamStatsDashboardCompact.css';
 const API_BASE = '';
 const PAGE_SIZE = 8;
 const COLORS = {
-  primary: '#2563eb',
+  primary: '#0d9488',
   success: '#10b981',
   violet: '#8b5cf6',
   amber: '#f59e0b',
@@ -175,7 +175,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
     const counts = { 'not-started': 0, 'in-progress': 0, completed: 0 };
     visibleCatalog.forEach((exam) => { counts[getStatus(String(exam.id), startedIds, completionByExam)] += 1; });
     return [
-      { name: 'Non commencés', value: counts['not-started'], color: '#94a3b8' },
+      { name: 'Non commencés', value: counts['not-started'], color: '#cbd5e1' },
       { name: 'En cours', value: counts['in-progress'], color: COLORS.primary },
       { name: 'Terminés', value: counts.completed, color: COLORS.success },
     ];
@@ -384,10 +384,8 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
   return (
     <section className="national-exam-stats" aria-label="Suivi des examens nationaux">
       <header className="national-exam-hero">
-        <span className="national-exam-heading-icon" aria-hidden="true">▤</span>
         <div>
           <h1>Suivi des examens nationaux</h1>
-          <p>Ta progression sur les épreuves du Bac</p>
         </div>
       </header>
 
@@ -463,7 +461,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
                   <YAxis type="category" dataKey="name" width={128} axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11 }} />
                   <Tooltip formatter={(value) => [fmtNumber(value), 'Examens travaillés']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
                   <Bar dataKey="exams" name="Examens travaillés" radius={[0, 7, 7, 0]} maxBarSize={24}>
-                    {subjectData.map((item, index) => <Cell key={item.name} fill={index === 0 ? COLORS.primary : index === subjectData.length - 1 ? '#cbd5e1' : '#7c9cff'} />)}
+                    {subjectData.map((item, index) => <Cell key={item.name} fill={index === 0 ? COLORS.primary : index === subjectData.length - 1 ? '#cbd5e1' : '#2dd4bf'} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -504,7 +502,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
                   <Tooltip formatter={(value, name) => [fmtNumber(value), name === 'consulted' ? 'Consultées' : 'À consulter']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
                   <Legend formatter={(value) => value === 'consulted' ? 'Consultées' : 'À consulter'} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
                   <Bar dataKey="consulted" name="consulted" stackId="corrections" fill={COLORS.success} radius={[8, 0, 0, 8]} />
-                  <Bar dataKey="pending" name="pending" stackId="corrections" fill="#dbe5f3" radius={[0, 8, 8, 0]} />
+                  <Bar dataKey="pending" name="pending" stackId="corrections" fill="#e2e8f0" radius={[0, 8, 8, 0]} />
                 </BarChart></ResponsiveContainer>
               </div>
               <div className="national-exam-correction-footnote">{fmtNumber(correctionSummary.available)} corrections disponibles dans les examens sélectionnés.</div>
@@ -523,7 +521,7 @@ export default function ClientNationalExamStatsDashboard({ events = [], loading 
                 <Tooltip formatter={(value, name) => [fmtNumber(value), name === 'worked' ? 'Travaillés' : 'À découvrir']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 12 }} />
                 <Legend formatter={(value) => value === 'worked' ? 'Travaillés' : 'À découvrir'} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="worked" name="worked" stackId="year" fill={COLORS.primary} radius={[0, 0, 0, 0]} />
-                <Bar dataKey="undiscovered" name="undiscovered" stackId="year" fill="#dbe5f3" radius={[0, 7, 7, 0]} />
+                <Bar dataKey="undiscovered" name="undiscovered" stackId="year" fill="#e2e8f0" radius={[0, 7, 7, 0]} />
               </BarChart></ResponsiveContainer>
             </div>
           ) : <div className="national-exam-empty">Aucune année n’est enregistrée dans le catalogue.</div>}

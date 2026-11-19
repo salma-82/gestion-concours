@@ -233,7 +233,7 @@ export default function ClientMistakesPage() {
           {view === 'all' && (
             <div style={segmented} role="group" aria-label="Filtrer par type de concours">
               {[["blanc", 'Concours Blancs'], ["concours", 'Concours']].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setCategory(value)} aria-pressed={category === value} style={{ border: 0, borderRadius: 999, padding: '10px 18px', color: category === value ? '#fff' : '#2563eb', background: category === value ? '#1769f5' : 'transparent', fontWeight: 750, fontSize: 12, cursor: 'pointer' }}>{label}</button>
+                <button key={value} type="button" onClick={() => setCategory(value)} aria-pressed={category === value} style={{ border: 0, borderRadius: 999, padding: '10px 18px', color: category === value ? '#203b5b' : '#2563eb', background: category === value ? '#d2def7' : 'transparent', fontWeight: 750, fontSize: 12, cursor: 'pointer' }}>{label}</button>
               ))}
             </div>
           )}

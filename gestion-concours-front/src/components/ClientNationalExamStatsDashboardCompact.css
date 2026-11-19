@@ -1,9 +1,9 @@
 .national-exam-stats {
-  --exam-navy: #102d50;
+  --exam-navy: #eaf0ff;
   --exam-mint: #bfe8da;
-  --exam-lavender: #e9cff3;
-  --exam-yellow: #f8d76e;
-  --exam-orange: #f6a047;
+  --exam-lavender: #e7f8ef;
+  --exam-yellow: #fef3c7;
+  --exam-orange: #ffedd5;
   --exam-muted: #6d6d6d;
   max-width: 1560px;
   padding: 10px 4px 32px;
@@ -127,14 +127,14 @@
 .national-exam-kpi:nth-child(n+2) strong { color: #203b39; }
 .national-exam-kpi:nth-child(n+2) small { color: #4e6e68; }
 .national-exam-kpi:nth-child(3) .national-exam-kpi-label,
-.national-exam-kpi:nth-child(3) strong { color: #49365c; }
-.national-exam-kpi:nth-child(3) small { color: #705d7c; }
+.national-exam-kpi:nth-child(3) strong { color: #214c42; }
+.national-exam-kpi:nth-child(3) small { color: #4e6e68; }
 .national-exam-kpi:nth-child(4) .national-exam-kpi-label,
-.national-exam-kpi:nth-child(4) strong { color: #4c3b14; }
-.national-exam-kpi:nth-child(4) small { color: #77612a; }
+.national-exam-kpi:nth-child(4) strong { color: #92400e; }
+.national-exam-kpi:nth-child(4) small { color: #b45309; }
 .national-exam-kpi:nth-child(5) .national-exam-kpi-label,
-.national-exam-kpi:nth-child(5) strong { color: #543410; }
-.national-exam-kpi:nth-child(5) small { color: #81552a; }
+.national-exam-kpi:nth-child(5) strong { color: #9a3412; }
+.national-exam-kpi:nth-child(5) small { color: #c2410c; }
 
 .national-exam-section,
 .national-exam-panel,
@@ -198,8 +198,8 @@
 .national-exam-correction-status { min-height: 23px; background: #ececec; color: #4d4d4d; }
 .national-exam-status.is-completed,
 .national-exam-correction-status.is-consulted { background: var(--exam-mint); color: #234c43; }
-.national-exam-status.is-in-progress { background: #bdcef5; color: #18345a; }
-.national-exam-correction-status.is-pending { background: #ffdda0; color: #72521f; }
+.national-exam-status.is-in-progress { background: #eaf0ff; color: #2563eb; }
+.national-exam-correction-status.is-pending { background: #fef3c7; color: #b45309; }
 .national-exam-row-actions button,
 .national-exam-row-actions button + button {
   min-height: 29px;
@@ -229,11 +229,11 @@
 .national-exam-recommendation-grid,
 .national-exam-recommendations > .national-exam-empty { order: 1; }
 .national-exam-recommendation-grid article { padding: 13px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; background: rgba(255,255,255,.08); box-shadow: none; }
-.national-exam-recommendation-mark { background: var(--exam-orange); color: #55350f; }
+.national-exam-recommendation-mark { background: #fef3c7; color: #2563eb; }
 .national-exam-recommendation-grid h3 { color: #fff; }
 .national-exam-recommendation-grid p { min-height: 0; color: #d3dced; }
-.national-exam-recommendation-grid button { margin-top: 12px; padding: 9px 13px; border-radius: 999px; background: var(--exam-orange); color: #4d310f; }
-.national-exam-recommendation-grid button:hover { color: #26190a; }
+.national-exam-recommendation-grid button { margin-top: 12px; padding: 9px 13px; border-radius: 999px; background: #eaf0ff; color: #2563eb; }
+.national-exam-recommendation-grid button:hover { color: #2563eb; }
 .national-exam-recommendations > .national-exam-empty { min-height: 66px; padding: 10px 14px; background: rgba(255,255,255,.1); color: #d3dced; }
 .national-exam-recommendations-open {
   order: 2;
@@ -246,14 +246,14 @@
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
-  background: var(--exam-orange);
-  color: #4d310f;
+  background: #eaf0ff;
+  color: #2563eb;
   font: inherit;
   font-size: 11px;
   font-weight: 750;
   cursor: pointer;
 }
-.national-exam-recommendations-open:hover { background: #ffae5e; }
+.national-exam-recommendations-open:hover { background: #d2def7; }
 
 @media (max-width: 760px) {
   .national-exam-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -284,7 +284,7 @@
 
 html[data-theme="dark"] #root .national-exam-stats,
 html.dark #root .national-exam-stats {
-  --exam-navy: #102d50;
+  --exam-navy: #d2def7;
   --exam-muted: var(--text-secondary);
 }
 
@@ -292,4 +292,31 @@ html[data-theme="dark"] #root .national-exam-stats :is(.national-exam-section, .
 html.dark #root .national-exam-stats :is(.national-exam-section, .national-exam-panel, .national-exam-history, .national-exam-chart-grid > article) {
   background: var(--surface) !important;
   border-color: var(--border) !important;
+}
+
+.national-exam-kpi:first-child :is(.national-exam-kpi-label, strong, small),
+.national-exam-period select,
+.national-exam-row-actions button,
+.national-exam-recommendations,
+.national-exam-recommendations .national-exam-section-title :is(h2, p),
+.national-exam-recommendation-grid :is(h3, p) { color: #203b5b; }
+
+/* Match the shorter overview cards used by the contest statistics page. */
+.national-exam-stats .national-exam-hero { margin-bottom: -18px !important; }
+.national-exam-stats .national-exam-filter-panel {
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+}
+.national-exam-stats .national-exam-filters select,
+.national-exam-stats .national-exam-period select { height: 32px; }
+.national-exam-stats .national-exam-kpis {
+  grid-auto-rows: 92px !important;
+  gap: 9px !important;
+  margin-bottom: 9px !important;
+}
+.national-exam-stats .national-exam-kpi {
+  height: 92px !important;
+  min-height: 92px !important;
+  max-height: 92px !important;
+  padding: 14px 16px !important;
 }

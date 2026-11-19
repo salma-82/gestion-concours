@@ -31,7 +31,7 @@ const COLORS = {
   primary: '#2563eb',
   success: '#10b981',
   danger: '#ef4444',
-  amber: '#f59e0b',
+  amber: '#d2def7',
   rose: '#e11d48',
   cyan: '#0891b2',
   muted: '#94a3b8',
@@ -393,7 +393,7 @@ export default function ClientSummaryStatsDashboard({
       map.set(sub, prev + r.visits);
     });
 
-    const palette = ['#f59e42', COLORS.primary, COLORS.success, COLORS.amber, COLORS.rose];
+    const palette = ['#b9ccf5', '#b9ccf5', COLORS.success, COLORS.amber, COLORS.rose];
     const result = Array.from(map.entries()).map(([name, value], index) => ({
       name,
       value,
@@ -581,10 +581,8 @@ export default function ClientSummaryStatsDashboard({
       <section className="summary-stats-header">
         <div className="summary-stats-header-top">
           <div className="summary-dashboard-heading">
-            <span className="summary-dashboard-icon" aria-hidden="true">▤</span>
             <div>
               <h1 className="summary-stats-title">Fiches de synthèse</h1>
-              <p className="summary-stats-subtitle">Ta révision par résumés</p>
             </div>
           </div>
         </div>
@@ -765,8 +763,8 @@ export default function ClientSummaryStatsDashboard({
               <AreaChart data={consultationTrendData} margin={{ top: 10, right: 14, left: -10, bottom: 2 }}>
                 <defs>
                   <linearGradient id="summaryTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e42" stopOpacity={0.22} />
-                    <stop offset="95%" stopColor="#f59e42" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#b9ccf5" stopOpacity={0.22} />
+                    <stop offset="95%" stopColor="#b9ccf5" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -786,7 +784,7 @@ export default function ClientSummaryStatsDashboard({
                           fontSize: '12.5px'
                         }}>
                           <div style={{ fontWeight: 800, color: 'var(--text, #0f172a)' }}>{d.dateKey}</div>
-                          <div style={{ color: '#f59e42', fontWeight: 850, marginTop: 4, fontSize: '14px' }}>
+                          <div style={{ color: '#2563eb', fontWeight: 850, marginTop: 4, fontSize: '14px' }}>
                             {d.hours} h ({d.minutes} min)
                           </div>
                           <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '11px', marginTop: 2 }}>
@@ -801,7 +799,7 @@ export default function ClientSummaryStatsDashboard({
                 <Area
                   type="monotone"
                   dataKey="hours"
-                  stroke="#f59e42"
+                  stroke="#b9ccf5"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#summaryTrendGrad)"
@@ -909,9 +907,9 @@ export default function ClientSummaryStatsDashboard({
                       'Consultations'
                     ]}
                   />
-                  <Bar dataKey="visits" name="Consultations" fill="#f59e42" radius={[0, 6, 6, 0]} barSize={18}>
+                  <Bar dataKey="visits" name="Consultations" fill="#b9ccf5" radius={[0, 6, 6, 0]} barSize={18}>
                     {subjectRankingData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={['#f59e42', '#2563eb', '#10b981', '#f59e0b'][index % 4]} />
+                      <Cell key={`cell-${index}`} fill={['#b9ccf5', '#b9ccf5', '#10b981', '#b9ccf5'][index % 4]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -950,7 +948,7 @@ export default function ClientSummaryStatsDashboard({
                   />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
                   <Bar dataKey="available" name="Disponibles" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={16} />
-                  <Bar dataKey="viewed" name="Consultées" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={16} />
+                  <Bar dataKey="viewed" name="Consultées" fill="#b9ccf5" radius={[4, 4, 0, 0]} barSize={16} />
                   <Bar dataKey="completed" name="Terminées" fill="#10b981" radius={[4, 4, 0, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>

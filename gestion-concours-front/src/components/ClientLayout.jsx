@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
 import axios from 'axios';
 import navLogoImg from '../assets/logo-navbar-transparent.png';
 import { filterByStudentPack } from '../packAccess';
 import './ClientNavbar.css';
 import './ClientCompact.css';
 import ThemeToggle from './ThemeToggle';
+import { startDailyPlatformTimeTracking } from '../dailyPlatformTime';
+import { auth } from '../firebase';
 
 export default function ClientLayout() {
   const navigate = useNavigate();
@@ -24,6 +27,8 @@ export default function ClientLayout() {
   const [concoursOpen, setConcoursOpen] = useState(location.pathname === '/client-concours');
   const [concoursBlancOpen, setConcoursBlancOpen] = useState(location.pathname === '/client-concours-blanc');
   const [mistakesOpen, setMistakesOpen] = useState(location.pathname === '/client-erreurs');
+
+  useEffect(() => startDailyPlatformTimeTracking(), []);
 
   // Sous-menus accordéon pour Cours et Examens Nationaux
   const [coursFilieres, setCoursFilieres] = useState([]);
@@ -182,9 +187,10 @@ export default function ClientLayout() {
     return () => { isMounted = false; };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const token = localStorage.getItem('authToken');
     if (token) axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (auth) await signOut(auth).catch(() => {});
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     navigate('/');
@@ -202,7 +208,7 @@ export default function ClientLayout() {
       title: 'Dashboard',
       path: '/client-dashboard',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 9.5L12 3l9 6.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.5z" />
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
@@ -212,7 +218,7 @@ export default function ClientLayout() {
       title: 'Calendrier des concours',
       path: '/client-calendrier',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="5" width="18" height="16" rx="2" />
           <path d="M16 3v4M8 3v4M3 10h18" />
           <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
@@ -224,7 +230,7 @@ export default function ClientLayout() {
       title: 'Réviser erreurs',
       path: '/client-erreurs',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? '#ffffff' : '#2563eb'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? '#ffffff' : '#b9ccf5'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 4h14v16H5z" /><path d="m8 9 2 2 4-4M8 15h8" />
         </svg>
       )
@@ -233,7 +239,7 @@ export default function ClientLayout() {
       title: 'Examens Nationaux',
       path: '/client-examens',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
           <line x1="9" y1="13" x2="15" y2="13" />
@@ -245,7 +251,7 @@ export default function ClientLayout() {
       title: 'Cours Bac',
       path: '/client-cours',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           <line x1="9" y1="7" x2="15" y2="7" />
@@ -257,7 +263,7 @@ export default function ClientLayout() {
       title: 'Résumés',
       path: '/client-resumes',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
           <line x1="16" y1="13" x2="8" y2="13" />
@@ -270,7 +276,7 @@ export default function ClientLayout() {
       title: 'Concours',
       path: '/client-concours',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 6.5c-2.4-2-5.3-2-8-1v13c2.7-1 5.6-1 8 1m0-13c2.4-2 5.3-2 8-1v13c-2.7-1-5.6-1-8 1m0-13v13" />
           <path d="M7.5 9h2m-2 3h2m5-3h2m-2 3h2" />
         </svg>
@@ -280,7 +286,7 @@ export default function ClientLayout() {
       title: 'Concours Blanc',
       path: '/client-concours-blanc',
       renderIcon: (isActive) => (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#2563eb"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#ffffff" : "#b9ccf5"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="5" y="4" width="14" height="17" rx="3" />
           <path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z" />
           <polyline points="9 13 11 15 15 11" />

@@ -10,7 +10,7 @@ const MATIERES_CONFIG = [
     id: 'Mathématiques', 
     nom: 'Mathématiques', 
     color: '#2563eb',
-    btnGradient: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+    btnGradient: 'linear-gradient(135deg, #d2def7 0%, #b9ccf5 100%)',
     badgeBg: '#eff6ff',
     badgeColor: '#2563eb',
     desc: 'Analyse, Algèbre, Limites, Intégrales, Probabilités, Géométrie...',
@@ -18,14 +18,14 @@ const MATIERES_CONFIG = [
       <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Triangle / Règle d'équerre */}
         <path d="M18 78L18 24C18 20.6863 20.6863 18 24 18L78 78H24C20.6863 78 18 75.3137 18 78Z" fill="#93c5fd" opacity="0.6"/>
-        <path d="M22 28V74H68L22 28Z" fill="#3b82f6" opacity="0.2"/>
+        <path d="M22 28V74H68L22 28Z" fill="#b9ccf5" opacity="0.2"/>
         <path d="M30 46L30 70H54L30 46Z" fill="#eff6ff"/>
         {/* Symboles Math Pi, X */}
         <text x="38" y="32" fill="#ffffff" fontSize="16" fontWeight="bold" fontFamily="sans-serif">π</text>
         <text x="56" y="44" fill="#ffffff" fontSize="14" fontWeight="bold" fontFamily="sans-serif">√x</text>
         {/* Calculatrice 3D flottante */}
         <g transform="translate(42, 42)">
-          <rect width="36" height="46" rx="8" fill="#1e40af" stroke="#ffffff" strokeWidth="2.5" />
+          <rect width="36" height="46" rx="8" fill="#b9ccf5" stroke="#ffffff" strokeWidth="2.5" />
           <rect x="5" y="6" width="26" height="10" rx="3" fill="#93c5fd" />
           <circle cx="10" cy="23" r="2.5" fill="#ffffff" />
           <circle cx="18" cy="23" r="2.5" fill="#ffffff" />
@@ -61,7 +61,7 @@ const MATIERES_CONFIG = [
         <g transform="translate(56, 32)">
           <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(30 16 16)" stroke="#ffffff" strokeWidth="2" strokeDasharray="3 1" fill="none" />
           <ellipse cx="16" cy="16" rx="18" ry="7" transform="rotate(-30 16 16)" stroke="#ffffff" strokeWidth="2" fill="none" />
-          <circle cx="16" cy="16" r="5" fill="#facc15" />
+          <circle cx="16" cy="16" r="5" fill="#b9ccf5" />
           <circle cx="30" cy="12" r="2.5" fill="#ffffff" />
           <circle cx="6" cy="24" r="2.5" fill="#ffffff" />
         </g>
@@ -99,33 +99,33 @@ const MATIERES_CONFIG = [
   { 
     id: 'Philosophie', 
     nom: 'Philosophie', 
-    color: '#d97706',
-    btnGradient: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)',
+    color: '#2563eb',
+    btnGradient: 'linear-gradient(135deg, #d2def7 0%, #b9ccf5 100%)',
     badgeBg: '#fffbeb',
-    badgeColor: '#b45309',
+    badgeColor: '#2563eb',
     desc: 'La Condition Humaine, La Connaissance, La Politique, La Morale, Méthodologie...',
     renderIcon: () => (
       <svg width="74" height="74" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Colonne / Pilier grec classique 3D */}
-        <rect x="22" y="24" width="22" height="6" rx="2" fill="#fef3c7" opacity="0.9" />
-        <rect x="25" y="30" width="16" height="42" rx="2" fill="#fde68a" />
-        <line x1="29" y1="32" x2="29" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
-        <line x1="33" y1="32" x2="33" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
-        <line x1="37" y1="32" x2="37" y2="70" stroke="#d97706" strokeWidth="1.5" opacity="0.5" />
-        <rect x="20" y="72" width="26" height="6" rx="2" fill="#fef3c7" />
+        <rect x="22" y="24" width="22" height="6" rx="2" fill="#b9ccf5" opacity="0.9" />
+        <rect x="25" y="30" width="16" height="42" rx="2" fill="#b9ccf5" />
+        <line x1="29" y1="32" x2="29" y2="70" stroke="#b9ccf5" strokeWidth="1.5" opacity="0.5" />
+        <line x1="33" y1="32" x2="33" y2="70" stroke="#b9ccf5" strokeWidth="1.5" opacity="0.5" />
+        <line x1="37" y1="32" x2="37" y2="70" stroke="#b9ccf5" strokeWidth="1.5" opacity="0.5" />
+        <rect x="20" y="72" width="26" height="6" rx="2" fill="#b9ccf5" />
         {/* Parchemin doré & plume */}
         <g transform="translate(44, 28)">
           <path d="M6 10C6 6 10 4 16 4H36C40 4 44 8 44 14V50C44 56 40 58 34 58H14C8 58 6 54 6 48V10Z" fill="#ffffff" opacity="0.95" />
-          <line x1="12" y1="16" x2="36" y2="16" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
-          <line x1="12" y1="26" x2="38" y2="26" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-          <line x1="12" y1="36" x2="32" y2="36" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-          <line x1="12" y1="46" x2="26" y2="46" stroke="#d97706" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-          <path d="M34 2C34 2 46 14 38 32L34 28L30 36L28 32L34 2Z" fill="#f59e0b" stroke="#b45309" strokeWidth="1.2" />
-          <circle cx="28" cy="38" r="2.5" fill="#b45309" />
+          <line x1="12" y1="16" x2="36" y2="16" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+          <line x1="12" y1="26" x2="38" y2="26" stroke="#b9ccf5" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <line x1="12" y1="36" x2="32" y2="36" stroke="#b9ccf5" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <line x1="12" y1="46" x2="26" y2="46" stroke="#b9ccf5" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <path d="M34 2C34 2 46 14 38 32L34 28L30 36L28 32L34 2Z" fill="#b9ccf5" stroke="#b9ccf5" strokeWidth="1.2" />
+          <circle cx="28" cy="38" r="2.5" fill="#b9ccf5" />
         </g>
         {/* Symbole Phi grec Φ */}
-        <circle cx="70" cy="22" r="11" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
-        <line x1="70" y1="8" x2="70" y2="36" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="70" cy="22" r="11" fill="#b9ccf5" stroke="#b9ccf5" strokeWidth="2" />
+        <line x1="70" y1="8" x2="70" y2="36" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
     )
   },
@@ -150,7 +150,7 @@ const MATIERES_CONFIG = [
           <rect width="42" height="30" rx="10" fill="#0284c7" stroke="#ffffff" strokeWidth="2" />
           <path d="M12 30L8 38L20 30H12Z" fill="#0284c7" />
           <text x="21" y="21" fill="#ffffff" fontSize="14" fontWeight="900" fontFamily="sans-serif" textAnchor="middle">EN</text>
-          <circle cx="34" cy="8" r="3" fill="#facc15" />
+          <circle cx="34" cy="8" r="3" fill="#b9ccf5" />
         </g>
         {/* Drapeau badge */}
         <g transform="translate(18, 22)">
@@ -189,13 +189,15 @@ const isMatiereMatch = (itemMatiere, configId) => {
 
 // Helper: Dégradé du conteneur d'illustration selon la couleur de la matière
 const getCardGradient = (color) => {
-  if (color === '#2563eb') return 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)';
+  if (color === '#2563eb') return 'linear-gradient(135deg, #d2def7 0%, #b9ccf5 100%)';
   if (color === '#8b5cf6') return 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)';
   if (color === '#059669') return 'linear-gradient(135deg, #047857 0%, #10b981 100%)';
-  if (color === '#d97706') return 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)';
   if (color === '#0284c7') return 'linear-gradient(135deg, #0369a1 0%, #38bdf8 100%)';
   return 'linear-gradient(135deg, #1e293b 0%, #475569 100%)';
 };
+
+const getMatiereBackground = (color) => color === '#2563eb' ? '#d2def7' : (color || '#d2def7');
+const getMatiereForeground = (color) => color === '#2563eb' || !color ? '#203b5b' : '#ffffff';
 
 export default function ClientResumes({ clientId: propsClientId, mode: propsMode }) {
   const { id, clientId: paramClientId } = useParams();
@@ -495,8 +497,8 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                         key={r.uniqueId || r.id || i}
                         onClick={() => handleOpenResume(r, 'chapitres')}
                         style={{
-                          background: isCurrent ? (selectedMatiere?.color || '#2563eb') : '#ffffff',
-                          color: isCurrent ? '#ffffff' : '#334155',
+                          background: isCurrent ? getMatiereBackground(selectedMatiere?.color) : '#ffffff',
+                          color: isCurrent ? getMatiereForeground(selectedMatiere?.color) : '#334155',
                           border: isCurrent ? 'none' : '1px solid #cbd5e1',
                           borderRadius: '6px',
                           padding: '4px 10px',
@@ -518,8 +520,8 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                   target="_blank"
                   rel="noreferrer"
                   style={{
-                    background: selectedMatiere?.color || '#2563eb',
-                    color: '#ffffff',
+                    background: getMatiereBackground(selectedMatiere?.color),
+                    color: getMatiereForeground(selectedMatiere?.color),
                     padding: '9px 16px',
                     borderRadius: '10px',
                     textDecoration: 'none',
@@ -742,7 +744,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       }}
                       style={{
                         background: mat.btnGradient,
-                        color: '#ffffff',
+                        color: getMatiereForeground(mat.color),
                         border: 'none',
                         padding: '11px 24px',
                         borderRadius: '22px',
@@ -903,14 +905,14 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       <path d="M50 32C42 26 28 26 18 30V74C28 70 42 70 50 76C58 70 72 70 82 74V30C72 26 58 26 50 32Z" fill="#ffffff" opacity="0.95"/>
                       <path d="M50 32V76" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round"/>
                       {/* Lignes de texte du livre */}
-                      <line x1="26" y1="42" x2="42" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="26" y1="50" x2="40" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="26" y1="58" x2="36" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="42" x2="74" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="50" x2="72" y2="50" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                      <line x1="58" y1="58" x2="68" y2="58" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="26" y1="42" x2="42" y2="42" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="26" y1="50" x2="40" y2="50" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="26" y1="58" x2="36" y2="58" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="58" y1="42" x2="74" y2="42" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="58" y1="50" x2="72" y2="50" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+                      <line x1="58" y1="58" x2="68" y2="58" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
                       {/* Marque-page dore */}
-                      <path d="M47 22H53V38L50 35L47 38V22Z" fill="#facc15"/>
+                      <path d="M47 22H53V38L50 35L47 38V22Z" fill="#b9ccf5"/>
                     </svg>
                   </div>
 
@@ -980,7 +982,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       }}
                       style={{
                         background: selectedMatiere.btnGradient,
-                        color: '#ffffff',
+                        color: getMatiereForeground(selectedMatiere.color),
                         border: 'none',
                         padding: '11px 24px',
                         borderRadius: '22px',
@@ -1114,9 +1116,9 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       <rect x="25" y="20" width="50" height="64" rx="8" fill="#ffffff" opacity="0.95"/>
                       <path d="M55 20V36H75" stroke="#93c5fd" strokeWidth="2.5" fill="#e0f2fe" />
                       {/* Lignes de texte */}
-                      <line x1="34" y1="42" x2="66" y2="42" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round"/>
-                      <line x1="34" y1="52" x2="66" y2="52" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round"/>
-                      <line x1="34" y1="62" x2="56" y2="62" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round"/>
+                      <line x1="34" y1="42" x2="66" y2="42" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round"/>
+                      <line x1="34" y1="52" x2="66" y2="52" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round"/>
+                      <line x1="34" y1="62" x2="56" y2="62" stroke="#b9ccf5" strokeWidth="2.5" strokeLinecap="round"/>
                       <circle cx="34" cy="72" r="3" fill="#10b981"/>
                       <line x1="42" y1="72" x2="64" y2="72" stroke="#64748b" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
@@ -1168,7 +1170,7 @@ export default function ClientResumes({ clientId: propsClientId, mode: propsMode
                       }}
                       style={{
                         background: selectedMatiere.btnGradient,
-                        color: '#ffffff',
+                        color: getMatiereForeground(selectedMatiere.color),
                         border: 'none',
                         padding: '11px 24px',
                         borderRadius: '22px',

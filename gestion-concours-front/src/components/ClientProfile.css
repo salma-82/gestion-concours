@@ -171,7 +171,7 @@
 .client-profile__header-rule {
   height: 2px;
   margin: 10px 0 24px;
-  background: linear-gradient(90deg, #2563eb 0, #2563eb 8%, #d5e2ff 8%, #d5e2ff 100%);
+  background: linear-gradient(90deg, #d2def7 0, #d2def7 8%, #d5e2ff 8%, #d5e2ff 100%);
 }
 
 .client-profile__info-grid {
@@ -270,7 +270,7 @@
 }
 
 .client-profile__phone-input:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
@@ -297,8 +297,8 @@
 }
 
 .client-profile__phone-button.is-primary {
-  color: #fff;
-  background: #2563eb;
+  color: #203b5b;
+  background: #d2def7;
 }
 
 .client-profile__phone-button.is-secondary {

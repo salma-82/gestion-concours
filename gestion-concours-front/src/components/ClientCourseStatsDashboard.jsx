@@ -26,7 +26,7 @@ const COLORS = {
   primary: '#2563eb',
   success: '#10b981',
   danger: '#ef4444',
-  warning: '#f59e0b',
+  warning: '#2563eb',
   purple: '#8b5cf6',
   indigo: '#4f46e5',
   cyan: '#06b6d4',
@@ -93,7 +93,7 @@ const getSubjectBadgeStyle = (subject) => {
   if (norm.includes('math')) return { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' };
   if (norm.includes('phys') || norm.includes('chim') || norm === 'pc') return { bg: '#faf5ff', color: '#7c3aed', border: '#e9d5ff' };
   if (norm.includes('svt') || norm.includes('vie')) return { bg: '#ecfdf5', color: '#047857', border: '#a7f3d0' };
-  if (norm.includes('philo')) return { bg: '#fffbeb', color: '#b45309', border: '#fde68a' };
+  if (norm.includes('philo')) return { bg: '#fffbeb', color: '#2563eb', border: '#b9ccf5' };
   if (norm.includes('anglais') || norm.includes('eng')) return { bg: '#e0e7ff', color: '#3730a3', border: '#c7d2fe' };
   return { bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' };
 };
@@ -302,12 +302,9 @@ export default function ClientCourseStatsDashboard({
     const totalProgramChapters = programChapters.length;
     const subjectsStartedCount = new Set(allCourseActivities.filter(a => a.visitsCount > 0).map(a => normalizeCourseValue(a.subject))).size;
     const totalSeconds = allCourseActivities.reduce((sum, a) => sum + a.durationSec, 0);
+    const completedCoursesCount = allCourseActivities.filter((activity) => activity.completed).length;
 
-    // Coverage rate
     const validatedChaptersCount = programChapters.filter(ch => ch.isValidated).length;
-    const coverageRate = totalProgramChapters > 0
-      ? Math.round((validatedChaptersCount / totalProgramChapters) * 100)
-      : 0;
 
     // Last activity
     const lastActivity = allCourseActivities[0] || null;
@@ -319,8 +316,8 @@ export default function ClientCourseStatsDashboard({
       validatedChaptersCount,
       subjectsStartedCount,
       totalSeconds,
+      completedCoursesCount,
       formattedTime: formatSecondsToHoursAndMinutes(totalSeconds),
-      coverageRate,
       lastActivity,
     };
   }, [allCourseActivities, programChapters]);
@@ -547,8 +544,7 @@ export default function ClientCourseStatsDashboard({
           <div className="course-stats-header-top">
             <div>
               <div className="course-title-lockup">
-                <span className="course-title-icon" aria-hidden="true">□</span>
-                <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1><p className="course-stats-subtitle">Ta progression dans les cours</p></div>
+                <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1></div>
               </div>
               <span className="course-stats-eyebrow">DASHBOARD COURS</span>
             </div>
@@ -586,8 +582,7 @@ export default function ClientCourseStatsDashboard({
         </div>
 
         <div className="course-title-lockup">
-          <span className="course-title-icon" aria-hidden="true">□</span>
-          <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1><p className="course-stats-subtitle">Ta progression dans les cours</p></div>
+          <div><h1 className="course-stats-title">Suivi pédagogique du Bac</h1></div>
         </div>
 
         {/* Filters Bar */}
@@ -712,17 +707,17 @@ export default function ClientCourseStatsDashboard({
           <span className="course-kpi-note">Durée mesurée dans le lecteur</span>
         </div>
 
-        {/* Card 5: Taux de couverture */}
+        {/* Card 5: Cours terminés */}
         <div className="course-kpi-card">
           <div className="course-kpi-top">
             <div className="course-kpi-icon green">🎯</div>
             <span className="course-kpi-badge is-up">Global</span>
           </div>
           <div className="course-kpi-main">
-            <span className="course-kpi-value">{kpiStats.coverageRate}%</span>
-            <span className="course-kpi-title">Couverture du Bac</span>
+            <span className="course-kpi-value">{kpiStats.completedCoursesCount}</span>
+            <span className="course-kpi-title">Cours terminés</span>
           </div>
-          <span className="course-kpi-note">Progression globale validée</span>
+          <span className="course-kpi-note">Cours marqués comme terminés</span>
         </div>
 
         {/* Card 6: Dernière activité */}
@@ -760,20 +755,21 @@ export default function ClientCourseStatsDashboard({
             </span>
           </div>
 
-          <div className="course-panel-body" style={{ minHeight: 230 }}>
-            <ResponsiveContainer width="100%" height={230}>
-              <AreaChart data={studyTimeTrendData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+          <div className="course-panel-body" style={{ minHeight: 205 }}>
+            <ResponsiveContainer width="100%" height={205}>
+              <AreaChart data={studyTimeTrendData} margin={{ top: 10, right: 12, left: 4, bottom: 12 }}>
                 <defs>
                   <linearGradient id="courseTimeGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#b9ccf5" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#b9ccf5" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="label" stroke="#94a3b8" fontSize={11.5} tickLine={false} />
+                <XAxis dataKey="label" stroke="#94a3b8" fontSize={10.5} tickLine={false} tickMargin={6} minTickGap={20} />
                 <YAxis
                   stroke="#94a3b8"
-                  fontSize={11.5}
+                  fontSize={10.5}
+                  width={48}
                   tickLine={false}
                   tickFormatter={(v) => `${v}h`}
                 />
@@ -806,7 +802,7 @@ export default function ClientCourseStatsDashboard({
                 <Area
                   type="monotone"
                   dataKey="hours"
-                  stroke="#2563eb"
+                  stroke="#b9ccf5"
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#courseTimeGrad)"
@@ -829,7 +825,7 @@ export default function ClientCourseStatsDashboard({
           <div className="course-panel-body">
             <div className="course-donut-wrapper">
               <div className="course-donut-chart-container">
-                <ResponsiveContainer width={184} height={184}>
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={chaptersDistributionData}
@@ -837,8 +833,8 @@ export default function ClientCourseStatsDashboard({
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      innerRadius={53}
-                      outerRadius={79}
+                      innerRadius="62%"
+                      outerRadius="88%"
                       paddingAngle={3}
                       stroke="none"
                     >
@@ -916,11 +912,11 @@ export default function ClientCourseStatsDashboard({
                       'Taux validé'
                     ]}
                   />
-                  <Bar dataKey="chapterRate" name="Taux validé" fill="#2563eb" radius={[0, 6, 6, 0]} barSize={18}>
+                  <Bar dataKey="chapterRate" name="Taux validé" fill="#b9ccf5" radius={[0, 6, 6, 0]} barSize={18}>
                     {subjectProgressData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.chapterRate >= 70 ? '#10b981' : entry.chapterRate >= 30 ? '#2563eb' : '#94a3b8'}
+                        fill={entry.chapterRate >= 70 ? '#10b981' : entry.chapterRate >= 30 ? '#b9ccf5' : '#94a3b8'}
                       />
                     ))}
                   </Bar>
@@ -957,7 +953,7 @@ export default function ClientCourseStatsDashboard({
                   />
                   <Bar dataKey="hours" fill="#4f46e5" radius={[6, 6, 0, 0]} barSize={34}>
                     {subjectTimeComparisonData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={['#2563eb', '#7c3aed', '#059669', '#d97706', '#0891b2'][index % 5]} />
+                      <Cell key={`cell-${index}`} fill={['#b9ccf5', '#7c3aed', '#059669', '#b9ccf5', '#0891b2'][index % 5]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -1082,7 +1078,7 @@ export default function ClientCourseStatsDashboard({
                   const fillColor = ch.isValidated
                     ? '#10b981'
                     : ch.isStarted
-                    ? '#2563eb'
+                    ? '#b9ccf5'
                     : '#cbd5e1';
 
                   return (

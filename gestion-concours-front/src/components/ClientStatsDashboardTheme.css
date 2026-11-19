@@ -203,6 +203,17 @@
   box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.08), 0 10px 14px -6px rgba(15, 23, 42, 0.04), inset 0 1px 0 #fff;
 }
 
+/* Make the blue and orange KPI cards visible across every statistics dashboard. */
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(3) {
+  background: linear-gradient(145deg, #e6efff 0%, #f3f7ff 100%);
+  border-color: #a9c2f2;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4) {
+  background: linear-gradient(145deg, #fff0dc 0%, #fff8ee 100%);
+  border-color: #ffc978;
+}
+
 :is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi)::after {
   position: absolute;
   z-index: 0;
@@ -520,4 +531,24 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* Match the tighter card spacing used on the client home dashboard. */
+:is(.contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+:is(.contest-grid-row, .mock-exam-grid-row, .course-grid-row, .summary-grid-row, .national-exam-chart-grid) {
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+:is(.contest-insights-grid, .mock-exam-insights-grid, .course-insights-grid, .summary-insights-grid) {
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+:is(.national-exam-hero, .national-exam-filter-panel, .national-exam-section, .national-exam-history) {
+  margin-bottom: 12px !important;
 }

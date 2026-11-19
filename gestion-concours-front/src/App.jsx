@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 // Styles
 import 'katex/dist/katex.min.css';
@@ -10,6 +10,7 @@ import { ThemeProvider } from './theme';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
+import ClientRouteGuard from './components/ClientRouteGuard';
 
 // Admin
 import AdminDashboard from './components/AdminDashboard';
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/inscription" element={<Register />} />
 
 
         {/* =========================
@@ -87,40 +89,43 @@ function AppRoutes() {
         {/* =========================
             CLIENT
         ========================= */}
-        <Route element={<ClientLayout />}>
-          <Route
-            path="/client-dashboard"
-            element={<ClientDashboard />}
-          />
-          <Route path="/client-erreurs" element={<ClientMistakesPage />} />
-          <Route
-            path="/client-calendrier"
-            element={<CompetitionCalendar />}
-          />
-          <Route
-            path="/client-profile"
-            element={<ClientProfile />}
-          />
-          <Route
-            path="/client-cours"
-            element={<ClientCoursPage />}
-          />
-          <Route
-            path="/client-resumes"
-            element={<ClientResumesPage />}
-          />
-          <Route
-            path="/client-examens"
-            element={<ClientExamens />}
-          />
-          <Route
-            path="/client-concours"
-            element={<ClientConcours />}
-          />
-          <Route
-            path="/client-concours-blanc"
-            element={<ClientConcoursBlanc />}
-          />
+        <Route element={<ClientRouteGuard />}>
+          <Route path="/dashboard" element={<Navigate to="/client-dashboard" replace />} />
+          <Route element={<ClientLayout />}>
+            <Route
+              path="/client-dashboard"
+              element={<ClientDashboard />}
+            />
+            <Route path="/client-erreurs" element={<ClientMistakesPage />} />
+            <Route
+              path="/client-calendrier"
+              element={<CompetitionCalendar />}
+            />
+            <Route
+              path="/client-profile"
+              element={<ClientProfile />}
+            />
+            <Route
+              path="/client-cours"
+              element={<ClientCoursPage />}
+            />
+            <Route
+              path="/client-resumes"
+              element={<ClientResumesPage />}
+            />
+            <Route
+              path="/client-examens"
+              element={<ClientExamens />}
+            />
+            <Route
+              path="/client-concours"
+              element={<ClientConcours />}
+            />
+            <Route
+              path="/client-concours-blanc"
+              element={<ClientConcoursBlanc />}
+            />
+          </Route>
         </Route>
 
 

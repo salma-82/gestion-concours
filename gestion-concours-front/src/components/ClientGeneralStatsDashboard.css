@@ -184,20 +184,20 @@
 }
 
 .general-stats-filters select:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), inset 0 1px 0 #ffffff;
 }
 
 .general-stats-alert {
   margin: 0 0 12px;
   padding: 10px 14px;
-  border: 1px solid #fed7aa;
+  border: 1px solid #b9ccf5;
   border-radius: 14px;
   background: linear-gradient(145deg, #fffaf5 0%, #fff7ed 100%);
-  color: #c2410c;
+  color: #2563eb;
   font-size: 11.5px;
   line-height: 1.5;
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06), inset 0 1px 0 #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06), inset 0 1px 0 #ffffff;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -351,14 +351,14 @@
   border-color: rgba(255, 255, 255, 0.95);
 }
 
-/* 4. Épreuves nationales: Mint Teal */
+/* 4. Épreuves nationales: Platform Blue */
 .general-stats-kpi:nth-child(4) {
-  background: linear-gradient(155deg, #f0fdfa 0%, #ffffff 75%);
-  border-color: rgba(153, 246, 228, 0.85);
+  background: linear-gradient(155deg, #eaf0ff 0%, #ffffff 75%);
+  border-color: rgba(185, 204, 245, 0.85);
 }
 .general-stats-kpi:nth-child(4) .general-stats-kpi-icon {
-  background: linear-gradient(145deg, #ccfbf1, #99f6e4);
-  color: #0d9488;
+  background: linear-gradient(145deg, #d2def7, #b9ccf5);
+  color: #2563eb;
   border-color: rgba(255, 255, 255, 0.95);
 }
 
@@ -376,22 +376,22 @@
 /* 6. Résumés: Warm Yellow / Amber */
 .general-stats-kpi:nth-child(6) {
   background: linear-gradient(155deg, #fefce8 0%, #ffffff 75%);
-  border-color: rgba(254, 240, 138, 0.85);
+  border-color: rgba(185, 204, 245, 0.85);
 }
 .general-stats-kpi:nth-child(6) .general-stats-kpi-icon {
-  background: linear-gradient(145deg, #fef9c3, #fef08a);
-  color: #ca8a04;
+  background: linear-gradient(145deg, #d2def7, #d2def7);
+  color: #2563eb;
   border-color: rgba(255, 255, 255, 0.95);
 }
 
-/* 7. Questions sauvegardées: Soft Orange / Coral */
+/* 7. Questions sauvegardées: Soft #2563eb / #2563eb */
 .general-stats-kpi:nth-child(7) {
   background: linear-gradient(155deg, #fff7ed 0%, #ffffff 75%);
-  border-color: rgba(254, 215, 170, 0.85);
+  border-color: rgba(185, 204, 245, 0.85);
 }
 .general-stats-kpi:nth-child(7) .general-stats-kpi-icon {
-  background: linear-gradient(145deg, #ffedd5, #fed7aa);
-  color: #ea580c;
+  background: linear-gradient(145deg, #d2def7, #d2def7);
+  color: #2563eb;
   border-color: rgba(255, 255, 255, 0.95);
 }
 
@@ -522,7 +522,7 @@
 }
 
 .general-stats-legend i.is-blue {
-  background: #2563eb;
+  background: #d2def7;
 }
 
 /* Donut Chart with Raised Center Disc */
@@ -912,7 +912,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
+  background: linear-gradient(90deg, #d2def7, #10b981);
   box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -993,15 +993,15 @@
   gap: 10px;
   margin-top: 16px;
   padding: 13px 15px;
-  border: 1px solid #fde68a;
+  border: 1px solid #b9ccf5;
   border-radius: 14px;
-  background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 100%);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: linear-gradient(145deg, #fffbeb 0%, #d2def7 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .general-stats-recommendation p {
   margin: 0;
-  color: #92400e;
+  color: #2563eb;
   font-size: 10.5px;
   line-height: 1.55;
   font-weight: 550;
@@ -1542,9 +1542,9 @@
 }
 
 .general-stats-period button.is-active {
-  border-color: #102e52;
-  background: #102e52;
-  color: #fff;
+  border-color: #b9ccf5;
+  background: #d2def7;
+  color: #14213d;
   box-shadow: none;
 }
 
@@ -1627,21 +1627,22 @@
 }
 
 .general-stats-kpi:nth-child(1) {
-  background: #102e52;
+  background: #d2def7;
 }
 .general-stats-kpi:nth-child(1) .general-stats-kpi-label,
 .general-stats-kpi:nth-child(1) > strong {
-  color: #fff;
+  color: #172e49;
 }
-.general-stats-kpi:nth-child(2) { background: #b9cdf5; }
-.general-stats-kpi:nth-child(3) { background: #f6d66d; }
-.general-stats-kpi:nth-child(4) { background: #f3a14b; }
-.general-stats-kpi:nth-child(5) { background: #e7c9f2; }
-.general-stats-kpi:nth-child(6) { background: #bfe8dc; }
-.general-stats-kpi:nth-child(7) { background: #c8e1c1; }
-.general-stats-kpi:nth-child(8) {
-  border: 1px solid #e2e2e2;
-  background: #fbfbfb;
+.general-stats-kpi:nth-child(2) { background: #eaf0ff; }
+.general-stats-kpi:nth-child(3) { background: #d2def7; }
+.general-stats-kpi:nth-child(3) .general-stats-kpi-label,
+.general-stats-kpi:nth-child(3) > strong { color: #14213d; }
+.general-stats-kpi:nth-child(4) { background: #f6f8fc; }
+.general-stats-kpi:nth-child(5) { background: #eaf0ff; }
+.general-stats-kpi:nth-child(6) { background: #e7f8ef; }
+.general-stats-kpi:nth-child(7) {
+  border: 1px solid #e4eaf4;
+  background: #f6f8fc;
 }
 
 .general-stats-chart-grid,
@@ -1712,7 +1713,25 @@
 }
 
 .general-stats-distribution-panel .general-stats-donut-wrap {
-  width: min(128px, 100%);
+  width: min(170px, 100%);
+}
+
+@media (min-width: 821px) {
+  .general-stats-distribution-panel {
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: stretch;
+    align-items: stretch;
+  }
+
+  .general-stats-distribution-panel .general-stats-donut-wrap {
+    align-self: center;
+    justify-self: center;
+  }
+
+  .general-stats-distribution-panel .general-stats-distribution-list {
+    height: 100%;
+    align-content: space-evenly;
+  }
 }
 
 .general-stats-donut-center {
@@ -1740,8 +1759,8 @@
 }
 
 .general-stats-performance-panel {
-  border-color: #102e52;
-  background: #102e52;
+  border-color: #e4eaf4;
+  background: #eaf0ff;
 }
 
 .general-stats-performance-panel .general-stats-panel-heading h2,
@@ -1777,12 +1796,12 @@
   padding: 4px 7px;
   border: 0;
   border-radius: 999px;
-  background: #f5d66f;
+  background: #d2def7;
   box-shadow: none;
 }
 
 .general-stats-performance-metrics > div:nth-child(2) { background: #bfe8dc; }
-.general-stats-performance-metrics > div:nth-child(3) { background: #f3a14b; }
+.general-stats-performance-metrics > div:nth-child(3) { background: #d2def7; }
 
 .general-stats-performance-metrics strong {
   color: #17304e;
@@ -1821,7 +1840,7 @@
 }
 
 .general-stats-subject-highlights p:nth-child(2) {
-  background: #e7c9f2;
+  background: #e7f8ef;
 }
 
 .general-stats-subject-highlights span {
@@ -1850,7 +1869,7 @@
   padding: 9px;
   border: 0;
   border-radius: 12px;
-  background: #fbf0dc;
+  background: #d2def7;
   box-shadow: none;
 }
 

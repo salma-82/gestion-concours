@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { normalizeActivityCategory } from '../studentDashboardStats';
 import { readStudentMistakes, readStudentPlanning } from '../studentProgress';
+import { getDailyPlatformTimeStorageKey, readDailyPlatformTimeSeconds } from '../dailyPlatformTime';
 import './ClientGeneralStatsDashboard.css';
 
 const CATEGORY = {
@@ -37,7 +38,7 @@ const CATEGORY_COLORS = {
   Concours: '#2563eb',
   'Examen national': '#0ea5a4',
   Cours: '#16a477',
-  Résumé: '#e69a25'
+  Résumé: '#2563eb'
 };
 const PERIODS = [
   { value: '7', label: '7 jours' },
@@ -74,8 +75,10 @@ function EmptyChart({ children = 'Les données apparaîtront après vos premièr
 }
 
 function formatDuration(seconds) {
-  if (!seconds) return '0 min';
-  const totalMinutes = Math.floor(seconds / 60);
+  const totalSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+  if (!totalSeconds) return '0 min';
+  if (totalSeconds < 60) return `${totalSeconds} s`;
+  const totalMinutes = Math.floor(totalSeconds / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return hours ? `${hours} h ${minutes ? `${minutes} min` : ''}`.trim() : `${totalMinutes} min`;
@@ -98,13 +101,28 @@ export default function ClientGeneralStatsDashboard({
   firstName = 'Étudiant',
   onNavigate = () => {}
 }) {
-  const [period, setPeriod] = useState('30');
+  const [period, setPeriod] = useState('all');
   const [type, setType] = useState('all');
   const [subject, setSubject] = useState('');
   const [year, setYear] = useState('all');
   const [mistakes, setMistakes] = useState(() => readStudentMistakes());
   const [mistakeLoading, setMistakeLoading] = useState(true);
   const [planning, setPlanning] = useState(() => readStudentPlanning());
+  const [dailyPlatformSeconds, setDailyPlatformSeconds] = useState(() => readDailyPlatformTimeSeconds());
+
+  useEffect(() => {
+    const refreshDailyTime = () => setDailyPlatformSeconds(readDailyPlatformTimeSeconds());
+    const handleStorage = (event) => {
+      if (!event.key || event.key === getDailyPlatformTimeStorageKey() || event.key === 'user') refreshDailyTime();
+    };
+    window.addEventListener('daily-platform-time-updated', refreshDailyTime);
+    window.addEventListener('storage', handleStorage);
+    refreshDailyTime();
+    return () => {
+      window.removeEventListener('daily-platform-time-updated', refreshDailyTime);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -216,6 +234,12 @@ export default function ClientGeneralStatsDashboard({
   const allScopedAttempts = [...scopedMockAttempts, ...scopedConcoursAttempts];
   const scopedViews = scopedEvents.filter((event) => event.eventType === 'VIEW');
   const uniqueResourcesByType = (category) => new Set(scopedViews.filter((event) => eventCategory(event) === category).map(resourceKey)).size;
+  const completedResourcesByType = (category) => new Set(activities
+    .filter((activity) => activity.completed
+      && eventCategory(activity) === category
+      && inGlobalScope(activity, activity.completedAt || activity.lastViewedAt, category))
+    .map((activity) => String(activity.id || `${category}:${activity.resourceId || activity.title || ''}`)))
+    .size;
   const sessions = scopedViews.length;
 
   const filteredMistakes = mistakes.filter((mistake) => {
@@ -232,8 +256,6 @@ export default function ClientGeneralStatsDashboard({
     return periodDays === null || (timestamp !== null && timestamp >= currentStart && timestamp <= now);
   });
 
-  const currentDurations = scopedEvents.filter((event) => event.eventType === 'DURATION')
-    .reduce((sum, event) => sum + Math.max(0, Number(event.durationSeconds) || 0), 0);
   const scoreRecords = allScopedAttempts.map((attempt) => ({ attempt, score: attemptScore(attempt) })).filter(({ score }) => score !== null);
   const average = scoreRecords.length ? Math.round(scoreRecords.reduce((sum, item) => sum + item.score, 0) / scoreRecords.length) : null;
   const correctAnswers = allScopedAttempts.reduce((sum, attempt) => sum + Math.max(0, Number(attempt.correctAnswers) || 0), 0);
@@ -257,19 +279,21 @@ export default function ClientGeneralStatsDashboard({
     return periodDays !== null && timestamp !== null && timestamp >= previousStart && timestamp < currentStart
       && (year === 'all' || String(new Date(timestamp).getFullYear()) === year);
   });
-  const previousDuration = previousEvents.filter((event) => event.eventType === 'DURATION')
-    .reduce((sum, event) => sum + Math.max(0, Number(event.durationSeconds) || 0), 0);
   const previousResourceCount = (category) => new Set(previousEvents.filter((event) => event.eventType === 'VIEW' && eventCategory(event) === category).map(resourceKey)).size;
+  const previousCompletedResourceCount = (category) => periodDays === null
+    ? completedResourcesByType(category)
+    : new Set(previousEvents
+      .filter((event) => event.eventType === 'COMPLETE' && eventCategory(event) === category)
+      .map(resourceKey)).size;
 
   const kpis = [
     { label: 'Sessions d’apprentissage', value: activityLoading ? '…' : activityError ? '—' : sessions, icon: '↗', color: '#2563eb', detail: 'Consultations enregistrées', previous: previousEvents.filter((event) => event.eventType === 'VIEW').length, unavailable: activityLoading || activityError },
-    { label: 'Concours des écoles', value: schoolLoading ? '…' : schoolError ? '—' : scopedConcoursAttempts.length, icon: '⚑', color: '#3478de', detail: 'Tentatives terminées', previous: previousConcoursAttempts.length, unavailable: schoolLoading || schoolError },
-    { label: 'Résumés consultés', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.summary), icon: '▧', color: '#d48a1d', detail: 'Fiches distinctes', previous: previousResourceCount(CATEGORY.summary), unavailable: activityLoading || activityError },
-    { label: 'Questions sauvegardées', value: mistakeLoading ? '…' : filteredMistakes.length, icon: '!', color: '#e17737', detail: 'Dans vos erreurs enregistrées', previous: previousMistakes.length, unavailable: mistakeLoading },
-    { label: 'Concours blancs', value: schoolLoading ? '…' : schoolError ? '—' : scopedMockAttempts.length, icon: '◉', color: '#7357e8', detail: 'Tentatives terminées', previous: previousMockAttempts.length, unavailable: schoolLoading || schoolError },
+    { label: 'Questions sauvegardées', value: mistakeLoading ? '…' : filteredMistakes.length, icon: '!', color: '#2563eb', detail: 'Dans vos erreurs enregistrées', previous: previousMistakes.length, unavailable: mistakeLoading },
+    { label: 'Concours blancs terminés', value: schoolLoading ? '…' : schoolError ? '—' : scopedMockAttempts.length, icon: '◉', color: '#7357e8', detail: 'Tentatives enregistrées', previous: previousMockAttempts.length, unavailable: schoolLoading || schoolError },
     { label: 'Épreuves nationales', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.exam), icon: '▤', color: '#0e9a98', detail: 'Aucune tentative notée enregistrée', previous: previousResourceCount(CATEGORY.exam), unavailable: activityLoading || activityError },
-    { label: 'Cours consultés', value: activityLoading ? '…' : activityError ? '—' : uniqueResourcesByType(CATEGORY.course), icon: '▣', color: '#15956d', detail: 'Cours distincts', previous: previousResourceCount(CATEGORY.course), unavailable: activityLoading || activityError },
-    { label: 'Temps sur la plateforme', value: activityLoading ? '…' : activityError ? '—' : formatDuration(currentDurations), icon: '◷', color: '#5265c9', detail: 'Durées de session enregistrées', previous: formatDuration(previousDuration), duration: true, unavailable: activityLoading || activityError }
+    { label: 'Cours terminés', value: activityLoading ? '…' : activityError ? '—' : completedResourcesByType(CATEGORY.course), icon: '✓', color: '#15956d', detail: 'Cours marqués comme terminés', previous: previousCompletedResourceCount(CATEGORY.course), unavailable: activityLoading || activityError },
+    { label: 'Temps sur la plateforme', value: formatDuration(dailyPlatformSeconds), icon: '◷', color: '#5265c9', detail: 'Temps comptabilisé aujourd’hui', dailyDuration: true },
+    { label: 'Résumés terminés', value: activityLoading ? '…' : activityError ? '—' : completedResourcesByType(CATEGORY.summary), icon: '✓', color: '#2563eb', detail: 'Résumés marqués comme terminés', previous: previousCompletedResourceCount(CATEGORY.summary), unavailable: activityLoading || activityError }
   ];
 
   const scoreTrend = scoreRecords.sort((a, b) => dateMs(a.attempt.answeredAt) - dateMs(b.attempt.answeredAt)).map(({ attempt, score }, index) => ({
@@ -365,7 +389,6 @@ export default function ClientGeneralStatsDashboard({
       <header className="general-stats-header">
         <div>
           <h1>Bonjour {firstName}</h1>
-          <span className="general-stats-eyebrow">Vue globale de ta progression</span>
         </div>
         <button type="button" className="general-stats-calendar" onClick={() => onNavigate('/client-calendrier')}>
           <span aria-hidden="true">▦</span> Mon calendrier
@@ -400,8 +423,8 @@ export default function ClientGeneralStatsDashboard({
             <span className="general-stats-kpi-label">{item.label}</span>
             <strong>{item.value}</strong>
             <small>{item.detail}</small>
-            {item.unavailable ? <small className="general-stats-comparison">Données indisponibles</small> : item.duration
-              ? <small className="general-stats-comparison">{period === 'all' ? 'Comparaison indisponible sur toute la période' : `${previousDuration ? formatDuration(previousDuration) : '0 min'} sur la période précédente`}</small>
+            {item.unavailable ? <small className="general-stats-comparison">Données indisponibles</small> : item.dailyDuration
+              ? <small className="general-stats-comparison">Compteur remis à zéro chaque jour</small>
               : <span className="general-stats-comparison">{period === 'all' ? 'Comparaison indisponible sur toute la période' : <Comparison current={Number(item.value) || 0} previous={item.previous} />}</span>}
           </article>
         ))}
@@ -413,10 +436,10 @@ export default function ClientGeneralStatsDashboard({
           {schoolLoading ? <EmptyChart>Chargement des résultats enregistrés…</EmptyChart>
             : schoolError ? <EmptyChart>Résultats indisponibles pour le moment.</EmptyChart>
               : scoreTrend.length ? <div className="general-stats-chart general-stats-main-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={scoreTrend} margin={{ top: 12, right: 12, bottom: 4, left: 10 }}>
-                <defs><linearGradient id="generalMockFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7357e8" stopOpacity={0.18} /><stop offset="100%" stopColor="#7357e8" stopOpacity={0} /></linearGradient><linearGradient id="generalContestFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2563eb" stopOpacity={0.18} /><stop offset="100%" stopColor="#2563eb" stopOpacity={0} /></linearGradient></defs>
+                <defs><linearGradient id="generalMockFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7357e8" stopOpacity={0.18} /><stop offset="100%" stopColor="#7357e8" stopOpacity={0} /></linearGradient><linearGradient id="generalContestFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#b9ccf5" stopOpacity={0.18} /><stop offset="100%" stopColor="#b9ccf5" stopOpacity={0} /></linearGradient></defs>
                 <CartesianGrid stroke="#e9eef6" strokeDasharray="4 4" vertical={false} /><XAxis dataKey="shortDate" tick={{ fill: '#8190a5', fontSize: 11 }} minTickGap={24} /><YAxis domain={[0, 100]} tick={{ fill: '#8190a5', fontSize: 11 }} tickFormatter={(value) => `${value}%`} width={54} tickMargin={8} /><Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? `${payload[0].payload.exam} · ${payload[0].payload.date}` : ''} formatter={(value, name) => [`${value}%`, name]} />
                 <Area type="monotone" dataKey={(row) => row.kind === 'Concours blanc' ? row.score : null} name="Concours blancs" stroke="#7357e8" strokeWidth={2.5} fill="url(#generalMockFill)" connectNulls activeDot={{ r: 5 }} />
-                <Area type="monotone" dataKey={(row) => row.kind === 'Concours des écoles' ? row.score : null} name="Concours des écoles" stroke="#2563eb" strokeWidth={2.5} fill="url(#generalContestFill)" connectNulls activeDot={{ r: 5 }} />
+                <Area type="monotone" dataKey={(row) => row.kind === 'Concours des écoles' ? row.score : null} name="Concours des écoles" stroke="#b9ccf5" strokeWidth={2.5} fill="url(#generalContestFill)" connectNulls activeDot={{ r: 5 }} />
               </AreaChart></ResponsiveContainer></div> : <EmptyChart>Aucune note de concours ou de concours blanc n’est enregistrée sur cette période.</EmptyChart>}
           <div className="general-stats-legend"><span><i className="is-violet" />Concours blancs</span><span><i className="is-blue" />Concours des écoles</span></div>
         </article>
@@ -445,7 +468,7 @@ export default function ClientGeneralStatsDashboard({
         <article className="general-stats-panel general-stats-subject-panel">
           <div className="general-stats-panel-heading"><div><span className="general-stats-eyebrow">BASÉ SUR LES NOTES</span><h2>Performance par matière</h2></div></div>
           {schoolLoading ? <EmptyChart>Chargement des performances…</EmptyChart> : schoolError ? <EmptyChart>Les performances ne sont pas disponibles.</EmptyChart> : subjectPerformance.length ? <>
-            <div className="general-stats-chart general-stats-subject-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={subjectPerformance} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 4 }}><CartesianGrid stroke="#edf1f6" horizontal={false} /><XAxis type="number" domain={[0, 100]} tickFormatter={(value) => `${value}%`} tick={{ fill: '#8b98aa', fontSize: 10 }} /><YAxis type="category" dataKey="subject" width={100} tick={{ fill: '#5d6d83', fontSize: 11 }} /><Tooltip formatter={(value, _name, item) => [`${value}% · ${item.payload.attempts} tentative(s)`, 'Moyenne']} /><Bar dataKey="average" radius={[0, 6, 6, 0]} barSize={17}>{subjectPerformance.map((item, index) => <Cell key={item.subject} fill={index === 0 ? '#16a477' : index === subjectPerformance.length - 1 ? '#f08b5c' : '#4c84e8'} />)}</Bar></BarChart></ResponsiveContainer></div>
+            <div className="general-stats-chart general-stats-subject-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={subjectPerformance} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 4 }}><CartesianGrid stroke="#edf1f6" horizontal={false} /><XAxis type="number" domain={[0, 100]} tickFormatter={(value) => `${value}%`} tick={{ fill: '#8b98aa', fontSize: 10 }} /><YAxis type="category" dataKey="subject" width={100} tick={{ fill: '#5d6d83', fontSize: 11 }} /><Tooltip formatter={(value, _name, item) => [`${value}% · ${item.payload.attempts} tentative(s)`, 'Moyenne']} /><Bar dataKey="average" radius={[0, 6, 6, 0]} barSize={17}>{subjectPerformance.map((item, index) => <Cell key={item.subject} fill={index === 0 ? '#16a477' : index === subjectPerformance.length - 1 ? '#b9ccf5' : '#4c84e8'} />)}</Bar></BarChart></ResponsiveContainer></div>
             <div className="general-stats-subject-highlights"><p><span>Point fort</span><strong>{strongestSubject.subject} · {strongestSubject.average}%</strong></p><p><span>À renforcer</span><strong>{weakestSubject.subject} · {weakestSubject.average}%</strong></p></div>
           </> : <EmptyChart>Les performances par matière apparaîtront après une évaluation notée. Les consultations de cours et de résumés ne sont pas utilisées comme notes.</EmptyChart>}
         </article>
@@ -455,7 +478,7 @@ export default function ClientGeneralStatsDashboard({
         <article className="general-stats-panel general-stats-recent-panel">
           <div className="general-stats-panel-heading"><div><span className="general-stats-eyebrow">DERNIÈRES ACTIVITÉS</span><h2>Votre historique récent</h2></div><button type="button" onClick={() => onNavigate('/client-erreurs?view=saved')}>Questions à revoir <span aria-hidden="true">→</span></button></div>
           {recentItems.length ? <div className="general-stats-recent-list">{recentItems.map((item) => <button type="button" className="general-stats-recent-item" key={item.key} onClick={() => item.path && onNavigate(item.path)}>
-            <span className="general-stats-recent-mark" style={{ '--activity-color': CATEGORY_COLORS[item.type] || '#e17737' }}>{item.type === 'Question sauvegardée' ? '!' : item.type.slice(0, 1)}</span><span className="general-stats-recent-copy"><strong>{item.title}</strong><small>{[item.type, item.meta].filter(Boolean).join(' · ')}</small></span><time>{dateLabel(item.date)}</time><b aria-hidden="true">→</b>
+            <span className="general-stats-recent-mark" style={{ '--activity-color': CATEGORY_COLORS[item.type] || '#2563eb' }}>{item.type === 'Question sauvegardée' ? '!' : item.type.slice(0, 1)}</span><span className="general-stats-recent-copy"><strong>{item.title}</strong><small>{[item.type, item.meta].filter(Boolean).join(' · ')}</small></span><time>{dateLabel(item.date)}</time><b aria-hidden="true">→</b>
           </button>)}</div> : <EmptyChart>Les activités récentes s’afficheront ici après leur enregistrement.</EmptyChart>}
         </article>
 

@@ -50,10 +50,8 @@ class StudentQcmHistoryControllerTest {
         concoursBlanc = new ConcoursBlanc();
         concoursBlanc.setId(9L);
         concoursBlanc.setTitre("Concours blanc national");
-        concoursBlanc.setEcole("ENSA");
         concoursBlanc.setMatiere("Mathématiques");
         concoursBlanc.setChapitre("Suites");
-        concoursBlanc.setAnnee(2025);
         concoursBlanc.setPublie(true);
     }
 
@@ -85,10 +83,10 @@ class StudentQcmHistoryControllerTest {
         assertEquals("Concours blanc", saved.getResourceType());
         assertEquals("9", saved.getResourceId());
         assertEquals("Concours blanc national", saved.getResourceTitle());
-        assertEquals("ENSA", saved.getSchool());
+        assertNull(saved.getSchool());
         assertEquals("Mathématiques", saved.getSubject());
         assertEquals("Suites", saved.getChapter());
-        assertEquals(2025, saved.getYear());
+        assertNull(saved.getYear());
         assertEquals("q-1", saved.getQuestionKey());
         assertEquals("B", saved.getSelectedChoiceLabel());
         assertEquals("A", saved.getCorrectChoiceLabel());

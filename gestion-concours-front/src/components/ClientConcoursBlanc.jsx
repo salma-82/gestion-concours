@@ -10,6 +10,7 @@ import { toBackendResourceUrl } from '../backendResourceUrl';
 import TrackedQcmFrame from './TrackedQcmFrame';
 import cardMascot from '../assets/logo-mascot.png';
 import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
+import './ClientCatalogCards.css';
 
 const API = '';
 
@@ -24,7 +25,7 @@ const SECTIONS_CONFIG = [
     filterLabel: 'Mathématiques',
     tag: 'MATH',
     color: '#2563eb',
-    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+    gradient: 'linear-gradient(135deg, #d2def7 0%, #b9ccf5 100%)',
     formulas: '∑ f(x) ≡ ∫dx'
   },
   {
@@ -210,7 +211,7 @@ export default function ClientConcoursBlanc() {
         statusClass: 'status-completed',
         pct: 100,
         pctLabel: '100%',
-        btnLabel: '✓ Terminé',
+        btnLabel: 'Revoir',
         btnClass: 'btn-completed',
         isCompleted: true
       };
@@ -442,8 +443,8 @@ export default function ClientConcoursBlanc() {
             <button
               onClick={() => navigate('/client-concours-blanc')}
               style={{
-                background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
-                color: '#ffffff',
+                background: 'linear-gradient(90deg, #d2def7 0%, #d2def7 100%)',
+                color: '#203b5b',
                 border: 'none',
                 padding: '9px 20px',
                 borderRadius: '9999px',
@@ -496,10 +497,10 @@ export default function ClientConcoursBlanc() {
                 </div>
 
                 {/* Grille responsive des cartes (max ~490px) */}
-                <div style={{
+                <div className="client-concours-blanc-cards-grid client-catalog-grid" style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 394px))',
-                  gap: '20px'
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 394px))',
+                  gap: '14px'
                 }}>
                   {list.map((c) => {
                     const cardStatus = getCardStatus(c);
@@ -509,66 +510,52 @@ export default function ClientConcoursBlanc() {
                     return (
                       <article
                         key={c.id}
-                        className={demoContentClass(c)}
+                        className={`client-catalog-card client-catalog-theme-${sec.id.toLowerCase()} ${demoContentClass(c)}`}
                         style={{
                           position: 'relative',
                           boxSizing: 'border-box',
-                          height: '284px',
-                          backgroundColor: 'var(--surface, #ffffff)',
-                          border: '1.5px solid var(--border, #e2e8f0)',
-                          borderRadius: '24px',
+                          height: '310px',
+                          background: 'var(--surface, #ffffff)',
+                          border: '1px solid var(--border, #e2e8f0)',
+                          borderRadius: '26px',
                           overflow: 'hidden',
                           display: 'flex',
                           flexDirection: 'column',
-                          boxShadow: '0 3px 10px rgba(0,0,0,0.04)',
-                          transition: 'transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s, border-color 0.22s'
+                          boxShadow: '0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+                          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px)';
-                          e.currentTarget.style.boxShadow = '0 10px 22px rgba(0,0,0,0.08)';
-                          e.currentTarget.style.borderColor = '#93c5fd';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 12px 30px -4px rgba(24, 101, 242, 0.16)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.04)';
-                          e.currentTarget.style.borderColor = 'var(--border, #e2e8f0)';
+                          e.currentTarget.style.boxShadow = '0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)';
                         }}
                       >
                         <DemoAccessBadge item={c} />
                         {/* Couverture avec dégradé de la matière */}
-                        <div style={{
-                          height: '110px',
-                          flex: '0 0 110px',
-                          background: sec.gradient,
+                        <div className={`client-concours-blanc-banner client-catalog-card-cover ${sec.id === 'MATH' ? 'is-light-blue' : ''}`} style={{
+                          height: '145px',
+                          flex: '0 0 145px',
+                          background: 'var(--catalog-blue, #125BC9)',
                           position: 'relative',
                           overflow: 'hidden',
                           display: 'flex',
                           flexDirection: 'column',
                           justifyContent: 'space-between',
-                          padding: '12px 16px',
+                          padding: '14px 20px',
                           boxSizing: 'border-box',
                           userSelect: 'none'
                         }}>
-                          {/* Texte formule en haut à gauche */}
-                          <div style={{
-                            fontSize: '14.5px',
-                            fontWeight: 750,
-                            letterSpacing: '1.2px',
-                            color: 'rgba(255, 255, 255, 0.88)',
-                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-                            position: 'relative',
-                            zIndex: 2,
-                            maxWidth: '50%',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
-                            {sec.formulas}
-                          </div>
+                          <span className="client-catalog-subject-pill">
+                            Concours blanc
+                          </span>
+                          <span className="client-concours-blanc-subject-code">{sec.tag}</span>
 
-                          {/* Nom de la matière en bas à gauche en gros, blanc, gras */}
-                          <div style={{ position: 'relative', zIndex: 1, marginTop: '6px', maxWidth: '48%', pointerEvents: 'none' }}>
-                            <h3 style={{
+                          {/* Titre de l'épreuve en grand, comme l'année sur les cartes Concours */}
+                          <div className="client-catalog-title-wrap" style={{ position: 'relative', zIndex: 1, marginTop: '6px', maxWidth: '48%', pointerEvents: 'none' }}>
+                            <h3 className="client-catalog-banner-title" style={{
                               margin: 0,
                               fontSize: 'clamp(20px, 2vw, 28px)',
                               fontWeight: 900,
@@ -581,12 +568,12 @@ export default function ClientConcoursBlanc() {
                               overflow: 'hidden',
                               textOverflow: 'ellipsis'
                             }}>
-                              {sec.tag}
+                              {c.titre}
                             </h3>
                           </div>
 
                           {/* Mascotte officielle (identique à la page Cours) */}
-                          <div style={{
+                          <div className="client-catalog-mascot" style={{
                             position: 'absolute',
                             right: '-6px',
                             bottom: '-8px',
@@ -611,7 +598,7 @@ export default function ClientConcoursBlanc() {
                         </div>
 
                         {/* Corps de la carte */}
-                        <div style={{
+                        <div className="client-catalog-card-body" style={{
                           boxSizing: 'border-box',
                           minHeight: 0,
                           padding: '10px 14px 12px',
@@ -620,7 +607,7 @@ export default function ClientConcoursBlanc() {
                           flex: 1
                         }}>
                           {/* Titre du concours blanc */}
-                          <h4
+                          <h4 className="client-catalog-card-title"
                             title={c.titre}
                             style={{
                               margin: '0 0 8px 0',
@@ -637,7 +624,7 @@ export default function ClientConcoursBlanc() {
                           </h4>
 
                           {/* Ligne d'infos : nombre de questions et durée */}
-                          <div style={{
+                          <div className="client-catalog-meta-row" style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -652,22 +639,22 @@ export default function ClientConcoursBlanc() {
 
                           {/* Progression et statut si existant */}
                           {cardStatus.isCompleted && (
-                            <div style={{ marginBottom: '12px' }}>
-                              <div style={{
+                            <div className="client-catalog-progress">
+                              <div className="client-catalog-progress-track" style={{
                                 height: '5px',
                                 backgroundColor: '#d1fae5',
                                 borderRadius: '9999px',
                                 overflow: 'hidden',
                                 marginBottom: '6px'
                               }}>
-                                <div style={{
+                                <div className="client-catalog-progress-fill fill-completed" style={{
                                   height: '100%',
                                   width: '100%',
                                   backgroundColor: '#10b981',
                                   borderRadius: '9999px'
                                 }} />
                               </div>
-                              <div style={{
+                              <div className="client-catalog-progress-row client-catalog-status status-completed" style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 fontSize: '11.5px',
@@ -680,9 +667,25 @@ export default function ClientConcoursBlanc() {
                             </div>
                           )}
 
+                          {!cardStatus.isCompleted && (
+                            <div className="client-catalog-progress">
+                              <div className="client-catalog-progress-track">
+                                <div
+                                  className="client-catalog-progress-fill status-new"
+                                  style={{ width: `${cardStatus.pct}%` }}
+                                />
+                              </div>
+                              <div className="client-catalog-progress-row client-catalog-status status-new">
+                                <span>Pas commencé</span>
+                                <span>{cardStatus.pctLabel}</span>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Bouton pilule pleine largeur Commencer / Continuer / Terminé */}
                           <button
                             type="button"
+                            className={`client-catalog-action ${cardStatus.statusClass}`}
                             onClick={guardDemoContent(c, () => handleOpenQcm(c))}
                             style={{
                               marginTop: 'auto',
@@ -693,27 +696,19 @@ export default function ClientConcoursBlanc() {
                               fontFamily: 'inherit',
                               fontSize: '14px',
                               fontWeight: 800,
-                              color: '#ffffff',
-                              background: cardStatus.isCompleted
-                                ? '#10b981'
-                                : 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+                              color: '#203b5b',
+                              background: '#d2def7',
                               cursor: 'pointer',
-                              boxShadow: cardStatus.isCompleted
-                                ? '0 4px 12px rgba(16, 185, 129, 0.28)'
-                                : '0 4px 14px rgba(24, 101, 242, 0.28)',
+                              boxShadow: '0 4px 14px rgba(24, 101, 242, 0.2)',
                               transition: 'transform 0.15s ease, box-shadow 0.15s ease'
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.transform = 'translateY(-1px)';
-                              e.currentTarget.style.boxShadow = cardStatus.isCompleted
-                                ? '0 6px 16px rgba(16, 185, 129, 0.38)'
-                                : '0 6px 18px rgba(24, 101, 242, 0.38)';
+                              e.currentTarget.style.boxShadow = '0 6px 18px rgba(24, 101, 242, 0.3)';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = cardStatus.isCompleted
-                                ? '0 4px 12px rgba(16, 185, 129, 0.28)'
-                                : '0 4px 14px rgba(24, 101, 242, 0.28)';
+                              e.currentTarget.style.boxShadow = '0 4px 14px rgba(24, 101, 242, 0.2)';
                             }}
                           >
                             {cardStatus.btnLabel}

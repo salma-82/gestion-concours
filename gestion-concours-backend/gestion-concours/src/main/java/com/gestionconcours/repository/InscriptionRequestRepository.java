@@ -4,4 +4,5 @@ import com.gestionconcours.model.InscriptionRequest; // Ila knti dayro f model, 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface InscriptionRequestRepository extends JpaRepository<InscriptionRequest, Long> {
+    boolean existsByEmailIgnoreCase(String email);
 }

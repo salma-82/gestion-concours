@@ -54,7 +54,7 @@
 .contest-kpi-card:nth-child(4)::after,
 .mock-exam-kpi-card:nth-child(4)::after,
 .course-kpi-card:nth-child(4)::after,
-.summary-kpi-card:nth-child(3)::after { background: rgba(245, 158, 11, 0.06); }
+.summary-kpi-card:nth-child(3)::after { background: rgba(210, 222, 247, 0.06); }
 .contest-kpi-card:nth-child(5)::after,
 .mock-exam-kpi-card:nth-child(5)::after,
 .course-kpi-card:nth-child(5)::after,
@@ -63,6 +63,14 @@
 .mock-exam-kpi-card:nth-child(6)::after,
 .course-kpi-card:nth-child(6)::after,
 .summary-kpi-card:nth-child(6)::after { background: rgba(244, 63, 94, 0.055); }
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(3)::after {
+  background: rgba(36, 86, 181, 0.16);
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4)::after {
+  background: rgba(255, 138, 0, 0.16);
+}
 
 .general-stats-kpi-icon,
 .contest-kpi-icon,
@@ -128,17 +136,6 @@
   line-height: 1.05;
 }
 
-.course-kpi-card:nth-child(6) .course-kpi-value,
-.summary-kpi-card:nth-child(5) .summary-kpi-value {
-  font-size: 17px !important;
-  letter-spacing: -0.03em;
-}
-
-.general-stats-kpi:last-child > strong {
-  font-size: clamp(20px, 1.8vw, 25px) !important;
-  white-space: nowrap;
-}
-
 .general-stats-kpi > small,
 .general-stats-kpi .general-stats-comparison,
 .contest-kpi-note,
@@ -199,8 +196,6 @@
   .course-kpi-value,
   .summary-kpi-value { font-size: 24px !important; }
 
-  .course-kpi-card:nth-child(6) .course-kpi-value,
-  .summary-kpi-card:nth-child(5) .summary-kpi-value { font-size: 15px !important; }
 }
 
 /* Contest KPI cards: keep the labels and values without the icon tiles. */
@@ -240,4 +235,333 @@
 .national-exam-kpi .national-exam-kpi-label,
 .national-exam-kpi > strong {
   grid-column: 1;
+}
+
+/* Home-page palette for every statistics view in the mini rail. */
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats) {
+  --stats-ink: #14213d;
+  --stats-muted: #5e6b85;
+  --stats-line: #e4eaf4;
+  --stats-surface: #fff;
+  --stats-primary: #2563eb;
+  --stats-primary-dark: #2563eb;
+  --stats-primary-light: #eaf0ff;
+  --stats-purple: #754de8;
+  --stats-mint: #66e2a4;
+  --general-ink: #14213d;
+  --general-muted: #5e6b85;
+  --general-line: #e4eaf4;
+  color: #14213d;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats) [style*="color"] {
+  color: #14213d !important;
+}
+
+:is(.contest-stats-title, .mock-exam-title, .course-stats-title, .summary-stats-title, .national-exam-hero h1,
+    .contest-panel-title, .mock-exam-panel-title, .course-panel-title, .summary-panel-title,
+    .contest-panel-kicker, .mock-exam-panel-kicker, .course-panel-kicker, .summary-panel-kicker,
+    .national-exam-kicker, .general-stats-panel-heading h2) {
+  color: #14213d !important;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi) {
+  border-color: #e4eaf4 !important;
+  color: #14213d !important;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4n + 1) {
+  background: #eaf0ff !important;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4n + 2) {
+  background: #e7f8ef !important;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4n + 3) {
+  background: #f6f8fc !important;
+}
+
+:is(.contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(4n) {
+  background: #f6f8fc !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-kpi-icon, .mock-exam-kpi-icon, .course-kpi-icon, .summary-kpi-icon, .national-exam-kpi-icon, .general-stats-kpi-icon) {
+  border-color: #fff !important;
+  background: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is([class*="success"], [class*="danger"], [class*="warning"], [class*="error"]) {
+  border-color: #e4eaf4 !important;
+  background-color: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.contest-panel-card, .mock-exam-panel-card, .course-panel-card, .summary-panel-card, .national-exam-panel, .national-exam-history,
+    .contest-insight-card, .mock-exam-insight-card, .summary-insight-card) {
+  border-color: #e4eaf4 !important;
+  background: #fff !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(.recharts-cartesian-grid line, .recharts-cartesian-axis-line, .recharts-cartesian-axis-tick line, .recharts-reference-line-line) {
+  stroke: #e4eaf4 !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+.recharts-cartesian-axis-tick-value {
+  fill: #5e6b85 !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:where(:not(svg):not(path):not(circle):not(rect):not(line):not(polyline):not(polygon)) {
+  color: #14213d !important;
+}
+
+.general-stats .general-stats-kpi:nth-child(1) .general-stats-kpi-label,
+.general-stats .general-stats-kpi:nth-child(1) > strong,
+.general-stats .general-stats-kpi:nth-child(3) .general-stats-kpi-label,
+.general-stats .general-stats-kpi:nth-child(3) > strong {
+  color: #14213d !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is([class*="badge"], [class*="chip"], [class*="pill"], [class*="tag"]) {
+  border-color: #e4eaf4 !important;
+  background-color: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+[class*="status"] {
+  border-color: #e4eaf4 !important;
+  background-color: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+button {
+  border-color: #e4eaf4 !important;
+  background-color: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+button.is-active {
+  border-color: #b9ccf5 !important;
+  background-color: #d2def7 !important;
+  color: #14213d !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(button, a):hover {
+  border-color: #b9ccf5 !important;
+  background-color: #d2def7 !important;
+  color: #2563eb !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is([class*="progress"], [class*="meter"]) > span {
+  background-color: #d2def7 !important;
+}
+
+.course-stats-root .course-insight-card.is-strength {
+  border: 1px solid #e4eaf4 !important;
+  background: #eaf0ff !important;
+}
+
+.course-stats-root .course-insight-card.is-improvement {
+  border: 1px solid #e4eaf4 !important;
+  background: #e7f8ef !important;
+}
+
+.course-stats-root .course-insight-item {
+  background: #fff !important;
+  color: #14213d !important;
+}
+
+.course-stats-root .course-insight-item-title,
+.course-stats-root .course-insight-head-text h3,
+.course-stats-root .course-insight-head-text p {
+  color: #14213d !important;
+}
+
+.course-stats-root .course-insight-item-score {
+  border: 1px solid #e4eaf4 !important;
+  background: #e7f8ef !important;
+  color: #14213d !important;
+}
+
+:is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats)
+:is(select, input) {
+  border-color: #e4eaf4 !important;
+  background: #eaf0ff !important;
+  color: #14213d !important;
+}
+
+html[data-theme="dark"] #root :is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats) :is(select, input),
+html.dark #root :is(.general-stats, .contest-stats-root, .mock-exam-stats-root, .course-stats-root, .summary-stats-root, .national-exam-stats) :is(select, input) {
+  border-color: #e4eaf4 !important;
+  background: #eaf0ff !important;
+  color: #14213d !important;
+}
+
+html[data-theme="dark"] #root .general-stats .general-stats-filters,
+html.dark #root .general-stats .general-stats-filters,
+html[data-theme="dark"] #root .general-stats .general-stats-period,
+html.dark #root .general-stats .general-stats-period {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #root .general-stats .general-stats-filters select,
+html.dark #root .general-stats .general-stats-filters select {
+  border-color: #e4eaf4 !important;
+  background: #eaf0ff !important;
+  color: #14213d !important;
+}
+
+html[data-theme="dark"] #root .general-stats .general-stats-period button,
+html.dark #root .general-stats .general-stats-period button {
+  border-color: #e4eaf4 !important;
+  background: #eaf0ff !important;
+  color: #2563eb !important;
+}
+
+html[data-theme="dark"] #root .general-stats .general-stats-period button.is-active,
+html.dark #root .general-stats .general-stats-period button.is-active {
+  border-color: #b9ccf5 !important;
+  background: #d2def7 !important;
+  color: #14213d !important;
+}
+
+/* One shared size, layout, and home-palette sequence for every sidebar KPI. */
+:is(.general-stats-kpis, .contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-auto-rows: 110px !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi) {
+  display: grid !important;
+  width: 100% !important;
+  height: 110px !important;
+  min-height: 110px !important;
+  max-height: 110px !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-content: center !important;
+  align-items: initial !important;
+  justify-items: stretch !important;
+  row-gap: 4px !important;
+  padding: 20px !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 28px !important;
+  box-shadow: none !important;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n + 1),
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n + 5) {
+  background: #eaf0ff !important;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n + 2),
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n) {
+  background: #e7f8ef !important;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n + 3),
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi):nth-child(6n + 4) {
+  background: #f6f8fc !important;
+}
+
+:is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi)::after,
+:is(.general-stats-kpi-icon, .contest-kpi-icon, .mock-exam-kpi-icon, .course-kpi-icon, .summary-kpi-icon, .national-exam-kpi-icon),
+:is(.contest-kpi-top, .mock-exam-kpi-top, .course-kpi-top, .summary-kpi-top),
+:is(.general-stats-kpi > small, .contest-kpi-note, .mock-exam-kpi-note, .course-kpi-note, .summary-kpi-note, .national-exam-kpi small),
+:is(.contest-kpi-badge, .mock-exam-kpi-badge, .course-kpi-badge, .summary-kpi-badge) {
+  display: none !important;
+}
+
+:is(.contest-kpi-body, .mock-exam-kpi-main, .course-kpi-main, .summary-kpi-main) {
+  display: contents !important;
+}
+
+:is(.general-stats-kpi-label, .contest-kpi-label, .mock-exam-kpi-title, .course-kpi-title, .summary-kpi-title, .national-exam-kpi-label) {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: center !important;
+  justify-self: stretch !important;
+  margin: 0 !important;
+  color: #14213d !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+  text-align: right !important;
+  white-space: normal !important;
+}
+
+:is(.general-stats-kpi > strong, .contest-kpi-value, .mock-exam-kpi-value, .course-kpi-value, .summary-kpi-value, .national-exam-kpi > strong) {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  align-self: center !important;
+  justify-self: start !important;
+  margin: 0 !important;
+  color: #14213d !important;
+  font-size: 34px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.05 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 1200px) {
+  :is(.general-stats-kpis, .contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  :is(.general-stats-kpis, .contest-kpi-grid, .mock-exam-kpi-grid, .course-kpi-grid, .summary-kpi-grid, .national-exam-kpis) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-rows: 94px !important;
+  }
+
+  :is(.general-stats-kpi, .contest-kpi-card, .mock-exam-kpi-card, .course-kpi-card, .summary-kpi-card, .national-exam-kpi) {
+    height: 94px !important;
+    min-height: 94px !important;
+    max-height: 94px !important;
+    padding: 16px !important;
+  }
+}
+
+/* Keep all seven overview KPIs together on wide screens. */
+.general-stats-kpis {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 1200px) {
+  .general-stats-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .general-stats-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }

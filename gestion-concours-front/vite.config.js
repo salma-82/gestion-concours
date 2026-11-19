@@ -8,6 +8,9 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
     // VS Code Dev Tunnels uses a dynamic *.devtunnels.ms hostname and
     // terminates HTTPS before traffic reaches Vite.
  allowedHosts: ['.devtunnels.ms', '.trycloudflare.com'],

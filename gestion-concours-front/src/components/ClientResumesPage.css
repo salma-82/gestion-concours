@@ -68,7 +68,7 @@
 }
 
 .client-resumes-search-input:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
@@ -140,7 +140,7 @@
 
 .client-resumes-pill.is-active {
   background: #eff6ff;
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   color: #1d4ed8;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.16);
 }
@@ -256,7 +256,7 @@ html.dark .client-resumes-segmented-btn.is-active {
   width: 4px;
   height: 28px;
   border-radius: 9999px;
-  background-color: #2563eb;
+  background-color: #d2def7;
   flex-shrink: 0;
 }
 
@@ -279,7 +279,7 @@ html.dark .client-resumes-segmented-btn.is-active {
 .client-resumes-cards-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 12px;
 }
 
@@ -298,7 +298,7 @@ html.dark .client-resumes-segmented-btn.is-active {
 @media (max-width: 820px) {
   .client-resumes-cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
 }
 
@@ -349,8 +349,10 @@ html.dark .client-resume-card:hover {
   justify-content: space-between;
   padding: 14px 16px;
   box-sizing: border-box;
-  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #d2def7 0%, #d2def7 100%);
 }
+.client-resume-cover .client-resume-formulas,
+.client-resume-cover .client-resume-subject-title { color: #203b5b !important; text-shadow: none !important; }
 
 .client-resume-formulas {
   position: absolute;
@@ -499,7 +501,7 @@ html.dark .client-resume-progress-track {
   height: 100%;
   border-radius: 9999px;
   transition: width 0.4s ease;
-  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+  background: linear-gradient(90deg, #d2def7 0%, #d2def7 100%);
 }
 
 .client-resume-progress-fill.fill-completed {
@@ -569,13 +571,13 @@ html.dark .client-resume-status-text.status-completed {
   justify-content: center;
   gap: 6px;
   color: #ffffff;
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #d2def7 0%, #d2def7 100%);
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .client-resume-action-btn:hover {
-  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #d2def7 0%, #d2def7 100%);
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.38);
   transform: translateY(-1px);
 }
@@ -658,7 +660,7 @@ html.dark .client-resumes-empty-state {
 .client-resumes-reset-btn {
   appearance: none;
   border: none;
-  background: #2563eb;
+  background: #d2def7;
   color: #ffffff;
   font-family: inherit;
   font-size: 13px;
@@ -670,7 +672,7 @@ html.dark .client-resumes-empty-state {
 }
 
 .client-resumes-reset-btn:hover {
-  background: #1d4ed8;
+  background: #d2def7;
 }
 
 /* ── Skeleton Loading ── */
@@ -686,7 +688,7 @@ html.dark .client-resumes-empty-state {
 
 .client-resume-skeleton-banner {
   height: 180px;
-  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #d2def7 0%, #d2def7 100%);
   opacity: 0.6;
   animation: pulse-shimmer 1.5s infinite ease-in-out;
 }
@@ -821,7 +823,7 @@ html.dark .client-resume-viewer-download-btn {
   border-radius: 9999px;
   cursor: pointer;
   color: #ffffff;
-  background: #2563eb;
+  background: #d2def7;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
   transition: all 0.15s ease;
 }
@@ -830,6 +832,9 @@ html.dark .client-resume-viewer-download-btn {
   background: #059669;
   box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
 }
+.client-resume-action-btn,
+.client-resume-viewer-finish:not(.is-completed),
+.client-resumes-reset-btn { color: #203b5b; }
 
 .client-resume-viewer-content {
   width: 100%;

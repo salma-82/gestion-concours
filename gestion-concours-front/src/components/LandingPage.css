@@ -13986,3 +13986,449 @@ html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-bac-list li sma
   color: #53647d !important;
 }
 
+/* Brand palette: take the landing page accents from the blue logo lettering. */
+#root .landing-root {
+  --lp-primary: #125bc9;
+  --lp-primary-dark: #0d4ca8;
+  --lp-primary-light: #eaf2ff;
+  --lp-ink: #125bc9;
+  --lp-ink-soft: #53647d;
+  --lp-line: #dce5f2;
+  --accent: #125bc9;
+  --accent-bg: rgba(18, 91, 201, .1);
+  --accent-border: rgba(18, 91, 201, .35);
+  --editorial-coral: #125bc9;
+}
+
+#root .landing-root :is(
+  .lp-wordmark,
+  .lp-footer-wordmark,
+  .lp-hero-title,
+  .lp-hero-gradient-text,
+  .lp-hero-arabic,
+  .lp-section-eyebrow,
+  .lp-three-steps-eyebrow,
+  .lp-teaser-kicker,
+  .lp-teaser-link,
+  .lp-nav-links a:hover,
+  .lp-mobile-menu a:hover,
+  .lp-stat-card .stat-accent,
+  .lp-footer-col h4,
+  .lp-footer-arrow
+) {
+  color: #125bc9 !important;
+  -webkit-text-fill-color: #125bc9 !important;
+}
+
+#root .landing-root :is(
+  .lp-btn-primary,
+  .lp-btn-hero-primary,
+  .lp-btn-hero-secondary,
+  .lp-plan-btn,
+  .lp-bottom-cta-btn,
+  .lp-features-cta .lp-btn-primary
+) {
+  border-color: #125bc9 !important;
+  background: #125bc9 !important;
+  color: #fff !important;
+  box-shadow: 0 5px 16px rgba(18, 91, 201, .2) !important;
+}
+
+#root .landing-root :is(
+  .lp-btn-primary:hover,
+  .lp-btn-hero-primary:hover,
+  .lp-btn-hero-secondary:hover,
+  .lp-plan-btn:hover,
+  .lp-bottom-cta-btn:hover,
+  .lp-features-cta .lp-btn-primary:hover
+) {
+  border-color: #0d4ca8 !important;
+  background: #0d4ca8 !important;
+}
+
+#root .landing-root .lp-btn-ghost {
+  border-color: #dce5f2 !important;
+  color: #125bc9 !important;
+}
+
+#root .landing-root :is(
+  .lp-feat-cat-label--a,
+  .lp-feat-cat-label--b,
+  .lp-feat-cat-label--c,
+  .lp-feat-cat-label--d
+) {
+  background: #eaf2ff !important;
+  color: #125bc9 !important;
+}
+
+#root .landing-root :is(
+  .lp-feat-cat-label--a .lp-feat-cat-letter,
+  .lp-feat-cat-label--b .lp-feat-cat-letter,
+  .lp-feat-cat-label--c .lp-feat-cat-letter,
+  .lp-feat-cat-label--d .lp-feat-cat-letter,
+  .lp-three-step-number,
+  .lp-feature-icon,
+  .lp-feat-card-icon
+) {
+  background-color: #125bc9 !important;
+  color: #fff !important;
+}
+
+#root .landing-root :is(
+  .lp-feat-card--timer,
+  .lp-feat-card--accent,
+  .lp-three-step-card--accent,
+  .lp-plan-card--featured,
+  .lp-plan-card.is-featured
+) {
+  border-color: #125bc9 !important;
+  background: #eaf2ff !important;
+}
+
+#root .landing-root :is(.lp-feat-card--accent, .lp-three-step-card--accent) :is(strong, p) {
+  color: #125bc9 !important;
+  -webkit-text-fill-color: #125bc9 !important;
+}
+
+#root .landing-root :is(.lp-feat-timer-badge, .lp-mock-retry) {
+  border-color: #125bc9 !important;
+  background: #125bc9 !important;
+  color: #fff !important;
+}
+
+#root .landing-root :is(
+  .pulse-dot,
+  .lp-mock-calendar-grid .is-marked,
+  .lp-mock-options .is-correct,
+  .lp-mock-errors .is-wrong,
+  .lp-mock-errors .is-right,
+  .lp-mock-dashboard-head b,
+  .lp-mock-bars i,
+  .lp-mock-ring,
+  .lp-mock-curve,
+  .lp-mock-tangent,
+  .lp-mock-progress i
+) {
+  border-color: #125bc9 !important;
+  background-color: #125bc9 !important;
+  color: #fff !important;
+  stroke: #125bc9 !important;
+}
+
+#root .landing-root :is(
+  .lp-feat-card--timer,
+  .lp-feat-card--accent,
+  .lp-three-step-card--accent,
+  .lp-plan-card--featured,
+  .lp-plan-card.is-featured
+) :is(strong, p, span, small) {
+  color: #125bc9 !important;
+}
+
+#root .landing-root :is(.lp-hero-section, .lp-features-section, .lp-faq-section) {
+  --lp-primary: #125bc9;
+  --lp-primary-dark: #0d4ca8;
+}
+
+#root .landing-root .lp-teaser-strip {
+  background: #125bc9 !important;
+}
+
+#root .landing-root .lp-stats-section {
+  background: #0d4ca8 !important;
+}
+
+#root #landing-footer,
+#root #landing-footer .lp-footer-surface {
+  border-color: #0d4ca8 !important;
+  background: #0d4ca8 !important;
+  background-color: #0d4ca8 !important;
+}
+
+#root #landing-footer :is(.lp-footer-col h4, .lp-footer-arrow) {
+  color: #dce5f2 !important;
+  -webkit-text-fill-color: #dce5f2 !important;
+}
+
+#root #landing-footer .lp-footer-social-link:hover {
+  border-color: #dce5f2 !important;
+  background: #125bc9 !important;
+}
+
+#root .landing-root [style*="color"] {
+  color: #125bc9 !important;
+  -webkit-text-fill-color: #125bc9 !important;
+}
+
+#root .landing-root .lp-stats-section [style*="color"] {
+  color: #dce5f2 !important;
+  -webkit-text-fill-color: #dce5f2 !important;
+}
+
+#root .landing-root .lp-stats-section::before {
+  background: rgba(18, 91, 201, .3) !important;
+}
+
+#root .landing-root .lp-bg-formula svg :is(path, line, polygon, polyline, circle) {
+  stroke: #125bc9 !important;
+}
+
+/* Clearer correction preview in the homepage roadmap. */
+#root .landing-root #methodologie .lp-roadmap-preview.lp-preview-errors {
+  border-color: #b8cff2 !important;
+  box-shadow: 0 15px 30px rgba(18, 91, 201, .18) !important;
+  transform: none !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-roadmap-image {
+  min-height: 205px !important;
+  background: #fff !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors > div {
+  min-height: 74px !important;
+  gap: 9px !important;
+  padding: 12px !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 5px 12px rgba(27, 59, 105, .08) !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors .is-wrong {
+  border-color: #ffb347 !important;
+  background: #fff3df !important;
+  color: #173b78 !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors .is-right {
+  border-color: #9dbcf0 !important;
+  background: #edf4ff !important;
+  color: #173b78 !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors b {
+  width: 25px !important;
+  height: 25px !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors .is-wrong b {
+  background: #ff8a00 !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-errors .is-right b {
+  background: #125bc9 !important;
+}
+
+#root .landing-root #methodologie .lp-preview-errors .lp-mock-retry {
+  padding: 10px 15px !important;
+  border: 1px solid #ff8a00 !important;
+  border-radius: 999px !important;
+  background: #ff8a00 !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 5px 12px rgba(255, 138, 0, .22) !important;
+}
+
+@media (max-width: 860px) {
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-errors {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-errors > div {
+    min-height: 48px !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-errors b {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-retry {
+    justify-self: center !important;
+    padding: 7px 14px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  #root .landing-root #methodologie .lp-preview-errors .lp-roadmap-image {
+    min-height: 0 !important;
+    gap: 5px !important;
+    padding: 8px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-errors > div {
+    min-height: 42px !important;
+    gap: 7px !important;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-errors b {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  #root .landing-root #methodologie .lp-preview-errors .lp-mock-retry {
+    padding: 6px 12px !important;
+    font-size: 10px !important;
+  }
+}
+
+#root .landing-root .lp-bg-formula svg circle {
+  fill: #e8eef7 !important;
+}
+
+#root .landing-root .lp-bg-formula svg text {
+  fill: #53647d !important;
+}
+
+#root .landing-root .lp-mock-ring {
+  background-color: transparent !important;
+  border-color: #125bc9 !important;
+  color: #125bc9 !important;
+}
+
+#root .landing-root .lp-bac-list li b {
+  color: #125bc9 !important;
+  -webkit-text-fill-color: #125bc9 !important;
+}
+
+/* Light footer surface keeps the blue logo and copy clearly visible. */
+#root #landing-footer,
+#root #landing-footer .lp-footer-surface {
+  border-color: #e0e7f0 !important;
+  background: #eef4ff !important;
+  background-color: #eef4ff !important;
+  background-image: none !important;
+  color: #173b78 !important;
+}
+
+#root #landing-footer::before,
+#root #landing-footer::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+#root #landing-footer .lp-footer-surface {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+#root #landing-footer > .lp-footer-inner,
+#root #landing-footer > .lp-footer-bottom {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+#root #landing-footer :is(
+  .lp-footer-wordmark,
+  .lp-footer-social-block > strong,
+  .lp-footer-col h4,
+  .lp-footer-brand p,
+  .lp-footer-made-in,
+  .lp-footer-col a,
+  .lp-footer-bottom
+) {
+  color: #173b78 !important;
+  -webkit-text-fill-color: #173b78 !important;
+}
+
+#root #landing-footer .lp-footer-arrow {
+  color: #ff8a00 !important;
+  -webkit-text-fill-color: #ff8a00 !important;
+}
+
+#root #landing-footer .lp-footer-social-link {
+  border-color: #dce4ef !important;
+  background: #fff !important;
+  color: #2456b5 !important;
+}
+
+#root #landing-footer .lp-footer-social-link:hover {
+  border-color: #2456b5 !important;
+  background: #eef4ff !important;
+}
+
+#root .landing-root #methodologie .lp-roadmap-header h2,
+#root .landing-root #methodologie .lp-roadmap-header h2 span {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+/* Give every homepage heading the same royal blue as the mascot. */
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(h1, h2, h3, h4, h5, h6),
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-faq-question {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(h1, h2, h3, h4, h5, h6) :is(span, b, strong, em) {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root :is(
+  .lp-section-title span,
+  .lp-hero-gradient-text,
+  .lp-hero-avenir,
+  .lp-roadmap-header h2 span,
+  .lp-archive-highlight,
+  .fk-heading b,
+  .lp-bottom-cta-card h2 span
+) {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root .lp-hero-title .lp-title-framed-word {
+  border-color: #2456b5 !important;
+  outline-color: #2456b5 !important;
+  background-color: #eaf2ff !important;
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+html:not([data-theme="dark"]):not(.dark) #root .landing-root #hero .lp-headline-composition .lp-hero-title,
+html:not([data-theme="dark"]):not(.dark) #root .landing-root #hero .lp-headline-composition .lp-hero-title :is(
+  .lp-headline-line,
+  .lp-title-framed-word,
+  .lp-hero-avenir,
+  .lp-hero-gradient-text
+) {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+#root #landing-footer .lp-footer-col h4 {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary,
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary::after,
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover,
+#root .landing-root #hero .lp-headline-composition .lp-btn-hero-primary:hover::after {
+  color: #2456b5 !important;
+  -webkit-text-fill-color: #2456b5 !important;
+}
+
+

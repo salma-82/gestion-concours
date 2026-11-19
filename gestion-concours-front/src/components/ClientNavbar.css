@@ -309,7 +309,7 @@
 }
 
 .client-nav-dropdown-link.is-active .client-nav-dropdown-dot {
-  background: #1859cf;
+  background: #d2def7;
 }
 
 .client-nav-actions {
@@ -337,7 +337,7 @@
   width: 20px;
   height: 20px;
   fill: none;
-  stroke: #2563eb;
+  stroke: #b9ccf5;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -751,7 +751,7 @@ button[aria-label="Ouvrir le menu des chapitres"] {
 }
 
 .client-brand-name {
-  color: #ff9f32;
+  color: #2563eb;
   font-size: clamp(11px, 1.16vw, 45px);
   letter-spacing: -.6px;
 }

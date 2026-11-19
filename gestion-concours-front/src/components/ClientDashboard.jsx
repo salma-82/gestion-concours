@@ -11,6 +11,7 @@ import ClientGeneralStatsDashboard from './ClientGeneralStatsDashboard';
 import './StatsKpiCards.css';
 import {
   fetchStudentActivityEvents,
+  readStudentQcmAttempts,
   setStudentActivityCompleted
 } from '../studentProgress';
 import { filterByStudentPack } from '../packAccess';
@@ -56,7 +57,7 @@ const subjectStyle = (subject) => {
   if (normalized.includes('math')) return { name: 'Math\u00e9matiques', icon: '\u2211', color: '#2563eb', tint: '#eff6ff' };
   if (normalized.includes('phys') || normalized.includes('chim') || normalized === 'pc') return { name: 'Physique-Chimie', icon: '\u03A8', color: '#7c3aed', tint: '#f5f3ff' };
   if (normalized.includes('svt') || normalized.includes('vie') || normalized.includes('terre')) return { name: 'SVT', icon: '\u25C9', color: '#059669', tint: '#ecfdf5' };
-  if (normalized.includes('philo')) return { name: 'Philosophie', icon: '\u03A6', color: '#d97706', tint: '#fffbeb' };
+  if (normalized.includes('philo')) return { name: 'Philosophie', icon: '\u03A6', color: '#2563eb', tint: '#fffbeb' };
   if (normalized.includes('ang') || normalized.includes('eng')) return { name: 'Anglais', icon: 'A', color: '#0284c7', tint: '#f0f9ff' };
   return { name: subject || 'Autres ressources', icon: '\u25A4', color: 'var(--text-secondary, #475569)', tint: '#f1f5f9' };
 };
@@ -112,6 +113,7 @@ export default function ClientDashboard() {
   const [courseCatalogError, setCourseCatalogError] = useState(false);
   const [courseCatalogRetry, setCourseCatalogRetry] = useState(0);
   const [schoolAttempts, setSchoolAttempts] = useState([]);
+  const [localQcmAttempts, setLocalQcmAttempts] = useState(() => readStudentQcmAttempts());
   const [schoolDataLoading, setSchoolDataLoading] = useState(true);
   const [schoolRetry, setSchoolRetry] = useState(0);
   const [schoolCatalogError, setSchoolCatalogError] = useState(false);
@@ -136,6 +138,19 @@ export default function ClientDashboard() {
   });
   const [courseSubjectFilter, setCourseSubjectFilter] = useState('all');
   const [selectedRevisionSubject, setSelectedRevisionSubject] = useState('');
+
+  useEffect(() => {
+    const refreshLocalQcmAttempts = () => setLocalQcmAttempts(readStudentQcmAttempts());
+    refreshLocalQcmAttempts();
+    window.addEventListener('student-qcm-local-history-updated', refreshLocalQcmAttempts);
+    window.addEventListener('student-qcm-history-updated', refreshLocalQcmAttempts);
+    window.addEventListener('storage', refreshLocalQcmAttempts);
+    return () => {
+      window.removeEventListener('student-qcm-local-history-updated', refreshLocalQcmAttempts);
+      window.removeEventListener('student-qcm-history-updated', refreshLocalQcmAttempts);
+      window.removeEventListener('storage', refreshLocalQcmAttempts);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -232,21 +247,40 @@ export default function ClientDashboard() {
   const correctionDocs = sectionActivities.filter((activity) => activity.resourceVariant === 'correction'
     || `${activity.id || ''} ${activity.title || ''}`.toLocaleLowerCase().includes('correction'));
   const examDocs = sectionActivities.filter((activity) => !correctionDocs.includes(activity));
-  const completedQcmAttempts = useMemo(() => schoolAttempts.filter((attempt) => {
+  const allQcmAttempts = useMemo(() => {
+    const attemptsById = new Map();
+    [...localQcmAttempts, ...schoolAttempts].forEach((attempt) => {
+      const type = String(attempt.resourceType || attempt.sourceType || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('fr-FR')
+        .replace(/[^a-z0-9]/g, '');
+      const attemptId = String(attempt.attemptId || attempt.answeredAt || '');
+      const key = `${type}|${String(attempt.resourceId || '')}|${attemptId}`;
+      attemptsById.set(key, { ...(attemptsById.get(key) || {}), ...attempt });
+    });
+    return [...attemptsById.values()];
+  }, [localQcmAttempts, schoolAttempts]);
+  const completedQcmAttempts = useMemo(() => allQcmAttempts.filter((attempt) => {
     const answered = Number(attempt.totalQuestions) || 0;
     const expected = Number(attempt.expectedQuestions) || answered;
-    const sameFiliere = !user.filiere || normalizeCourseValue(attempt.filiere) === normalizeCourseValue(user.filiere);
+    const sameFiliere = courseFiliereMatches(attempt.filiere, user.filiere);
     return sameFiliere && answered > 0 && answered >= expected;
-  }), [schoolAttempts, user.filiere]);
+  }), [allQcmAttempts, user.filiere]);
   const mockAttempts = useMemo(() => {
     const latestByAttempt = new Map();
-    completedQcmAttempts.filter((attempt) => String(attempt.resourceType || '').toLocaleLowerCase().includes('blanc')).forEach((attempt) => {
+    allQcmAttempts.filter((attempt) => {
+      const type = String(attempt.resourceType || attempt.sourceType || '').toLocaleLowerCase('fr-FR');
+      return type.includes('blanc')
+        && (Number(attempt.totalQuestions) || 0) > 0
+        && courseFiliereMatches(attempt.filiere, user.filiere);
+    }).forEach((attempt) => {
       const key = `${attempt.resourceId}:${attempt.attemptId ?? attempt.answeredAt}`;
       const previous = latestByAttempt.get(key);
       if (!previous || new Date(attempt.answeredAt) > new Date(previous.answeredAt)) latestByAttempt.set(key, attempt);
     });
     return [...latestByAttempt.values()].sort((a, b) => new Date(b.answeredAt) - new Date(a.answeredAt));
-  }, [completedQcmAttempts]);
+  }, [allQcmAttempts, user.filiere]);
   const concoursAttempts = useMemo(() => {
     const latestByAttempt = new Map();
     filterByStudentPack(completedQcmAttempts.filter((attempt) => !String(attempt.resourceType || '').toLocaleLowerCase().includes('blanc')), 'school').forEach((attempt) => {
@@ -333,23 +367,23 @@ export default function ClientDashboard() {
   const sectionStats = dashboardMode === 'contests' ? [
     { label: 'Concours réalisés', value: filteredConcoursAttempts.length, note: 'Tentatives terminées', icon: '◉', tint: '#eff6ff', color: '#2563eb' },
     { label: 'Score moyen', value: concoursAverage === null ? '—' : `${concoursAverage}%`, note: `${concoursScores.length} score${concoursScores.length > 1 ? 's' : ''} enregistré${concoursScores.length > 1 ? 's' : ''}`, icon: '↗', tint: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Meilleur score', value: concoursBest === null ? '—' : `${concoursBest}%`, note: 'Sur vos concours réalisés', icon: '★', tint: '#fffbeb', color: '#d97706' },
+    { label: 'Meilleur score', value: concoursBest === null ? '—' : `${concoursBest}%`, note: 'Sur vos concours réalisés', icon: '★', tint: '#fffbeb', color: '#2563eb' },
     { label: 'Bonnes réponses', value: concoursPassRate === null ? '—' : `${concoursPassRate}%`, note: 'Correctes / questions évaluées', icon: '✓', tint: '#ecfdf5', color: '#059669' }
   ] : dashboardMode === 'mock-exams' ? [
     { label: 'Concours blancs réalisés', value: filteredMockAttempts.length, note: 'Tentatives terminées', icon: '◉', tint: '#eff6ff', color: '#2563eb' },
     { label: 'Score moyen', value: mockAverage === null ? '—' : `${mockAverage}%`, note: `${mockScores.length} score${mockScores.length > 1 ? 's' : ''} enregistré${mockScores.length > 1 ? 's' : ''}`, icon: '↗', tint: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Meilleur score', value: mockBest === null ? '—' : `${mockBest}%`, note: 'Sur vos concours blancs', icon: '★', tint: '#fffbeb', color: '#d97706' },
+    { label: 'Meilleur score', value: mockBest === null ? '—' : `${mockBest}%`, note: 'Sur vos concours blancs', icon: '★', tint: '#fffbeb', color: '#2563eb' },
     { label: 'Bonnes réponses', value: mockPassRate === null ? '—' : `${mockPassRate}%`, note: 'Correctes / questions évaluées', icon: '✓', tint: '#ecfdf5', color: '#059669' }
   ] : dashboardMode === 'exams' ? [
     { label: 'Épreuves consultées', value: examDocs.length, note: 'Examens nationaux ouverts', icon: '▤', tint: '#eff6ff', color: '#2563eb' },
     { label: 'Corrections consultées', value: correctionDocs.length, note: 'Corrections ouvertes', icon: '✓', tint: '#ecfdf5', color: '#059669' },
     { label: 'Documents terminés', value: sectionCompleted, note: 'Marqués comme terminés', icon: '▣', tint: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Séances de révision', value: sectionVisits, note: 'Ouvertures d’épreuves et corrections', icon: '↗', tint: '#fff7ed', color: '#ea580c' }
+    { label: 'Séances de révision', value: sectionVisits, note: 'Ouvertures d’épreuves et corrections', icon: '↗', tint: '#fff7ed', color: '#2563eb' }
   ] : [
     { label: dashboardMode === 'courses' ? 'Cours consultés' : 'Fiches consultées', value: sectionActivities.length, note: 'Ressources distinctes', icon: '▤', tint: '#eff6ff', color: '#2563eb' },
     { label: dashboardMode === 'courses' ? 'Cours terminés' : 'Fiches terminées', value: sectionCompleted, note: 'Marqués comme terminés', icon: '✓', tint: '#ecfdf5', color: '#059669' },
     { label: 'Progression', value: sectionActivities.length ? `${sectionCompletionRate}%` : '—', note: 'Taux de complétion', icon: '◉', tint: '#f5f3ff', color: '#7c3aed' },
-    { label: 'Séances de révision', value: sectionVisits, note: 'Consultations enregistrées', icon: '↗', tint: '#fff7ed', color: '#ea580c' }
+    { label: 'Séances de révision', value: sectionVisits, note: 'Consultations enregistrées', icon: '↗', tint: '#fff7ed', color: '#2563eb' }
   ];
   const sectionGroups = dashboardMode === 'contests'
     ? concoursSchoolPerformance.map((group) => ({ name: group.name, total: group.attempts, completed: group.attempts, percent: group.average ?? 0, score: group.average }))
@@ -404,7 +438,7 @@ export default function ClientDashboard() {
       subject.revisions += Math.max(0, Number(activity.visits) || 0);
       subjects.set(style.name, subject);
     });
-    const palette = ['#4f91ee', '#77c995', '#f3a078', '#f4cf61', '#a88be8', '#55b7c4', '#e783a7'];
+    const palette = ['#4f91ee', '#77c995', '#b9ccf5', '#b9ccf5', '#a88be8', '#55b7c4', '#e783a7'];
     const entries = [...subjects.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     const total = entries.reduce((sum, subject) => sum + subject.revisions, 0);
     let offset = 0;
@@ -618,7 +652,7 @@ export default function ClientDashboard() {
             const donutData = total
               ? [
                   { name: 'Terminées', value: done, color: '#059669' },
-                  { name: 'En cours', value: inProgress > 0 ? inProgress : (done === 0 ? 1 : 0), color: '#3b82f6' },
+                  { name: 'En cours', value: inProgress > 0 ? inProgress : (done === 0 ? 1 : 0), color: '#b9ccf5' },
                 ].filter(d => d.value > 0)
               : [
                   { name: 'Terminées', value: 0, color: '#059669' },
@@ -719,8 +753,8 @@ export default function ClientDashboard() {
                             border: 'none',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            background: active ? '#2563eb' : 'transparent',
-                            color: active ? '#ffffff' : '#64748b',
+                            background: active ? '#d2def7' : 'transparent',
+                            color: active ? '#203b5b' : '#64748b',
                             boxShadow: active ? '0 2px 8px rgba(37, 99, 235, 0.28)' : 'none',
                           }}
                         >
@@ -802,7 +836,7 @@ export default function ClientDashboard() {
                         <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{done}</strong>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#b9ccf5', display: 'inline-block', flexShrink: 0 }} />
                         <span style={{ fontSize: '9px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>En cours</span>
                         <strong style={{ fontSize: '10px', color: '#18345b', marginLeft: 'auto' }}>{inProgress}</strong>
                       </div>
@@ -831,7 +865,7 @@ export default function ClientDashboard() {
                       gap: '4px',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563eb' }} />
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d2def7' }} />
                         <span style={{ fontSize: '12px', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>Total consultés</span>
                       </div>
                       <strong style={{ fontSize: '26px', fontWeight: 800, color: '#18345b', lineHeight: 1.1 }}>
@@ -980,7 +1014,7 @@ export default function ClientDashboard() {
                         contentStyle={{ border: '1px solid var(--border, #dbeafe)', borderRadius: 12, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.1)' }}
                         cursor={{ fill: 'rgba(37, 99, 235, 0.05)' }}
                       />
-                      <Bar dataKey="views" name="Consultations" fill="#2563eb" radius={[5, 5, 0, 0]} maxBarSize={30} />
+                      <Bar dataKey="views" name="Consultations" fill="#b9ccf5" radius={[5, 5, 0, 0]} maxBarSize={30} />
                       <Bar dataKey="completions" name="Validations" fill="#10b981" radius={[5, 5, 0, 0]} maxBarSize={30} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -1084,10 +1118,10 @@ export default function ClientDashboard() {
                         <Line
                           type="monotone"
                           dataKey="score"
-                          stroke={scoreTrendData.length ? "#2563eb" : "#cbd5e1"}
+                          stroke={scoreTrendData.length ? "#b9ccf5" : "#cbd5e1"}
                           strokeDasharray={scoreTrendData.length ? undefined : "5 5"}
                           strokeWidth={3}
-                          dot={scoreTrendData.length ? { r: 4, fill: '#2563eb' } : false}
+                          dot={scoreTrendData.length ? { r: 4, fill: '#b9ccf5' } : false}
                           activeDot={{ r: 6 }}
                         />
                       </LineChart>
@@ -1273,7 +1307,7 @@ export default function ClientDashboard() {
                       { name: 'Anglais', fullName: 'Anglais', percent: 0 },
                     ];
                 const hasData = sectionGroups.length > 0;
-                const COLORS = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#0284c7', '#e11d48'];
+                const COLORS = ['#b9ccf5', '#7c3aed', '#059669', '#b9ccf5', '#0284c7', '#e11d48'];
                 return (
                   <>
                     <div style={{ width: '100%', height: 220, marginTop: 8, position: 'relative' }}>

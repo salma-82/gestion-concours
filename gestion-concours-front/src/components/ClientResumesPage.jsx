@@ -13,6 +13,7 @@ import {
 } from '../studentProgress';
 import cardMascot from '../assets/logo-mascot.png';
 import './ClientResumesPage.css';
+import './ClientCatalogCards.css';
 import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
 
 const API = '';
@@ -207,7 +208,7 @@ export default function ClientResumesPage() {
       return {
         status: 'Terminé',
         pct: 100,
-        btnText: 'Relire',
+        btnText: 'Revoir',
         statusClass: 'status-completed'
       };
     }
@@ -473,16 +474,19 @@ export default function ClientResumesPage() {
                   <p className="client-resumes-section-subtitle">{subject.subtitle}</p>
 
                   {/* Grille responsive des cartes de résumés */}
-                  <div className="client-resumes-cards-grid">
+                  <div className="client-resumes-cards-grid client-catalog-grid">
                     {subjectResumes.map((resume, idx) => {
                       const resumeKey = resume.id || `${subject.id}-${idx}`;
                       const { chapterNum, title } = parseChapterInfo(resume, idx);
                       const progress = getResumeProgress(resume);
                       return (
-                        <article key={resumeKey} className={`client-resume-card ${demoContentClass(resume)}`}>
+                        <article key={resumeKey} className={`client-resume-card client-catalog-card client-catalog-theme-${subject.tag.toLowerCase()} ${demoContentClass(resume)}`}>
                           <DemoAccessBadge item={resume} />
                           {/* Bannière de couverture avec abréviation et mascotte */}
-                          <div className="client-resume-cover">
+                          <div className="client-resume-cover client-catalog-card-cover">
+                            <span className="client-catalog-subject-pill">
+                              {subject.tag === 'SVT' ? 'SVT' : subject.nom}
+                            </span>
                             {/* Formules en haut à droite */}
                             <div className="client-resume-formulas">{subject.formulas}</div>
 
@@ -500,9 +504,9 @@ export default function ClientResumesPage() {
                           </div>
 
                           {/* Corps de la carte */}
-                          <div className="client-resume-body">
+                          <div className="client-resume-body client-catalog-card-body">
                             {/* Titre du chapitre */}
-                            <h4 className="client-resume-title" title={title}>
+                            <h4 className="client-resume-title client-catalog-card-title" title={title}>
                               {title}
                             </h4>
 
@@ -517,19 +521,19 @@ export default function ClientResumesPage() {
                             </div>
 
                             {/* Barre de progression */}
-                            <div className="client-resume-progress-track">
+                              <div className="client-resume-progress-track client-catalog-progress-track">
                               <div
-                                className={`client-resume-progress-fill ${
-                                  progress.pct === 100 ? 'fill-completed' : ''
+                                className={`client-resume-progress-fill client-catalog-progress-fill ${
+                                  progress.pct === 100 ? 'fill-completed' : progress.statusClass
                                 }`}
                                 style={{ width: `${progress.pct}%` }}
                               />
                             </div>
 
                             {/* Ligne d'état de progression */}
-                            <div className="client-resume-progress-row">
+                            <div className="client-resume-progress-row client-catalog-progress-row">
                               <span className={`client-resume-status-text ${progress.statusClass}`}>
-                                {progress.status}
+                                {progress.statusClass === 'status-new' ? 'Pas commencé' : progress.status}
                               </span>
                               <span className="client-resume-pct-text">
                                 {progress.pct} %
@@ -540,7 +544,7 @@ export default function ClientResumesPage() {
                             <div className="client-resume-actions-row">
                               <button
                                 type="button"
-                                className="client-resume-action-btn"
+                                className={`client-resume-action-btn client-catalog-action ${progress.statusClass}`}
                                 onClick={guardDemoContent(resume, () => openResume(resume))}
                               >
                                 {progress.btnText}

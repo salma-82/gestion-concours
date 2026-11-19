@@ -1977,6 +1977,67 @@ html.dark #root select option {
   color: var(--text) !important;
 }
 
+/* Keep client page copy readable when individual page styles still specify
+   light-theme text colors. Scoped to the client content area only. */
+html[data-theme="dark"] #root main :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, small, label, legend, li, dt, dd, figcaption,
+  a, button, summary, blockquote, th, td,
+  [class*="title"], [class*="Title"],
+  [class*="label"], [class*="Label"],
+  [class*="description"], [class*="Description"],
+  [class*="subtitle"], [class*="Subtitle"],
+  [class*="caption"], [class*="Caption"],
+  [class*="hint"], [class*="Hint"],
+  [class*="name"], [class*="Name"],
+  [class*="value"], [class*="Value"]
+),
+html.dark #root main :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, small, label, legend, li, dt, dd, figcaption,
+  a, button, summary, blockquote, th, td,
+  [class*="title"], [class*="Title"],
+  [class*="label"], [class*="Label"],
+  [class*="description"], [class*="Description"],
+  [class*="subtitle"], [class*="Subtitle"],
+  [class*="caption"], [class*="Caption"],
+  [class*="hint"], [class*="Hint"],
+  [class*="name"], [class*="Name"],
+  [class*="value"], [class*="Value"]
+) {
+  color: var(--text) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html[data-theme="dark"] #root main :is(
+  [class*="muted"], [class*="Muted"],
+  [class*="secondary"], [class*="Secondary"],
+  [class*="description"], [class*="Description"],
+  [class*="subtitle"], [class*="Subtitle"],
+  [class*="caption"], [class*="Caption"],
+  [class*="hint"], [class*="Hint"],
+  [class*="helper"], [class*="Helper"],
+  [class*="meta"], [class*="Meta"]
+),
+html.dark #root main :is(
+  [class*="muted"], [class*="Muted"],
+  [class*="secondary"], [class*="Secondary"],
+  [class*="description"], [class*="Description"],
+  [class*="subtitle"], [class*="Subtitle"],
+  [class*="caption"], [class*="Caption"],
+  [class*="hint"], [class*="Hint"],
+  [class*="helper"], [class*="Helper"],
+  [class*="meta"], [class*="Meta"]
+) {
+  color: var(--text-secondary) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html[data-theme="dark"] #root main svg text,
+html.dark #root main svg text {
+  fill: var(--text-secondary) !important;
+}
+
 /* ==========================================================================
    REDUCED MOTION SUPPORT
    ========================================================================== */

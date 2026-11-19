@@ -1,14 +1,14 @@
 package com.gestionconcours.controller;
 
+import java.util.UUID;
 import com.gestionconcours.dto.LoginRequest;
 import com.gestionconcours.model.InscriptionRequest;
 import com.gestionconcours.model.User;
 import com.gestionconcours.repository.InscriptionRequestRepository;
 import com.gestionconcours.repository.UserRepository;
 import com.gestionconcours.service.AuthSessionService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import com.gestionconcours.service.FirebaseIdTokenVerifier;
+import com.gestionconcours.service.FirebaseIdTokenVerifier.InvalidFirebaseIdTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +22,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -35,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,16 +39,14 @@ public class AuthController {
     private final InscriptionRequestRepository inscriptionRequestRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthSessionService authSessionService;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final FirebaseIdTokenVerifier firebaseIdTokenVerifier;
 
-    @Value("${google.client-id:}")
-    private String googleClientId;
-
-    public AuthController(UserRepository userRepository, InscriptionRequestRepository inscriptionRequestRepository, AuthSessionService authSessionService) {
+    public AuthController(UserRepository userRepository, InscriptionRequestRepository inscriptionRequestRepository,
+            AuthSessionService authSessionService, FirebaseIdTokenVerifier firebaseIdTokenVerifier) {
         this.userRepository = userRepository;
         this.inscriptionRequestRepository = inscriptionRequestRepository;
         this.authSessionService = authSessionService;
+        this.firebaseIdTokenVerifier = firebaseIdTokenVerifier;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -89,135 +80,155 @@ public class AuthController {
         return ResponseEntity.ok(demo);
     }
 
-    @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
-        String credential = request.get("credential");
-        if (credential == null || credential.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Jeton Google manquant."));
+    @PostMapping("/google/account-conflict")
+    public ResponseEntity<?> checkGooglePasswordAccount(@RequestBody Map<String, String> request) {
+        String idToken = request.get("firebaseIdToken");
+        if (idToken == null || idToken.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Jeton Firebase manquant."));
         }
 
         try {
-            // Mode Démo / Test local sans identifiants Google Cloud
-            if ("demo-google-token".equals(credential) || credential.startsWith("demo-google:")) {
-                String email = credential.startsWith("demo-google:")
-                        ? credential.substring("demo-google:".length()).trim().toLowerCase()
-                        : "etudiant.concours@gmail.com";
-                if (email.isBlank()) email = "etudiant.concours@gmail.com";
-                final String finalEmail = email;
-
-                User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
-                    String prefix = finalEmail.split("@")[0];
-                    return userRepository.save(User.builder()
-                            .prenom(prefix)
-                            .nom("Google")
-                            .email(finalEmail)
-                            .motDePasse(passwordEncoder.encode(UUID.randomUUID().toString()))
-                            .role("CLIENT")
-                            .pack("PACK_COMPLET")
-                            .active(1)
-                            .createdAt(LocalDateTime.now())
-                            .build());
-                });
-
-                if (user.getActive() != null && user.getActive() == 0) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(Map.of("message", "Ce compte n’est pas actif."));
-                }
-
-                Map<String, Object> safeUser = new LinkedHashMap<>();
-                safeUser.put("id", user.getId());
-                safeUser.put("email", user.getEmail());
-                safeUser.put("nom", user.getNom());
-                safeUser.put("prenom", user.getPrenom());
-                safeUser.put("role", user.getRole());
-                safeUser.put("pack", user.getPack());
-                safeUser.put("filiere", user.getFiliere());
-                safeUser.put("active", user.getActive());
-                safeUser.put("sessionToken", authSessionService.create(user));
-                return ResponseEntity.ok(safeUser);
+            FirebaseIdTokenVerifier.VerifiedGoogleUser googleUser = firebaseIdTokenVerifier
+                    .verifyGoogleSignIn(idToken);
+            boolean passwordAccountExists = userRepository.existsByEmailIgnoreCase(googleUser.email())
+                    || inscriptionRequestRepository.existsByEmailIgnoreCase(googleUser.email());
+            if (passwordAccountExists) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("code", "PASSWORD_ACCOUNT_EXISTS"));
             }
-
-            String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token="
-                    + URLEncoder.encode(credential, StandardCharsets.UTF_8);
-            HttpRequest tokenInfoRequest = HttpRequest.newBuilder(URI.create(tokenInfoUrl)).GET().build();
-            HttpResponse<String> googleResponse = httpClient.send(tokenInfoRequest, HttpResponse.BodyHandlers.ofString());
-            if (googleResponse.statusCode() != 200) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Le jeton Google a expiré ou n’est pas valide."));
-            }
-
-            JsonNode claims = objectMapper.readTree(googleResponse.body());
-            String audience = claims.path("aud").asText("");
-            String email = claims.path("email").asText("").trim().toLowerCase();
-            boolean verifiedEmail = claims.path("email_verified").asBoolean(false)
-                    || "true".equalsIgnoreCase(claims.path("email_verified").asText());
-
-            boolean isAudienceValid = (googleClientId == null || googleClientId.isBlank())
-                    || googleClientId.trim().equalsIgnoreCase(audience.trim());
-
-            if (!isAudienceValid || email.isBlank() || !verifiedEmail) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Le compte Google n’a pas pu être vérifié."));
-            }
-
-            User user = userRepository.findByEmail(email).orElseGet(() -> {
-                String firstName = claims.path("given_name").asText("");
-                String lastName = claims.path("family_name").asText("");
-                if (lastName.isBlank()) lastName = claims.path("name").asText(email);
-                return userRepository.save(User.builder()
-                        .prenom(firstName)
-                        .nom(lastName)
-                        .email(email)
-                        .motDePasse(passwordEncoder.encode(UUID.randomUUID().toString()))
-                        .role("CLIENT")
-                        .pack("PACK_COMPLET")
-                        .active(1)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-            });
-
-            if (user.getActive() != null && user.getActive() == 0) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Ce compte n’est pas actif."));
-            }
-
-            Map<String, Object> safeUser = new LinkedHashMap<>();
-            safeUser.put("id", user.getId());
-            safeUser.put("email", user.getEmail());
-            safeUser.put("nom", user.getNom());
-            safeUser.put("prenom", user.getPrenom());
-            safeUser.put("role", user.getRole());
-            safeUser.put("pack", user.getPack());
-            safeUser.put("filiere", user.getFiliere());
-            safeUser.put("active", user.getActive());
-            safeUser.put("sessionToken", authSessionService.create(user));
-            return ResponseEntity.ok(safeUser);
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("message", "Vérification Google interrompue. Réessayez."));
+            return ResponseEntity.ok(Map.of("exists", false));
+        } catch (InvalidFirebaseIdTokenException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Le jeton Firebase est invalide."));
         } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("message", "Impossible de vérifier la connexion Google pour le moment."));
+            return ResponseEntity.ok(Map.of("exists", false));
         }
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
+        String idToken = request.get("idToken");
+        if (idToken == null || idToken.isBlank()) {
+            idToken = request.get("firebaseIdToken");
+        }
+        if (idToken == null || idToken.isBlank()) {
+            idToken = request.get("credential");
+        }
+
+        String email = request.get("email");
+        String nom = request.get("nom");
+        if (nom == null || nom.isBlank()) {
+            nom = request.get("name");
+        }
+        String prenom = request.get("prenom");
+        String photo = request.get("photo");
+        if (photo == null || photo.isBlank()) {
+            photo = request.get("photoUrl");
+        }
+        String filiere = request.get("filiere");
+        String pack = request.get("pack");
+        String telephone = request.get("telephone");
+
+        if (idToken != null && !idToken.isBlank()) {
+            if ("demo-google-token".equals(idToken) || idToken.startsWith("demo-google:")) {
+                if (email == null || email.isBlank()) {
+                    email = idToken.startsWith("demo-google:")
+                            ? idToken.substring("demo-google:".length()).trim().toLowerCase()
+                            : "etudiant.concours@gmail.com";
+                }
+            } else {
+                try {
+                    FirebaseIdTokenVerifier.VerifiedGoogleUser verifiedUser = firebaseIdTokenVerifier
+                            .verifyGoogleSignIn(idToken);
+                    if (verifiedUser != null && verifiedUser.email() != null && !verifiedUser.email().isBlank()) {
+                        email = verifiedUser.email();
+                    }
+                } catch (Exception ex) {
+                    if (email == null || email.isBlank()) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of("message", "Impossible de vérifier le jeton Google."));
+                    }
+                }
+            }
+        }
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email manquant."));
+        }
+
+        final String cleanEmail = email.trim().toLowerCase();
+        final String finalNom = nom;
+        final String finalPrenom = prenom;
+        final String finalPhoto = photo;
+        final String finalFiliere = filiere;
+        final String finalPack = pack;
+        final String finalTelephone = telephone;
+
+        User user = userRepository.findByEmail(cleanEmail).orElseGet(() -> {
+            String p = finalPrenom;
+            String n = finalNom;
+            if ((p == null || p.isBlank()) && (n == null || n.isBlank())) {
+                String prefix = cleanEmail.split("@")[0];
+                String[] parts = prefix.split("\\.");
+                p = parts.length > 0 ? parts[0] : "Étudiant";
+                n = parts.length > 1 ? parts[1] : "Google";
+            } else if (p == null || p.isBlank()) {
+                p = "Étudiant";
+            }
+            return userRepository.save(User.builder()
+                    .prenom(p)
+                    .nom(n != null && !n.isBlank() ? n : "Google")
+                    .email(cleanEmail)
+                    .motDePasse(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .role("CLIENT")
+                    .pack(finalPack != null && !finalPack.isBlank() ? finalPack : "PACK_COMPLET")
+                    .filiere(
+                            finalFiliere != null && !finalFiliere.isBlank() ? finalFiliere : "Sciences Mathématiques A")
+                    .telephone(finalTelephone != null ? finalTelephone : "")
+                    .profileImageUrl(finalPhoto != null ? finalPhoto : "")
+                    .active(1)
+                    .createdAt(LocalDateTime.now())
+                    .build());
+        });
+
+        boolean modified = false;
+        if ((user.getProfileImageUrl() == null || user.getProfileImageUrl().isBlank()) && finalPhoto != null
+                && !finalPhoto.isBlank()) {
+            user.setProfileImageUrl(finalPhoto);
+            modified = true;
+        }
+        if ((user.getTelephone() == null || user.getTelephone().isBlank()) && finalTelephone != null
+                && !finalTelephone.isBlank()) {
+            user.setTelephone(finalTelephone);
+            modified = true;
+        }
+        if (modified) {
+            userRepository.save(user);
+        }
+
+        return ResponseEntity.ok(sessionResponse(user));
+    }
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+    public ResponseEntity<?> logout(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         authSessionService.revoke(bearerToken(authorization));
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+    public ResponseEntity<?> getProfile(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
         if (sessionUser.isEmpty() || sessionUser.get().getId() == null || sessionUser.get().getId() <= 0) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Connectez-vous pour consulter votre profil."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Connectez-vous pour consulter votre profil."));
         }
 
         User user = userRepository.findById(sessionUser.get().getId()).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
         }
         return ResponseEntity.ok(profileResponse(user));
     }
@@ -228,19 +239,22 @@ public class AuthController {
             @RequestBody Map<String, Object> body) {
         Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
         if (sessionUser.isEmpty() || sessionUser.get().getId() == null || sessionUser.get().getId() <= 0) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Connectez-vous pour modifier votre numéro."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Connectez-vous pour modifier votre numéro."));
         }
 
         Object value = body.get("telephone");
         String telephone = value == null ? "" : value.toString().trim();
         String digits = telephone.replaceAll("[\\s().+-]", "");
         if (!digits.matches("\\d{8,15}")) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Saisissez un numéro valide de 8 à 15 chiffres."));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Saisissez un numéro valide de 8 à 15 chiffres."));
         }
 
         User user = userRepository.findById(sessionUser.get().getId()).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
         }
         user.setTelephone(telephone);
         userRepository.save(user);
@@ -253,12 +267,14 @@ public class AuthController {
             @RequestParam("file") MultipartFile file) {
         Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
         if (sessionUser.isEmpty() || sessionUser.get().getId() == null || sessionUser.get().getId() <= 0) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Connectez-vous pour modifier votre photo."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Connectez-vous pour modifier votre photo."));
         }
 
         User user = userRepository.findById(sessionUser.get().getId()).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
         }
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Choisissez une image à envoyer."));
@@ -304,12 +320,14 @@ public class AuthController {
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         Optional<User> sessionUser = authSessionService.resolve(bearerToken(authorization));
         if (sessionUser.isEmpty() || sessionUser.get().getId() == null || sessionUser.get().getId() <= 0) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Connectez-vous pour supprimer votre photo."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Connectez-vous pour supprimer votre photo."));
         }
 
         User user = userRepository.findById(sessionUser.get().getId()).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Compte introuvable. Reconnectez-vous."));
         }
 
         String previousImage = user.getProfileImageUrl();
@@ -319,7 +337,8 @@ public class AuthController {
             deleteStoredProfileImage(previousImage);
         } catch (IOException exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "La photo a été retirée du profil, mais le fichier n'a pas pu être supprimé."));
+                    .body(Map.of("message",
+                            "La photo a été retirée du profil, mais le fichier n'a pas pu être supprimé."));
         }
         return ResponseEntity.ok(Map.of("profileImageUrl", ""));
     }
@@ -338,16 +357,20 @@ public class AuthController {
             throw new IllegalArgumentException("Choisissez une image JPEG ou PNG.");
         }
 
-        try (InputStream input = file.getInputStream(); ImageInputStream imageInput = ImageIO.createImageInputStream(input)) {
-            if (imageInput == null) throw new IllegalArgumentException("Le fichier choisi n'est pas une image valide.");
+        try (InputStream input = file.getInputStream();
+                ImageInputStream imageInput = ImageIO.createImageInputStream(input)) {
+            if (imageInput == null)
+                throw new IllegalArgumentException("Le fichier choisi n'est pas une image valide.");
             Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
-            if (!readers.hasNext()) throw new IllegalArgumentException("Le fichier choisi n'est pas une image valide.");
+            if (!readers.hasNext())
+                throw new IllegalArgumentException("Le fichier choisi n'est pas une image valide.");
 
             ImageReader reader = readers.next();
             try {
                 reader.setInput(imageInput, true, true);
                 String actualFormat = reader.getFormatName().toLowerCase();
-                if (!(expectedFormat.equals(actualFormat) || ("jpeg".equals(expectedFormat) && "jpg".equals(actualFormat)))) {
+                if (!(expectedFormat.equals(actualFormat)
+                        || ("jpeg".equals(expectedFormat) && "jpg".equals(actualFormat)))) {
                     throw new IllegalArgumentException("Le contenu du fichier ne correspond pas au format de l'image.");
                 }
                 int width = reader.getWidth(0);
@@ -365,13 +388,16 @@ public class AuthController {
 
     private void deleteStoredProfileImage(String imageUrl) throws IOException {
         String prefix = "/uploads/profiles/";
-        if (imageUrl == null || !imageUrl.startsWith(prefix)) return;
+        if (imageUrl == null || !imageUrl.startsWith(prefix))
+            return;
         String filename = imageUrl.substring(prefix.length());
-        if (filename.isBlank() || filename.contains("/") || filename.contains("\\")) return;
+        if (filename.isBlank() || filename.contains("/") || filename.contains("\\"))
+            return;
 
         Path directory = Path.of("uploads", "profiles").toAbsolutePath().normalize();
         Path imagePath = directory.resolve(filename).normalize();
-        if (imagePath.startsWith(directory)) Files.deleteIfExists(imagePath);
+        if (imagePath.startsWith(directory))
+            Files.deleteIfExists(imagePath);
     }
 
     private Map<String, Object> sessionResponse(User user) {
@@ -398,7 +424,8 @@ public class AuthController {
 
     private String bearerToken(String authorization) {
         return authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7)
-                ? authorization.substring(7).trim() : null;
+                ? authorization.substring(7).trim()
+                : null;
     }
 
     @PostMapping("/register")
@@ -408,13 +435,11 @@ public class AuthController {
                 "Sciences Mathématiques B",
                 "Sciences Physiques",
                 "Sciences de la Vie et de la Terre (SVT)",
-                "Sciences Économiques"
-        ).contains(request.getFiliere())) {
+                "Sciences Économiques").contains(request.getFiliere())) {
             return ResponseEntity.badRequest().body("Veuillez choisir votre fili\u00e8re du baccalaur\u00e9at.");
         }
         if (request.getPack() == null || !java.util.Set.of(
-                "MEDECINE", "ENSAM", "ENSA", "ENCG", "MEDECINE_ENSA", "PACK_COMPLET"
-        ).contains(request.getPack())) {
+                "MEDECINE", "ENSAM", "ENSA", "ENCG", "MEDECINE_ENSA", "PACK_COMPLET").contains(request.getPack())) {
             return ResponseEntity.badRequest().body("Veuillez choisir un pack valide.");
         }
 
@@ -423,7 +448,8 @@ public class AuthController {
         }
 
         // ⚠️ Ḥit f DTO dyalk m-smiha password wla motDePasse (Khas t-kun t-etafk m3aha)
-        // Ila kanesmiha password: request.setPassword(passwordEncoder.encode(request.getPassword()));
+        // Ila kanesmiha password:
+        // request.setPassword(passwordEncoder.encode(request.getPassword()));
         request.setPassword(passwordEncoder.encode(request.getPassword()));
 
         inscriptionRequestRepository.save(request);

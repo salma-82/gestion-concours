@@ -27,7 +27,7 @@ const COLORS = {
   primary: '#2563eb',
   success: '#10b981',
   danger: '#ef4444',
-  warning: '#f59e0b',
+  warning: '#2563eb',
   purple: '#8b5cf6',
   cyan: '#06b6d4',
   muted: '#94a3b8',
@@ -640,10 +640,8 @@ export default function ClientContestStatsDashboard({
       <header className="contest-stats-header">
         <div className="contest-stats-header-top">
           <div className="contest-title-lockup">
-            <span className="contest-title-icon" aria-hidden="true">□</span>
             <div>
               <h1 className="contest-stats-title">Analyse des performances</h1>
-              <p className="contest-stats-subtitle">Concours des écoles</p>
             </div>
           </div>
           <div>
@@ -961,13 +959,14 @@ export default function ClientContestStatsDashboard({
                     {kpiData.avgScore !== null && (
                       <ReferenceLine
                         y={kpiData.avgScore}
-                        stroke="#f59e0b"
+                        stroke="#b9ccf5"
                         strokeDasharray="4 4"
                         label={{
                           value: `Moyenne : ${kpiData.avgScore}%`,
-                          position: 'insideTopRight',
-                          fill: '#d97706',
-                          fontSize: 11,
+                          position: 'insideBottomRight',
+                          offset: 8,
+                          fill: '#203b5b',
+                          fontSize: 12,
                           fontWeight: 700,
                         }}
                       />
@@ -976,10 +975,10 @@ export default function ClientContestStatsDashboard({
                       type="monotone"
                       dataKey="score"
                       name="Score"
-                      stroke="#2563eb"
+                      stroke="#b9ccf5"
                       strokeWidth={3}
-                      dot={{ r: 5, fill: '#2563eb', stroke: '#ffffff', strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: '#1d4ed8' }}
+                      dot={{ r: 5, fill: '#b9ccf5', stroke: '#ffffff', strokeWidth: 2 }}
+                      activeDot={{ r: 7, fill: '#b9ccf5' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -1106,7 +1105,7 @@ export default function ClientContestStatsDashboard({
                     <Bar
                       dataKey="avgScore"
                       name="avgScore"
-                      fill="#2563eb"
+                      fill="#b9ccf5"
                       radius={[0, 6, 6, 0]}
                       barSize={14}
                     />
@@ -1173,14 +1172,14 @@ export default function ClientContestStatsDashboard({
                     <Bar
                       dataKey="avgScore"
                       name="Score moyen"
-                      fill="#3b82f6"
+                      fill="#b9ccf5"
                       radius={[6, 6, 0, 0]}
                       barSize={28}
                     >
                       {schoolPerformanceData.map((entry, index) => (
                         <Cell
                           key={index}
-                          fill={selectedSchool === entry.school ? '#1d4ed8' : '#3b82f6'}
+                          fill={selectedSchool === entry.school ? '#b9ccf5' : '#b9ccf5'}
                           cursor="pointer"
                         />
                       ))}
@@ -1391,7 +1390,7 @@ export default function ClientContestStatsDashboard({
                         <strong
                           className="contest-subject-badge"
                           style={{
-                            color: subject.rate >= 70 ? '#059669' : subject.rate >= 50 ? '#d97706' : '#dc2626',
+                            color: subject.rate >= 70 ? '#059669' : subject.rate >= 50 ? '#2563eb' : '#dc2626',
                           }}
                         >
                           {subject.rate}%

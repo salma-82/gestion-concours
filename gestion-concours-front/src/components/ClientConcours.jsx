@@ -6,6 +6,7 @@ import { toBackendResourceUrl } from '../backendResourceUrl';
 import { recordStudentActivity, getStudentScope } from '../studentProgress';
 import TrackedQcmFrame from './TrackedQcmFrame';
 import cardMascot from '../assets/logo-mascot.png';
+import './ClientCatalogCards.css';
 import { demoContentClass, DemoAccessBadge, isDemoFree, isDemoMode } from '../demoAccess';
 
 const API_BASE = '';
@@ -477,7 +478,7 @@ export default function ClientConcours() {
         title={isSubLocked ? 'Contenu réservé aux abonnés' : `Ouvrir ${displayName}`}
       >
         <span className="concours-subject-title-wrap">
-          <span className="concours-subject-accent" style={{ backgroundColor: isSubLocked ? '#94a3b8' : '#2563eb' }} />
+          <span className="concours-subject-accent" style={{ backgroundColor: isSubLocked ? '#94a3b8' : '#d2def7' }} />
           <span className="concours-subject-title" style={{ color: isSubLocked ? '#64748b' : 'var(--text, #0f2a6b)' }}>
             {displayName} {isSubLocked && <span aria-label="Verrouillé">🔒</span>}
           </span>
@@ -590,8 +591,8 @@ export default function ClientConcours() {
           <button
             onClick={fetchAllConcours}
             style={{
-              background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
-              color: '#ffffff',
+              background: 'linear-gradient(90deg, #d2def7 0%, #d2def7 100%)',
+              color: '#203b5b',
               border: 'none',
               padding: '10px 22px',
               borderRadius: '9999px',
@@ -645,10 +646,10 @@ export default function ClientConcours() {
           </div>
 
           {/* Grille des cartes par année (100% dynamiques) */}
-          <div style={{
+          <div className="client-concours-year-grid client-catalog-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 394px))',
-            gap: '24px'
+            gap: '14px'
           }}>
             {filteredYears.map(item => {
               const yr = item.year;
@@ -662,12 +663,12 @@ export default function ClientConcours() {
               return (
                 <div
                   key={yr}
-                  className={demoContentClass(demoAccessItem)}
+                  className={`client-catalog-card client-catalog-theme-concours ${demoContentClass(demoAccessItem)}`}
                   style={{
                     position: 'relative',
                     backgroundColor: 'var(--surface, #ffffff)',
                     boxSizing: 'border-box',
-                    height: '284px',
+                    height: '310px',
                     borderRadius: '26px',
                     border: '1px solid var(--border, #e2e8f0)',
                     boxShadow: '0 4px 20px -2px rgba(24, 101, 242, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
@@ -687,14 +688,15 @@ export default function ClientConcours() {
                 >
                   <DemoAccessBadge item={demoAccessItem} />
                   {/* Bannière bleue compacte avec grande année, mascotte et boutons matières réelles */}
-                  <div style={{
+                  <div className="client-concours-year-banner client-catalog-card-cover" style={{
                     position: 'relative',
-                    height: '110px',
-                    flex: '0 0 110px',
-                    background: 'linear-gradient(135deg, #1859cf 0%, #2563eb 52%, #38a3ff 100%)',
+                    height: '145px',
+                    flex: '0 0 145px',
+                    background: 'linear-gradient(135deg, #d2def7 0%, #d2def7 52%, #d2def7 100%)',
                     overflow: 'hidden',
                     userSelect: 'none'
                   }}>
+                    <span className="client-catalog-subject-pill">Concours</span>
                     {/* Boutons matières réelles en haut à droite (cliquables !) */}
                     <div style={{
                       position: 'absolute',
@@ -720,7 +722,7 @@ export default function ClientConcours() {
                             style={{
                               background: 'transparent',
                               border: 'none',
-                              color: 'rgba(255, 255, 255, 0.92)',
+                              color: '#203b5b',
                               opacity: isDemoMode() && !isDemoFree(subjectConcours) ? 0.58 : 1,
                               fontFamily: 'inherit',
                               fontSize: '11px',
@@ -733,11 +735,11 @@ export default function ClientConcours() {
                               lineHeight: 1.2
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.color = '#ffffff';
-                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)';
+                              e.currentTarget.style.color = '#203b5b';
+                              e.currentTarget.style.backgroundColor = 'rgba(32, 59, 91, 0.08)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.92)';
+                              e.currentTarget.style.color = '#203b5b';
                               e.currentTarget.style.backgroundColor = 'transparent';
                             }}
                             title={`Ouvrir le concours ${s} ${yr}`}
@@ -749,24 +751,25 @@ export default function ClientConcours() {
                     </div>
 
                     {/* Grande Année sur le côté gauche */}
-                    <div style={{
+                    <div className="client-catalog-banner-title" style={{
                       position: 'absolute',
                       left: '20px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
+                      top: 'auto',
+                      bottom: '15px',
+                      transform: 'none',
                       fontSize: '46px',
                       fontWeight: 900,
-                      color: '#ffffff',
+                      color: '#203b5b',
                       lineHeight: 1,
                       letterSpacing: '-1.5px',
                       zIndex: 2,
-                      textShadow: '0 2px 10px rgba(0, 0, 0, 0.15)'
+                      textShadow: 'none'
                     }}>
                       {yr}
                     </div>
 
                     {/* Mascotte E-Concours peeking bottom right (style identique à la page Cours & Concours Blancs) */}
-                    <div style={{
+                    <div className="client-catalog-mascot" style={{
                       position: 'absolute',
                       right: '-6px',
                       bottom: '-8px',
@@ -791,7 +794,7 @@ export default function ClientConcours() {
                   </div>
 
                   {/* Corps de la carte */}
-                  <div style={{
+                  <div className="client-catalog-card-body" style={{
                     boxSizing: 'border-box',
                     minHeight: 0,
                     padding: '10px 14px 12px',
@@ -800,7 +803,7 @@ export default function ClientConcours() {
                     gap: '8px',
                     flex: 1
                   }}>
-                    <h3 style={{
+                    <h3 className="client-catalog-card-title" style={{
                       margin: 0,
                       fontSize: '18px',
                       fontWeight: 850,
@@ -811,8 +814,8 @@ export default function ClientConcours() {
                     </h3>
 
                     {/* Pastilles type & nombre réel de matières */}
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{
+                    <div className="client-catalog-meta-row" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className="client-catalog-type-badge" style={{
                         fontSize: '11.5px',
                         fontWeight: 800,
                         padding: '4px 12px',
@@ -836,14 +839,14 @@ export default function ClientConcours() {
                     </div>
 
                     {/* Barre de progression */}
-                    <div style={{
+                    <div className="client-catalog-progress-track" style={{
                       height: '6px',
                       backgroundColor: 'var(--border, #e2e8f0)',
                       borderRadius: '9999px',
                       overflow: 'hidden',
                       marginTop: '2px'
                     }}>
-                      <div style={{
+                      <div className={`client-catalog-progress-fill ${isOk ? 'fill-completed' : isInProgress ? 'status-in-progress' : 'status-new'}`} style={{
                         height: '100%',
                         width: `${overallProg.percentage}%`,
                         backgroundColor: isOk ? '#10b981' : '#1865f2',
@@ -853,7 +856,7 @@ export default function ClientConcours() {
                     </div>
 
                     {/* Statut & Pourcentage réel */}
-                    <div style={{
+                    <div className="client-catalog-progress-row" style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -861,11 +864,11 @@ export default function ClientConcours() {
                       fontWeight: 800,
                       color: 'var(--text-secondary, #64748b)'
                     }}>
-                      <span style={{
+                      <span className={`client-catalog-status ${isOk ? 'status-completed' : isInProgress ? 'status-in-progress' : 'status-new'}`} style={{
                         color: isOk ? '#10b981' : (isInProgress ? '#1865f2' : 'var(--text-secondary, #64748b)'),
                         fontWeight: 800
                       }}>
-                        {overallProg.status}
+                        {isOk || isInProgress ? overallProg.status : 'Pas commencé'}
                       </span>
                       <span>{overallProg.percentage} %</span>
                     </div>
@@ -873,6 +876,7 @@ export default function ClientConcours() {
                     {/* Gros bouton CTA */}
                     <button
                       type="button"
+                      className={`client-catalog-action ${isOk ? 'status-completed' : isInProgress ? 'status-in-progress' : 'status-new'}`}
                       onClick={() => handleOpenYearCTA(yr)}
                       style={{
                         border: 'none',
@@ -881,8 +885,8 @@ export default function ClientConcours() {
                         fontFamily: 'inherit',
                         fontWeight: 800,
                         fontSize: '14px',
-                        color: '#ffffff',
-                        background: 'linear-gradient(90deg, #1859cf 0%, #2563eb 100%)',
+                        color: '#203b5b',
+                        background: 'linear-gradient(90deg, #d2def7 0%, #d2def7 100%)',
                         cursor: 'pointer',
                         boxShadow: '0 4px 14px rgba(24, 101, 242, 0.28)',
                         transition: 'transform 0.15s ease, box-shadow 0.15s ease',
@@ -1244,7 +1248,7 @@ export default function ClientConcours() {
                                 height="15"
                                 viewBox="0 0 24 24"
                                 fill="none"
-                                stroke={isCurrent ? '#2563eb' : '#94a3b8'}
+                                stroke={isCurrent ? '#b9ccf5' : '#94a3b8'}
                                 strokeWidth="2.4"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"

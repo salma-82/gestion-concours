@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QCM Concours Médecine 2026 – Mathématiques</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.js"></script>
+<style>
+:root{--bg:#f3f5fa;--card:#fff;--text:#1b2033;--muted:#6b7390;--pri:#2457c5;--pri-d:#1a43a0;--ok:#16a34a;--okbg:#e8f8ee;--ko:#dc2626;--kobg:#fdecec;--bd:#d9deec;--flash:#fff6e0;--flashbd:#f0b429}
+@media (prefers-color-scheme:dark){:root{--bg:#11131c;--card:#1b1e2c;--text:#e8eaf6;--muted:#9aa2c0;--pri:#5b8cff;--pri-d:#7aa0ff;--ok:#34d399;--okbg:#12301f;--ko:#f87171;--kobg:#3a1818;--bd:#33384f;--flash:#33290f;--flashbd:#b8892a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:16px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start}
+.content{min-width:0}
+.side{position:sticky;top:16px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;max-height:calc(100vh - 32px);overflow-y:auto}
+.side h4{margin:0 0 8px;font-size:.95rem}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.side{position:static;order:0}}
+header{background:var(--pri);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:14px}
+header h1{margin:0;font-size:1.25rem}header p{margin:2px 0 0;opacity:.85;font-size:.9rem}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+.top{display:flex;flex-direction:column;font-size:.85rem;color:var(--muted);gap:2px}
+.pal{display:grid;grid-template-columns:1fr;gap:5px;margin:8px 0 0}
+.pal button{height:32px;border-radius:8px;border:1.5px solid var(--bd);background:var(--card);color:var(--text);font-weight:600;cursor:pointer}
+.pal button.cur{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri)}
+.pal button.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.pal button.ko{background:var(--ko);border-color:var(--ko);color:#fff}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:14px}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);color:var(--muted);border-radius:20px;padding:2px 12px;font-size:.8rem;margin-bottom:8px}
+.q{font-size:1.1rem;margin:6px 0 16px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);color:var(--text);border:2px solid var(--bd);border-radius:12px;padding:12px 14px;margin:8px 0;font-size:1rem;cursor:pointer;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--pri)}
+.opt .l{flex:none;width:30px;height:30px;border-radius:50%;background:var(--bg);border:1.5px solid var(--bd);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt.sel{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 10%,var(--card))}
+.opt.sel .l{background:var(--pri);color:#fff;border-color:var(--pri)}
+.opt.good{border-color:var(--ok);background:var(--okbg)}.opt.good .l{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.bad{border-color:var(--ko);background:var(--kobg)}.opt.bad .l{background:var(--ko);color:#fff;border-color:var(--ko)}
+.opt:disabled{cursor:default}
+.btns{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;border-radius:10px;padding:11px 20px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--pri);color:#fff;font-family:inherit}
+.btn:hover{background:var(--pri-d)}.btn.sec{background:var(--bg);color:var(--text);border:1.5px solid var(--bd)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.res{padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px}
+.res.ok{background:var(--okbg);color:var(--ok)}.res.ko{background:var(--kobg);color:var(--ko)}
+.exp h3{margin:16px 0 6px;font-size:1rem}
+.flash{background:var(--flash);border-left:4px solid var(--flashbd);border-radius:8px;padding:10px 14px}
+.trap{background:var(--kobg);border-left:4px solid var(--ko);border-radius:8px;padding:10px 14px;margin-top:14px}
+.exp ol{padding-left:22px;margin:6px 0}.exp li{margin:6px 0}
+.exp ul{padding-left:20px;margin:4px 0}
+.score{text-align:center}.score .big{font-size:3rem;font-weight:800;color:var(--pri)}
+.rev{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.rev span.n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.85rem}
+svg{max-width:100%;height:auto}
+
+/* ===== Style v8 (maquette) ===== */
+:root{--tint:#e8f0ff;--tintbd:#c3d5f7;--pill:#e3edff;--pilltx:#1e4fd6}
+@media (prefers-color-scheme:dark){:root{--tint:#1f2a47;--tintbd:#34508f;--pill:#1f2a47;--pilltx:#8fb0ff}}
+body{background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--pri) 8%,var(--bg)))}
+.wrap{grid-template-columns:230px minmax(0,1fr);gap:18px;max-width:1120px}
+.side{border-radius:18px;padding:14px;border-color:var(--tintbd)}
+.side h4{display:flex;align-items:center;gap:10px;font-size:1.05rem;margin-bottom:10px}
+.side h4 i{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--pri);color:#fff;font-style:normal;font-size:1rem}
+.top{background:var(--tint);border-radius:10px;padding:6px 10px;margin-bottom:8px;font-weight:600;color:var(--pri)}
+.bar{height:6px;margin:8px 0}
+.pal{gap:6px}
+.pal button{position:relative;height:34px;border-radius:10px;border:1.5px solid var(--tintbd);background:var(--card);font-weight:600;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.pal button .ck{position:absolute;right:8px;width:20px;height:20px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:.72rem;font-weight:800}
+.pal button.ans{background:var(--tint)}
+.pal button.cur{border-color:var(--pri);box-shadow:0 0 0 2px color-mix(in srgb,var(--pri) 25%,transparent);background:var(--tint)}
+.pal button.ok{background:var(--okbg);border-color:var(--ok);color:var(--text)}.pal button.ok .ck{background:var(--ok)}
+.pal button.ko{background:var(--kobg);border-color:var(--ko);color:var(--text)}.pal button.ko .ck{background:var(--ko)}
+.card{border-radius:18px;border-color:var(--tintbd);padding:24px}
+.tag{background:var(--pill);color:var(--pilltx);border:0;border-radius:999px;padding:8px 18px;font-weight:600;font-size:.88rem;margin-bottom:14px}
+.q{font-size:1.15rem;margin:10px 0 20px}
+.opt{border:1.5px solid var(--tintbd);border-radius:14px;padding:16px 20px;margin:12px 0;gap:18px;font-size:1.05rem}
+.opt .l{width:38px;height:38px;background:var(--tint);border:0;color:var(--pri);font-size:1.05rem}
+.opt.sel{background:var(--tint);border-color:var(--pri)}
+.opt.sel .l{background:var(--pri);color:#fff}
+.opt.good .l{background:var(--ok);color:#fff}.opt.bad .l{background:var(--ko);color:#fff}
+.btn{border-radius:12px;padding:12px 26px;display:inline-flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(36,87,197,.25)}
+.btn.sec{background:var(--tint);color:var(--pri);border:1.5px solid var(--tintbd);box-shadow:none}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.side{max-height:none}.pal{grid-template-columns:repeat(4,1fr)}.pal button .ck{display:none}}
+
+/* ===== v9 : fidèle à la maquette ===== */
+:root{--pri:#2457c8;--tint:#e6efff;--tintbd:#c5d6f5;--pill:#e4edff;--pilltx:#1c4fd0;--bg:#eef2fb}
+@media (prefers-color-scheme:dark){:root{--pri:#5b8cff;--tint:#1f2a47;--tintbd:#34508f;--pill:#1f2a47;--pilltx:#8fb0ff;--bg:#11131c}}
+body{background:var(--bg)}
+.bar{display:none}
+.side{background:var(--card);border:1px solid var(--tintbd);border-radius:18px;padding:16px 14px}
+.side h4{font-size:1.1rem;font-weight:700;gap:12px;margin:0 0 12px}
+.side h4 i{background:none;width:auto;height:auto;display:inline-flex}
+.top{background:var(--tint);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-weight:600;color:#5a6a90;gap:4px}
+.top span:last-child{color:var(--pri)}
+.pal{gap:7px;margin:0}
+.pal button{height:36px;border:1.5px solid var(--tintbd);border-radius:10px;background:var(--card);color:var(--text);font-weight:600;font-size:.88rem;box-shadow:none}
+.pal button.ans,.pal button.cur{background:var(--tint);border-color:var(--pri)}
+.pal button.cur{box-shadow:none}
+.pal button .ck{width:22px;height:22px;right:10px;background:var(--pri);color:#fff;font-size:.78rem;line-height:1}
+.pal button.ok{background:var(--okbg);border-color:var(--ok)}.pal button.ko{background:var(--kobg);border-color:var(--ko)}
+.card{background:var(--card);border:1px solid var(--tintbd);border-radius:18px;box-shadow:none;padding:22px 24px}
+.tag{background:var(--pill);color:var(--pilltx);border:0;border-radius:999px;padding:9px 20px;font-weight:600;font-size:.9rem;margin-bottom:18px}
+.q{font-size:1.1rem;margin:6px 0 22px}
+.opt{background:var(--card);border:1.5px solid var(--tintbd);border-radius:14px;padding:14px 20px;margin:12px 0;gap:20px;box-shadow:none}
+.opt .l{width:38px;height:38px;background:var(--tint);color:var(--pri);border:0;font-weight:800}
+.opt.sel{background:var(--tint);border-color:var(--pri)}.opt.sel .l{background:var(--pri);color:#fff}
+.btns{margin-top:22px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:12px;padding:13px 28px;font-weight:600;box-shadow:none}
+.btn.sec{background:var(--tint);color:var(--pri);border:1.5px solid var(--tintbd)}
+
+/* ===== v10 : mise en page robuste (flex) ===== */
+.wrap{display:flex!important;flex-direction:row;align-items:flex-start;gap:18px;max-width:1120px}
+.side{flex:0 0 230px;width:230px;max-height:calc(100vh - 24px);overflow-y:auto;position:sticky;top:12px;order:-1}
+.content{flex:1 1 0;min-width:0;order:1}
+.pal{display:flex!important;flex-direction:column;gap:6px}
+.pal button{width:100%;height:34px}
+@media (max-width:820px){
+ .wrap{flex-direction:column}
+ .side{flex:none;width:100%;max-height:none;position:static;padding:12px;order:0}
+ .content{order:1}
+ .pal{flex-direction:row!important;flex-wrap:wrap;gap:6px}
+ .pal button{width:56px;height:36px}
+ .pal button .ck{display:none}
+ .pal button.ans:not(.cur){background:var(--tint);border-color:var(--pri)}
+ .side h4{margin-bottom:8px}
+ .top{flex-direction:row;justify-content:space-between;margin-bottom:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="content"><div id="main"></div></div>
+<aside class="side"><h4><i><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#2457c8"/><g fill="#fff"><rect x="6" y="8" width="3" height="3" rx="1"/><rect x="11" y="8" width="13" height="3" rx="1.5"/><rect x="6" y="13.5" width="3" height="3" rx="1"/><rect x="11" y="13.5" width="13" height="3" rx="1.5"/><rect x="6" y="19" width="3" height="3" rx="1"/><rect x="11" y="19" width="13" height="3" rx="1.5"/></g></svg></i>Questions</h4><div class="top"><span id="prog"></span><span id="sc"></span></div>
+<div class="bar"><i id="barfill"></i></div>
+<div class="pal" id="pal"></div></aside>
+</div>
+
+<script>
+const r = String.raw;
+const E = "Aucune des réponses précédentes.";
+const Q = [
+{t:"Limites & dérivation – Nombre dérivé en un point",
+ q:r`Calculer la limite : \(\displaystyle\lim_{x\to0,\,x\neq0}\frac{(1+x)^{2026}-1}{x}\)`,
+ o:[r`\(0\)`,r`\(1\)`,r`\(2026\)`,r`\(+\infty\)`,E], a:2,
+ rappel:r`Si \(g\) est dérivable en \(x_0\) : \(\displaystyle\lim_{x\to0}\frac{g(x_0+x)-g(x_0)}{x}=g'(x_0)\). Pour \(g(t)=t^n\), \(g'(t)=nt^{n-1}\).`,
+ flash:r`La limite est le taux d’accroissement de \(g(t)=t^{2026}\) en \(1\) : elle vaut \(g'(1)=2026\times1^{2025}=2026\). Choix direct : <b>(C)</b>.`,
+ steps:[r`Posons \(g(t)=(1+t)^{2026}\), polynomiale donc dérivable sur \(\mathbb R\).`,r`\(g'(t)=2026(1+t)^{2025}\).`,r`\(g(0)=1\), donc \(\displaystyle\lim_{x\to0}\frac{g(x)-g(0)}{x-0}=g'(0)=2026\).`],
+ trap:r`Développer \((1+x)^{2026}\) avec le binôme de Newton : exact mais beaucoup trop long en temps limité.`},
+
+{t:"Trigonométrie & dérivation – Formules de duplication",
+ q:r`La dérivée de la fonction \(f(x)=\sin^2(x)\cos(2x)\) est :`,
+ o:[r`\(\sin(2x)(1+2\sin x)(1+2\cos x)\)`,r`\(\sin(2x)(1-2\sin x)(1+2\sin x)\)`,r`\(\cos(2x)(1-2\sin x)(1+2\sin x)\)`,r`\(\sin(2x)(1-4\cos^2x)\)`,E], a:1,
+ rappel:r`\((uv)'=u'v+uv'\) ; \((u^2)'=2u'u\) ; \(\sin(2x)=2\sin x\cos x\) ; \(\cos(2x)=1-2\sin^2x\).`,
+ flash:r`\(f'(x)=2\sin x\cos x\cos(2x)-2\sin(2x)\sin^2x=\sin(2x)\,[\cos(2x)-2\sin^2x]\), et \(\cos(2x)-2\sin^2x=1-4\sin^2x=(1-2\sin x)(1+2\sin x)\). Choix direct : <b>(B)</b>.`,
+ steps:[r`\(f'(x)=(\sin^2x)'\cos(2x)+\sin^2x\,(\cos 2x)'=2\sin x\cos x\cos(2x)-2\sin^2x\sin(2x)\).`,r`On factorise par \(\sin(2x)=2\sin x\cos x\) : \(f'(x)=\sin(2x)\,[\cos(2x)-2\sin^2x]\).`,r`Avec \(\cos(2x)=1-2\sin^2x\) : \(1-4\sin^2x=(1-2\sin x)(1+2\sin x)\).`,r`Donc \(f'(x)=\sin(2x)(1-2\sin x)(1+2\sin x)\).`],
+ trap:r`Oublier le facteur 2 en dérivant \(\cos(2x)\) (on obtient \(-2\sin(2x)\)), ou confondre \(\cos(2x)=1-2\sin^2x\) avec \(2\cos^2x-1\).`},
+
+{t:"Analyse fonctionnelle – Centre de symétrie d’une courbe",
+ q:r`Soit \(f\) définie sur \(\mathbb R\) par \(f(x)=\dfrac{x-1}{(x-1)^2+1}\). Le point \(A(1,0)\) est :`,
+ o:[r`un point d’intersection de la courbe de \(f\) avec l’axe \(OY\)`,r`un maximum de la fonction \(f\)`,r`un minimum de la fonction \(f\)`,r`un centre de symétrie de la courbe de \(f\)`,E], a:3,
+ rappel:r`\(\Omega(a,b)\) est centre de symétrie de \(C_f\) \(\iff\) \(\forall x\in D_f\) : \((2a-x)\in D_f\) et \(f(2a-x)+f(x)=2b\). Avec \(X=x-a\), cela revient à : \(g(X)=f(a+X)-b\) est impaire.`,
+ flash:r`Avec \(X=x-1\) : \(f(1+X)=\dfrac{X}{X^2+1}\), manifestement impaire. Donc \(A(1,0)\) est centre de symétrie. Choix direct : <b>(D)</b>.`,
+ steps:[r`Ici \(a=1\), \(b=0\) : pour tout \(x\in\mathbb R\), \(2-x\in\mathbb R\).`,r`\(f(2-x)=\dfrac{(2-x)-1}{((2-x)-1)^2+1}=\dfrac{1-x}{(1-x)^2+1}=\dfrac{-(x-1)}{(x-1)^2+1}=-f(x)\).`,r`Donc \(f(2-x)+f(x)=0=2\times0\) : \(A(1,0)\) est centre de symétrie de \(C_f\).`],
+ trap:r`Cocher (A) trop vite : \(A(1,0)\) est sur l’axe des abscisses (\(y=0\)), pas sur l’axe des ordonnées (\(x=0\)).`},
+
+{t:"Géométrie dans l’espace – Distance d’un point à une droite",
+ q:r`Dans l’espace muni d’un repère orthonormé, on considère \(C(-1,2,1)\) et la droite \((D)\) : \(\begin{cases}x=1+2t\\y=-1-t\\z=2t\end{cases}\), \(t\in\mathbb R\). Soit \(H\) le projeté orthogonal de \(C\) sur \((D)\). La distance \(CH\) est égale à :`,
+ o:[r`\(\dfrac{\sqrt{101}}{3}\)`,r`\(\dfrac{\sqrt{101}}{\sqrt3}\)`,r`\(\dfrac{\sqrt{103}}{3}\)`,r`\(\dfrac{\sqrt{102}}{\sqrt3}\)`,E], a:0,
+ rappel:r`Distance d’un point \(C\) à une droite \((D)\) de repère \((A,\vec u)\) : \(d(C,(D))=\dfrac{\|\overrightarrow{AC}\wedge\vec u\|}{\|\vec u\|}\). Ou : \(H\in(D)\) tel que \(\overrightarrow{CH}\cdot\vec u=0\), puis \(d=\|\overrightarrow{CH}\|\).`,
+ flash:r`\(A(1,-1,0)\in(D)\), \(\overrightarrow{AC}(-2,3,1)\), \(\vec u(2,-1,2)\). \(\overrightarrow{AC}\wedge\vec u=(7,6,-4)\), de norme \(\sqrt{49+36+16}=\sqrt{101}\), et \(\|\vec u\|=3\). Donc \(d=\dfrac{\sqrt{101}}3\). Choix direct : <b>(A)</b>.`,
+ steps:[r`Point courant \(M(1+2t,-1-t,2t)\) ; \(\overrightarrow{CM}=(2+2t,\,-3-t,\,2t-1)\).`,r`Orthogonalité \(\overrightarrow{CM}\cdot\vec u=0\) : \(2(2+2t)-(-3-t)+2(2t-1)=0\iff 9t+5=0\iff t=-\dfrac59\).`,r`\(\overrightarrow{CH}=\dfrac19(8,-22,-19)\), donc \(CH=\dfrac{\sqrt{64+484+361}}{9}=\dfrac{\sqrt{909}}9=\dfrac{3\sqrt{101}}9=\dfrac{\sqrt{101}}3\).`],
+ trap:r`Oublier de diviser par la norme du vecteur directeur \(\|\vec u\|=3\) dans la formule du produit vectoriel.`},
+
+{t:"Logarithme népérien – Identités remarquables & équations",
+ q:r`Soit \(x>0\) tel que \(\ln(x)-\ln(\sqrt2+1)=\ln\big(2(\sqrt2-1)\big)\). Alors :`,
+ o:[r`\(x=1\)`,r`\(x=\sqrt2\)`,r`\(x=2\)`,r`\(x=4\)`,E], a:2,
+ rappel:r`Pour \(a,b>0\) : \(\ln a-\ln b=\ln\frac ab\) et \(\ln a+\ln b=\ln(ab)\). Identité remarquable : \((\sqrt a-b)(\sqrt a+b)=a-b^2\).`,
+ flash:r`\(\ln x=\ln\big[2(\sqrt2-1)(\sqrt2+1)\big]\) et \((\sqrt2-1)(\sqrt2+1)=2-1=1\), donc \(x=2\). Choix direct : <b>(C)</b>.`,
+ steps:[r`On regroupe : \(\ln x=\ln(\sqrt2+1)+\ln\big(2(\sqrt2-1)\big)\).`,r`Propriété \(\ln a+\ln b=\ln(ab)\) : \(\ln x=\ln\big[2(\sqrt2+1)(\sqrt2-1)\big]\).`,r`\((\sqrt2+1)(\sqrt2-1)=(\sqrt2)^2-1^2=1\), donc \(\ln x=\ln 2\).`,r`Par injectivité de \(\ln\) : \(x=2\).`],
+ trap:r`Développer trop tôt \(2(\sqrt2-1)=2\sqrt2-2\) : on perd la simplification immédiate par le conjugué.`},
+
+{t:"Algèbre – Équation polynomiale de degré 3 dans \\(\\mathbb R\\)",
+ q:r`Résoudre dans \(\mathbb R\) l’équation : \((x-3)^3+1=0\).`,
+ o:[r`\(\{-2\}\)`,r`\(\{2\}\)`,r`\(\{4\}\)`,r`\(\{2,4\}\)`,E], a:1,
+ rappel:r`La fonction \(t\mapsto t^3\) est strictement croissante et bijective de \(\mathbb R\) sur \(\mathbb R\) : l’équation \(t^3=k\) admet une unique solution réelle \(t=\sqrt[3]{k}\).`,
+ flash:r`\((x-3)^3=-1\iff x-3=-1\iff x=2\). Choix direct : <b>(B)</b>.`,
+ steps:[r`On isole le cube : \((x-3)^3=-1\).`,r`Dans \(\mathbb R\) : \(x-3=\sqrt[3]{-1}=-1\).`,r`D’où \(x=3-1=2\) et \(S=\{2\}\).`],
+ trap:r`Penser que \((-1)^3=1\) et poser \(x-3=1\Rightarrow x=4\) : c’est le piège des choix (C) et (D).`},
+
+{t:"Analyse réelle – Inéquation logarithmique & ensemble de définition",
+ q:r`L’ensemble des solutions de l’inéquation \(\ln(1-x)\ge0\) est :`,
+ o:[r`\([0,1[\)`,r`\(]-\infty,1[\)`,r`\(]-\infty,0]\)`,r`\(]1,+\infty[\)`,E], a:2,
+ rappel:r`\(\ln(u(x))\ge0\iff u(x)\ge e^0=1\), avec \(u(x)>0\). L’ensemble des solutions est l’intersection du domaine et de cette condition.`,
+ flash:r`\(1-x\ge1\iff -x\ge0\iff x\le0\), et pour \(x\le0\) on a bien \(1-x\ge1>0\). Choix direct : <b>(C)</b>.`,
+ steps:[r`Domaine : \(1-x>0\iff x<1\), soit \(D=]-\infty,1[\).`,r`Par croissance de l’exponentielle : \(\ln(1-x)\ge0\iff1-x\ge1\iff x\le0\).`,r`Intersection : \(S=]-\infty,1[\,\cap\,]-\infty,0]=]-\infty,0]\).`],
+ trap:r`Oublier que multiplier par \(-1\) inverse le sens de l’inégalité : on obtiendrait à tort \([0,1[\).`},
+
+{t:"Calcul intégral – Reconnaissance du type \\(u'/u\\)",
+ q:r`Déterminer une primitive de la fonction \(f(x)=\dfrac{e^x-e^{-x}}{e^x+e^{-x}}\).`,
+ o:[r`\(F(x)=\ln(e^x-e^{-x})\)`,r`\(F(x)=e^x+e^{-x}\)`,r`\(F(x)=\dfrac{e^x+e^{-x}}{e^x-e^{-x}}\)`,r`\(F(x)=\ln(e^x+e^{-x})\)`,E], a:3,
+ rappel:r`Si \(u>0\) est dérivable sur \(I\) : \(\displaystyle\int\frac{u'(x)}{u(x)}dx=\ln(u(x))+C\).`,
+ flash:r`Posons \(u(x)=e^x+e^{-x}>0\) : \(u'(x)=e^x-e^{-x}\), exactement le numérateur. Une primitive est \(\ln(e^x+e^{-x})\). Choix direct : <b>(D)</b>.`,
+ steps:[r`\(u(x)=e^x+e^{-x}>0\) pour tout réel \(x\).`,r`\(u'(x)=e^x-e^{-x}\).`,r`Donc \(f=\dfrac{u'}{u}\) et \(F(x)=\ln|u(x)|=\ln(e^x+e^{-x})\).`],
+ trap:r`Mettre le numérateur dans le logarithme comme en (A) : cela correspondrait à dériver \(\ln(e^x-e^{-x})\).`},
+
+{t:"Analyse réelle – Équation à base exponentielle",
+ q:r`Soit l’équation \((E)\) : \(8^{x(1-x)}=\dfrac1{64}\). L’ensemble des solutions de \((E)\) est :`,
+ o:[r`\(\{1,2\}\)`,r`\(\{1,-2\}\)`,r`\(\{-1,2\}\)`,r`\(\{-2,2\}\)`,E], a:2,
+ rappel:r`Pour \(a>0\), \(a\neq1\) : \(a^{u(x)}=a^k\iff u(x)=k\). Ici \(\dfrac1{64}=\dfrac1{8^2}=8^{-2}\).`,
+ flash:r`\(x(1-x)=-2\iff x^2-x-2=0\) : somme \(S=1\), produit \(P=-2\), racines \(-1\) et \(2\). Choix direct : <b>(C)</b>.`,
+ steps:[r`Base commune : \(\dfrac1{64}=8^{-2}\).`,r`\(8^{x(1-x)}=8^{-2}\iff x(1-x)=-2\iff x^2-x-2=0\).`,r`\(\Delta=1+8=9=3^2\), donc \(x_1=\dfrac{1-3}2=-1\) et \(x_2=\dfrac{1+3}2=2\).`,r`\(S=\{-1,2\}\).`],
+ trap:r`Erreur de signe en passant tout d’un côté : \(x^2-x-2=0\) et non \(x^2+x-2=0\) (qui donnerait \(\{1,-2\}\)).`},
+
+{t:"Nombres complexes – Forme algébrique & puissances de \\(i\\)",
+ q:r`Soient \(x,y\in\mathbb R\) tels que \(\left(\dfrac{1+i}{1-i}\right)^{2020}=x+iy\). Alors \((x,y)\) est égal à :`,
+ o:[r`\((0,1)\)`,r`\((1,0)\)`,r`\((0,-1)\)`,r`\((-1,0)\)`,E], a:1,
+ rappel:r`\(\dfrac{1+i}{1-i}=i\) et \(\dfrac{1-i}{1+i}=-i\). Pour tout \(k\in\mathbb Z\) : \(i^{4k}=(i^4)^k=1\).`,
+ flash:r`\(\dfrac{1+i}{1-i}=i\), et \(i^{2020}=(i^4)^{505}=1\). Donc \(x+iy=1+0i\) : \((1,0)\). Choix direct : <b>(B)</b>.`,
+ steps:[r`On multiplie par le conjugué : \(\dfrac{1+i}{1-i}=\dfrac{(1+i)^2}{(1-i)(1+i)}=\dfrac{1+2i-1}{2}=i\).`,r`\(2020=4\times505\), donc \(i^{2020}=(i^4)^{505}=1\).`,r`\(x+iy=1+0i\), d’où \(x=1\) et \(y=0\).`],
+ trap:r`Inverser \(x\) et \(y\) et répondre \((0,1)\) : c’est le résultat de \(i\), pas du réel pur \(1\).`},
+
+{t:"Suites numériques – Suite récurrente & logarithme",
+ q:r`Soit la suite \((u_n)\) définie par \(u_0=e^3\) et \(u_{n+1}=e\sqrt{u_n}\). On pose \(v_n=\ln(u_n)-2\). La raison de la suite \((v_n)\) et son premier terme \(v_0\) sont :`,
+ o:[r`\(q=\dfrac12\) et \(v_0=1\)`,r`\(q=2\) et \(v_0=\dfrac12\)`,r`\(q=-2\) et \(v_0=-\dfrac12\)`,r`\(q=-\dfrac12\) et \(v_0=-1\)`,E], a:0,
+ rappel:r`Pour \(u_n>0\) et \(u_{n+1}=k\,u_n^\alpha\) : \(\ln(u_{n+1})=\ln k+\alpha\ln(u_n)\). La suite \(\ln(u_n)\) est arithmético-géométrique de coefficient \(\alpha\).`,
+ flash:r`\(u_{n+1}\propto u_n^{1/2}\) donc \(\ln(u_{n+1})=\tfrac12\ln(u_n)+\dots\) : la raison est \(q=\tfrac12\). Et \(v_0=3-2=1\). Choix direct : <b>(A)</b>.`,
+ steps:[r`\(v_0=\ln(e^3)-2=3-2=1\).`,r`\(v_{n+1}=\ln\big(e\sqrt{u_n}\big)-2=1+\tfrac12\ln(u_n)-2=\tfrac12\ln(u_n)-1\).`,r`Comme \(\ln(u_n)=v_n+2\) : \(v_{n+1}=\tfrac12(v_n+2)-1=\tfrac12v_n\).`,r`\((v_n)\) est géométrique de raison \(q=\tfrac12\) et de premier terme \(v_0=1\).`],
+ trap:r`Oublier que \(\ln\sqrt{u_n}=\tfrac12\ln u_n\) et écrire \(2\ln u_n\) : la raison serait inversée (\(q=2\)).`},
+
+{t:"Probabilités – Événements indépendants & somme des entiers",
+ q:r`Un coureur doit franchir \(n\) obstacles \(O_1,O_2,\dots,O_n\). La probabilité qu’il franchisse l’obstacle \(O_k\) est \(P(O_k)=\dfrac1{2^k}\) pour tout \(k\in\{1,\dots,n\}\). Les franchissements sont indépendants. La probabilité que le coureur franchisse tous les obstacles est :`,
+ o:[r`\(\dfrac1{2^n}\)`,r`\(\dfrac1{2^{n!}}\)`,r`\(\dfrac1{2^{n^2}}\)`,r`\(\dfrac1{2^{n(n+1)/2}}\)`,E], a:3,
+ rappel:r`Pour des événements mutuellement indépendants : \(P\Big(\bigcap A_k\Big)=\prod P(A_k)\). Et \(\displaystyle\sum_{k=1}^nk=\frac{n(n+1)}2\).`,
+ flash:r`Test avec \(n=2\) : \(P=\frac12\times\frac14=\frac18=\frac1{2^3}\). Seule la formule \(2^{n(n+1)/2}\) donne \(2^3\) pour \(n=2\). Choix direct : <b>(D)</b>.`,
+ steps:[r`Indépendance : \(P(E)=\displaystyle\prod_{k=1}^nP(O_k)=\prod_{k=1}^n\frac1{2^k}\).`,r`Produit de puissances de 2 : \(\dfrac1{2^{1}\times2^{2}\times\cdots\times2^{n}}=\dfrac1{2^{\,1+2+\cdots+n}}\).`,r`Or \(1+2+\cdots+n=\dfrac{n(n+1)}2\), donc \(P(E)=\dfrac1{2^{n(n+1)/2}}\).`],
+ trap:r`Confondre la somme des exposants avec leur produit \(1\times2\times\cdots\times n=n!\) (option B) : on additionne les exposants, \(2^a\cdot2^b=2^{a+b}\).`},
+
+{t:"Calcul intégral – Interprétation géométrique des aires",
+ q:r`Soit \(f\) définie sur \([0;5]\) dont la courbe \(C_f\) est donnée ci-dessus. On considère \(I=\displaystyle\int_0^2f(x)dx\), \(J=\displaystyle\int_2^5f(x)dx\), \(K=\displaystyle\int_0^5f(x)dx\). Quelle est la bonne réponse ?`,
+ fig:`<svg viewBox="0 0 420 240" width="420" role="img" aria-label="Courbe de f : segments (0,1)-(2,0) puis (2,0)-(5,2)"><g stroke="currentColor" fill="none" stroke-width="1.5"><path d="M40 200H400M40 200V20" opacity=".6"/><path d="M40 200L40 20M40 20l-4 8m4-8l4 8M400 200l-8-4m8 4l-8 4" opacity=".6"/></g><polygon points="40,140 140,200 40,200" fill="#2457c5" opacity=".18"/><polygon points="140,200 340,200 340,80" fill="#16a34a" opacity=".18"/><path d="M40 140L140 200L340 80" stroke="#2457c5" stroke-width="3" fill="none"/><g fill="currentColor" font-size="13" font-family="sans-serif"><text x="14" y="145">1</text><text x="14" y="85">2</text><text x="36" y="216">0</text><text x="136" y="216">2</text><text x="236" y="216">3</text><text x="336" y="216">5</text><text x="404" y="204">x</text><text x="44" y="16">y</text><text x="64" y="125" fill="#2457c5">(0,1)</text><text x="344" y="76" fill="#2457c5">(5,2)</text><text x="128" y="190">(2,0)</text><text x="260" y="108" fill="#2457c5" font-weight="700">C_f</text></g><g fill="#2457c5"><circle cx="40" cy="140" r="4"/><circle cx="140" cy="200" r="4"/><circle cx="340" cy="80" r="4"/></g></svg>`,
+ o:[r`\(I=1,\ J=3,\ K=4\)`,r`\(I=2,\ J=3,\ K=5\)`,r`\(I=1,\ J=2,\ K=3\)`,r`\(I=\dfrac12,\ J=3,\ K=\dfrac72\)`,E], a:0,
+ rappel:r`Pour \(f\ge0\) continue : \(\displaystyle\int_a^bf(x)dx=\text{Aire}(D)\). Aire d’un triangle \(=\dfrac{\text{base}\times\text{hauteur}}2\). Chasles : \(\displaystyle\int_a^c=\int_a^b+\int_b^c\).`,
+ flash:r`Triangle sur \([0,2]\) : base 2, hauteur 1 \(\Rightarrow I=1\). Triangle sur \([2,5]\) : base 3, hauteur 2 \(\Rightarrow J=3\). Chasles : \(K=I+J=4\). Choix direct : <b>(A)</b>.`,
+ steps:[r`Sur \([0,2]\), le domaine est le triangle rectangle de sommets \((0,0)\), \((0,1)\), \((2,0)\) : \(I=\dfrac{2\times1}2=1\).`,r`Sur \([2,5]\), le domaine est le triangle rectangle de sommets \((2,0)\), \((5,0)\), \((5,2)\) : \(J=\dfrac{3\times2}2=3\).`,r`Relation de Chasles : \(K=I+J=1+3=4\).`],
+ trap:r`Calculer l’aire « base × hauteur » du rectangle sans diviser par 2 : on obtiendrait \(I=2\).`},
+
+{t:"Dénombrement – Permutations d’éléments distincts",
+ q:r`Cinq élèves d’une classe veulent s’asseoir sur cinq chaises numérotées de 1 à 5. Combien de dispositions différentes des élèves sur les chaises sont possibles ?`,
+ o:[r`\(125\)`,r`\(60\)`,r`\(100\)`,r`\(120\)`,E], a:3,
+ rappel:r`Le nombre de permutations de \(n\) éléments est \(n!=n\times(n-1)\times\cdots\times2\times1\).`,
+ flash:r`5 personnes sur 5 places : permutation de 5 éléments, \(5!=120\). Choix direct : <b>(D)</b>.`,
+ steps:[r`Le 1<sup>er</sup> élève a 5 choix de chaise, le 2<sup>e</sup> en a 4, le 3<sup>e</sup> en a 3, le 4<sup>e</sup> en a 2, le 5<sup>e</sup> en a 1.`,r`Principe multiplicatif : \(N=5\times4\times3\times2\times1=5!=120\).`],
+ trap:r`Calculer \(5^3=125\) (arrangements avec répétition) ou confondre avec une combinaison \(\binom55=1\).`}
+];
+
+const L="ABCDE";
+let cur=0, ans=Array(Q.length).fill(null), done=Array(Q.length).fill(false), finished=false;
+const $=id=>document.getElementById(id);
+function typeset(){ if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise();} }
+function score(){return Q.reduce((s,q,i)=>s+(done[i]&&ans[i]===q.a?1:0),0);}
+function palette(){
+  $('pal').innerHTML=Q.map((q,i)=>{
+    let c=i===cur&&!finished?'cur':'';
+    let ck='';
+    if(done[i]){ const ok=ans[i]===q.a; c+=ok?' ok':' ko'; ck=ok?'✓':'✗'; }
+    else if(ans[i]!==null){ c+=' ans'; ck='✓'; }
+    return `<button class="${c}" onclick="go(${i})"><span>Q${i+1}</span>${ck?`<b class="ck">${ck}</b>`:''}</button>`;}).join('');
+  const nd=done.filter(Boolean).length;
+  $('prog').textContent=finished?'Résultats':`Question ${cur+1} / ${Q.length}`;
+  $('sc').textContent=`Score : ${score()} / ${nd}`;
+  $('barfill').style.width=(nd/Q.length*100)+'%';
+}
+function go(i){cur=i;finished=false;render();}
+function pick(i){ if(done[cur])return; ans[cur]=i; render(); }
+function validate(){ if(ans[cur]===null)return; done[cur]=true; render(); setTimeout(()=>{const e=$('exp'); if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'});},50); }
+function next(){ if(cur<Q.length-1){cur++;render();} else if(done.every(Boolean)){finished=true;render();} else {const j=done.findIndex(d=>!d); cur=j;render();} }
+function prev(){ if(cur>0){cur--;render();} }
+function restart(){ans=Array(Q.length).fill(null);done=Array(Q.length).fill(false);cur=0;finished=false;render();window.scrollTo(0,0);}
+function render(){
+  palette();
+  if(finished){ return results(); }
+  const q=Q[cur], d=done[cur], a=ans[cur];
+  const opts=q.o.map((t,i)=>{
+    let c='opt';
+    if(d){ if(i===q.a)c+=' good'; else if(i===a)c+=' bad'; }
+    else if(i===a)c+=' sel';
+    return `<button class="${c}" ${d?'disabled':''} onclick="pick(${i})"><span class="l">${L[i]}</span><span>${t}</span></button>`;}).join('');
+  let exp='';
+  if(d){
+    const ok=a===q.a;
+    exp=`<div class="card exp" id="exp">
+      <div class="res ${ok?'ok':'ko'}">${ok?'✔ Bonne réponse !':'✘ Mauvaise réponse'} — Réponse correcte : (${L[q.a]})</div>
+      <h3>📘 Rappel de cours</h3><div>${q.rappel}</div>
+      <h3>⚡ Réflexe concours (&lt; 20 s)</h3><div class="flash">${q.flash}</div>
+      <h3>🎓 Méthode académique</h3><ol>${q.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <p><b>Conclusion :</b> réponse <b>(${L[q.a]})</b>.</p>
+      <div class="trap"><b>⚠ Piège classique à éviter :</b> ${q.trap}</div>
+    </div>`;
+  }
+  const last=cur===Q.length-1;
+  $('main').innerHTML=`<div class="card"><span class="tag">QCM ${String(cur+1).padStart(2,'0')} • ${q.t}</span>
+    <div class="q">${q.q}</div>${q.fig?`<div style="text-align:center;margin:8px 0 16px">${q.fig}</div>`:''}${opts}
+    <div class="btns"><button class="btn sec" onclick="prev()" ${cur===0?'disabled':''}>← Précédent</button>
+    ${d?`<button class="btn" onclick="next()">${last&&done.every(Boolean)?'Voir le résultat':'Suivant →'}</button>`:`<button class="btn" onclick="validate()" ${a===null?'disabled':''}>✓ Valider</button>`}</div></div>${exp}`;
+  typeset();
+}
+function results(){
+  const s=score(), n=Q.length, p=Math.round(s/n*100);
+  const msg=p>=80?'Excellent ! 🎉':p>=60?'Bien, continue comme ça 💪':p>=40?'Il faut encore réviser 📚':'Courage, revois les fiches de cours 🔁';
+  $('main').innerHTML=`<div class="card score"><div class="big">${s} / ${n}</div><div>${p} % de réussite — ${msg}</div>
+   <div class="btns" style="justify-content:center"><button class="btn" onclick="restart()">Recommencer</button></div></div>
+   <div class="card"><b>Revoir les questions</b>${Q.map((q,i)=>`<div class="rev" onclick="go(${i})"><span class="n" style="background:${ans[i]===q.a?'var(--ok)':'var(--ko)'}">${i+1}</span><span>${q.t}</span></div>`).join('')}</div>`;
+  typeset();
+}
+render();
+</script>
+</body>
+</html>

@@ -64,7 +64,7 @@
 }
 
 .client-cours-search-input:focus {
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
 }
 
@@ -136,7 +136,7 @@
 
 .client-cours-pill.is-active {
   background: #eff6ff;
-  border-color: #2563eb;
+  border-color: #b9ccf5;
   color: #1d4ed8;
   box-shadow: 0 2px 8px rgba(37,99,235,0.16);
 }
@@ -187,11 +187,11 @@ html.dark .client-cours-pill.is-active {
 .client-cours-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 12px;
 }
 
-@media (max-width: 768px)  { .client-cours-cards-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; } }
+@media (max-width: 768px)  { .client-cours-cards-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; } }
 @media (max-width: 490px)  { .client-cours-cards-grid { grid-template-columns: minmax(0,1fr); } }
 
 /* ── Chapter Card ── */
@@ -235,6 +235,11 @@ html.dark .client-chapter-card:hover {
   justify-content: space-between;
   padding: 12px 16px;
   box-sizing: border-box;
+}
+.client-card-banner[style*="#d2def7"] .client-banner-formulas,
+.client-card-banner[style*="#d2def7"] .client-banner-title {
+  color: #203b5b !important;
+  text-shadow: none !important;
 }
 
 .client-banner-formulas {
@@ -368,7 +373,7 @@ html.dark .client-card-progress-track { background: var(--border, #243049); }
   height: 100%;
   border-radius: 9999px;
   transition: width 0.4s ease;
-  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+  background: linear-gradient(90deg, #d2def7 0%, #d2def7 100%);
 }
 
 .client-card-progress-fill.fill-completed { background: #16a34a; }
@@ -392,26 +397,27 @@ html.dark .client-card-progress-track { background: var(--border, #243049); }
 }
 
 .client-card-action-btn.btn-primary {
-  background-color: #2563eb;
-  color: #ffffff;
+  background-color: #d2def7;
+  color: #203b5b;
   box-shadow: 0 3px 10px rgba(37,99,235,0.24);
 }
 
 .client-card-action-btn.btn-primary:hover {
-  background-color: #1d4ed8;
+  background-color: #d2def7;
   transform: translateY(-1px);
   box-shadow: 0 5px 14px rgba(37,99,235,0.35);
 }
 
 .client-card-action-btn.btn-completed {
-  background-color: #16a34a;
-  color: #ffffff;
-  box-shadow: 0 3px 10px rgba(22,163,74,0.22);
+  background-color: #d2def7;
+  color: #203b5b;
+  box-shadow: 0 3px 10px rgba(37,99,235,0.2);
 }
 
 .client-card-action-btn.btn-completed:hover {
-  background-color: #15803d;
+  background-color: #d2def7;
   transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(37,99,235,0.28);
 }
 
 @media (max-width: 768px) {
@@ -529,13 +535,15 @@ html.dark .client-reader-back-btn {
   padding: 9px 16px;
   border-radius: 10px;
   cursor: pointer;
-  background-color: #2563eb;
+  background-color: #d2def7;
   color: #ffffff;
   transition: all 0.2s;
   box-shadow: 0 3px 10px rgba(37,99,235,0.2);
 }
 
-.client-reader-complete-btn:hover { background-color: #1d4ed8; }
+.client-reader-complete-btn:hover { background-color: #d2def7; }
+.client-card-action-btn.btn-primary,
+.client-reader-complete-btn:not(.is-completed) { color: #203b5b; }
 
 .client-reader-complete-btn.is-completed {
   background-color: #16a34a;

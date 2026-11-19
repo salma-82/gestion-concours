@@ -1,8 +1,8 @@
 .course-stats-root {
-  --course-navy: #102d50;
-  --course-lilac: #e9cff3;
+  --course-navy: #d2def7;
+  --course-lilac: #e7f8ef;
   --course-sage: #c8e3bf;
-  --course-yellow: #f8d76e;
+  --course-yellow: #d2def7;
   --course-mint: #bfe8da;
   --course-blue: #b9ccf5;
   --course-border: #e5e5e5;
@@ -85,11 +85,11 @@
 .course-kpi-card:nth-child(n+2) .course-kpi-title,
 .course-kpi-card:nth-child(n+2) .course-kpi-value { color: #29384b; }
 .course-kpi-card:nth-child(2) .course-kpi-title,
-.course-kpi-card:nth-child(2) .course-kpi-value { color: #483455; }
+.course-kpi-card:nth-child(2) .course-kpi-value { color: #214c42; }
 .course-kpi-card:nth-child(3) .course-kpi-title,
 .course-kpi-card:nth-child(3) .course-kpi-value { color: #30492c; }
 .course-kpi-card:nth-child(4) .course-kpi-title,
-.course-kpi-card:nth-child(4) .course-kpi-value { color: #4a3c16; }
+.course-kpi-card:nth-child(4) .course-kpi-value { color: #2563eb; }
 .course-kpi-card:nth-child(5) .course-kpi-title,
 .course-kpi-card:nth-child(5) .course-kpi-value { color: #214c42; }
 .course-kpi-card:nth-child(6) .course-kpi-title,
@@ -174,7 +174,7 @@
 .course-status-pill.completed { background: var(--course-mint); color: #244f45; }
 .course-status-pill.in-progress { background: var(--course-blue); color: #29466c; }
 .course-view-link-btn { padding: 9px 14px; border: 0; border-radius: 999px; background: var(--course-navy); color: #fff; font-size: 10px; }
-.course-view-link-btn:hover { background: #1b436c; transform: none; }
+.course-view-link-btn:hover { background: #d2def7; transform: none; }
 .course-pagination { margin-top: 10px; }
 .course-page-btn { border-radius: 999px; }
 
@@ -209,3 +209,71 @@ html.dark #root .course-stats-root { color: var(--text); }
 
 html[data-theme="dark"] #root .course-stats-root .course-panel-card,
 html.dark #root .course-stats-root .course-panel-card { background: var(--surface) !important; border-color: var(--border) !important; }
+
+/* Keep the full course dashboard about 5 cm shorter while preserving every section. */
+.course-stats-root { padding-bottom: 12px; }
+.course-stats-header { gap: 8px; padding-bottom: 5px; margin-bottom: 7px; }
+.course-stats-filters-bar select,
+.course-stats-filters-bar input { height: 34px; }
+.course-kpi-grid { gap: 9px; margin-bottom: 10px; }
+.course-kpi-card { min-height: 88px; padding: 12px; border-radius: 17px; }
+.course-grid-row { gap: 10px; margin-bottom: 10px; }
+.course-panel-card { padding: 12px; border-radius: 17px; }
+.course-panel-header { gap: 6px; margin-bottom: 6px; }
+.course-panel-body[style*="min-height"] { min-height: 0 !important; }
+.course-kpi-grid + .course-grid-row .course-panel-body > .recharts-responsive-container { height: 205px !important; }
+.course-donut-wrapper { min-height: 160px; gap: 14px; justify-content: flex-start; }
+.course-donut-chart-container { width: 160px; height: 160px; flex: 0 0 160px; }
+.course-donut-chart-container > .recharts-responsive-container { width: 100% !important; height: 100% !important; }
+.course-donut-legend-list { min-width: 0; flex: 1 1 0; }
+.course-donut-legend-list { gap: 6px; }
+.course-donut-legend-item { padding: 6px 9px; }
+.course-insights-grid { gap: 10px; margin-bottom: 10px; }
+.course-insight-card { gap: 7px; padding: 12px; border-radius: 17px; }
+.course-insight-head-text h3 { font-size: 15px; }
+.course-insight-head-text p { line-height: 1.3; }
+.course-insight-list { gap: 6px; }
+.course-insight-item { padding: 8px 10px; }
+.course-tabs-pills { margin-bottom: 7px; }
+.course-tab-pill { padding: 6px 11px; }
+.course-chapter-list { gap: 6px; max-height: 390px; }
+.course-chapter-item { gap: 6px; padding: 9px 11px; }
+.course-chapter-track { height: 6px; }
+.course-table-toolbar { margin-bottom: 7px; }
+.course-search-input,
+.course-table-select { height: 32px; }
+.course-table th { padding: 7px 7px; }
+.course-table td { padding: 7px 7px; }
+.course-pagination { margin-top: 7px; padding-top: 7px; }
+.course-kpi-card:first-child .course-kpi-title,
+.course-kpi-card:first-child .course-kpi-value,
+.course-filter-field:nth-child(3) select,
+.course-tab-pill.is-active,
+.course-page-btn.is-active,
+.course-view-link-btn,
+.course-empty-btn { color: #203b5b; }
+.course-insight-card.is-strength .course-insight-head-text :is(h3, p),
+.course-insight-card.is-strength .course-insight-item,
+.course-insight-card.is-strength .course-insight-item-title { color: #203b5b; }
+
+/* Match the shorter overview cards used by the contest statistics page. */
+.course-stats-root { padding-top: 0 !important; }
+.course-stats-root .course-stats-header {
+  gap: 8px;
+  margin-bottom: 5px;
+  padding: 0 0 5px;
+}
+.course-stats-root .course-stats-header-top { margin-bottom: 4px; }
+.course-stats-root .course-filter-field select,
+.course-stats-root .course-filter-field input { height: 32px; }
+.course-stats-root .course-kpi-grid {
+  grid-auto-rows: 92px !important;
+  gap: 9px !important;
+  margin-bottom: 9px !important;
+}
+.course-stats-root .course-kpi-card {
+  height: 92px !important;
+  min-height: 92px !important;
+  max-height: 92px !important;
+  padding: 14px 16px !important;
+}

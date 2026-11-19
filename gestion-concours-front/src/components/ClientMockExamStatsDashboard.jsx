@@ -30,7 +30,7 @@ const COLORS = {
   primary: '#2563eb',
   success: '#10b981',
   danger: '#ef4444',
-  warning: '#f59e0b',
+  warning: '#d2def7',
   purple: '#8b5cf6',
   cyan: '#06b6d4',
   muted: '#94a3b8',
@@ -724,15 +724,8 @@ export default function ClientMockExamStatsDashboard({
         <section className="mock-exam-header">
           <div className="mock-exam-header-top">
             <div className="mock-exam-heading">
-              <span className="mock-exam-title-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="6" y="4.5" width="12" height="15" rx="2" />
-                  <path d="M9 9h6M9 12h6M9 15h3" />
-                </svg>
-              </span>
               <div>
                 <h1 className="mock-exam-title">Analyse des simulations</h1>
-                <p className="mock-exam-subtitle">Tes concours blancs</p>
               </div>
             </div>
           </div>
@@ -764,15 +757,8 @@ export default function ClientMockExamStatsDashboard({
       <section className="mock-exam-header">
         <div className="mock-exam-header-top">
           <div className="mock-exam-heading">
-            <span className="mock-exam-title-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="6" y="4.5" width="12" height="15" rx="2" />
-                <path d="M9 9h6M9 12h6M9 15h3" />
-              </svg>
-            </span>
             <div>
               <h1 className="mock-exam-title">Analyse des simulations</h1>
-              <p className="mock-exam-subtitle">Tes concours blancs</p>
             </div>
           </div>
         </div>
@@ -1022,9 +1008,9 @@ export default function ClientMockExamStatsDashboard({
                   <Line
                     type="monotone"
                     dataKey="score"
-                    stroke="#2563eb"
+                    stroke="#b9ccf5"
                     strokeWidth={3}
-                    dot={{ fill: '#2563eb', r: 4, strokeWidth: 2, stroke: '#ffffff' }}
+                    dot={{ fill: '#b9ccf5', r: 4, strokeWidth: 2, stroke: '#ffffff' }}
                     activeDot={{ r: 7, strokeWidth: 3, stroke: '#bfdbfe' }}
                   />
                 </LineChart>
@@ -1131,7 +1117,7 @@ export default function ClientMockExamStatsDashboard({
                     ]}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  <Bar dataKey="avgScore" name="Score moyen" fill="#2563eb" radius={[0, 6, 6, 0]} barSize={14} />
+                  <Bar dataKey="avgScore" name="Score moyen" fill="#b9ccf5" radius={[0, 6, 6, 0]} barSize={14} />
                   <Bar dataKey="passRate" name="Taux de réussite" fill="#10b981" radius={[0, 6, 6, 0]} barSize={14} />
                 </BarChart>
               </ResponsiveContainer>
@@ -1203,7 +1189,7 @@ export default function ClientMockExamStatsDashboard({
                   <Line
                     type="monotone"
                     dataKey="runningAvg"
-                    stroke="#2563eb"
+                    stroke="#b9ccf5"
                     strokeWidth={1.5}
                     strokeDasharray="3 3"
                     dot={false}
@@ -1293,11 +1279,11 @@ export default function ClientMockExamStatsDashboard({
                       }}
                     />
                     <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Bar dataKey="score" name="Score (%)" fill="#2563eb" radius={[6, 6, 0, 0]} barSize={36}>
+                    <Bar dataKey="score" name="Score (%)" fill="#b9ccf5" radius={[6, 6, 0, 0]} barSize={36}>
                       {comparisonDataWithBest.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={entry.isBest ? '#10b981' : '#2563eb'}
+                          fill={entry.isBest ? '#10b981' : '#b9ccf5'}
                         />
                       ))}
                     </Bar>
@@ -1415,7 +1401,7 @@ export default function ClientMockExamStatsDashboard({
               {detailedChapters.length > 0 ? (
                 detailedChapters.map((ch) => {
                   const scoreClass = ch.avgScore >= 70 ? 'is-high' : ch.avgScore >= 50 ? 'is-mid' : 'is-low';
-                  const fillColor = ch.avgScore >= 70 ? '#10b981' : ch.avgScore >= 50 ? '#f59e0b' : '#ef4444';
+                  const fillColor = ch.avgScore >= 70 ? '#10b981' : ch.avgScore >= 50 ? '#b9ccf5' : '#ef4444';
                   return (
                     <div key={ch.name} className="mock-exam-chapter-item">
                       <div className="mock-exam-chapter-header">

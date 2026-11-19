@@ -1,0 +1,347 @@
+/* Shared visual system for the client content cards. */
+:root {
+  --catalog-blue: #125BC9;
+  --catalog-blue-ink: #153B70;
+  --catalog-orange: #FF7900;
+  --catalog-orange-ink: #713400;
+  --catalog-blue-soft: #DCE8FA;
+  --catalog-track: #E8EDF5;
+  --catalog-muted: #64748B;
+}
+
+.client-catalog-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 265px), 1fr)) !important;
+  gap: 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.client-catalog-card {
+  --catalog-banner: var(--catalog-blue);
+  --catalog-ink: #fff;
+  box-sizing: border-box !important;
+  height: 310px !important;
+  min-height: 310px !important;
+  border: 1px solid #e3e6eb !important;
+  border-radius: 26px !important;
+  overflow: hidden !important;
+  background: var(--surface, #fff) !important;
+  box-shadow: 0 3px 10px rgba(16, 35, 60, 0.04) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+
+.client-catalog-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--catalog-blue-soft) !important;
+  box-shadow: 0 10px 22px rgba(16, 35, 60, 0.1) !important;
+}
+
+.client-catalog-card-cover {
+  position: relative !important;
+  box-sizing: border-box !important;
+  height: 145px !important;
+  min-height: 145px !important;
+  flex: 0 0 145px !important;
+  padding: 14px 20px !important;
+  overflow: hidden !important;
+  background: var(--catalog-banner) !important;
+}
+
+.client-catalog-subject-pill {
+  position: absolute !important;
+  z-index: 12 !important;
+  top: 17px !important;
+  left: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: calc(100% - 40px) !important;
+  box-sizing: border-box !important;
+  padding: 4px 11px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: var(--catalog-blue-ink) !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  backdrop-filter: blur(2px);
+}
+
+.client-concours-blanc-subject-code {
+  position: absolute !important;
+  z-index: 12 !important;
+  top: 17px !important;
+  right: 20px !important;
+  color: var(--catalog-blue-ink) !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.6px !important;
+  line-height: 1.2 !important;
+}
+
+.client-catalog-card-cover .client-banner-formulas,
+.client-catalog-card-cover .client-exam-formulas,
+.client-catalog-card-cover .client-resume-formulas,
+.client-catalog-card-cover .client-concours-blanc-formulas {
+  display: none !important;
+}
+
+.client-catalog-card-cover .client-banner-middle,
+.client-catalog-card-cover .client-exam-cover-main,
+.client-catalog-card-cover .client-resume-cover-left,
+.client-catalog-title-wrap {
+  position: absolute !important;
+  z-index: 2 !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 15px !important;
+  left: 20px !important;
+  width: auto !important;
+  max-width: 60% !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+#root .client-catalog-card.client-chapter-card .client-banner-title,
+#root .client-catalog-card.client-exam-card .client-exam-subject-abbr,
+#root .client-catalog-card.client-resume-card .client-resume-subject-title,
+.client-catalog-card .client-catalog-banner-title {
+  margin: 0 !important;
+  color: var(--catalog-ink) !important;
+  font-size: clamp(23px, 2vw, 33px) !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.2px !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+}
+
+.client-catalog-card .client-exam-subject-pill {
+  display: none !important;
+}
+
+.client-catalog-mascot,
+.client-catalog-card .client-banner-mascot-wrap,
+.client-catalog-card .client-exam-mascot-wrap,
+.client-catalog-card .client-resume-mascot-wrap {
+  z-index: 5 !important;
+  right: -6px !important;
+  bottom: -8px !important;
+  width: min(62%, 210px) !important;
+}
+
+.client-catalog-card-body {
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+  padding: 12px 20px 14px !important;
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+.client-catalog-card .client-card-chapitre-title,
+.client-catalog-card .client-exam-title,
+.client-catalog-card .client-resume-title,
+.client-catalog-card .client-catalog-card-title {
+  box-sizing: border-box !important;
+  height: auto !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  margin: 0 0 7px !important;
+  color: var(--text, #15243b) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.client-catalog-card .client-card-progress-track,
+.client-catalog-card .client-exam-progress-track,
+.client-catalog-card .client-resume-progress-track,
+.client-catalog-progress-track {
+  height: 9px !important;
+  flex: 0 0 9px !important;
+  margin: 4px 0 5px !important;
+  border-radius: 999px !important;
+  background: var(--catalog-track) !important;
+}
+
+.client-catalog-card .client-card-progress-fill,
+.client-catalog-card .client-exam-progress-fill,
+.client-catalog-card .client-resume-progress-fill,
+.client-catalog-progress-fill {
+  height: 100% !important;
+  border-radius: 999px !important;
+  background: var(--catalog-blue) !important;
+  transition: width 0.35s ease !important;
+}
+
+.client-catalog-card .client-card-progress-fill.status-in-progress,
+.client-catalog-card .client-exam-progress-fill.status-in-progress,
+.client-catalog-card .client-resume-progress-fill.status-in-progress,
+.client-catalog-progress-fill.status-in-progress {
+  background: var(--catalog-orange) !important;
+}
+
+.client-catalog-card .client-card-progress-fill.fill-completed,
+.client-catalog-card .client-exam-progress-fill.fill-completed,
+.client-catalog-card .client-resume-progress-fill.fill-completed,
+.client-catalog-progress-fill.fill-completed {
+  background: var(--catalog-blue) !important;
+}
+
+.client-catalog-card .client-card-progress-row,
+.client-catalog-card .client-exam-progress-row,
+.client-catalog-card .client-resume-progress-row,
+.client-catalog-progress-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin: 0 0 8px !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+}
+
+.client-catalog-progress {
+  margin: 0 0 8px !important;
+}
+
+.client-catalog-meta-row {
+  margin: 0 0 5px !important;
+  font-size: 11px !important;
+}
+
+.client-catalog-meta-row > span {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--text-secondary, #64748b) !important;
+  font-size: 11px !important;
+  font-weight: 550 !important;
+}
+
+.client-catalog-type-badge {
+  display: none !important;
+}
+
+.client-catalog-status.status-completed {
+  color: var(--catalog-blue-ink) !important;
+}
+
+.client-catalog-status.status-new {
+  color: var(--catalog-muted) !important;
+}
+
+.client-catalog-card .client-card-status-text.status-completed,
+.client-catalog-card .client-exam-status-text.status-completed,
+.client-catalog-card .client-resume-status-text.status-completed {
+  color: var(--catalog-blue-ink) !important;
+}
+
+.client-catalog-card .client-card-status-text.status-new,
+.client-catalog-card .client-exam-status-text.status-new,
+.client-catalog-card .client-resume-status-text.status-new {
+  color: var(--catalog-muted) !important;
+}
+
+.client-catalog-card .client-card-status-text.status-in-progress,
+.client-catalog-card .client-exam-status-text.status-in-progress,
+.client-catalog-card .client-resume-status-text.status-in-progress,
+.client-catalog-status.status-in-progress {
+  color: var(--catalog-orange-ink) !important;
+}
+
+.client-catalog-action,
+.client-catalog-card .client-card-action-btn,
+.client-catalog-card .client-exam-action-btn,
+.client-catalog-card .client-resume-action-btn {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  margin-top: auto !important;
+  padding: 10px 16px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--catalog-blue) !important;
+  color: #fff !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  box-shadow: none !important;
+  transition: transform 0.18s ease, filter 0.18s ease !important;
+}
+
+.client-catalog-action:hover,
+.client-catalog-card .client-catalog-action:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(0.97) !important;
+  box-shadow: none !important;
+}
+
+.client-catalog-action.status-in-progress {
+  background: var(--catalog-blue) !important;
+  color: #fff !important;
+}
+
+.client-catalog-action.status-completed {
+  background: var(--catalog-blue-soft) !important;
+  color: var(--catalog-blue-ink) !important;
+}
+
+.client-catalog-action.status-new {
+  background: var(--catalog-blue) !important;
+  color: #fff !important;
+}
+
+.client-concours-blanc-cards-grid .client-catalog-action.status-new {
+  position: relative !important;
+  top: -16px !important;
+  margin-bottom: 10px !important;
+}
+
+.client-catalog-card .client-exam-badges-row,
+.client-catalog-card .client-resume-badges-row {
+  margin: 0 0 5px !important;
+  min-height: 16px !important;
+  gap: 7px !important;
+}
+
+.client-catalog-card .client-exam-badge,
+.client-catalog-card .client-resume-badge {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--catalog-muted) !important;
+  font-size: 11px !important;
+  font-weight: 550 !important;
+}
+
+[data-theme="dark"] .client-catalog-card,
+html.dark .client-catalog-card {
+  border-color: var(--border, #2e3a52) !important;
+}
+
+[data-theme="dark"] .client-catalog-card-body,
+html.dark .client-catalog-card-body {
+  background: var(--surface, #1e2638) !important;
+}
+
+@media (max-width: 600px) {
+  .client-catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)) !important;
+  }
+}

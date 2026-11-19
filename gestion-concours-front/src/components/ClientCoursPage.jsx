@@ -12,6 +12,7 @@ import {
 import { toBackendResourceUrl } from '../backendResourceUrl';
 import cardMascot from '../assets/logo-mascot.png';
 import './ClientCoursPage.css';
+import './ClientCatalogCards.css';
 import { demoContentClass, DemoAccessBadge, guardDemoContent, isDemoFree, isDemoMode } from '../demoAccess';
 
 const API = '';
@@ -26,7 +27,7 @@ const MATIERES = [
     tag: 'MATH',
     subtitle: '',
     color: '#2563eb',
-    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+    gradient: 'linear-gradient(135deg, #d2def7 0%, #b9ccf5 100%)',
     formulas: '∑  f(x)  ≡  ∫dx'
   },
   {
@@ -358,7 +359,7 @@ export default function ClientCoursPage() {
     }).length;
 
     if (completedCount === courses.length) {
-      return { statusLabel: 'Terminé', statusClass: 'status-completed', pct: 100, pctLabel: '100%', btnLabel: '✓ Terminé', btnClass: 'btn-completed', isCompleted: true };
+      return { statusLabel: 'Terminé', statusClass: 'status-completed', pct: 100, pctLabel: '100%', btnLabel: 'Revoir', btnClass: 'btn-completed', isCompleted: true };
     }
 
     if (completedCount > 0) {
@@ -463,18 +464,21 @@ export default function ClientCoursPage() {
                     <p className="client-cours-matiere-subtitle">{matiere.subtitle}</p>
 
                     {/* Grille de cartes directement dans la page */}
-                    <div className="client-cours-cards-grid">
+                    <div className="client-cours-cards-grid client-catalog-grid">
                       {chapitres.map((chapitre) => {
                         const cardData = getChapterCardData(chapitre);
                         const chapterCourses = coursForChapitre(matiere, chapitre.nom);
                         const accessItem = chapterCourses.find(isDemoFree) || chapterCourses[0];
 
                         return (
-                          <article key={chapitre.nom} className={`client-chapter-card ${demoContentClass(accessItem)}`}>
+                          <article key={chapitre.nom} className={`client-chapter-card client-catalog-card client-catalog-theme-${matiere.tag.toLowerCase()} ${demoContentClass(accessItem)}`}>
                             <DemoAccessBadge item={accessItem} />
                             {/* Bannière de matière avec formules et mascotte officielle */}
-                            <div className="client-card-banner" style={{ background: matiere.gradient }}>
+                            <div className="client-card-banner client-catalog-card-cover" style={{ background: matiere.gradient }}>
                               <div className="client-banner-formulas">{matiere.formulas}</div>
+                              <span className="client-catalog-subject-pill">
+                                {matiere.tag === 'SVT' ? 'SVT' : matiere.nom}
+                              </span>
                               <div className="client-banner-middle">
                                 <h3 className="client-banner-title">{matiere.tag}</h3>
                               </div>
@@ -485,28 +489,28 @@ export default function ClientCoursPage() {
                             </div>
 
                             {/* Corps de la carte */}
-                            <div className="client-card-body">
-                              <h4 className="client-card-chapitre-title" title={chapitre.nom}>
+                            <div className="client-card-body client-catalog-card-body">
+                              <h4 className="client-card-chapitre-title client-catalog-card-title" title={chapitre.nom}>
                                 {chapitre.nom}
                               </h4>
 
-                              <div className="client-card-progress-track">
+                              <div className="client-card-progress-track client-catalog-progress-track">
                                 <div
-                                  className={`client-card-progress-fill ${cardData.isCompleted ? 'fill-completed' : ''}`}
+                                  className={`client-card-progress-fill client-catalog-progress-fill ${cardData.isCompleted ? 'fill-completed' : cardData.statusClass}`}
                                   style={{ width: `${cardData.pct}%` }}
                                 />
                               </div>
 
-                              <div className="client-card-progress-row">
+                              <div className="client-card-progress-row client-catalog-progress-row">
                                 <span className={`client-card-status-text ${cardData.statusClass}`}>
-                                  {cardData.statusLabel}
+                                  {cardData.statusClass === 'status-new' ? 'Pas commencé' : cardData.statusLabel}
                                 </span>
                                 <span className="client-card-pct-text">{cardData.pctLabel}</span>
                               </div>
 
                               <button
                                 type="button"
-                                className={`client-card-action-btn ${cardData.btnClass}`}
+                                className={`client-card-action-btn client-catalog-action ${cardData.btnClass} ${cardData.statusClass}`}
                                 onClick={guardDemoContent(accessItem, () => openReader(matiere, chapitre.nom))}
                                 aria-label={`${cardData.btnLabel} — ${chapitre.nom}`}
                               >

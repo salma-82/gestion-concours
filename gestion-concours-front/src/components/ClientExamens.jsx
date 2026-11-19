@@ -12,6 +12,7 @@ import {
 } from '../studentProgress';
 import cardMascot from '../assets/logo-mascot.png';
 import './ClientExamens.css';
+import './ClientCatalogCards.css';
 import { demoContentClass, DemoAccessBadge, guardDemoContent } from '../demoAccess';
 
 const isPdfDocument = (url) => /\.pdf(?:$|[?#])/i.test(String(url || ''));
@@ -686,7 +687,7 @@ export default function ClientExamens() {
                   <p className="client-examens-section-subtitle">{section.subtitle}</p>
 
                   {/* Grille responsive des cartes d'examen (5 colonnes) */}
-                  <div className="client-examens-cards-grid">
+                  <div className="client-examens-cards-grid client-catalog-grid">
                     {sectionExams.map((exam, idx) => {
                       const examKey = exam.id || `${section.id}-${idx}`;
                       const session = getExamSession(exam);
@@ -697,17 +698,19 @@ export default function ClientExamens() {
                       const progress = getExamProgressData(exam);
 
                       return (
-                        <article key={examKey} className={`client-exam-card ${demoContentClass(exam)}`}>
+                        <article key={examKey} className={`client-exam-card client-catalog-card client-catalog-theme-${section.tag.toLowerCase()} ${demoContentClass(exam)}`}>
                           <DemoAccessBadge item={exam} />
                           {/* Couverture : Dégradé bleu royal, abréviation, formules et mascotte */}
-                          <div className="client-exam-cover">
+                          <div className="client-exam-cover client-catalog-card-cover">
+                            <span className="client-catalog-subject-pill">
+                              {section.tag === 'SVT' ? 'SVT' : section.nom}
+                            </span>
                             {/* Formules en haut à droite */}
                             <div className="client-exam-formulas">{section.formulas}</div>
 
                             {/* Titre matière et pill sombre */}
                             <div className="client-exam-cover-main">
                               <h3 className="client-exam-subject-abbr">{section.tag}</h3>
-                              <span className="client-exam-subject-pill">{section.fullTag}</span>
                             </div>
 
                             {/* Mascotte chouette perchée dans le coin inférieur droit */}
@@ -717,9 +720,9 @@ export default function ClientExamens() {
                           </div>
 
                           {/* Corps de la carte */}
-                          <div className="client-exam-body">
+                          <div className="client-exam-body client-catalog-card-body">
                             {/* Titre de l'épreuve */}
-                            <h4 className="client-exam-title">
+                            <h4 className="client-exam-title client-catalog-card-title">
                               {exam.titre || `Examen National ${exam.annee || ''}`}
                             </h4>
 
@@ -743,19 +746,19 @@ export default function ClientExamens() {
                             </div>
 
                             {/* Barre de progression */}
-                            <div className="client-exam-progress-track">
+                              <div className="client-exam-progress-track client-catalog-progress-track">
                               <div
-                                className={`client-exam-progress-fill ${
-                                  progress.pct === 100 ? 'fill-completed' : ''
+                                className={`client-exam-progress-fill client-catalog-progress-fill ${
+                                  progress.pct === 100 ? 'fill-completed' : progress.statusClass
                                 }`}
                                 style={{ width: `${progress.pct}%` }}
                               />
                             </div>
 
                             {/* Ligne d'état de progression */}
-                            <div className="client-exam-progress-row">
+                            <div className="client-exam-progress-row client-catalog-progress-row">
                               <span className={`client-exam-status-text ${progress.statusClass}`}>
-                                {progress.label}
+                                {progress.statusClass === 'status-new' ? 'Pas commencé' : progress.label}
                               </span>
                               <span className="client-exam-pct-text">
                                 {progress.pct} %
@@ -765,7 +768,7 @@ export default function ClientExamens() {
                             {/* Bouton d'action principal */}
                             <button
                               type="button"
-                              className="client-exam-action-btn"
+                              className={`client-exam-action-btn client-catalog-action ${progress.statusClass}`}
                               onClick={guardDemoContent(exam, () => handleOpenReader(exam, 'sujet'))}
                             >
                               {progress.btnText}

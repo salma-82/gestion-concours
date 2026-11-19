@@ -22,6 +22,8 @@
 .client-nav-icon svg { width: 17px; height: 17px; }
 
 .client-page-content { scroll-padding-top: 8px; }
+.client-concours-blanc-banner.is-light-blue > div:first-child,
+.client-concours-blanc-banner.is-light-blue h3 { color: #203b5b !important; text-shadow: none !important; }
 .client-dashboard {
   padding: 16px clamp(14px, 2.2vw, 34px) 24px;
 }
@@ -34,6 +36,36 @@
 }
 .dashboard-eyebrow, .dashboard-section-kicker { margin-bottom: 6px; }
 .dashboard-welcome h1 { font-size: clamp(25px, 2.6vw, 34px); }
+.course-stats-title,
+.contest-stats-title,
+.mock-exam-title,
+.national-exam-hero h1,
+.summary-stats-title,
+.general-stats-header h1 {
+  font-size: clamp(27px, 2.7vw, 34px) !important;
+}
+
+@media (min-width: 821px) and (max-width: 1100px) {
+  .course-stats-title,
+  .contest-stats-title,
+  .mock-exam-title,
+  .national-exam-hero h1,
+  .summary-stats-title,
+  .general-stats-header h1 {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .course-stats-title,
+  .contest-stats-title,
+  .mock-exam-title,
+  .national-exam-hero h1,
+  .summary-stats-title,
+  .general-stats-header h1 {
+    font-size: 27px !important;
+  }
+}
 .dashboard-welcome-copy > p { margin: 7px 0 13px; line-height: 1.45; }
 .dashboard-welcome-actions { gap: 8px; }
 .dashboard-welcome-actions button, .dashboard-empty-state button { min-height: 36px; padding-inline: 13px; }
